@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { signup, signin, signOut } = require('../controllers/user');
+const { verifyToken } = require('../middleware/authMiddleware');
+const { signup, signin, signOut, getUser, updateUser, deleteUser, saveOnboarding } = require('../controllers/user');
 
 // POST /user/signup
 router.post('/signup', signup);
@@ -11,4 +12,12 @@ router.post('/signin', signin);
 // POST /user/signout   (using POST is common with cookies)
 router.post('/signout', signOut);
 
-module.exports = router;
+// Profile Management
+router.get('/me', verifyToken, getUser);
+router.put('/me', verifyToken, updateUser);
+router.delete('/me', verifyToken, deleteUser);
+
+// POST /user/onboarding – save all 3 onboarding steps
+router.post('/onboarding', verifyToken, saveOnboarding);
+
+module.exports = router;

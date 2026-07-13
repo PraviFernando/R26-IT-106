@@ -23,6 +23,37 @@ const userSchema = new mongoose.Schema({
   age: { type: Number },
   district: { type: String, trim: true },
   village: { type: String, trim: true },
+  babyDetails: {
+    birthday: { type: String, trim: true },
+    weight: { type: String, trim: true },
+    height: { type: String, trim: true },
+    vaccinations: [{
+      name: { type: String, trim: true },
+      date: { type: String, trim: true }
+    }]
+  },
+
+  // ── Onboarding ─────────────────────────────────────────────────────────────
+  onboardingCompleted: { type: Boolean, default: false },
+
+  // Step 1 – Delivery Information
+  deliveryType: { type: String, trim: true },
+  deliveryDate: { type: String, trim: true },
+  numBabies:    { type: String, trim: true, default: 'Single' },
+
+  // Step 2 – Baby Details
+  babyName:          { type: String, trim: true },
+  gender:            { type: String, trim: true },
+  birthWeight:       { type: String, trim: true },
+  currentWeight:     { type: String, trim: true },
+  birthLength:       { type: String, trim: true },
+  currentLength:     { type: String, trim: true },
+  headCircumference: { type: String, trim: true },
+
+  // Step 3 – Feeding
+  feedingMethod: { type: String, trim: true },
+  // ───────────────────────────────────────────────────────────────────────────
+
   role: {
     type: String,
     enum: ['admin', 'midwife', 'manager', 'doctor', 'patient'],
