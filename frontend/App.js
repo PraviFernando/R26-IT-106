@@ -18,6 +18,8 @@ import MidwifeDashboardScreen from './screens/MidwifeDashboardScreen';
 import EPDSScreeningScreen from './screens/EPDSScreeningScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
+import CareOverviewScreen from './screens/CareOverviewScreen';
+import GrowthChartScreen from './screens/GrowthChartScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +40,8 @@ export default function App() {
             <Stack.Screen name="EPDSScreening" component={EPDSScreeningScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="CareOverview" component={CareOverviewScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="GrowthChart" component={GrowthChartScreen} options={{ headerShown: false }} />
           </Stack.Navigator>
         </NavigationContainer>
         {/* Global Toast */}

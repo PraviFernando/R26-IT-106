@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
     },
     stepIcon: { fontSize: 44, textAlign: 'center', marginBottom: 8 },
     title: { fontSize: 24, fontWeight: '800', color: '#111827', textAlign: 'center', marginBottom: 4 },
-    subtitle: { fontSize: 14, color: '#6B7280', textAlign: 'center', marginBottom: 24 },
+    subtitle: { fontSize: 14, color: '#a26ba7ff', textAlign: 'center', marginBottom: 24 },
 
     // Date Picker Button
     datePickerButton: {
@@ -721,12 +721,12 @@ const styles = StyleSheet.create({
     nextBtnText: { color: '#fff', fontWeight: '800', fontSize: 16 },
 
     finishBtn: {
-        backgroundColor: GREEN,
+        backgroundColor: PURPLE,
         padding: 16,
         borderRadius: 14,
         alignItems: 'center',
         elevation: 4,
-        shadowColor: GREEN,
+        shadowColor: PURPLE,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.35,
         shadowRadius: 8,
