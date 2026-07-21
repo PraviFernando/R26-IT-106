@@ -120,13 +120,17 @@ const getUser = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
   try {
-    const { fullName, age, district, village, babyDetails } = req.body;
+    const { fullName, age, email, phoneNumber, district, village, babyDetails, currentWeight, currentLength } = req.body;
     const updateFields = {};
     if (fullName !== undefined) updateFields.fullName = fullName;
     if (age !== undefined) updateFields.age = age;
+    if (email !== undefined) updateFields.email = email;
+    if (phoneNumber !== undefined) updateFields.phoneNumber = phoneNumber;
     if (district !== undefined) updateFields.district = district;
     if (village !== undefined) updateFields.village = village;
     if (babyDetails !== undefined) updateFields.babyDetails = babyDetails;
+    if (currentWeight !== undefined) updateFields.currentWeight = currentWeight;
+    if (currentLength !== undefined) updateFields.currentLength = currentLength;
 
     const updatedUser = await User.findByIdAndUpdate(req.user.id, updateFields, { new: true }).select('-password');
     res.json(updatedUser);
@@ -171,6 +175,26 @@ const saveOnboarding = async (req, res, next) => {
       feedingMethod,
     } = req.body;
 
+    const initialHistory = [];
+    if (birthWeight || birthLength) {
+      initialHistory.push({
+        date: deliveryDate || 'At Birth',
+        weight: birthWeight || '0',
+        length: birthLength || '0',
+        headCircumference: headCircumference || '0',
+        notes: 'Birth measurements',
+      });
+    }
+    if (currentWeight || currentLength) {
+      initialHistory.push({
+        date: new Date().toISOString().split('T')[0],
+        weight: currentWeight || birthWeight || '0',
+        length: currentLength || birthLength || '0',
+        headCircumference: headCircumference || '0',
+        notes: 'Onboarding baseline',
+      });
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
       {
@@ -185,6 +209,7 @@ const saveOnboarding = async (req, res, next) => {
         currentLength,
         headCircumference,
         feedingMethod,
+        growthHistory: initialHistory,
         onboardingCompleted: true,
       },
       { new: true }
@@ -200,4 +225,36 @@ const saveOnboarding = async (req, res, next) => {
   }
 };
 
-module.exports = { signup, signin, signOut, getUser, updateUser, deleteUser, saveOnboarding };
+/**
+ * POST /user/growth-record (protected)
+ * Adds a new growth measurement record to the baby's history.
+ */
+const addGrowthRecord = async (req, res, next) => {
+  try {
+    const { date, weight, length, headCircumference, notes } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const recordDate = date || new Date().toISOString().split('T')[0];
+    const newRecord = {
+      date: recordDate,
+      weight: weight ? String(weight) : user.currentWeight || '0',
+      length: length ? String(length) : user.currentLength || '0',
+      headCircumference: headCircumference ? String(headCircumference) : user.headCircumference || '0',
+      notes: notes || 'Follow-up visit measurement',
+    };
+
+    user.growthHistory.push(newRecord);
+    if (weight) user.currentWeight = String(weight);
+    if (length) user.currentLength = String(length);
+    if (headCircumference) user.headCircumference = String(headCircumference);
+
+    await user.save();
+    const updatedUser = await User.findById(req.user.id).select('-password');
+    res.status(200).json({ message: 'Growth measurement added successfully', user: updatedUser });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { signup, signin, signOut, getUser, updateUser, deleteUser, saveOnboarding, addGrowthRecord };

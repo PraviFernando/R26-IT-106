@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/authMiddleware');
-const { signup, signin, signOut, getUser, updateUser, deleteUser, saveOnboarding } = require('../controllers/user');
+const { signup, signin, signOut, getUser, updateUser, deleteUser, saveOnboarding, addGrowthRecord } = require('../controllers/user');
 
 // POST /user/signup
 router.post('/signup', signup);
@@ -19,5 +19,8 @@ router.delete('/me', verifyToken, deleteUser);
 
 // POST /user/onboarding – save all 3 onboarding steps
 router.post('/onboarding', verifyToken, saveOnboarding);
+
+// POST /user/growth-record – add follow-up growth measurement
+router.post('/growth-record', verifyToken, addGrowthRecord);
 
 module.exports = router;

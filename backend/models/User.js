@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
   },
   fullName: { type: String, trim: true },
   age: { type: Number },
+  phoneNumber: { type: String, trim: true },
   district: { type: String, trim: true },
   village: { type: String, trim: true },
   babyDetails: {
@@ -32,6 +33,13 @@ const userSchema = new mongoose.Schema({
       date: { type: String, trim: true }
     }]
   },
+  growthHistory: [{
+    date: { type: String, trim: true },
+    weight: { type: String, trim: true },
+    length: { type: String, trim: true },
+    headCircumference: { type: String, trim: true },
+    notes: { type: String, trim: true }
+  }],
 
   // ── Onboarding ─────────────────────────────────────────────────────────────
   onboardingCompleted: { type: Boolean, default: false },
