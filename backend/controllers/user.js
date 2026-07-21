@@ -108,4 +108,96 @@ const signOut = (req, res, next) => {
   }
 };
 
-module.exports = { signup, signin, signOut };
+const getUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateUser = async (req, res, next) => {
+  try {
+    const { fullName, age, district, village, babyDetails } = req.body;
+    const updateFields = {};
+    if (fullName !== undefined) updateFields.fullName = fullName;
+    if (age !== undefined) updateFields.age = age;
+    if (district !== undefined) updateFields.district = district;
+    if (village !== undefined) updateFields.village = village;
+    if (babyDetails !== undefined) updateFields.babyDetails = babyDetails;
+
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, updateFields, { new: true }).select('-password');
+    res.json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    await User.findByIdAndDelete(req.user.id);
+    res
+      .clearCookie('access_token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      })
+      .status(200)
+      .json({ message: 'User account has been deleted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /user/onboarding  (protected)
+ * Saves all three onboarding steps and marks the user as onboarded.
+ */
+const saveOnboarding = async (req, res, next) => {
+  try {
+    const {
+      deliveryType,
+      deliveryDate,
+      numBabies,
+      babyName,
+      gender,
+      birthWeight,
+      currentWeight,
+      birthLength,
+      currentLength,
+      headCircumference,
+      feedingMethod,
+    } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        deliveryType,
+        deliveryDate,
+        numBabies,
+        babyName,
+        gender,
+        birthWeight,
+        currentWeight,
+        birthLength,
+        currentLength,
+        headCircumference,
+        feedingMethod,
+        onboardingCompleted: true,
+      },
+      { new: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Onboarding saved successfully', user: updatedUser });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { signup, signin, signOut, getUser, updateUser, deleteUser, saveOnboarding };

@@ -5,6 +5,8 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
+import './i18n'; // Initialize i18n
+
 import { AuthProvider } from './context/AuthContext';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
@@ -13,6 +15,9 @@ import DiaryScreen from './screens/DiaryScreen';
 import PlanScreen from './screens/PlanScreen';
 import AdminDashboardScreen from './screens/AdminDashboardScreen';
 import MidwifeDashboardScreen from './screens/MidwifeDashboardScreen';
+import EPDSScreeningScreen from './screens/EPDSScreeningScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import OnboardingScreen from './screens/OnboardingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +35,9 @@ export default function App() {
             <Stack.Screen name="Plan" component={PlanScreen} options={{ headerShown: false }} />
             <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ headerShown: false }} />
             <Stack.Screen name="MidwifeDashboard" component={MidwifeDashboardScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="EPDSScreening" component={EPDSScreeningScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Profile" component={ProfileScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
           </Stack.Navigator>
         </NavigationContainer>
         {/* Global Toast */}
