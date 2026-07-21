@@ -58,7 +58,7 @@ const progressData = [
 ];
 
 const recentActivities = [
-    { id: 1, title: 'EPDS Screening Completed', time: '2 hours ago', icon: '✅', color: '#10B981' },
+    { id: 1, title: 'Maternal Wellness Check Completed', time: '2 hours ago', icon: '✅', color: '#10B981' },
     { id: 2, title: 'Therapy Session Scheduled', time: 'Yesterday', icon: '📅', color: '#0EA5E9' },
     { id: 3, title: 'Mood Log Updated', time: '2 days ago', icon: '😊', color: '#F59E0B' },
     { id: 4, title: 'Doctor Note Added', time: '3 days ago', icon: '📝', color: '#7C3AED' },
@@ -70,6 +70,7 @@ const navItems = [
     { key: 'diary', label: 'My Diary', icon: '📔' },
     { key: 'plan', label: 'My Plans', icon: '📅' },
     { key: 'profile', label: 'Profile', icon: '👤' },
+    { key: 'care_overview', label: 'Care Overview', icon: '⭐' },
     { key: 'settings', label: 'Settings', icon: '⚙️' },
 ];
 
@@ -276,6 +277,12 @@ export default function DashboardScreen({ navigation }) {
             navigation.navigate('Diary');
         } else if (tab === 'plan') {
             navigation.navigate('Plan');
+        } else if (tab === 'screening') {
+            navigation.navigate('EPDSScreening');
+        } else if (tab === 'profile') {
+            navigation.navigate('Profile');
+        } else if (tab === 'care_overview') {
+            navigation.navigate('CareOverview');
         } else if (tab !== 'home') {
             Toast.show({
                 type: 'info',
@@ -386,8 +393,8 @@ export default function DashboardScreen({ navigation }) {
                                 <Text style={styles.activityIcon}>{item.icon}</Text>
                             </View>
                             <View style={styles.activityInfo}>
-                                <Text style={styles.activityTitle}>{item.title}</Text>
-                                <Text style={styles.activityTime}>{item.time}</Text>
+                                <Text style={styles.activityTitle}>{t(item.title)}</Text>
+                                <Text style={styles.activityTime}>{t(item.time)}</Text>
                             </View>
                             <View style={[styles.activityDot, { backgroundColor: item.color }]} />
                         </View>
@@ -399,6 +406,30 @@ export default function DashboardScreen({ navigation }) {
                 <View style={styles.quickActions}>
                     <TouchableOpacity
                         style={[styles.quickActionBtn, { backgroundColor: '#7C3AED' }]}
+                        onPress={() => navigation.navigate('EPDSScreening')}
+                    >
+                        <Text style={styles.quickActionIcon}>📋</Text>
+                        <Text style={styles.quickActionText}>{t('Screening')}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.quickActionBtn, { backgroundColor: '#F59E0B' }]}
+                        onPress={() => navigation.navigate('CareOverview')}
+                    >
+                        <Text style={styles.quickActionIcon}>⭐</Text>
+                        <Text style={styles.quickActionText}>{t('Care Overview')}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.quickActionBtn, { backgroundColor: '#10B981' }]}
+                        onPress={() => navigation.navigate('GrowthChart')}
+                    >
+                        <Text style={styles.quickActionIcon}>📈</Text>
+                        <Text style={styles.quickActionText}>{t('Growth Chart')}</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.quickActionBtn, { backgroundColor: '#EC4899' }]}
                         onPress={() => navigation.navigate('Diary')}
                     >
                         <Text style={styles.quickActionIcon}>📔</Text>
@@ -411,16 +442,6 @@ export default function DashboardScreen({ navigation }) {
                     >
                         <Text style={styles.quickActionIcon}>📅</Text>
                         <Text style={styles.quickActionText}>{t('My Plans')}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#10B981' }]}
-                        onPress={() =>
-                            Toast.show({ type: 'success', text1: '😊 Mood', text2: 'Mood log updated!', position: 'top' })
-                        }
-                    >
-                        <Text style={styles.quickActionIcon}>😊</Text>
-                        <Text style={styles.quickActionText}>{t('Log Mood')}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -836,11 +857,11 @@ const styles = StyleSheet.create({
     // ── Quick Actions ──
     quickActions: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: 10,
         marginBottom: 10,
     },
     quickActionBtn: {
-        flex: 1,
         borderRadius: 14,
         padding: 14,
         alignItems: 'center',
@@ -849,6 +870,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.15,
         shadowRadius: 4,
+        minWidth: (width - 58) / 2,
+        flex: 1,
     },
     quickActionIcon: {
         fontSize: 24,
