@@ -183,5 +183,13 @@
   "Brief note about this activity...": "මෙම ක්‍රියාකාරකම පිළිබඳ කෙටි සටහනක්...",
   "Time of Day": "වේලාව",
   "Choose Icon": "අයිකනයක් තෝරන්න",
-  "Add to Plan": "සැලසුමට එක් කරන්න"
+  "Add to Plan": "සැලසුමට එක් කරන්න",
+  "Prev": "පෙර",
+  "Next": "ඊළඟ",
+  "No Answer": "පිළිතුරක් නැත",
+  "pts": "ලකුණු",
+  "Your Answers": "ඔබේ පිළිතුරු",
+  "This is a screening tool, not a medical diagnosis.": "මෙය මූලික පරීක්‍ෂණයක් පමණි, වෛද්‍ය නිගමනයක් නොවේ.",
+  "of maximum score": "උපරිම ලකුණු වලින්",
+  "EPDS Score": "EPDS ලකුණු"
 }
