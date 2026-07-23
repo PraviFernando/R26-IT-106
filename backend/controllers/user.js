@@ -77,6 +77,11 @@ const signin = async (req, res, next) => {
       { expiresIn: '7d' }
     );
 
+    validUser.isOnline = true;
+    validUser.lastLogin = Date.now();
+    validUser.deviceType = req.headers['user-agent'] || 'Unknown';
+    await validUser.save();
+
     const { password: pass, ...rest } = validUser._doc;
 
     res
@@ -93,8 +98,11 @@ const signin = async (req, res, next) => {
   }
 };
 
-const signOut = (req, res, next) => {
+const signOut = async (req, res, next) => {
   try {
+    if (req.user && req.user.id) {
+      await User.findByIdAndUpdate(req.user.id, { isOnline: false });
+    }
     res
       .clearCookie('access_token', {
         httpOnly: true,

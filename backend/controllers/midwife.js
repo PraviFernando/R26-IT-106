@@ -19,9 +19,10 @@ const getPatients = async (req, res, next) => {
         const midwife = await User.findById(req.user.id);
         const query = { role: 'patient' };
         
-        // If midwife has a village, only show patients from that village
-        if (midwife && midwife.village) {
-            query.village = midwife.village;
+        // Filter by midwife's district and village if they exist
+        if (midwife) {
+            if (midwife.district) query.district = midwife.district;
+            if (midwife.village) query.village = midwife.village;
         }
 
         const patients = await User.find(query)
@@ -35,6 +36,7 @@ const getPatients = async (req, res, next) => {
             if (latestEpds) {
                 patient.latestEpdsScore = latestEpds.totalScore;
                 patient.latestEpdsRisk = latestEpds.riskLevel;
+                patient.latestEpdsDate = latestEpds.completedAt || latestEpds.month;
             }
         }
 
