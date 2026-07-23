@@ -10,7 +10,7 @@ router.post('/signup', signup);
 router.post('/signin', signin);
 
 // POST /user/signout   (using POST is common with cookies)
-router.post('/signout', signOut);
+router.post('/signout', verifyToken, signOut);
 
 // Profile Management
 router.get('/me', verifyToken, getUser);
