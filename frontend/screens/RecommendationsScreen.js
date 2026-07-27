@@ -1,24 +1,30 @@
 // ================================================================
 // RECOMMENDATIONS SCREEN — RecommendationsScreen.js
+// Quick Emotional Assessment, Knowledge Hub, Search & Limits
 // ================================================================
 
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, Dimensions, Linking, Alert,
+  StyleSheet, Dimensions, Linking, Alert, Modal, TextInput,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
-import { ALL_GAMES } from '../services/activitiesLibrary';
+import { ALL_GAMES, getEnhancedRecommendationRule } from '../services/activitiesLibrary';
+import { MUSIC_LIBRARY, VIDEO_LIBRARY } from '../services/mediaLibrary';
+import { BABY_VIDEO_LIBRARY } from '../services/babyMediaLibrary';
+import { KNOWLEDGE_CATEGORIES, KNOWLEDGE_RESOURCES } from '../services/knowledgeLibrary';
 
 const { width } = Dimensions.get('window');
 
 const TABS = [
-  { id: 'music', icon: '🎵', label: 'සංගීතය' },
-  { id: 'videos', icon: '🎬', label: 'වීඩියෝ' },
   { id: 'activities', icon: '🧘', label: 'ක්‍රියාකාරකම්' },
   { id: 'games', icon: '🎮', label: 'ක්‍රීඩා' },
+  { id: 'music', icon: '🎵', label: 'සංගීතය' },
+  { id: 'videos', icon: '🎬', label: 'වීඩියෝ' },
+  { id: 'knowledge', icon: '📚', label: 'දැනුම එකතුව' },
 ];
 
 const EMOTION_CFG = {
@@ -26,7 +32,55 @@ const EMOTION_CFG = {
   sad: { emoji: '😔', label: 'දුකයි', badge: ['#EDE7F6', '#D1C4E9'], col: '#6A1B9A' },
   stressed: { emoji: '😟', label: 'ආතතියයි', badge: ['#FCE4EC', '#F8BBD9'], col: '#C2185B' },
   anxious: { emoji: '😰', label: 'කනස්සල්ල', badge: ['#FCE4EC', '#F8BBD9'], col: '#C2185B' },
+  tired: { emoji: '😪', label: 'මහන්සියි', badge: ['#E0F7FA', '#B2EBF2'], col: '#00838F' },
+  angry: { emoji: '😡', label: 'කේන්තියි', badge: ['#FFEBEE', '#FFCDD2'], col: '#C62828' },
+  lonely: { emoji: '😞', label: 'තනිකම', badge: ['#F3E5F5', '#E1BEE7'], col: '#4A148C' },
+  sleepy: { emoji: '😴', label: 'නිදිමතයි', badge: ['#ECEFF1', '#CFD8DC'], col: '#37474F' },
+  calm: { emoji: '😌', label: 'සන්සුන්', badge: ['#E8F5E9', '#C8E6C9'], col: '#2E7D32' },
 };
+
+const EMOTION_OPTIONS = [
+  { key: 'happy', emoji: '😊', label: 'සතුටුයි' },
+  { key: 'sad', emoji: '😔', label: 'දුකයි' },
+  { key: 'crying', emoji: '😢', label: 'අඬන්න හිතෙනවා' },
+  { key: 'anxious', emoji: '😰', label: 'කනස්සල්ලයි' },
+  { key: 'tired', emoji: '😪', label: 'මහන්සියි' },
+  { key: 'angry', emoji: '😡', label: 'කේන්තියි' },
+  { key: 'lonely', emoji: '😞', label: 'තනිකමක්' },
+  { key: 'sleepy', emoji: '😴', label: 'නිදිමතයි' },
+  { key: 'calm', emoji: '😌', label: 'සන්සුන්' },
+];
+
+const REASON_OPTIONS = [
+  { key: 'sleep_problems', label: 'Sleep problems' },
+  { key: 'baby_feeding', label: 'Baby feeding concern' },
+  { key: 'baby_crying', label: 'Baby crying' },
+  { key: 'baby_sleep', label: 'Baby won\'t sleep' },
+  { key: 'overwhelmed', label: 'Feeling overwhelmed' },
+  { key: 'loneliness', label: 'Loneliness' },
+  { key: 'relationship', label: 'Relationship issues' },
+  { key: 'lack_support', label: 'No family support' },
+  { key: 'financial', label: 'Financial stress' },
+  { key: 'anxiety', label: 'Anxiety' },
+  { key: 'confidence', label: 'Lack of confidence' },
+  { key: 'recovery_pain', label: 'Recovery pain' },
+  { key: 'baby_health', label: 'Baby health concern' },
+  { key: 'mother_health', label: 'Mother health concern' },
+  { key: 'general_stress', label: 'General stress' },
+  { key: 'other', label: 'Other' },
+];
+
+const HELP_NEEDED_OPTIONS = [
+  { key: 'activities', label: 'ක්‍රියාකාරකම් (Activities)' },
+  { key: 'videos', label: 'වීඩියෝ (Videos)' },
+  { key: 'music', label: 'සංගීතය (Music)' },
+  { key: 'games', label: 'ක්‍රීඩා (Games)' },
+  { key: 'baby_care', label: 'දරුවාගේ රැකවරණය (Baby Care)' },
+  { key: 'reading', label: 'කියවීම් (Reading)' },
+  { key: 'podcasts', label: 'පොඩ්කාස්ට් (Podcasts)' },
+  { key: 'mindfulness', label: 'ධ්‍යාන (Mindfulness)' },
+  { key: 'books', label: 'පොත් (Books)' },
+];
 
 const RISK_CFG = {
   low: { label: '🟢 අඩු අවදානම', bg: '#E8F5E9', col: '#388E3C' },
@@ -34,317 +88,489 @@ const RISK_CFG = {
   high: { label: '🔴 ඉහළ අවදානම', bg: '#FFEBEE', col: '#D32F2F' },
 };
 
-// ============================================================
-// FALLBACK DATA (only used if API doesn't provide recommendations)
-// ============================================================
-const FALLBACK_MUSIC = [
-  { id: 'm1', title: 'නිදන සංගීතය', titleEn: 'Sleeping Music', emoji: '😴', url: 'https://youtu.be/rCSCPujLs14' },
-];
-
-const FALLBACK_VIDEOS = [
-  { id: 'v1', title: 'පශ්චාත් ප්‍රසව අවධිය ගැන', titleEn: 'About Postpartum', emoji: '🤰', url: 'https://youtu.be/hrozJ-EbdGI' },
-];
-
-// ============================================================
-// OPEN YOUTUBE HELPER
-// ============================================================
 const openYouTube = async (url, title) => {
   if (!url) {
     Alert.alert('සබැඳියක් නැත', `"${title || 'මෙම අන්තර්ගතය'}" සඳහා සබැඳියක් නැත.`);
     return;
   }
   try {
-    const supported = await Linking.canOpenURL(url);
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert('විවෘත කළ නොහැක', `මෙම සබැඳිය විවෘත කළ නොහැක: ${url}`);
-    }
+    await Linking.openURL(url);
   } catch (e) {
+    console.error('Error opening URL:', e);
     Alert.alert('දෝෂයක්', 'සබැඳිය විවෘත කළ නොහැකි විය.');
   }
 };
 
-// ============================================================
-// MAIN SCREEN
-// ============================================================
 const RecommendationsScreen = ({ navigation, route }) => {
-  const { latestRecommendations, latestAnalysis, userPreferredActivities } = useApp();
-  const [tab, setTab] = useState(route?.params?.tab || 'activities');
+  const { latestRecommendations, latestAnalysis, userPreferredActivities, userPreferredGames, detectedBabyTopic, detectedBabyAge } = useApp();
 
-  const emotion = latestAnalysis?.detectedEmotion || 'stressed';
-  const risk = latestAnalysis?.riskLevel || 'low';
+  // Quick Assessment State
+  const hasAnalysis = Boolean(latestAnalysis);
+  const [showAssessment, setShowAssessment] = useState(!hasAnalysis);
+  const [step, setStep] = useState(1);
+  const [selEmotion, setSelEmotion] = useState('stressed');
+  const [selReason, setSelReason] = useState('loneliness');
+  const [selHelp, setSelHelp] = useState([]);
+  const [isSkipped, setIsSkipped] = useState(false);
+  const [localRuleRecs, setLocalRuleRecs] = useState(null);
+
+  // Screen UI State
+  const initialTab = detectedBabyTopic ? 'videos' : (route?.params?.tab || 'activities');
+  const [tab, setTab] = useState(initialTab);
+  const [videoTab, setVideoTab] = useState(detectedBabyTopic || 'Motivation');
+  const [kbCategory, setKbCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [feedbackSaved, setFeedbackSaved] = useState(false);
+
+  const activeAnalysis = isSkipped
+    ? null
+    : (hasAnalysis ? latestAnalysis : { detectedEmotion: selEmotion, primaryReason: selReason, riskLevel: 'low' });
+
+  const emotion = activeAnalysis?.detectedEmotion || 'stressed';
+  const risk = activeAnalysis?.riskLevel || 'low';
   const ec = EMOTION_CFG[emotion] || EMOTION_CFG.stressed;
   const rc = RISK_CFG[risk] || RISK_CFG.low;
 
-  // Get recommendations from API
-  const apiActivities = latestRecommendations?.activities || [];
-  const apiGames = latestRecommendations?.games || [];
-  const apiMusic = latestRecommendations?.music || [];
-  const apiVideos = latestRecommendations?.videos || [];
+  // Handle Assessment Completion
+  const handleAssessmentContinue = () => {
+    const rule = getEnhancedRecommendationRule(selEmotion, selReason, 'low', userPreferredActivities, userPreferredGames);
+    setLocalRuleRecs(rule);
+    setShowAssessment(false);
+    setIsSkipped(false);
+  };
 
-  // Support messages based on risk level
-  const getMessages = () => {
-    if (risk === 'high') {
-      return [
-        "💜 ඔබ වැදගත්. කරුණාකර උපකාර ලබා ගන්න. ඔබ තනිවම නෙවෙයි.",
-        "📞 හදිසි උපකාර සඳහා 1926 අමතන්න",
-        "🌸 සෑම පියවරක්ම ගණන් ගනීවි. ඔබ ශක්තිමත්."
-      ];
-    } else if (risk === 'medium') {
-      return [
-        "ඔබ හොඳින් කරනවා. සෑම පියවරක්ම වැදගත් වෙයි 💜",
-        "ඔබේ හැඟීම් සාමාන්‍යයි. ඔබ තනිවම නෙවෙයි 🌸",
-        "මේ මොහොතේ සන්සුන් වීමට ඉඩ දෙන්න 🌿"
-      ];
+  const handleAssessmentSkip = () => {
+    setShowAssessment(false);
+    setIsSkipped(true);
+  };
+
+  // Feedback handler
+  const handleFeedback = async (type) => {
+    try {
+      const payload = {
+        resource_id: 'rec_session_' + Date.now(),
+        emotion: emotion,
+        reason: activeAnalysis?.primaryReason || selReason,
+        timestamp: new Date().toISOString(),
+        feedback: type,
+      };
+      const existing = await AsyncStorage.getItem('recommendation_feedback');
+      const list = existing ? JSON.parse(existing) : [];
+      list.push(payload);
+      await AsyncStorage.setItem('recommendation_feedback', JSON.stringify(list));
+      setFeedbackSaved(true);
+      Alert.alert('ස්තූතියි! 🌸', 'ඔබේ අදහස සාර්ථකව සටහන් කරගන්නා ලදී.');
+    } catch (e) {
+      console.error('Error saving feedback:', e);
     }
+  };
+
+  // Content Source & Limits
+  const rawActivities = (hasAnalysis ? (latestRecommendations?.newActivities || latestRecommendations?.activities) : localRuleRecs?.activities) || [];
+  const rawGames = (hasAnalysis ? latestRecommendations?.games : localRuleRecs?.games) || [];
+
+  // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
+  const finalActivities = isSkipped ? ALL_GAMES.slice(0, 4) : rawActivities.slice(0, 4);
+  
+  const recommendedGameIds = rawGames;
+  const filteredGames = ALL_GAMES.filter(g => recommendedGameIds.includes(g.id));
+  const finalGames = isSkipped ? ALL_GAMES.slice(0, 3) : (filteredGames.length > 0 ? filteredGames.slice(0, 3) : ALL_GAMES.slice(0, 3));
+
+  const primaryReason = activeAnalysis?.primaryReason || selReason || 'loneliness';
+  const libraryMusic = MUSIC_LIBRARY[primaryReason] || MUSIC_LIBRARY.loneliness;
+  const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
+
+  const libraryVideos = VIDEO_LIBRARY[primaryReason] || VIDEO_LIBRARY.loneliness;
+  const VIDEO_SUB_TABS = detectedBabyTopic
+    ? ['All', 'Motivation', 'Baby Feeding', 'Baby Food', 'Baby Sleep', 'Baby Health', 'Baby Development', 'Mother Care']
+    : ['Motivation'];
+
+  const getAllBabyVideos = () => {
+    let all = [];
+    Object.values(BABY_VIDEO_LIBRARY).forEach(arr => {
+      all = all.concat(arr);
+    });
+    return all;
+  };
+
+  const getVideosForTab = () => {
+    if (isSkipped) return getAllBabyVideos().slice(0, 4);
+    if (videoTab === 'Motivation') return libraryVideos.slice(0, 4);
+
+    let rawVideos = BABY_VIDEO_LIBRARY[videoTab] || [];
+    if (videoTab === 'All') {
+      rawVideos = [...libraryVideos, ...(detectedBabyTopic ? getAllBabyVideos() : [])];
+    }
+    return rawVideos.slice(0, 4);
+  };
+
+  const displayedVideos = getVideosForTab();
+
+  // Knowledge Hub Filtered Resources (Limit 5)
+  const getKnowledgeResources = () => {
+    let list = KNOWLEDGE_RESOURCES;
+    if (kbCategory !== 'all') {
+      list = list.filter(r => r.category === kbCategory);
+    }
+    return list.slice(0, 5);
+  };
+
+  // Search Logic with Prioritization (Topics -> Videos -> Articles -> Activities -> Music -> Podcasts)
+  const getSearchResults = () => {
+    if (!searchQuery.trim()) return null;
+    const q = searchQuery.toLowerCase().trim();
+
+    const matchesQuery = (str) => str && str.toLowerCase().includes(q);
+
+    // 1. Knowledge & Baby Care Articles
+    const kbMatches = KNOWLEDGE_RESOURCES.filter(r => matchesQuery(r.title) || matchesQuery(r.description) || matchesQuery(r.subCategory) || r.tags?.some(matchesQuery));
+    
+    // 2. Baby Videos
+    const videoMatches = getAllBabyVideos().filter(v => matchesQuery(v.title) || matchesQuery(v.category) || v.tags?.some(matchesQuery));
+    
+    // 3. Activities & Games
+    const gameMatches = ALL_GAMES.filter(g => matchesQuery(g.label) || matchesQuery(g.labelEn));
+
+    // 4. Music
+    const musicMatches = Object.values(MUSIC_LIBRARY).flat().filter(m => matchesQuery(m.title) || matchesQuery(m.titleEn));
+
     return [
-      "ඔබ හොඳින් කරනවා 🌸",
-      "දිගටම රැකවරණය ලබන්න 💜",
-      "සතුටු දිනයක්! 🌟"
+      ...videoMatches.map(v => ({ ...v, itemType: 'වීඩියෝව (Video)' })),
+      ...kbMatches.map(k => ({ ...k, itemType: 'ලිපිය / මූලාශ්‍රය (Knowledge)' })),
+      ...gameMatches.map(g => ({ ...g, itemType: 'ක්‍රීඩාව (Game)' })),
+      ...musicMatches.map(m => ({ ...m, itemType: 'සංගීතය (Music)' })),
     ];
   };
 
-  const messages = getMessages();
+  const searchResults = getSearchResults();
 
-  // ── MUSIC TAB (uses API recommendations) ─────────────────────
-  const renderMusic = () => {
-    const musicData = apiMusic.length > 0 ? apiMusic : FALLBACK_MUSIC;
-
-    return (
-      <View>
-        <Text style={s.tabIntro}>සන්සුන් කරන සංගීතය 🎵</Text>
-        {musicData.map((track, idx) => (
-          <TouchableOpacity
-            key={track.id || idx}
-            style={s.mediaCard}
-            onPress={() => openYouTube(track.url, track.title)}
-            activeOpacity={0.8}
-          >
-            <View style={[s.mediaIcon, { backgroundColor: colors.lavenderLight }]}>
-              <Text style={s.mediaEmoji}>{track.emoji || '🎵'}</Text>
-            </View>
-            <View style={s.mediaInfo}>
-              <Text style={s.mediaTitle}>{track.title}</Text>
-              <Text style={s.mediaSub}>{track.titleEn || track.description || 'සන්සුන් සංගීතය'} · {track.duration || '5:00'}</Text>
-            </View>
-            <View style={[s.playBtn, { backgroundColor: colors.lavenderLight }]}>
-              <Text style={[s.playArrow, { color: colors.lavenderDark }]}>▶ සවන් දෙන්න</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  };
-
-  // ── VIDEOS TAB (uses API recommendations) ────────────────────
-  const renderVideos = () => {
-    const videoData = apiVideos.length > 0 ? apiVideos : FALLBACK_VIDEOS;
-
-    return (
-      <View>
-        <Text style={s.tabIntro}>ඔබ වෙනුවෙන් නිර්දේශිත වීඩියෝ 🎬</Text>
-        {videoData.map((video, idx) => (
-          <TouchableOpacity
-            key={video.id || idx}
-            style={s.mediaCard}
-            onPress={() => openYouTube(video.url, video.title)}
-            activeOpacity={0.8}
-          >
-            <View style={[s.mediaIcon, { backgroundColor: colors.roseLight }]}>
-              <Text style={s.mediaEmoji}>{video.emoji || '🎬'}</Text>
-            </View>
-            <View style={s.mediaInfo}>
-              <Text style={s.mediaTitle}>{video.title}</Text>
-              <Text style={s.mediaSub}>{video.titleEn || video.description || 'නිර්දේශිත වීඩියෝව'} · {video.duration || '10:00'}</Text>
-            </View>
-            <View style={[s.playBtn, { backgroundColor: colors.roseLight }]}>
-              <Text style={[s.playArrow, { color: colors.roseDark }]}>▶ බලන්න</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
-    );
-  };
-
-  // ── ACTIVITIES TAB (uses API recommendations) ────────────────
-  const renderActivities = () => {
-    const activities = apiActivities;
-
-    return (
-      <View>
-        <View style={[s.riskNote, { backgroundColor: rc.bg }]}>
-          <Text style={[s.riskNoteText, { color: rc.col }]}>
-            {rc.label} — ඔබේ අවදානම් මට්ටම අනුව නිර්දේශ
-          </Text>
-        </View>
-
-        {activities.length === 0 ? (
-          <View style={s.emptyBox}>
-            <Text style={s.emptyEmoji}>🌸</Text>
-            <Text style={s.emptyText}>ක්‍රියාකාරකම් නිර්දේශ නැත.</Text>
-          </View>
-        ) : (
-          activities.map((act, idx) => (
-            <TouchableOpacity
-              key={act.id || idx}
-              onPress={() => navigation.navigate('Activity', { activityId: act.id })}
-              style={s.actCard}
-            >
-              <LinearGradient colors={act.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
-                {idx === 0 && risk !== 'low' && (
-                  <View style={s.firstBadge}>
-                    <Text style={s.firstBadgeText}>ආරම්භ කරන්න</Text>
-                  </View>
-                )}
-                <Text style={s.actIcon}>{act.icon || '🌸'}</Text>
-                <View style={s.actInfo}>
-                  <Text style={[s.actTitle, { color: act.accent || '#7E57C2' }]}>{act.label || act}</Text>
-                  <Text style={s.actDesc}>{act.desc || 'සන්සුන් ක්‍රියාකාරකමක්'}</Text>
-                  <Text style={s.actDur}>⏱ {act.duration || 'විනාඩි 5'} · {act.category || 'සුවය'}</Text>
-                </View>
-                <View style={[s.startBtn, { backgroundColor: (act.accent || '#7E57C2') + '22' }]}>
-                  <Text style={[s.startBtnT, { color: act.accent || '#7E57C2' }]}>ආරම්භ කරන්න</Text>
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
-          ))
-        )}
-      </View>
-    );
-  };
-
-  // ── GAMES TAB (uses API recommendations) ─────────────────────
-  const renderGames = () => {
-    const recommendedGameIds = apiGames;
-
-    // Filter games from ALL_GAMES that are recommended
-    const recommendedGames = ALL_GAMES.filter(g => recommendedGameIds.includes(g.id));
-    const otherGames = ALL_GAMES.filter(g => !recommendedGameIds.includes(g.id));
-
-    return (
-      <View>
-        {recommendedGames.length > 0 && (
-          <View style={s.recGame}>
-            <Text style={s.recGameLabel}>⭐ ඔබ වෙනුවෙන් නිර්දේශිත ක්‍රීඩා</Text>
-            {recommendedGames.map((game) => (
-              <TouchableOpacity
-                key={game.id}
-                onPress={() => {
-                  if (game.id === 'mandala' || game.id === 'colouring') {
-                    navigation.navigate('Art');
-                  } else {
-                    navigation.navigate('Activity', { gameId: game.id });
-                  }
-                }}
-              >
-                <LinearGradient colors={game.color || ['#EDE7F6', '#D1C4E9']} style={s.primaryGameCard}>
-                  <Text style={s.primaryGameIcon}>{game.icon || '🎮'}</Text>
-                  <View style={s.primaryGameInfo}>
-                    <Text style={[s.primaryGameName, { color: game.accent || '#7E57C2' }]}>{game.label}</Text>
-                    <Text style={s.primaryGameSub}>{game.labelEn || 'සුවය ලබාදෙන ක්‍රීඩාව'}</Text>
-                  </View>
-                  <View style={[s.playBigBtn, { backgroundColor: game.accent || '#7E57C2' }]}>
-                    <Text style={s.playBigBtnText}>ක්‍රීඩා කරන්න →</Text>
-                  </View>
-                </LinearGradient>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-
-        <TouchableOpacity onPress={() => navigation.navigate('Art')} style={s.artCard}>
-          <Text style={s.artCardIcon}>🎨</Text>
-          <View style={s.artCardInfo}>
-            <Text style={s.artCardTitle}>කලා සහ රූප පාටකිරීම</Text>
-            <Text style={s.artCardSub}>මණ්ඩල 10 + රූප 10 · සන්සුන් කලාව</Text>
-          </View>
-          <Text style={s.artCardArrow}>→</Text>
-        </TouchableOpacity>
-
-        {otherGames.length > 0 && (
-          <>
-            <Text style={s.allGamesLabel}>වෙනත් ක්‍රීඩා:</Text>
-            <View style={s.gamesGrid}>
-              {otherGames.map((g) => (
-                <TouchableOpacity key={g.id} style={s.gameCardWrap}
-                  onPress={() => {
-                    if (g.id === 'mandala' || g.id === 'colouring') navigation.navigate('Art');
-                    else navigation.navigate('Activity', { gameId: g.id });
-                  }}>
-                  <LinearGradient colors={g.color}
-                    style={s.gameCard}>
-                    <Text style={s.gameIcon}>{g.icon}</Text>
-                    <Text style={[s.gameName, { color: g.accent }]}>{g.label}</Text>
-                    <Text style={s.gameDesc}>{g.labelEn}</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
-        )}
-      </View>
-    );
-  };
+  // Check Emergency Topic (fever, health, emergency)
+  const isEmergencyTopic = detectedBabyTopic === 'Baby Health & Fever' || detectedBabyTopic === 'Baby Health' || searchQuery.toLowerCase().includes('fever') || searchQuery.toLowerCase().includes('උණ') || selReason === 'baby_health';
 
   return (
     <View style={s.container}>
       <LinearGradient colors={['#F8F4FF', '#FFF0F8']} style={s.gradient}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
+          {/* Top Bar */}
           <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
             <Text style={s.backText}>← ආපසු</Text>
           </TouchableOpacity>
 
-          <Text style={s.title}>නිර්දේශිත සහන 💜</Text>
+          <Text style={s.title}>නිර්දේශිත සහන & දැනුම එකතුව 💜</Text>
 
-          <View style={s.badgesRow}>
-            <LinearGradient colors={ec.badge} style={s.badge}>
-              <Text style={[s.badgeText, { color: ec.col }]}>{ec.emoji} {ec.label}</Text>
-            </LinearGradient>
-            <View style={[s.badge, { backgroundColor: rc.bg }]}>
-              <Text style={[s.badgeText, { color: rc.col }]}>{rc.label}</Text>
-            </View>
+          {/* Search Bar */}
+          <View style={s.searchWrap}>
+            <Text style={s.searchIcon}>🔍</Text>
+            <TextInput
+              style={s.searchInput}
+              placeholder="ඔබට අවශ්‍ය දේ සොයන්න... (Search videos, guides, sleep, feeding)"
+              placeholderTextColor={colors.textMuted}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery !== '' && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Text style={s.clearSearch}>✕</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
-          {risk !== 'low' && (
-            <View style={[s.urgencyCard, risk === 'high' && { backgroundColor: '#FFEBEE', borderColor: '#D32F2F' }]}>
-              <Text style={s.urgencyIcon}>{risk === 'high' ? '❤️' : '💛'}</Text>
-              <Text style={[s.urgencyText, risk === 'high' && { color: '#D32F2F', fontWeight: '700' }]}>
-                {risk === 'high'
-                  ? 'කරුණාකර වහාම උපකාර ලබා ගන්න. ඔබ තනිවම නොවෙයි. කරුණාකර පහත නිර්දේශ අනුගමනය කරන්න 💜'
-                  : 'ඔබට යම් අවදානමක් ඇත. කරුණාකර පහත නිර්දේශ අනුගමනය කරන්න. ඔබ තනිවම නොවෙයි 💜'}
-              </Text>
+          {/* Emergency Medical Callout Banner */}
+          {isEmergencyTopic && (
+            <View style={s.emergencyBanner}>
+              <Text style={s.emergencyIcon}>⚠️</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={s.emergencyTitle}>වෛද්‍ය උපදෙස් සඳහා සටහන:</Text>
+                <Text style={s.emergencyText}>
+                  මෙම තොරතුරු අධ්‍යාපනික අරමුණු සඳහා පමණක් වන අතර සුදුසුකම් ලත් වෛද්‍ය උපදෙස් වෙනුවට භාවිත කළ නොහැක. දරුවාට අධික උණ හෝ අසනීප ස්වභාවයක් ඇත්නම් වහාම ආසන්නතම රෝහල හෝ වෛද්‍යවරයා හමුවන්න. (හදිසි ඇමතුම් 1926).
+                </Text>
+              </View>
             </View>
           )}
 
-          {messages.map((msg, i) => (
-            <LinearGradient key={i} colors={i === 0 ? ['#EDE7F6', '#FCE4EC'] : ['#FCE4EC', '#EDE7F6']} style={s.msgCard}>
-              <Text style={s.msgText}>{msg}</Text>
-            </LinearGradient>
-          ))}
+          {/* SEARCH RESULTS DISPLAY */}
+          {searchResults ? (
+            <View style={s.searchResultsCont}>
+              <Text style={s.searchTitle}>සොයාගත් ප්‍රතිඵල ({searchResults.length}):</Text>
+              {searchResults.length === 0 ? (
+                <View style={s.emptyBox}>
+                  <Text style={s.emptyEmoji}>🔎</Text>
+                  <Text style={s.emptyText}>සොයන ලද වචනයට අදාළ අන්තර්ගතයන් හමු නොවීය.</Text>
+                </View>
+              ) : (
+                searchResults.map((item, idx) => (
+                  <TouchableOpacity
+                    key={item.id || idx}
+                    style={s.mediaCard}
+                    onPress={() => item.url ? openYouTube(item.url, item.title) : null}
+                  >
+                    <View style={[s.mediaIcon, { backgroundColor: colors.lavenderLight }]}>
+                      <Text style={s.mediaEmoji}>{item.emoji || item.thumbnail || '📌'}</Text>
+                    </View>
+                    <View style={s.mediaInfo}>
+                      <View style={s.typeTag}>
+                        <Text style={s.typeTagText}>{item.itemType}</Text>
+                      </View>
+                      <Text style={s.mediaTitle}>{item.title || item.label}</Text>
+                      <Text style={s.mediaSub}>{item.description || item.category || 'තොරතුරු මූලාශ්‍රය'}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))
+              )}
+            </View>
+          ) : (
+            <>
+              {/* Badges Row */}
+              <View style={s.badgesRow}>
+                <LinearGradient colors={ec.badge} style={s.badge}>
+                  <Text style={[s.badgeText, { color: ec.col }]}>{ec.emoji} {ec.label}</Text>
+                </LinearGradient>
+                <View style={[s.badge, { backgroundColor: rc.bg }]}>
+                  <Text style={[s.badgeText, { color: rc.col }]}>{rc.label}</Text>
+                </View>
+                {isSkipped && (
+                  <View style={[s.badge, { backgroundColor: '#E0F2FE' }]}>
+                    <Text style={[s.badgeText, { color: '#0369A1' }]}>🌐 සියලු අන්තර්ගතයන්</Text>
+                  </View>
+                )}
+              </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}
-            style={s.tabsScroll} contentContainerStyle={s.tabsCont}>
-            {TABS.map(t => (
-              <TouchableOpacity key={t.id} onPress={() => setTab(t.id)}
-                style={[s.tab, tab === t.id && s.tabActive]}>
-                <Text style={s.tabIcon}>{t.icon}</Text>
-                <Text style={[s.tabLabel, tab === t.id && s.tabLabelActive]}>{t.label}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+              {/* Main Category Tabs */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.tabsScroll} contentContainerStyle={s.tabsCont}>
+                {TABS.map(t => (
+                  <TouchableOpacity key={t.id} onPress={() => setTab(t.id)} style={[s.tab, tab === t.id && s.tabActive]}>
+                    <Text style={s.tabIcon}>{t.icon}</Text>
+                    <Text style={[s.tabLabel, tab === t.id && s.tabLabelActive]}>{t.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
 
-          <View style={s.tabContent}>
-            {tab === 'music' && renderMusic()}
-            {tab === 'videos' && renderVideos()}
-            {tab === 'activities' && renderActivities()}
-            {tab === 'games' && renderGames()}
-          </View>
+              {/* TAB CONTENT */}
+              <View style={s.tabContent}>
+                {/* 1. ACTIVITIES TAB */}
+                {tab === 'activities' && (
+                  <View>
+                    <Text style={s.tabIntro}>ඔබ වෙනුවෙන් තෝරාගත් ක්‍රියාකාරකම් 🧘 (උපරිම 4)</Text>
+                    {finalActivities.map((act, idx) => (
+                      <TouchableOpacity
+                        key={act.id || idx}
+                        onPress={() => navigation.navigate('Activity', { activityId: act.id })}
+                        style={s.actCard}
+                      >
+                        <LinearGradient colors={act.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
+                          <Text style={s.actIcon}>{act.icon || '🌸'}</Text>
+                          <View style={s.actInfo}>
+                            <Text style={[s.actTitle, { color: act.accent || '#7E57C2' }]}>{act.label || act}</Text>
+                            <Text style={s.actDesc}>{act.purpose || act.desc || 'සන්සුන් ක්‍රියාකාරකමක්'}</Text>
+                          </View>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+                {/* 2. GAMES TAB */}
+                {tab === 'games' && (
+                  <View>
+                    <Text style={s.tabIntro}>සන්සුන් ක්‍රීඩා 🎮 (උපරිම 3)</Text>
+                    {finalGames.map((game) => (
+                      <TouchableOpacity
+                        key={game.id}
+                        onPress={() => navigation.navigate(game.id === 'mandala' || game.id === 'colouring' ? 'Art' : 'Activity', { gameId: game.id })}
+                      >
+                        <LinearGradient colors={game.color || ['#EDE7F6', '#D1C4E9']} style={s.primaryGameCard}>
+                          <Text style={s.primaryGameIcon}>{game.icon || '🎮'}</Text>
+                          <View style={s.primaryGameInfo}>
+                            <Text style={[s.primaryGameName, { color: game.accent || '#7E57C2' }]}>{game.label}</Text>
+                            <Text style={s.primaryGameSub}>{game.labelEn || 'සුවය ලබාදෙන ක්‍රීඩාව'}</Text>
+                          </View>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+                {/* 3. MUSIC TAB */}
+                {tab === 'music' && (
+                  <View>
+                    <Text style={s.tabIntro}>සන්සුන් සංගීතය 🎵 (උපරිම 4)</Text>
+                    {finalMusic.map((track, idx) => (
+                      <TouchableOpacity key={track.id || idx} style={s.mediaCard} onPress={() => openYouTube(track.url, track.title)}>
+                        <View style={[s.mediaIcon, { backgroundColor: colors.lavenderLight }]}>
+                          <Text style={s.mediaEmoji}>{track.emoji || '🎵'}</Text>
+                        </View>
+                        <View style={s.mediaInfo}>
+                          <Text style={s.mediaTitle}>{track.title}</Text>
+                          <Text style={s.mediaSub}>{track.titleEn || 'සන්සුන් සංගීතය'}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+                {/* 4. VIDEOS TAB */}
+                {tab === 'videos' && (
+                  <View>
+                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (උපරිම 4)</Text>
+                    {displayedVideos.map((video, idx) => (
+                      <TouchableOpacity key={video.id || idx} style={s.mediaCard} onPress={() => openYouTube(video.url, video.title)}>
+                        <View style={[s.mediaIcon, { backgroundColor: colors.roseLight }]}>
+                          <Text style={s.mediaEmoji}>{video.emoji || '🎬'}</Text>
+                        </View>
+                        <View style={s.mediaInfo}>
+                          <Text style={s.mediaTitle}>{video.title}</Text>
+                          <Text style={s.mediaSub}>{video.category || 'නිර්දේශිත වීඩියෝව'}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+
+                {/* 5. KNOWLEDGE HUB TAB */}
+                {tab === 'knowledge' && (
+                  <View>
+                    <Text style={s.tabIntro}>කේන්ද්‍රීය දැනුම පියස 📚 (උපරිම 5)</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.videoTabsScroll}>
+                      {KNOWLEDGE_CATEGORIES.map(cat => (
+                        <TouchableOpacity
+                          key={cat.id}
+                          onPress={() => setKbCategory(cat.id)}
+                          style={[s.videoSubTab, kbCategory === cat.id && s.videoSubTabActive]}
+                        >
+                          <Text style={[s.videoSubTabLabel, kbCategory === cat.id && s.videoSubTabLabelActive]}>
+                            {cat.icon} {cat.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+
+                    {getKnowledgeResources().map((res) => (
+                      <TouchableOpacity key={res.id} style={s.mediaCard} onPress={() => openYouTube(res.url, res.title)}>
+                        <View style={[s.mediaIcon, { backgroundColor: colors.mintLight }]}>
+                          <Text style={s.mediaEmoji}>{res.thumbnail}</Text>
+                        </View>
+                        <View style={s.mediaInfo}>
+                          <Text style={s.mediaTitle}>{res.title}</Text>
+                          <Text style={s.mediaSub}>{res.description}</Text>
+                          <Text style={s.sourceTag}>මූලාශ්‍රය: {res.source}</Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </View>
+
+              {/* USER FEEDBACK SECTION */}
+              <View style={s.feedbackCard}>
+                <Text style={s.feedbackTitle}>මෙම නිර්දේශ ඔබට උපකාරී වූවාද?</Text>
+                {feedbackSaved ? (
+                  <Text style={s.feedbackSavedText}>✓ අදහස සටහන් කරගන්නා ලදී. ස්තූතියි!</Text>
+                ) : (
+                  <View style={s.feedbackBtnRow}>
+                    <TouchableOpacity style={s.feedbackBtn} onPress={() => handleFeedback('positive')}>
+                      <Text style={s.feedbackBtnText}>👍 ඔව්, උපකාරී විය</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={[s.feedbackBtn, s.feedbackBtnNo]} onPress={() => handleFeedback('negative')}>
+                      <Text style={s.feedbackBtnTextNo}>👎 නැත</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            </>
+          )}
 
           <View style={{ height: 110 }} />
         </ScrollView>
       </LinearGradient>
+
+      {/* QUICK EMOTIONAL ASSESSMENT MODAL */}
+      <Modal visible={showAssessment} animationType="slide" transparent>
+        <View style={s.modalOverlay}>
+          <View style={s.modalCard}>
+            {step === 1 && (
+              <View>
+                <Text style={s.modalTitle}>අද ඔබට කොහොමද හැඟෙන්නේ?</Text>
+                <Text style={s.modalSub}>අද ඔබට ගැළපෙන පුද්ගලික නිර්දේශ ලබාදීමට පහත තොරතුරු තෝරන්න.</Text>
+                <View style={s.emojiGrid}>
+                  {EMOTION_OPTIONS.map(opt => (
+                    <TouchableOpacity
+                      key={opt.key}
+                      style={[s.emojiCard, selEmotion === opt.key && s.emojiCardSel]}
+                      onPress={() => setSelEmotion(opt.key)}
+                    >
+                      <Text style={s.emojiCardText}>{opt.emoji}</Text>
+                      <Text style={s.emojiCardLabel}>{opt.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TouchableOpacity style={s.modalNextBtn} onPress={() => setStep(2)}>
+                  <Text style={s.modalNextBtnText}>ඊළඟ පියවර →</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {step === 2 && (
+              <View>
+                <Text style={s.modalTitle}>ප්‍රධාන හේතුව තෝරන්න</Text>
+                <Text style={s.modalSub}>ඔබගේ වත්මන් හැඟීමට මූලික වූ හේතුව කුමක්ද?</Text>
+                <ScrollView style={{ maxHeight: 220 }} showsVerticalScrollIndicator={true}>
+                  {REASON_OPTIONS.map(r => (
+                    <TouchableOpacity
+                      key={r.key}
+                      style={[s.reasonOption, selReason === r.key && s.reasonOptionSel]}
+                      onPress={() => setSelReason(r.key)}
+                    >
+                      <Text style={[s.reasonText, selReason === r.key && s.reasonTextSel]}>{r.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                <View style={s.modalActionRow}>
+                  <TouchableOpacity style={s.modalBackBtn} onPress={() => setStep(1)}>
+                    <Text style={s.modalBackBtnText}>← ආපසු</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={s.modalNextBtn} onPress={() => setStep(3)}>
+                    <Text style={s.modalNextBtnText}>ඊළඟ පියවර →</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {step === 3 && (
+              <View>
+                <Text style={s.modalTitle}>ඔබට අවශ්‍ය සහනය කුමක්ද?</Text>
+                <Text style={s.modalSub}>ඔබ වඩාත්ම කැමති අංශ තෝරන්න (Optional)</Text>
+                <ScrollView style={{ maxHeight: 200 }}>
+                  {HELP_NEEDED_OPTIONS.map(h => {
+                    const isSel = selHelp.includes(h.key);
+                    return (
+                      <TouchableOpacity
+                        key={h.key}
+                        style={[s.helpOption, isSel && s.helpOptionSel]}
+                        onPress={() => {
+                          if (isSel) setSelHelp(selHelp.filter(k => k !== h.key));
+                          else setSelHelp([...selHelp, h.key]);
+                        }}
+                      >
+                        <Text style={s.checkboxText}>{isSel ? '☑' : '☐'}</Text>
+                        <Text style={s.helpOptionLabel}>{h.label}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+                <View style={s.modalActionRow}>
+                  <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentSkip}>
+                    <Text style={s.skipBtnText}>Skip (සියල්ල පෙන්වන්න)</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={s.modalNextBtn} onPress={handleAssessmentContinue}>
+                    <Text style={s.modalNextBtnText}>නිරීක්ෂණය කරන්න ✓</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -353,19 +579,24 @@ const s = StyleSheet.create({
   container: { flex: 1 },
   gradient: { flex: 1 },
   scroll: { paddingHorizontal: spacing.md, paddingTop: 50 },
-  loading: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.offWhite },
-  loadingText: { fontSize: 18, color: colors.textSecondary },
   backBtn: { marginBottom: 12, alignSelf: 'flex-start' },
   backText: { color: colors.lavenderDark, fontWeight: '700', fontSize: 16 },
-  title: { fontSize: 24, fontWeight: '900', color: colors.textPrimary, marginBottom: 12 },
+  title: { fontSize: 22, fontWeight: '900', color: colors.textPrimary, marginBottom: 12 },
+  searchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: radius.full, paddingHorizontal: 14, paddingVertical: 8, marginBottom: 14, ...shadows.soft },
+  searchIcon: { fontSize: 16, marginRight: 8 },
+  searchInput: { flex: 1, fontSize: 13, color: colors.textPrimary },
+  clearSearch: { fontSize: 14, color: colors.textMuted, paddingHorizontal: 6 },
+  searchResultsCont: { marginBottom: 20 },
+  searchTitle: { fontSize: 14, fontWeight: '800', color: colors.lavenderDark, marginBottom: 10 },
+  typeTag: { alignSelf: 'flex-start', backgroundColor: colors.lavenderLight, paddingVertical: 2, paddingHorizontal: 6, borderRadius: 4, marginBottom: 4 },
+  typeTagText: { fontSize: 9, fontWeight: '800', color: colors.lavenderDark },
+  emergencyBanner: { flexDirection: 'row', backgroundColor: '#FFEBEE', borderWidth: 1.5, borderColor: '#D32F2F', borderRadius: radius.lg, padding: 12, marginBottom: 14, gap: 10 },
+  emergencyIcon: { fontSize: 24 },
+  emergencyTitle: { fontSize: 13, fontWeight: '900', color: '#D32F2F', marginBottom: 2 },
+  emergencyText: { fontSize: 11, color: '#B71C1C', lineHeight: 17 },
   badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: spacing.md },
   badge: { borderRadius: radius.full, paddingVertical: 6, paddingHorizontal: 14 },
   badgeText: { fontSize: 12, fontWeight: '700' },
-  urgencyCard: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: '#FFFDE7', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md, borderWidth: 1, borderColor: '#FFD54F' },
-  urgencyIcon: { fontSize: 20 },
-  urgencyText: { flex: 1, fontSize: 13, color: '#E65100', lineHeight: 20 },
-  msgCard: { borderRadius: radius.xl, padding: spacing.md, marginBottom: 8 },
-  msgText: { fontSize: 14, color: colors.textSecondary, lineHeight: 22, fontStyle: 'italic' },
   tabsScroll: { marginBottom: spacing.md },
   tabsCont: { gap: 8, paddingRight: spacing.md },
   tab: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 16, borderRadius: radius.full, backgroundColor: colors.white, ...shadows.soft },
@@ -381,49 +612,59 @@ const s = StyleSheet.create({
   mediaInfo: { flex: 1 },
   mediaTitle: { fontSize: 14, fontWeight: '700', color: colors.textPrimary },
   mediaSub: { fontSize: 11, color: colors.textMuted, marginTop: 3 },
-  playBtn: { width: 70, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
-  playArrow: { fontSize: 11, fontWeight: '800' },
-  riskNote: { borderRadius: radius.lg, padding: spacing.sm + 4, marginBottom: spacing.md },
-  riskNoteText: { fontSize: 12, fontWeight: '700' },
-  emptyBox: { backgroundColor: colors.white, borderRadius: radius.xl, padding: spacing.xl, alignItems: 'center', ...shadows.soft },
-  emptyEmoji: { fontSize: 36, marginBottom: 10 },
-  emptyText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
+  sourceTag: { fontSize: 10, color: colors.lavenderDark, fontWeight: '700', marginTop: 4 },
   actCard: { borderRadius: radius.lg, marginBottom: 10, overflow: 'hidden', ...shadows.soft },
   actGrad: { flexDirection: 'row', alignItems: 'center', padding: spacing.md },
-  firstBadge: { position: 'absolute', top: 6, right: 6, backgroundColor: 'rgba(255,193,7,0.9)', borderRadius: radius.full, paddingVertical: 2, paddingHorizontal: 8 },
-  firstBadgeText: { fontSize: 9, fontWeight: '800', color: '#5D4037' },
   actIcon: { fontSize: 28, marginRight: 12 },
   actInfo: { flex: 1 },
   actTitle: { fontSize: 14, fontWeight: '800' },
   actDesc: { fontSize: 12, color: colors.textSecondary, marginTop: 2 },
-  actDur: { fontSize: 11, color: colors.textMuted, marginTop: 4 },
-  startBtn: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: radius.full },
-  startBtnT: { fontSize: 12, fontWeight: '700' },
-  prefNote: { backgroundColor: colors.lavenderLight, borderRadius: radius.lg, padding: spacing.sm + 4, alignItems: 'center', marginTop: spacing.sm },
-  prefNoteText: { fontSize: 12, color: colors.lavenderDark, fontWeight: '600' },
-  recGame: { marginBottom: spacing.md },
-  recGameLabel: { fontSize: 13, fontWeight: '800', color: colors.textPrimary, marginBottom: 8 },
-  primaryGameCard: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.xl, padding: spacing.lg, ...shadows.card },
-  primaryGameIcon: { fontSize: 40, marginRight: 12 },
+  primaryGameCard: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.xl, padding: spacing.md, marginBottom: 10, ...shadows.card },
+  primaryGameIcon: { fontSize: 32, marginRight: 12 },
   primaryGameInfo: { flex: 1 },
-  primaryGameName: { fontSize: 16, fontWeight: '900' },
-  primaryGameSub: { fontSize: 12, color: colors.textSecondary, marginTop: 4 },
-  playBigBtn: { paddingVertical: 12, paddingHorizontal: 16, borderRadius: radius.full },
-  playBigBtnText: { color: colors.white, fontWeight: '800', fontSize: 13 },
-  artCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.lavenderLight, borderRadius: radius.xl, padding: spacing.md, marginBottom: spacing.lg, borderWidth: 1.5, borderColor: colors.lavenderDark, ...shadows.soft },
-  artCardIcon: { fontSize: 30, marginRight: 12 },
-  artCardInfo: { flex: 1 },
-  artCardTitle: { fontSize: 14, fontWeight: '800', color: colors.lavenderDark },
-  artCardSub: { fontSize: 11, color: colors.textSecondary, marginTop: 2 },
-  artCardArrow: { fontSize: 20, color: colors.lavenderDark },
-  allGamesLabel: { fontSize: 13, fontWeight: '700', color: colors.textSecondary, marginBottom: 10 },
-  gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  gameCardWrap: { width: (width - spacing.md * 2 - 10) / 2 },
-  gameCard: { borderRadius: radius.xl, padding: spacing.md, alignItems: 'center', ...shadows.soft, position: 'relative' },
-  isRecStar: { position: 'absolute', top: 8, right: 8, fontSize: 14 },
-  gameIcon: { fontSize: 34, marginBottom: 8 },
-  gameName: { fontSize: 13, fontWeight: '800', textAlign: 'center' },
-  gameDesc: { fontSize: 10, color: colors.textSecondary, textAlign: 'center', marginTop: 4 },
+  primaryGameName: { fontSize: 14, fontWeight: '900' },
+  primaryGameSub: { fontSize: 11, color: colors.textSecondary, marginTop: 2 },
+  videoTabsScroll: { marginBottom: spacing.md },
+  videoSubTab: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: radius.full, backgroundColor: colors.offWhite, borderWidth: 1, borderColor: colors.lavenderLight, marginRight: 6 },
+  videoSubTabActive: { backgroundColor: colors.roseLight, borderColor: colors.roseLight },
+  videoSubTabLabel: { fontSize: 11, fontWeight: '600', color: colors.textSecondary },
+  videoSubTabLabelActive: { color: colors.roseDark, fontWeight: '800' },
+  emptyBox: { backgroundColor: colors.white, borderRadius: radius.xl, padding: spacing.xl, alignItems: 'center', ...shadows.soft },
+  emptyEmoji: { fontSize: 36, marginBottom: 10 },
+  emptyText: { fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
+  feedbackCard: { backgroundColor: colors.white, borderRadius: radius.xl, padding: spacing.md, marginTop: 10, alignItems: 'center', ...shadows.soft },
+  feedbackTitle: { fontSize: 13, fontWeight: '800', color: colors.textPrimary, marginBottom: 10 },
+  feedbackBtnRow: { flexDirection: 'row', gap: 10 },
+  feedbackBtn: { backgroundColor: '#E8F5E9', paddingVertical: 8, paddingHorizontal: 14, borderRadius: radius.full },
+  feedbackBtnNo: { backgroundColor: '#FFEBEE' },
+  feedbackBtnText: { color: '#2E7D32', fontWeight: '800', fontSize: 12 },
+  feedbackBtnTextNo: { color: '#C62828', fontWeight: '800', fontSize: 12 },
+  feedbackSavedText: { color: '#2E7D32', fontWeight: '800', fontSize: 12 },
+  // Modal Styles
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalCard: { backgroundColor: colors.white, borderRadius: radius.xl, padding: 20, width: '100%', maxWidth: 400, ...shadows.card },
+  modalTitle: { fontSize: 18, fontWeight: '900', color: colors.lavenderDark, marginBottom: 4 },
+  modalSub: { fontSize: 12, color: colors.textSecondary, marginBottom: 16 },
+  emojiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16, justifyContent: 'center' },
+  emojiCard: { width: '29%', backgroundColor: colors.offWhite, borderRadius: radius.lg, padding: 8, alignItems: 'center', borderWidth: 1, borderColor: colors.lavenderLight },
+  emojiCardSel: { backgroundColor: colors.lavenderLight, borderColor: colors.lavenderDark, borderWidth: 2 },
+  emojiCardText: { fontSize: 26 },
+  emojiCardLabel: { fontSize: 10, fontWeight: '700', marginTop: 4, color: colors.textPrimary },
+  reasonOption: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: radius.lg, backgroundColor: colors.offWhite, marginBottom: 6 },
+  reasonOptionSel: { backgroundColor: colors.lavenderDark },
+  reasonText: { fontSize: 13, color: colors.textPrimary, fontWeight: '600' },
+  reasonTextSel: { color: colors.white, fontWeight: '800' },
+  helpOption: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 10, borderRadius: radius.md, marginBottom: 6, backgroundColor: colors.offWhite },
+  helpOptionSel: { backgroundColor: colors.roseLight },
+  checkboxText: { fontSize: 16, marginRight: 8, color: colors.roseDark },
+  helpOptionLabel: { fontSize: 12, fontWeight: '700', color: colors.textPrimary },
+  modalActionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 },
+  modalNextBtn: { backgroundColor: colors.lavenderDark, paddingVertical: 10, paddingHorizontal: 18, borderRadius: radius.full, alignSelf: 'flex-end' },
+  modalNextBtnText: { color: colors.white, fontWeight: '800', fontSize: 13 },
+  modalBackBtn: { paddingVertical: 10, paddingHorizontal: 10 },
+  modalBackBtnText: { color: colors.textMuted, fontWeight: '700', fontSize: 13 },
+  skipBtn: { paddingVertical: 10, paddingHorizontal: 10 },
+  skipBtnText: { color: colors.lavenderDark, fontWeight: '800', fontSize: 12 },
 });
 
 export default RecommendationsScreen;

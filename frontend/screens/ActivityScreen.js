@@ -7,7 +7,8 @@ import React,{useState,useEffect,useRef,useCallback}from'react';
 import{View,Text,ScrollView,TouchableOpacity,StyleSheet,Dimensions,Animated,Modal}from'react-native';
 import{LinearGradient}from'expo-linear-gradient';
 import{colors,spacing,radius,shadows}from'../theme';
-import{ALL_ACTIVITIES}from'../services/activitiesLibrary';
+import{ALL_ACTIVITIES, NEW_ACTIVITIES}from'../services/activitiesLibrary';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const{width,height}=Dimensions.get('window');
 
 const CongratsPopup=({visible,onClose,title='ශ්‍රේෂ්ඨයි!',msg='ඔබ අපූරුයි! 💜'})=>{
@@ -227,6 +228,81 @@ const SlidingPuzzle=()=>{
   const reset=()=>{setTiles(shuffleArr(Array.from({length:TOTAL},(_,i)=>i)));setMoves(0);setShowC(false);};
   return(<View style={slp.cont}><CongratsPopup visible={showC} onClose={reset} title="ජය! 🧩" msg={`${moves} ක්‍රීඩා 💜`}/><View style={slp.header}><Text style={slp.title}>🧩 ස්ලයිඩ්</Text><Text style={slp.score}>{moves}</Text></View><Text style={slp.hint}>slide කරා! 🌸</Text><View style={slp.grid}>{tiles.map((val,i)=>{const isEmpty=val===TOTAL-1;return(<TouchableOpacity key={i} onPress={()=>tap(i)} style={[slp.tile,{width:tileSize,height:tileSize},isEmpty&&slp.empty,!isEmpty&&val===i&&slp.correct]}>{!isEmpty&&(<><Text style={{fontSize:Math.floor(tileSize*0.36)}}>{EMOJIS[val]}</Text><Text style={{fontSize:12,fontWeight:'900',color:val===i?'#2E7D32':'#666'}}>{val+1}</Text></>)}</TouchableOpacity>);})}</View><TouchableOpacity style={slp.resetBtn} onPress={reset}><Text style={slp.resetBtnT}>↺</Text></TouchableOpacity></View>);
 };
+
+const NewActivityDetail = ({ activity, onComplete }) => {
+  const [completedTime, setCompletedTime] = useState(null);
+
+  useEffect(() => {
+    checkCompletion();
+  }, [activity.id]);
+
+  const checkCompletion = async () => {
+    try {
+      const dateStr = new Date().toDateString();
+      const key = `completed_${activity.id}_${dateStr}`;
+      const saved = await AsyncStorage.getItem(key);
+      if (saved) {
+        setCompletedTime(saved);
+        onComplete();
+      }
+    } catch(e) { console.error(e); }
+  };
+
+  const markComplete = async () => {
+    try {
+      const dateStr = new Date().toDateString();
+      const timeStr = new Date().toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'});
+      const key = `completed_${activity.id}_${dateStr}`;
+      await AsyncStorage.setItem(key, timeStr);
+      setCompletedTime(timeStr);
+      onComplete();
+    } catch(e) { console.error(e); }
+  };
+
+  return (
+    <View style={newAct.cont}>
+      <LinearGradient colors={['#EDE7F6', '#D1C4E9']} style={newAct.headerCard}>
+        <Text style={newAct.icon}>{activity.icon}</Text>
+        <Text style={newAct.title}>{activity.label}</Text>
+        <Text style={newAct.purpose}>{activity.purpose}</Text>
+        <Text style={newAct.duration}>⏱ {activity.duration}</Text>
+      </LinearGradient>
+
+      <View style={newAct.section}>
+        <Text style={newAct.sectionTitle}>උපදෙස් (Instructions):</Text>
+        {activity.instructions?.map((step, idx) => (
+          <View key={idx} style={newAct.stepRow}>
+            <View style={newAct.stepDot} />
+            <Text style={newAct.stepText}>{step}</Text>
+          </View>
+        ))}
+      </View>
+
+      <View style={newAct.section}>
+        <Text style={newAct.sectionTitle}>ප්‍රතිලාභ (Benefits):</Text>
+        {activity.benefits?.map((ben, idx) => (
+          <View key={idx} style={newAct.stepRow}>
+            <Text style={newAct.checkIcon}>✓</Text>
+            <Text style={newAct.stepText}>{ben}</Text>
+          </View>
+        ))}
+      </View>
+
+      {completedTime ? (
+        <LinearGradient colors={['#E8F5E9', '#C8E6C9']} style={newAct.completedCard}>
+          <Text style={newAct.completedText}>✓ අද දින සම්පූර්ණ කරන ලදි ({completedTime})</Text>
+        </LinearGradient>
+      ) : (
+        <TouchableOpacity style={newAct.completeBtn} onPress={markComplete}>
+          <LinearGradient colors={['#7E57C2', '#E91E8C']} style={newAct.completeBtnIn}>
+            <Text style={newAct.completeBtnT}>✓ සම්පූර්ණ කරන්න</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+};
+
 const EmotionJournal=()=>{
   const[selected,setSelected]=useState(null);const[journal,setJournal]=useState([]);const[showRefl,setShowRefl]=useState(false);
   const scale=useRef(new Animated.Value(1)).current;
@@ -293,8 +369,8 @@ const MATURE_IDS=['emotion_journal','mindful_tap','mood_board','gratitude_garden
 
 const ActivityScreen=({navigation,route})=>{
   const[selAct,setSelAct]=useState(null);const[selGame,setSelGame]=useState(null);const[view,setView]=useState('list');const[done,setDone]=useState(false);
-  useEffect(()=>{if(route?.params?.activityId){const a=ALL_ACTIVITIES.find(x=>x.id===route.params.activityId);if(a){setSelAct(a);setView('activity');setDone(false);}}if(route?.params?.gameId){const found=ALL_GAMES_LIST.find(x=>x.id===route.params.gameId);if(found){setSelGame(found);setView('game');}}},[route?.params]);
-  const renderAct=(act)=>{switch(act.type){case'breathing':return<BreathingEx activity={act} onComplete={()=>setDone(true)}/>;case'guided':return<GuidedAct activity={act} onComplete={()=>setDone(true)}/>;case'prompts':return<PromptsAct activity={act}/>;default:return<GuidedAct activity={act} onComplete={()=>setDone(true)}/>;}};
+  useEffect(()=>{if(route?.params?.activityId){const a=[...ALL_ACTIVITIES, ...NEW_ACTIVITIES].find(x=>x.id===route.params.activityId);if(a){setSelAct(a);setView('activity');setDone(false);}}if(route?.params?.gameId){const found=ALL_GAMES_LIST.find(x=>x.id===route.params.gameId);if(found){setSelGame(found);setView('game');}}},[route?.params]);
+  const renderAct=(act)=>{if(act.isNewFormat){return<NewActivityDetail activity={act} onComplete={()=>setDone(true)}/>;}switch(act.type){case'breathing':return<BreathingEx activity={act} onComplete={()=>setDone(true)}/>;case'guided':return<GuidedAct activity={act} onComplete={()=>setDone(true)}/>;case'prompts':return<PromptsAct activity={act}/>;default:return<GuidedAct activity={act} onComplete={()=>setDone(true)}/>;}};
   const renderGame=(id)=>{switch(id){
     case'word_search':return<WordSearch/>;case'baby_interaction':return<BabyInteractionGame/>;case'memory_match':return<MemoryMatch/>;
     case'baby_mood':return<BabyMoodGuess/>;case'self_care':return<SelfCareQuest/>;case'bubble_pop':return<BubblePop/>;
@@ -320,6 +396,26 @@ const ActivityScreen=({navigation,route})=>{
   <View style={{height:110}}/>
   </ScrollView></LinearGradient></View>);
 };
+
+const newAct=StyleSheet.create({
+  cont: { flex: 1, paddingBottom: 20 },
+  headerCard: { padding: 24, borderRadius: radius.xl, alignItems: 'center', marginBottom: 24, ...shadows.card },
+  icon: { fontSize: 64, marginBottom: 12 },
+  title: { fontSize: 22, fontWeight: '900', color: '#7E57C2', marginBottom: 8, textAlign: 'center' },
+  purpose: { fontSize: 16, color: '#555', textAlign: 'center', marginBottom: 12, fontStyle: 'italic' },
+  duration: { fontSize: 14, fontWeight: '800', color: '#7E57C2' },
+  section: { backgroundColor: 'white', padding: 20, borderRadius: radius.lg, marginBottom: 16, ...shadows.soft },
+  sectionTitle: { fontSize: 18, fontWeight: '900', color: '#333', marginBottom: 16 },
+  stepRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
+  stepDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E91E8C', marginTop: 6, marginRight: 12 },
+  checkIcon: { fontSize: 16, color: '#2E7D32', marginRight: 10, fontWeight: '900' },
+  stepText: { flex: 1, fontSize: 15, color: '#555', lineHeight: 22 },
+  completeBtn: { marginTop: 10, borderRadius: 99, ...shadows.card },
+  completeBtnIn: { paddingVertical: 16, alignItems: 'center', borderRadius: 99 },
+  completeBtnT: { color: 'white', fontSize: 18, fontWeight: '900' },
+  completedCard: { marginTop: 10, padding: 16, borderRadius: radius.lg, alignItems: 'center', borderWidth: 1, borderColor: '#A5D6A7' },
+  completedText: { color: '#2E7D32', fontSize: 16, fontWeight: '800' }
+});
 
 const s=StyleSheet.create({
   container:{flex:1},gradient:{flex:1},scroll:{padding:spacing.md,paddingTop:50},

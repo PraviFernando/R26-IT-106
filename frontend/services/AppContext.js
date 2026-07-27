@@ -3,6 +3,7 @@
 // ================================================================
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { analyzeDiary, getRecommendations } from './emotionEngine';
+import { detectBabyTopic } from './babyCareService';
 
 const AppContext = createContext();
 
@@ -16,29 +17,44 @@ const DEMO_DIARIES = [
   "My husband doesn't help at all. My family isn't here either. I feel so unsupported and alone.",
 ];
 
-const SI_DAYS = ['ඉරි','සඳු','අඟ','බදා','බ්‍රහ','සිකු','සෙන'];
+const SI_DAYS = ['ඉරි', 'සඳු', 'අඟ', 'බදා', 'බ්‍රහ', 'සිකු', 'සෙන'];
 
 export const AppProvider = ({ children }) => {
   const [user] = useState({ name: 'සාරා', weekPostpartum: 6 });
   const [userPreferredActivities, setUserPreferredActivities] = useState([]);
-  const [userPreferredGames,      setUserPreferredGames]      = useState([]);
-  const [preferencesSet,          setPreferencesSet]          = useState(false);
-  const [latestAnalysis,          setLatestAnalysis]          = useState(null);
-  const [latestRecommendations,   setLatestRecommendations]   = useState(null);
-  const [demoDiaryIdx,            setDemoDiaryIdx]            = useState(0);
-  const [moodHistory,             setMoodHistory]             = useState([
-    { day:'සඳු', emotion:'stressed', risk:'medium' },
-    { day:'අඟ',  emotion:'sad',      risk:'medium' },
-    { day:'බදා', emotion:'happy',    risk:'low'    },
-    { day:'බ්‍රහ',emotion:'stressed', risk:'low'    },
-    { day:'සිකු', emotion:'sad',      risk:'medium' },
-    { day:'සෙන', emotion:'happy',    risk:'low'    },
-    { day:'ඉරි',  emotion:'stressed', risk:'low'    },
+  const [userPreferredGames, setUserPreferredGames] = useState([]);
+  const [preferencesSet, setPreferencesSet] = useState(false);
+  const [latestAnalysis, setLatestAnalysis] = useState(null);
+  const [latestRecommendations, setLatestRecommendations] = useState(null);
+  const [detectedBabyTopic, setDetectedBabyTopic] = useState(null);
+  const [detectedBabyAge, setDetectedBabyAge] = useState(null);
+  const [demoDiaryIdx, setDemoDiaryIdx] = useState(0);
+  const [moodHistory, setMoodHistory] = useState([
+    { day: 'සඳු', emotion: 'stressed', risk: 'medium' },
+    { day: 'අඟ', emotion: 'sad', risk: 'medium' },
+    { day: 'බදා', emotion: 'happy', risk: 'low' },
+    { day: 'බ්‍රහ', emotion: 'stressed', risk: 'low' },
+    { day: 'සිකු', emotion: 'sad', risk: 'medium' },
+    { day: 'සෙන', emotion: 'happy', risk: 'low' },
+    { day: 'ඉරි', emotion: 'stressed', risk: 'low' },
   ]);
 
   const processDiary = (diaryText) => {
     try {
-      const analysis       = analyzeDiary(diaryText);
+      const analysis = analyzeDiary(diaryText);
+      const defaultEmotionEmojis = {
+        happy: '😊',
+        sad: '😔',
+        stressed: '😟'
+      };
+      analysis.mood = defaultEmotionEmojis[analysis.detectedEmotion] || '😊';
+
+      // Detect Baby Care Topic using independent babyCareService
+      const babyTopicRes = detectBabyTopic(diaryText);
+      if (babyTopicRes.topic) {
+        setDetectedBabyTopic(babyTopicRes.topic);
+      }
+
       const recommendations = getRecommendations(analysis, userPreferredActivities, userPreferredGames);
       setLatestAnalysis(analysis);
       setLatestRecommendations(recommendations);
@@ -47,7 +63,7 @@ export const AppProvider = ({ children }) => {
         ...prev.slice(-6),
         { day: today, emotion: analysis.detectedEmotion, risk: analysis.riskLevel },
       ]);
-      return { analysis, recommendations };
+      return { analysis, recommendations, babyTopic: babyTopicRes };
     } catch (err) {
       console.error('processDiary error:', err);
       return null;
@@ -70,7 +86,7 @@ export const AppProvider = ({ children }) => {
 
   useEffect(() => { processDiary(DEMO_DIARIES[0]); }, []);
 
-    const setLatestData = (analysis, recommendations) => {
+  const setLatestData = (analysis, recommendations) => {
     setLatestAnalysis(analysis);
     setLatestRecommendations(recommendations);
     if (analysis) {
@@ -87,6 +103,8 @@ export const AppProvider = ({ children }) => {
       user, userPreferredActivities, userPreferredGames,
       preferencesSet, savePreferences,
       latestAnalysis, latestRecommendations,
+      detectedBabyTopic, setDetectedBabyTopic,
+      detectedBabyAge, setDetectedBabyAge,
       moodHistory, processDiary, simulateNextDiary, nextDemoPreview, demoDiaryIdx,
       setLatestData,
     }}>

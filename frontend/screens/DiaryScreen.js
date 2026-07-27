@@ -21,6 +21,7 @@ import { transliterate } from '../services/sinhalaTransliteration';
 import SinhalaKeyboard from '../components/SinhalaKeyboard';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../services/AppContext';
+import { detectBabyTopic } from '../services/babyCareIntentService';
 
 const { width } = Dimensions.get('window');
 
@@ -93,7 +94,7 @@ const today = toDateString(new Date());
 
 export default function DiaryScreen({ navigation }) {
     const { t, i18n } = useTranslation();
-    const { setLatestData } = useApp();
+    const { setLatestData, setDetectedBabyTopic, setDetectedBabyAge } = useApp();
     const [selectedDate, setSelectedDate] = useState(today);
     const [content, setContent] = useState('');
     const [isLocked, setIsLocked] = useState(false);
@@ -278,7 +279,8 @@ export default function DiaryScreen({ navigation }) {
                 const analysis = {
                     emotion: entry.emotion,
                     primaryReason: entry.reason,
-                    riskLevel: entry.riskLevel
+                    riskLevel: entry.riskLevel,
+                    mood: entry.mood
                 };
                 setLatestData(analysis, entry.recommendations);
             }
@@ -562,6 +564,9 @@ export default function DiaryScreen({ navigation }) {
                                     </ScrollView>
                                 )}
 
+                                {mood ? (
+                                    <Text style={s.detailEmoji}>{mood}</Text>
+                                ) : null}
                                 <TextInput
                                     style={[s.textArea, { color: tc.text }]}
                                     multiline
@@ -584,6 +589,23 @@ export default function DiaryScreen({ navigation }) {
                                         <TouchableOpacity onPress={() => addMedia('video')} style={s.mediaBtn}><Text style={s.mediaIcon}>🎬</Text></TouchableOpacity>
                                         <TouchableOpacity onPress={() => addMedia('audio')} style={s.mediaBtn}><Text style={s.mediaIcon}>🎵</Text></TouchableOpacity>
                                     </View>
+                                    
+                                    <TouchableOpacity 
+                                        style={[s.recommendationBtn, { backgroundColor: tc.accent }]}
+                                        onPress={() => {
+                                            const { topic, age } = detectBabyTopic(content);
+                                            setDetectedBabyTopic(topic);
+                                            setDetectedBabyAge(age);
+                                            navigation.navigate('Main', {
+                                                screen: 'Tabs',
+                                                params: {
+                                                    screen: 'Recommendations'
+                                                }
+                                            });
+                                        }}
+                                    >
+                                        <Text style={s.recommendationBtnText}>{t('View Recommendations')}</Text>
+                                    </TouchableOpacity>
                                 </View>
                             </View>
                         )}
@@ -659,7 +681,9 @@ export default function DiaryScreen({ navigation }) {
                                         <Text style={s.journalListDate}>{formatDisplay(item.date)}</Text>
                                         <Text style={s.journalListDay}>{getDayName(item.date)}</Text>
                                     </View>
-                                    <Text style={s.journalListIcon}>📔</Text>
+                                    {item.mood ? (
+                                        <Text style={s.journalListIcon}>{item.mood}</Text>
+                                    ) : null}
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>
@@ -735,6 +759,7 @@ const s = StyleSheet.create({
     mediaRemove: { position: 'absolute', top: -6, right: -6, backgroundColor: '#EF4444', width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFF', zIndex: 5 },
     mediaRemoveText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
 
+    detailEmoji: { fontSize: 32, marginBottom: 12, marginTop: 4 },
     textArea: { flex: 1, fontSize: 16, lineHeight: 26, minHeight: 200 },
     listeningBar: { backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, marginBottom: 16 },
     listeningText: { fontSize: 14, fontWeight: '600', fontStyle: 'italic' },
@@ -743,6 +768,8 @@ const s = StyleSheet.create({
     mediaActionBar: { flexDirection: 'row', gap: 10 },
     mediaBtn: { padding: 8, backgroundColor: '#F8FAFC', borderRadius: 12 },
     mediaIcon: { fontSize: 20 },
+    recommendationBtn: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20 },
+    recommendationBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 13 },
 
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
     modalBox: { backgroundColor: '#FFF', borderRadius: 32, padding: 28, width: 320 },

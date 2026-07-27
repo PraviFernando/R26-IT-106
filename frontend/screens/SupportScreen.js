@@ -16,6 +16,17 @@ const emotionConfig = {
   stressed: { emoji: '😟', label: SI.stressed, gradient: ['#EDE7F6', '#FCE4EC'], color: '#6A1B9A', bg: '#F3E5F5' },
 };
 
+const emojiFeelingsSI = {
+  '😊': 'සතුටුයි',
+  '😌': 'සන්සුන්',
+  '😔': 'දුකයි',
+  '😪': 'මහන්සියි',
+  '😠': 'තරහයි',
+  '🌈': 'බලාපොරොත්තු සහගතයි',
+  '🌟': 'උද්‍යෝගිමත්',
+  '☁️': 'මලානිකයි',
+};
+
 const supportMessages = {
   happy: { title: 'ඔබ අද දිලිසෙනවා ✨', body: 'ඔබේ ධනාත්මක ශක්තිය ප්‍රමාද යයි — ඔබ සහ ඔබේ දරුවාට. මෙම සතුටු මොහොත ආදරෙන් ගෙවන්න.' },
   sad: { title: 'ඔබේ හැඟීම් වලංගුයි 🌧️', body: 'දුකක් දැනෙනවා නම් හරිය. අම්මා වීම ලෝකයේ හැහෑ දෙකක් ඇති කාර්යයකි. දැන් ඔබ වෙනුවෙන් ඉඩ ගනිමු.' },
@@ -29,6 +40,8 @@ const SupportScreen = ({ navigation }) => {
   const emotion = latestAnalysis?.detectedEmotion || 'stressed';
   const risk = latestAnalysis?.riskLevel || 'low';
   const ec = emotionConfig[emotion] || emotionConfig.stressed;
+  const selectedEmoji = latestAnalysis?.mood || ec.emoji;
+  const selectedFeeling = emojiFeelingsSI[selectedEmoji] || ec.label;
   const msg = supportMessages[emotion];
 
   const riskPct = risk === 'medium' ? 65 : 30;
@@ -58,9 +71,9 @@ const SupportScreen = ({ navigation }) => {
           <LinearGradient colors={ec.gradient} style={s.moodCard}>
             <Text style={s.moodCardLabel}>{SI.detectedMood}</Text>
             <View style={s.moodRow}>
-              <Text style={s.moodEmojiBig}>{ec.emoji}</Text>
+              <Text style={s.moodEmojiBig}>{selectedEmoji}</Text>
               <View>
-                <Text style={[s.moodName, { color: ec.color }]}>{ec.label}</Text>
+                <Text style={[s.moodName, { color: ec.color }]}>{selectedFeeling}</Text>
                 <Text style={s.moodSub}>{SI.diaryProcessed}</Text>
               </View>
             </View>

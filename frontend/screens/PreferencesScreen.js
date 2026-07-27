@@ -14,17 +14,17 @@ const { width } = Dimensions.get('window');
 
 const PreferencesScreen = ({ navigation }) => {
   const { savePreferences, userPreferredActivities, userPreferredGames } = useApp();
-  const [selActs,  setSelActs]  = useState(userPreferredActivities);
+  const [selActs, setSelActs] = useState(userPreferredActivities);
   const [selGames, setSelGames] = useState(userPreferredGames);
 
-  const toggleAct  = (id) => setSelActs(p  => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  const toggleAct = (id) => setSelActs(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
   const toggleGame = (id) => setSelGames(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
   const handleSave = () => { savePreferences(selActs, selGames); navigation.goBack(); };
 
   return (
     <View style={s.container}>
-      <LinearGradient colors={['#F8F4FF','#FFF0F8']} style={s.gradient}>
+      <LinearGradient colors={['#F8F4FF', '#FFF0F8']} style={s.gradient}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
           <Text style={s.title}>{SI.myPreferences}</Text>
@@ -107,43 +107,43 @@ const PreferencesScreen = ({ navigation }) => {
 };
 
 const s = StyleSheet.create({
-  container:     { flex: 1 },
-  gradient:      { flex: 1 },
-  scroll:        { paddingHorizontal: spacing.md, paddingTop: 60 },
-  title:         { fontSize: 26, fontWeight: '900', color: colors.textPrimary, marginBottom: 8 },
-  subtitle:      { fontSize: 14, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.xl },
-  section:       { marginBottom: spacing.xl },
+  container: { flex: 1 },
+  gradient: { flex: 1 },
+  scroll: { paddingHorizontal: spacing.md, paddingTop: 60 },
+  title: { fontSize: 26, fontWeight: '900', color: colors.textPrimary, marginBottom: 8 },
+  subtitle: { fontSize: 14, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.xl },
+  section: { marginBottom: spacing.xl },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  sectionTitle:  { fontSize: 17, fontWeight: '800', color: colors.textPrimary },
-  sectionSub:    { fontSize: 13, color: colors.textMuted, marginBottom: spacing.md },
-  selCount:      { fontSize: 13, color: colors.lavenderDark, fontWeight: '700' },
-  actCard:       { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: radius.lg, padding: spacing.md, marginBottom: 10, borderWidth: 2, borderColor: 'transparent', ...shadows.soft },
-  actCardSel:    { borderColor: colors.lavenderDark, backgroundColor: colors.lavenderLight },
-  actIconBox:    { width: 48, height: 48, borderRadius: radius.md, backgroundColor: colors.softGray, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  actIcon:       { fontSize: 24 },
-  actInfo:       { flex: 1 },
-  actLabel:      { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
-  actDesc:       { fontSize: 12, color: colors.textMuted, marginTop: 2 },
-  actMeta:       { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
-  actDur:        { fontSize: 11, color: colors.textSecondary, fontWeight: '600' },
-  catBadge:      { borderRadius: radius.full, paddingVertical: 2, paddingHorizontal: 8 },
-  catBadgeText:  { fontSize: 10, fontWeight: '700', textTransform: 'capitalize' },
-  checkbox:      { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.lavenderMid, justifyContent: 'center', alignItems: 'center' },
-  checkMark:     { color: colors.white, fontSize: 14, fontWeight: '800' },
-  gamesGrid:     { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  gameCardWrap:  { width: (width - spacing.md * 2 - 10) / 2 },
-  gameCard:      { borderRadius: radius.xl, padding: spacing.md, alignItems: 'center', ...shadows.soft, borderWidth: 2, borderColor: 'transparent', position: 'relative' },
-  gameCardSel:   { borderColor: 'transparent' },
-  gameCheck:     { position: 'absolute', top: 10, right: 10, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.3)', justifyContent: 'center', alignItems: 'center' },
+  sectionTitle: { fontSize: 17, fontWeight: '800', color: colors.textPrimary },
+  sectionSub: { fontSize: 13, color: colors.textMuted, marginBottom: spacing.md },
+  selCount: { fontSize: 13, color: colors.lavenderDark, fontWeight: '700' },
+  actCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: radius.lg, padding: spacing.md, marginBottom: 10, borderWidth: 2, borderColor: 'transparent', ...shadows.soft },
+  actCardSel: { borderColor: colors.lavenderDark, backgroundColor: colors.lavenderLight },
+  actIconBox: { width: 48, height: 48, borderRadius: radius.md, backgroundColor: colors.softGray, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  actIcon: { fontSize: 24 },
+  actInfo: { flex: 1 },
+  actLabel: { fontSize: 15, fontWeight: '700', color: colors.textPrimary },
+  actDesc: { fontSize: 12, color: colors.textMuted, marginTop: 2 },
+  actMeta: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6 },
+  actDur: { fontSize: 11, color: colors.textSecondary, fontWeight: '600' },
+  catBadge: { borderRadius: radius.full, paddingVertical: 2, paddingHorizontal: 8 },
+  catBadgeText: { fontSize: 10, fontWeight: '700', textTransform: 'capitalize' },
+  checkbox: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.lavenderMid, justifyContent: 'center', alignItems: 'center' },
+  checkMark: { color: colors.white, fontSize: 14, fontWeight: '800' },
+  gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  gameCardWrap: { width: (width - spacing.md * 2 - 10) / 2 },
+  gameCard: { borderRadius: radius.xl, padding: spacing.md, alignItems: 'center', ...shadows.soft, borderWidth: 2, borderColor: 'transparent', position: 'relative' },
+  gameCardSel: { borderColor: 'transparent' },
+  gameCheck: { position: 'absolute', top: 10, right: 10, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.3)', justifyContent: 'center', alignItems: 'center' },
   gameCheckText: { color: colors.white, fontWeight: '900', fontSize: 13 },
-  gameIcon:      { fontSize: 36, marginBottom: 8 },
-  gameName:      { fontSize: 14, fontWeight: '800', color: colors.textPrimary, textAlign: 'center' },
-  gameDesc:      { fontSize: 10, color: colors.textSecondary, textAlign: 'center', marginTop: 4 },
-  saveBtn:       { borderRadius: radius.full, overflow: 'hidden', marginBottom: 12 },
-  saveBtnInner:  { paddingVertical: 16, alignItems: 'center' },
-  saveBtnText:   { color: colors.white, fontWeight: '800', fontSize: 16 },
-  skipBtn:       { alignItems: 'center', paddingVertical: 12 },
-  skipText:      { color: colors.textMuted, fontWeight: '600', fontSize: 14 },
+  gameIcon: { fontSize: 36, marginBottom: 8 },
+  gameName: { fontSize: 14, fontWeight: '800', color: colors.textPrimary, textAlign: 'center' },
+  gameDesc: { fontSize: 10, color: colors.textSecondary, textAlign: 'center', marginTop: 4 },
+  saveBtn: { borderRadius: radius.full, overflow: 'hidden', marginBottom: 12 },
+  saveBtnInner: { paddingVertical: 16, alignItems: 'center' },
+  saveBtnText: { color: colors.white, fontWeight: '800', fontSize: 16 },
+  skipBtn: { alignItems: 'center', paddingVertical: 12 },
+  skipText: { color: colors.textMuted, fontWeight: '600', fontSize: 14 },
 });
 
 export default PreferencesScreen;

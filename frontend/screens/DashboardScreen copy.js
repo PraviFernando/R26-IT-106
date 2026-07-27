@@ -20,6 +20,17 @@ const emotionConfig = {
   stressed: { emoji: '😟', label: SI.stressed, gradient: ['#EDE7F6','#FCE4EC'], color: '#7E57C2', bg: '#F3E5F5' },
 };
 
+const emojiFeelingsSI = {
+  '😊': 'සතුටුයි',
+  '😌': 'සන්සුන්',
+  '😔': 'දුකයි',
+  '😪': 'මහන්සියි',
+  '😠': 'තරහයි',
+  '🌈': 'බලාපොරොත්තු සහගතයි',
+  '🌟': 'උද්‍යෝගිමත්',
+  '☁️': 'මලානිකයි',
+};
+
 const summaryMessages = {
   happy:    'ඔබ අද ආලෝකය විහිදිනවා 🌸 ඒ සතුට රක්ෂා කරන්න.',
   sad:      'දුකක් දැනෙනවා නම් හරි. අපි ඔබ සමඟ ආදරෙන් ඉදිමු 💜',
@@ -42,6 +53,8 @@ const DashboardScreenCopy = ({ navigation }) => {
   const emotion  = latestAnalysis?.detectedEmotion || 'stressed';
   const risk     = latestAnalysis?.riskLevel || 'low';
   const ec       = emotionConfig[emotion] || emotionConfig.stressed;
+  const selectedEmoji = latestAnalysis?.mood || ec.emoji;
+  const selectedFeeling = emojiFeelingsSI[selectedEmoji] || ec.label;
   const weekDays = moodHistory.slice(-7);
 
   // Quick Actions with proper navigation
@@ -68,7 +81,6 @@ const DashboardScreenCopy = ({ navigation }) => {
             <View>
               <Text style={s.greeting}>{SI.goodMorning}</Text>
               <Text style={s.name}>{SI.hi} {user.name}</Text>
-              <Text style={s.week}>සතිය {user.weekPostpartum} {SI.week}</Text>
             </View>
             <View style={s.avatar}>
               <Text style={s.avatarText}>{user.name[0]}</Text>
@@ -89,14 +101,14 @@ const DashboardScreenCopy = ({ navigation }) => {
               <View style={s.emotionTop}>
                 <View style={s.emotionLeft}>
                   <Text style={s.emotionSub}>{SI.todaysFeeling}</Text>
-                  <Text style={[s.emotionTitle, { color: ec.color }]}>{ec.label} {ec.emoji} {SI.feeling}</Text>
+                  <Text style={[s.emotionTitle, { color: ec.color }]}>{selectedFeeling} {selectedEmoji} {SI.feeling}</Text>
                   <View style={[s.riskBadge, { backgroundColor: ec.bg }]}>
                     <Text style={[s.riskLabel, { color: ec.color }]}>
                       {risk === 'medium' ? SI.mediumRisk : SI.lowRisk}
                     </Text>
                   </View>
                 </View>
-                <Text style={s.emotionEmoji}>{ec.emoji}</Text>
+                <Text style={s.emotionEmoji}>{selectedEmoji}</Text>
               </View>
               <Text style={s.emotionMsg}>{summaryMessages[emotion]}</Text>
               <TouchableOpacity style={s.viewBtn} onPress={() => navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Support' } })}>
@@ -149,7 +161,6 @@ const DashboardScreenCopy = ({ navigation }) => {
           {/* Demo Simulator */}
           <View style={s.demoCard}>
             <Text style={s.demoTitle}>{SI.diaryDemo}</Text>
-            <Text style={s.demoPreview}>ඊළඟ: "{nextDemoPreview?.slice(0, 60)}..."</Text>
             <TouchableOpacity style={s.demoBtn}
               onPress={() => { simulateNextDiary(); navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Support' } }); }}>
               <Text style={s.demoBtnText}>{SI.processDiary}</Text>

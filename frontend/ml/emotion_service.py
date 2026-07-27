@@ -285,18 +285,19 @@ def get_recommendations(risk, reason, emotion):
         search_risks.append("low")
 
     def format_data(row):
+        # Helper to split comma-separated strings safely
+        def split_csv(val):
+            if not val or str(val).lower() == "nan":
+                return []
+            return [x.strip() for x in str(val).split(",") if x.strip()]
+
         return {
-            "activities": [
-                x.strip()
-                for x in str(row.get("recommended_activities", "")).split(",")
-                if x.strip()
-            ],
-            "games": [
-                x.strip()
-                for x in str(row.get("recommended_games", "")).split(",")
-                if x.strip()
-            ],
-            "videoUrl": str(row.get("recommended_videos", "https://youtu.be/jzGyjLGbAUc")).strip()
+            "activities": split_csv(row.get("recommended_activities")),
+            "games": split_csv(row.get("recommended_games")),
+            "music": split_csv(row.get("recommended_music")),
+            "videos": split_csv(row.get("recommended_videos")),
+            # Keep videoUrl for backward compatibility (first video in list)
+            "videoUrl": split_csv(row.get("recommended_videos"))[0] if split_csv(row.get("recommended_videos")) else "https://youtu.be/jzGyjLGbAUc"
         }
 
     # 1. Exact match (try each risk level in preference order)
@@ -310,7 +311,7 @@ def get_recommendations(risk, reason, emotion):
                 print(f"[RECOMMENDATION] ✓ Found EXACT match: risk={r}, reason={reason}, emotion={emotion}")
                 return format_data(row)
 
-    # 2. Risk + Reason match
+    # 2. Risk + Reason match (Ignore Emotion)
     for r in search_risks:
         for row in RECOMMENDATIONS_DATA:
             if (
@@ -320,32 +321,23 @@ def get_recommendations(risk, reason, emotion):
                 print(f"[RECOMMENDATION] ✓ Found RISK+REASON match: risk={r}, reason={reason}")
                 return format_data(row)
 
-    # 3. Reason match only
+    # 3. Just Reason match
     for row in RECOMMENDATIONS_DATA:
         if row["reason"] == reason:
-            print(f"[RECOMMENDATION] ✓ Found REASON match: reason={reason}")
+            print(f"[RECOMMENDATION] ✓ Found REASON ONLY match: reason={reason}")
             return format_data(row)
 
-    # 4. Emotion match only
-    for row in RECOMMENDATIONS_DATA:
-        if row["emotion"] == emotion:
-            print(f"[RECOMMENDATION] ✓ Found EMOTION match: emotion={emotion}")
-            return format_data(row)
-    
-    # 5. Risk match only
+    # 4. Emotion + Risk match
     for r in search_risks:
         for row in RECOMMENDATIONS_DATA:
-            if row["risk_level"] == r:
-                print(f"[RECOMMENDATION] ✓ Found RISK match: risk={r}")
+            if (
+                row["risk_level"] == r
+                and row["emotion"] == emotion
+            ):
+                print(f"[RECOMMENDATION] ✓ Found RISK+EMOTION match: risk={r}, emotion={emotion}")
                 return format_data(row)
 
-    # 6. Default fallback - first row from Excel if available
-    if len(RECOMMENDATIONS_DATA) > 0:
-        print(f"[RECOMMENDATION] ⚠ Using FIRST row from Excel as fallback")
-        return format_data(RECOMMENDATIONS_DATA[0])
-
-    # 7. Hardcoded default
-    print(f"[RECOMMENDATION] ❌ No matches found! Using HARDCODED default")
+    print(f"[RECOMMENDATION] ⚠ No match found for '{reason}'. Returning default fallback.")
     return {
         "activities": ["deep_breathing", "journaling"],
         "games": ["bubble_pop", "colouring"],
@@ -387,8 +379,25 @@ def analyze():
 
         cleaned = preprocess(text)
 
-        # 1. Detect Emotion
-        emotion = emotion_model.predict([cleaned])[0]
+        # 1. Detect Emotion (Keyword priority to match Excel)
+        emotion = None
+        emotion_keywords = {
+            "exhausted": ["exhausted", "burnt out", "no energy", "drained"],
+            "worried": ["worried", "nervous", "scared", "fear"],
+            "hopeless": ["hopeless", "pointless", "give up", "no future"],
+            "sleepy": ["sleepy", "drowsy", "cannot stay awake"],
+            "lonely": ["lonely", "alone", "isolated"],
+            "alone": ["alone", "nobody"],
+        }
+        
+        text_lower = text.lower()
+        for e_key, e_kws in emotion_keywords.items():
+            if any(kw in text_lower for kw in e_kws):
+                emotion = e_key
+                break
+        
+        if not emotion:
+            emotion = emotion_model.predict([cleaned])[0]
 
         # 2. Detect Reason (prioritize explicit or keywords)
         reason = None

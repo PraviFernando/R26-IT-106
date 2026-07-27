@@ -13,7 +13,7 @@
 //   Reason=LackSupp, Mood=Sad,      Risk=Low    → gratitude_writing + affirmation_game
 // ================================================================
 
-import { getRecommendationRule } from './activitiesLibrary';
+import { getEnhancedRecommendationRule } from './activitiesLibrary';
 import { MUSIC_LIBRARY, VIDEO_LIBRARY } from './mediaLibrary';
 
 export const RISK = { LOW: 'low', MEDIUM: 'medium' };
@@ -108,7 +108,7 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
   const { detectedEmotion, primaryReason, riskLevel } = analysisResult;
 
   // Get the rule for this exact reason + risk combination
-  const rule = getRecommendationRule(primaryReason, riskLevel, preferredActivities, preferredGames);
+  const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames);
 
   // Music: 10 tracks specific to this reason
   const music  = MUSIC_LIBRARY[rule.musicKey]  || MUSIC_LIBRARY.loneliness;
@@ -130,6 +130,7 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
     music,
     videos,
     activities:    rule.activities,   // filtered activities for this reason+risk
+    newActivities: rule.newActivities, // newly added activities
     games:         rule.games,         // single recommended game as array
     game:          rule.game,          // single recommended game object
     messages,
