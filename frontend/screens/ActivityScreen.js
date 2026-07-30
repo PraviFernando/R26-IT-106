@@ -119,15 +119,284 @@ const SelfCareQuest=()=>{
 
 // BUBBLE POP (timed, flowers good, danger bad)
 const FLOWER='🌸';const DANGER=['💥','🌩️','🦠','🌪️','💢','🌑'];
-const BubblePop=()=>{
-  const[bubbles,setBubbles]=useState([]);const[score,setScore]=useState(0);const[lives,setLives]=useState(3);const[timeLeft,setTimeLeft]=useState(45);const[running,setRunning]=useState(false);const[gameOver,setGameOver]=useState(false);const[showC,setShowC]=useState(false);
-  const timerRef=useRef(null);const spawnRef=useRef(null);
-  const startGame=()=>{setScore(0);setLives(3);setTimeLeft(45);setBubbles([]);setGameOver(false);setRunning(true);};
-  useEffect(()=>{if(!running)return;timerRef.current=setInterval(()=>{setTimeLeft(t=>{if(t<=1){setRunning(false);setGameOver(true);clearInterval(timerRef.current);clearInterval(spawnRef.current);return 0;}return t-1;});},1000);spawnRef.current=setInterval(()=>{const isFlower=Math.random()<0.55;setBubbles(p=>[...p.slice(-18),{id:Date.now()+Math.random(),x:Math.random()*(width-100)+10,y:Math.random()*250+20,size:42+Math.random()*26,isFlower,emoji:isFlower?FLOWER:DANGER[Math.floor(Math.random()*DANGER.length)],cols:isFlower?['#FCE4EC','#F8BBD9']:['#424242','#616161']}]);},750);return()=>{clearInterval(timerRef.current);clearInterval(spawnRef.current);};},[running]);
-  useEffect(()=>{if(lives<=0&&running){setRunning(false);setGameOver(true);clearInterval(timerRef.current);clearInterval(spawnRef.current);}},[lives]);
-  useEffect(()=>{if(gameOver&&score>=12)setTimeout(()=>setShowC(true),400);},[gameOver]);
-  const popBubble=(b)=>{setBubbles(p=>p.filter(x=>x.id!==b.id));if(b.isFlower)setScore(s=>s+1);else setLives(l=>l-1);};
-  return(<View style={bp.cont}><CongratsPopup visible={showC} onClose={startGame} title="අපූරු! 🌸" msg={`🌸 ${score} මල්! 💜`}/><View style={bp.header}><Text style={bp.title}>🫧 බුබුළු</Text><View style={bp.stats}><Text style={bp.scoreT}>🌸{score}</Text><Text style={bp.livesT}>{'❤️'.repeat(lives)}{'🖤'.repeat(Math.max(0,3-lives))}</Text><Text style={bp.timerT}>⏱{timeLeft}s</Text></View></View><Text style={bp.rule}>🌸 ටොක් = +1 | ☠️ ටොක් = ජීවිතය -1</Text>{!running&&!gameOver&&(<TouchableOpacity style={bp.startBtn} onPress={startGame}><LinearGradient colors={['#E91E8C','#7E57C2']} style={bp.startBtnIn}><Text style={bp.startBtnT}>▶ ආරම්භ</Text></LinearGradient></TouchableOpacity>)}{gameOver&&(<LinearGradient colors={['#FCE4EC','#EDE7F6']} style={bp.gameOverCard}><Text style={bp.gameOverT}>{lives<=0?'💔 ජීවිත නැති!':'⏰ කාලය!'}</Text><Text style={bp.gameOverScore}>🌸{score}</Text><TouchableOpacity style={bp.retryBtn} onPress={startGame}><Text style={bp.retryBtnT}>↺ නැවත</Text></TouchableOpacity></LinearGradient>)}{running&&(<View style={bp.area}>{bubbles.map(b=>(<TouchableOpacity key={b.id} onPress={()=>popBubble(b)} style={[bp.bubble,{left:b.x,top:b.y,width:b.size,height:b.size,borderRadius:b.size/2}]}><LinearGradient colors={b.cols} style={[bp.bubbleGrad,{borderRadius:b.size/2}]}><Text style={{fontSize:b.size*0.44}}>{b.emoji}</Text></LinearGradient></TouchableOpacity>))}</View>)}</View>);
+
+const saveBubblePopActivity = async (score, duration) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const timestamp = Date.now();
+    const newRecord = {
+      activityId: "bubble_pop",
+      activityName: "Bubble Pop Game",
+      score: score,
+      duration: duration,
+      completed: true,
+      completedAt: timestamp,
+      date: today
+    };
+    const existing = await AsyncStorage.getItem('@activity_history');
+    const history = existing ? JSON.parse(existing) : [];
+    const updated = [newRecord, ...history];
+    await AsyncStorage.setItem('@activity_history', JSON.stringify(updated));
+  } catch (e) {
+    console.error('Failed to save Bubble Pop activity history:', e);
+  }
+};
+
+const BubblePopCompletionPopup = ({ visible, score, duration, lives, onPlayAgain, onClose, onBack }) => {
+  const scale = useRef(new Animated.Value(0)).current;
+  const bounce = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      Animated.spring(scale, { toValue: 1, friction: 5, tension: 90, useNativeDriver: true }).start();
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(bounce, { toValue: -8, duration: 400, useNativeDriver: true }),
+          Animated.timing(bounce, { toValue: 0, duration: 400, useNativeDriver: true })
+        ])
+      ).start();
+    } else {
+      scale.setValue(0);
+      bounce.setValue(0);
+    }
+  }, [visible]);
+
+  if (!visible) return null;
+
+  return (
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
+      <View style={bpp.overlay}>
+        <Animated.View style={[bpp.box, { transform: [{ scale }] }]}>
+          <View style={bpp.confettiRow}>
+            {['🎉', '🌸', '✨', '💜', '⭐'].map((c, i) => (
+              <Text key={i} style={bpp.confEmoji}>{c}</Text>
+            ))}
+          </View>
+
+          <Animated.Text style={[bpp.bigEmoji, { transform: [{ translateY: bounce }] }]}>
+            ⭐
+          </Animated.Text>
+
+          <Text style={bpp.title}>අපූරුයි! 🎉</Text>
+          <Text style={bpp.subtitle}>බුබුළු ක්‍රීඩාව සම්පූර්ණයි! 💜</Text>
+
+          <View style={bpp.statsCard}>
+            <View style={bpp.statItem}>
+              <Text style={bpp.statLabel}>⭐ ලකුණු</Text>
+              <Text style={bpp.statVal}>🌸 {score}</Text>
+            </View>
+            <View style={bpp.divider} />
+            <View style={bpp.statItem}>
+              <Text style={bpp.statLabel}>⏱ කාලය</Text>
+              <Text style={bpp.statVal}>{duration}s</Text>
+            </View>
+            <View style={bpp.divider} />
+            <View style={bpp.statItem}>
+              <Text style={bpp.statLabel}>❤️ ජීවිත</Text>
+              <Text style={bpp.statVal}>{'❤️'.repeat(Math.max(0, lives))}{lives < 3 ? '🖤'.repeat(3 - lives) : ''}</Text>
+            </View>
+          </View>
+
+          <View style={bpp.btnGroup}>
+            <TouchableOpacity style={bpp.btnMain} onPress={onPlayAgain} activeOpacity={0.85}>
+              <LinearGradient colors={['#E91E8C', '#7E57C2']} style={bpp.btnMainIn}>
+                <Text style={bpp.btnMainT}>🔄 නැවත (Play Again)</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={bpp.btnClose} onPress={onClose} activeOpacity={0.85}>
+              <Text style={bpp.btnCloseT}>❌ වසා දමන්න (Close)</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={bpp.btnBack} onPress={onBack} activeOpacity={0.85}>
+              <Text style={bpp.btnBackT}>🏠 ආපසු (Back)</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+};
+
+const BubblePop = ({ navigation, onGoBack }) => {
+  const [bubbles, setBubbles] = useState([]);
+  const [score, setScore] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [timeLeft, setTimeLeft] = useState(45);
+  const [running, setRunning] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [showC, setShowC] = useState(false);
+  const [playDuration, setPlayDuration] = useState(0);
+
+  const timerRef = useRef(null);
+  const spawnRef = useRef(null);
+  const startTimeRef = useRef(null);
+
+  const startGame = () => {
+    setScore(0);
+    setLives(3);
+    setTimeLeft(45);
+    setBubbles([]);
+    setGameOver(false);
+    setShowC(false);
+    setPlayDuration(0);
+    startTimeRef.current = Date.now();
+    setRunning(true);
+  };
+
+  const handleEndGame = useCallback((finalScore) => {
+    setRunning(false);
+    setGameOver(true);
+    clearInterval(timerRef.current);
+    clearInterval(spawnRef.current);
+    const duration = startTimeRef.current
+      ? Math.min(45, Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000)))
+      : 45;
+    setPlayDuration(duration);
+    saveBubblePopActivity(finalScore, duration);
+    setTimeout(() => setShowC(true), 350);
+  }, []);
+
+  useEffect(() => {
+    if (!running) return;
+    timerRef.current = setInterval(() => {
+      setTimeLeft((t) => {
+        if (t <= 1) {
+          handleEndGame(score);
+          return 0;
+        }
+        return t - 1;
+      });
+    }, 1000);
+
+    spawnRef.current = setInterval(() => {
+      const isFlower = Math.random() < 0.55;
+      setBubbles((p) => [
+        ...p.slice(-18),
+        {
+          id: Date.now() + Math.random(),
+          x: Math.random() * (width - 100) + 10,
+          y: Math.random() * 250 + 20,
+          size: 42 + Math.random() * 26,
+          isFlower,
+          emoji: isFlower ? FLOWER : DANGER[Math.floor(Math.random() * DANGER.length)],
+          cols: isFlower ? ['#FCE4EC', '#F8BBD9'] : ['#424242', '#616161'],
+        },
+      ]);
+    }, 750);
+
+    return () => {
+      clearInterval(timerRef.current);
+      clearInterval(spawnRef.current);
+    };
+  }, [running, score, handleEndGame]);
+
+  useEffect(() => {
+    if (lives <= 0 && running) {
+      handleEndGame(score);
+    }
+  }, [lives, running, score, handleEndGame]);
+
+  const popBubble = (b) => {
+    if (!running) return;
+    setBubbles((p) => p.filter((x) => x.id !== b.id));
+    if (b.isFlower) {
+      setScore((s) => s + 1);
+    } else {
+      setLives((l) => l - 1);
+    }
+  };
+
+  const handleBackNavigation = () => {
+    setShowC(false);
+    if (navigation?.canGoBack && navigation.canGoBack()) {
+      navigation.goBack();
+    } else if (onGoBack) {
+      onGoBack();
+    }
+  };
+
+  return (
+    <View style={bp.cont}>
+      <BubblePopCompletionPopup
+        visible={showC}
+        score={score}
+        duration={playDuration}
+        lives={lives}
+        onPlayAgain={startGame}
+        onClose={() => setShowC(false)}
+        onBack={handleBackNavigation}
+      />
+
+      <View style={bp.header}>
+        <Text style={bp.title}>🫧 බුබුළු</Text>
+        <View style={bp.stats}>
+          <Text style={bp.scoreT}>🌸{score}</Text>
+          <Text style={bp.livesT}>
+            {'❤️'.repeat(Math.max(0, lives))}
+            {'🖤'.repeat(Math.max(0, 3 - lives))}
+          </Text>
+          <Text style={bp.timerT}>⏱{timeLeft}s</Text>
+        </View>
+      </View>
+
+      <Text style={bp.rule}>🌸 ටොක් = +1 | ☠️ ටොක් = ජීවිතය -1</Text>
+
+      {!running && !gameOver && (
+        <TouchableOpacity style={bp.startBtn} onPress={startGame}>
+          <LinearGradient colors={['#E91E8C', '#7E57C2']} style={bp.startBtnIn}>
+            <Text style={bp.startBtnT}>▶ ආරම්භ</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
+
+      {gameOver && (
+        <LinearGradient colors={['#FCE4EC', '#EDE7F6']} style={bp.gameOverCard}>
+          <Text style={bp.gameOverT}>{lives <= 0 ? '💔 ජීවිත නැති!' : '⏰ කාලය!'}</Text>
+          <Text style={bp.gameOverScore}>🌸{score}</Text>
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <TouchableOpacity style={bp.retryBtn} onPress={startGame}>
+              <Text style={bp.retryBtnT}>↺ නැවත</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[bp.retryBtn, { backgroundColor: '#EDE7F6' }]}
+              onPress={handleBackNavigation}
+            >
+              <Text style={[bp.retryBtnT, { color: '#7E57C2' }]}>🏠 ආපසු</Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+      )}
+
+      {running && (
+        <View style={bp.area}>
+          {bubbles.map((b) => (
+            <TouchableOpacity
+              key={b.id}
+              onPress={() => popBubble(b)}
+              style={[
+                bp.bubble,
+                {
+                  left: b.x,
+                  top: b.y,
+                  width: b.size,
+                  height: b.size,
+                  borderRadius: b.size / 2,
+                },
+              ]}
+            >
+              <LinearGradient
+                colors={b.cols}
+                style={[bp.bubbleGrad, { borderRadius: b.size / 2 }]}
+              >
+                <Text style={{ fontSize: b.size * 0.44 }}>{b.emoji}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
 };
 
 // WORD MATCH (30 word pool, new set per turn, no repeats)
@@ -373,14 +642,14 @@ const ActivityScreen=({navigation,route})=>{
   const renderAct=(act)=>{if(act.isNewFormat){return<NewActivityDetail activity={act} onComplete={()=>setDone(true)}/>;}switch(act.type){case'breathing':return<BreathingEx activity={act} onComplete={()=>setDone(true)}/>;case'guided':return<GuidedAct activity={act} onComplete={()=>setDone(true)}/>;case'prompts':return<PromptsAct activity={act}/>;default:return<GuidedAct activity={act} onComplete={()=>setDone(true)}/>;}};
   const renderGame=(id)=>{switch(id){
     case'word_search':return<WordSearch/>;case'baby_interaction':return<BabyInteractionGame/>;case'memory_match':return<MemoryMatch/>;
-    case'baby_mood':return<BabyMoodGuess/>;case'self_care':return<SelfCareQuest/>;case'bubble_pop':return<BubblePop/>;
+    case'baby_mood':return<BabyMoodGuess/>;case'self_care':return<SelfCareQuest/>;case'bubble_pop':return<BubblePop navigation={navigation} onGoBack={goBack}/>;
     case'word_match':return<WordMatchGame/>;case'word_builder':return<WordBuilder/>;case'pattern_repeat':return<PatternRepeat/>;
     case'spot_diff':return<SpotDifference/>;case'sequence_order':return<SequenceOrder/>;case'number_seq':return<NumberSeq/>;
     case'coin_maze':return<CoinMaze/>;case'rotation_puzzle':return<RotationPuzzle/>;case'sliding_puzzle':return<SlidingPuzzle/>;
     case'emotion_journal':return<EmotionJournal/>;case'mindful_tap':return<MindfulTap/>;case'mood_board':return<MoodBoard/>;
     case'gratitude_garden':return<GratitudeGarden/>;
     case'mandala':case'colouring':navigation.navigate('Art');return null;
-    default:return<BubblePop/>;
+    default:return<BubblePop navigation={navigation} onGoBack={goBack}/>;
   }};
   const goBack=()=>{setView('list');setSelAct(null);setSelGame(null);setDone(false);};
   if(view==='activity'&&selAct)return(<View style={s.container}><LinearGradient colors={['#F8F4FF','#F0FAFF']} style={s.gradient}><ScrollView contentContainerStyle={s.scroll}><TouchableOpacity onPress={goBack} style={s.backBtn}><Text style={s.backText}>← ආපසු</Text></TouchableOpacity><Text style={s.actTitle}>{selAct.label}</Text><Text style={s.actSub}>{selAct.desc}</Text>{renderAct(selAct)}{done&&<LinearGradient colors={['#EDE7F6','#FCE4EC']} style={s.banner}><Text style={s.bannerT}>🌸 සම්පූර්ණ! 💜</Text></LinearGradient>}<View style={{height:110}}/></ScrollView></LinearGradient></View>);
@@ -459,6 +728,6 @@ const slp=StyleSheet.create({cont:{alignItems:'center'},header:{flexDirection:'r
 const ej=StyleSheet.create({cont:{alignItems:'center'},header:{flexDirection:'row',justifyContent:'space-between',width:'100%',marginBottom:8},title:{fontSize:22,fontWeight:'900',color:'#E91E8C'},count:{fontSize:14,color:'#888',fontWeight:'700'},hint:{fontSize:14,color:'#666',marginBottom:24},grid:{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between',width:'100%'},emotionBtn:{width:'23%',aspectRatio:1,borderRadius:16,justifyContent:'center',alignItems:'center',marginBottom:12,...shadows.soft},emotionEmoji:{fontSize:32,marginBottom:4},emotionLabel:{fontSize:11,fontWeight:'800',color:'#555'},reflCard:{width:'100%',padding:32,borderRadius:radius.xl,alignItems:'center',...shadows.card},reflEmoji:{fontSize:64,marginBottom:16},reflLabel:{fontSize:20,fontWeight:'900',color:'#333',marginBottom:8},reflText:{fontSize:16,color:'#555',textAlign:'center',marginBottom:24,fontStyle:'italic'},saveBtn:{borderRadius:99,width:'100%',marginBottom:16},saveBtnIn:{paddingVertical:14,alignItems:'center',borderRadius:99},saveBtnT:{color:'white',fontWeight:'900',fontSize:15},cancelT:{color:'#888',fontWeight:'800'},journalList:{width:'100%',marginTop:24,backgroundColor:'white',padding:16,borderRadius:radius.lg,...shadows.soft},journalTitle:{fontSize:16,fontWeight:'900',color:'#555',marginBottom:12},journalItem:{flexDirection:'row',alignItems:'center',paddingVertical:8,borderBottomWidth:1,borderBottomColor:'#eee'},jEmoji:{fontSize:20,marginRight:12},jLabel:{flex:1,fontSize:14,fontWeight:'700',color:'#333'},jTime:{fontSize:12,color:'#888'}});
 const mt=StyleSheet.create({cont:{alignItems:'center'},header:{flexDirection:'row',justifyContent:'space-between',width:'100%',marginBottom:8},title:{fontSize:22,fontWeight:'900',color:'#2E7D32'},score:{fontSize:16,fontWeight:'900',color:'#F57F17'},hint:{fontSize:14,color:'#666',marginBottom:20},patRow:{flexDirection:'row',justifyContent:'space-between',width:'100%',marginBottom:30},patBtn:{flex:1,backgroundColor:'white',paddingVertical:10,marginHorizontal:4,borderRadius:16,alignItems:'center',...shadows.soft},patBtnT:{fontSize:12,fontWeight:'700',color:'#757575'},circle:{width:220,height:220,borderRadius:110,borderWidth:4,justifyContent:'center',alignItems:'center',backgroundColor:'white',...shadows.card},circleInner:{width:200,height:200,borderRadius:100,justifyContent:'center',alignItems:'center'},circleT:{fontSize:22,fontWeight:'900',marginBottom:8},circleCount:{fontSize:48,fontWeight:'900'},circleRound:{position:'absolute',bottom:30,fontSize:14,fontWeight:'700',color:'#888'},doneCard:{marginTop:30,padding:16,borderRadius:24},doneT:{color:'#7E57C2',fontWeight:'900',fontSize:16}});
 const mb=StyleSheet.create({cont:{alignItems:'center'},header:{flexDirection:'row',justifyContent:'space-between',width:'100%',marginBottom:8},title:{fontSize:22,fontWeight:'900',color:'#7E57C2'},hint:{fontSize:14,color:'#666',marginBottom:24},row:{width:'100%',marginBottom:16},rowLabel:{fontSize:14,fontWeight:'800',color:'#555',marginBottom:8},rowItems:{flexDirection:'row',justifyContent:'space-between'},item:{width:44,height:44,backgroundColor:'white',borderRadius:22,justifyContent:'center',alignItems:'center',...shadows.soft,borderWidth:2,borderColor:'transparent'},itemSel:{borderColor:'#7E57C2',backgroundColor:'#F3E5F5'},preview:{width:'100%',backgroundColor:'white',padding:20,borderRadius:radius.xl,...shadows.card,marginBottom:24},previewLabel:{fontSize:14,fontWeight:'900',color:'#7E57C2',marginBottom:12},previewRow:{flexDirection:'row',justifyContent:'space-between'},btnRow:{flexDirection:'row',gap:16,marginBottom:24},saveBtn:{borderRadius:99,flex:1},saveBtnIn:{paddingVertical:14,alignItems:'center',borderRadius:99},saveBtnT:{color:'white',fontWeight:'900',fontSize:15},clearBtn:{backgroundColor:'white',paddingVertical:14,paddingHorizontal:24,borderRadius:99,...shadows.soft},clearBtnT:{color:'#E53935',fontWeight:'900'},historyBox:{width:'100%'},historyTitle:{fontSize:16,fontWeight:'900',color:'#555',marginBottom:12},historyItem:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',backgroundColor:'white',padding:12,borderRadius:12,marginBottom:8,...shadows.soft},historyDate:{fontSize:12,fontWeight:'700',color:'#888'}});
-const gg=StyleSheet.create({cont:{alignItems:'center'},header:{flexDirection:'row',justifyContent:'space-between',width:'100%',marginBottom:8},title:{fontSize:22,fontWeight:'900',color:'#2E7D32'},count:{fontSize:16,fontWeight:'900',color:'#E91E8C'},hint:{fontSize:14,color:'#666',marginBottom:20},garden:{borderRadius:radius.xl,overflow:'hidden',marginBottom:24,position:'relative',...shadows.inner},gardenFlower:{position:'absolute',fontSize:28},gardenEmpty:{position:'absolute',width:'100%',textAlign:'center',top:'45%',color:'#81C784',fontWeight:'800'},promptCard:{width:'100%',padding:24,borderRadius:radius.xl,alignItems:'center',...shadows.card},promptText:{fontSize:18,fontWeight:'900',color:'#333',marginBottom:20,textAlign:'center'},yesBtn:{borderRadius:99,width:'100%',marginBottom:16},yesBtnIn:{paddingVertical:14,alignItems:'center',borderRadius:99},yesBtnT:{color:'white',fontWeight:'900',fontSize:16},skipT:{color:'#7E57C2',fontWeight:'800'},fullCard:{width:'100%',padding:16,borderRadius:radius.lg,alignItems:'center',marginTop:16},fullT:{color:'#F57F17',fontWeight:'900',fontSize:16}});
+const bpp=StyleSheet.create({overlay:{flex:1,backgroundColor:'rgba(0,0,0,0.65)',justifyContent:'center',alignItems:'center',padding:20},box:{backgroundColor:'white',borderRadius:28,padding:24,alignItems:'center',width:'100%',maxWidth:360,...shadows.card},confettiRow:{flexDirection:'row',gap:8,marginBottom:8},confEmoji:{fontSize:22},bigEmoji:{fontSize:56,marginVertical:4},title:{fontSize:24,fontWeight:'900',color:'#E91E8C',marginBottom:4,textAlign:'center'},subtitle:{fontSize:14,color:'#666',fontWeight:'700',marginBottom:16,textAlign:'center'},statsCard:{flexDirection:'row',backgroundColor:'#FCE4EC',borderRadius:16,paddingVertical:14,paddingHorizontal:12,width:'100%',justifyContent:'space-around',alignItems:'center',marginBottom:20},statItem:{alignItems:'center'},statLabel:{fontSize:12,fontWeight:'800',color:'#888',marginBottom:4},statVal:{fontSize:16,fontWeight:'900',color:'#D81B60'},divider:{width:1,height:28,backgroundColor:'rgba(216, 27, 96, 0.2)'},btnGroup:{width:'100%',gap:10},btnMain:{borderRadius:999,overflow:'hidden',width:'100%',...shadows.soft},btnMainIn:{paddingVertical:14,alignItems:'center'},btnMainT:{color:'white',fontWeight:'900',fontSize:15},btnClose:{backgroundColor:'#F5F5F5',paddingVertical:12,borderRadius:999,alignItems:'center',width:'100%',borderWidth:1,borderColor:'#E0E0E0'},btnCloseT:{color:'#555',fontWeight:'800',fontSize:14},btnBack:{backgroundColor:'#EDE7F6',paddingVertical:12,borderRadius:999,alignItems:'center',width:'100%'},btnBackT:{color:'#7E57C2',fontWeight:'900',fontSize:14}});
 
 export default ActivityScreen;
