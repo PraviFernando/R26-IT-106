@@ -62,15 +62,389 @@ const BabyInteractionGame=()=>{
   return(<View style={bi.cont}><View style={bi.header}><Text style={bi.title}>👶 ළදරු බැඳීම</Text><Text style={bi.count}>{cnt} ක්‍රියා 💜</Text></View><LinearGradient colors={MOOD_COLS[mood]} style={bi.babyCard}><Animated.Text style={[bi.babyEmoji,{transform:[{scale:ba}]}]}>👶</Animated.Text><Text style={bi.moodLabel}>{mood==='happy'?'සතුටු 🌸':mood==='sleepy'?'නිදිමත 💤':'සංසුන් 💜'}</Text>{resp&&<Animated.View style={[bi.responseBox,{opacity:fa}]}><Text style={bi.responseEmoji}>{resp.emoji}</Text><Text style={bi.responseText}>{resp.msg}</Text></Animated.View>}</LinearGradient><Text style={bi.actLabel}>ඔබ?</Text><View style={bi.actGrid}>{BI_ACTIONS.map(act=>(<TouchableOpacity key={act.key} onPress={()=>doAction(act.key)} style={bi.actWrap}><LinearGradient colors={act.color} style={bi.actBtn}><Text style={bi.actBtnText}>{act.label}</Text></LinearGradient></TouchableOpacity>))}</View>{cnt>=5&&<LinearGradient colors={['#FFF9C4','#FCE4EC']} style={bi.badge}><Text style={bi.badgeText}>🌸 අපූරු! 💜</Text></LinearGradient>}</View>);
 };
 
-// MEMORY MATCH (5-col smaller cards)
-const MemoryMatch=()=>{
-  const MM_EMOJIS=['🍼','💜','🌙','🌸','⭐'];
-  const makeCards=()=>MM_EMOJIS.flatMap((e,i)=>[{id:i*2,emoji:e,flipped:false,matched:false},{id:i*2+1,emoji:e,flipped:false,matched:false}]).sort(()=>Math.random()-0.5);
-  const[cards,setCards]=useState(makeCards);const[sel,setSel]=useState([]);const[moves,setMoves]=useState(0);const[matches,setMatches]=useState(0);const[locked,setLocked]=useState(false);const[showC,setShowC]=useState(false);
-  const cardW=Math.floor((width-spacing.md*2-24)/5);const cardH=Math.floor(cardW*1.15);
-  const tapCard=(card)=>{if(locked||card.flipped||card.matched)return;const newCards=cards.map(c=>c.id===card.id?{...c,flipped:true}:c);setCards(newCards);const newSel=[...sel,card];if(newSel.length===2){setMoves(m=>m+1);setLocked(true);setTimeout(()=>{if(newSel[0].emoji===newSel[1].emoji){setCards(prev=>prev.map(c=>c.emoji===newSel[0].emoji?{...c,matched:true,flipped:true}:c));const nm=matches+1;setMatches(nm);if(nm===5)setTimeout(()=>setShowC(true),400);}else{setCards(prev=>prev.map(c=>newSel.some(s=>s.id===c.id)&&!c.matched?{...c,flipped:false}:c));}setSel([]);setLocked(false);},800);}else setSel(newSel);};
-  const reset=()=>{setCards(makeCards());setMoves(0);setMatches(0);setSel([]);setLocked(false);setShowC(false);};
-  return(<View style={mm.cont}><CongratsPopup visible={showC} onClose={reset} title="ජය! 🎉" msg={`${moves} ක්‍රීඩා 💜`}/><View style={mm.header}><Text style={mm.title}>🃏 මතක ගැළපීම</Text><View style={mm.stats}><View style={mm.statChip}><Text style={mm.statTxt}>👆{moves}</Text></View><View style={[mm.statChip,{backgroundColor:'#C8E6C9'}]}><Text style={[mm.statTxt,{color:'#2E7D32'}]}>✓{matches}/5</Text></View></View></View><Text style={mm.hint}>කාඩ් දෙකක් — ගැළපෙන සොයන්න 💜</Text><View style={mm.grid}>{cards.map(card=>(<TouchableOpacity key={card.id} onPress={()=>tapCard(card)} style={[mm.card,{width:cardW,height:cardH}]}><LinearGradient colors={card.matched?['#A5D6A7','#C8E6C9']:card.flipped?['#CE93D8','#AB47BC']:['#7E57C2','#E91E8C']} style={mm.cardInner}><Text style={{fontSize:Math.floor(cardW*0.38),textAlign:'center'}}>{(card.flipped||card.matched)?card.emoji:'💜'}</Text></LinearGradient></TouchableOpacity>))}</View><TouchableOpacity style={mm.resetBtn} onPress={reset}><Text style={mm.resetBtnT}>↺ මිශ්‍ර</Text></TouchableOpacity></View>);
+// ─── MEMORY MATCH — fully redesigned ───────────────────────────────────────
+const MM_ALL_EMOJIS = ['🍼','🧸','🌸','☁️','⭐','🌈','🐥','🐘','🍎','🌙','❤️','🦋','🌺','🎀','🍭','🐣','🌻','🎵'];
+
+const MM_LEVELS = [
+  {level:1, cols:2, rows:2},
+  {level:2, cols:3, rows:2},
+  {level:3, cols:3, rows:2},
+  {level:4, cols:4, rows:3},
+  {level:5, cols:4, rows:4},
+  {level:6, cols:5, rows:4},
+  {level:7, cols:4, rows:5},
+  {level:8, cols:5, rows:5},
+  {level:9, cols:5, rows:6},
+  {level:10, cols:6, rows:6},
+];
+
+const MM_STORAGE_KEY = '@mm_progress';
+
+const saveMMProgress = async (level, moves, duration) => {
+  try {
+    const record = {
+      activityId: 'memory_match',
+      level,
+      moves,
+      duration,
+      completed: true,
+      completedAt: Date.now(),
+    };
+    const raw = await AsyncStorage.getItem('@activity_history');
+    const hist = raw ? JSON.parse(raw) : [];
+    await AsyncStorage.setItem('@activity_history', JSON.stringify([record, ...hist]));
+  } catch (_) {}
+};
+
+const loadMMUnlocked = async () => {
+  try {
+    const raw = await AsyncStorage.getItem(MM_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : 1;
+  } catch (_) { return 1; }
+};
+
+const saveMMUnlocked = async (lvl) => {
+  try { await AsyncStorage.setItem(MM_STORAGE_KEY, JSON.stringify(lvl)); } catch (_) {}
+};
+
+const makeMMCards = (level) => {
+  const cfg = MM_LEVELS[level - 1];
+  const pairs = (cfg.cols * cfg.rows) / 2;
+  const emojis = MM_ALL_EMOJIS.slice(0, Math.min(pairs, MM_ALL_EMOJIS.length));
+  const extended = pairs > emojis.length
+    ? [...emojis, ...emojis.slice(0, pairs - emojis.length)]
+    : emojis;
+  return extended
+    .flatMap((e, i) => [
+      {id: i * 2,     emoji: e, flipped: false, matched: false},
+      {id: i * 2 + 1, emoji: e, flipped: false, matched: false},
+    ])
+    .sort(() => Math.random() - 0.5);
+};
+
+// Level-select screen
+const MMlevelSelect = ({ unlocked, onSelect }) => (
+  <View style={mm.lsCont}>
+    <Text style={mm.lsTitle}>🃏 මතක ගැළපීම</Text>
+    <Text style={mm.lsSub}>මට්ටමක් තෝරන්න 💜</Text>
+    <View style={mm.lsGrid}>
+      {MM_LEVELS.map(cfg => {
+        const locked = cfg.level > unlocked;
+        return (
+          <TouchableOpacity
+            key={cfg.level}
+            onPress={() => !locked && onSelect(cfg.level)}
+            activeOpacity={locked ? 1 : 0.8}
+            style={[mm.lsCard, locked && mm.lsCardLocked]}
+          >
+            <LinearGradient
+              colors={locked ? ['#EEEEEE','#E0E0E0'] : ['#F3E5F5','#EDE7F6']}
+              style={mm.lsCardGrad}
+            >
+              <Text style={[mm.lsNum, locked && {color:'#BDBDBD'}]}>
+                {locked ? '🔒' : cfg.level}
+              </Text>
+              <Text style={[mm.lsGrid2, locked && {color:'#BDBDBD'}]}>
+                {cfg.cols}×{cfg.rows}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  </View>
+);
+
+// Completion popup
+const MMCompletionPopup = ({ visible, level, moves, duration, onContinue, onReplay, onBack }) => {
+  const sc = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (visible) Animated.spring(sc, { toValue: 1, friction: 5, useNativeDriver: true }).start();
+    else sc.setValue(0);
+  }, [visible]);
+  if (!visible) return null;
+  const isLast = level >= MM_LEVELS.length;
+  return (
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onBack}>
+      <View style={mm.cpOverlay}>
+        <Animated.View style={[mm.cpBox, { transform: [{ scale: sc }] }]}>
+          <Text style={mm.cpConfetti}>🎉 🌸 ✨ 💜 ⭐</Text>
+          <Text style={mm.cpBig}>🌟</Text>
+          <Text style={mm.cpTitle}>ශ්‍රේෂ්ඨයි! 🎊</Text>
+          <Text style={mm.cpLevel}>මට්ටම {level} සම්පූර්ණ!</Text>
+          <View style={mm.cpStats}>
+            <View style={mm.cpStat}>
+              <Text style={mm.cpStatLbl}>👆 ඇදීම්</Text>
+              <Text style={mm.cpStatVal}>{moves}</Text>
+            </View>
+            <View style={mm.cpStatDiv}/>
+            <View style={mm.cpStat}>
+              <Text style={mm.cpStatLbl}>⏱ කාලය</Text>
+              <Text style={mm.cpStatVal}>{duration}s</Text>
+            </View>
+          </View>
+          <View style={mm.cpBtns}>
+            {!isLast && (
+              <TouchableOpacity style={mm.cpBtnMain} onPress={onContinue} activeOpacity={0.85}>
+                <LinearGradient colors={['#7E57C2','#E91E8C']} style={mm.cpBtnGrad}>
+                  <Text style={mm.cpBtnMainT}>⭐ ඊළඟ මට්ටම</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity style={mm.cpBtnSec} onPress={onReplay} activeOpacity={0.85}>
+              <Text style={mm.cpBtnSecT}>🔄 නැවත ක්‍රීඩා</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={mm.cpBtnBack} onPress={onBack} activeOpacity={0.85}>
+              <Text style={mm.cpBtnBackT}>🏠 ආපසු</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+};
+
+// Pause modal
+const MMPauseModal = ({ visible, onResume, onRestart, onQuit }) => {
+  if (!visible) return null;
+  return (
+    <Modal transparent visible={visible} animationType="fade" onRequestClose={onResume}>
+      <View style={mm.cpOverlay}>
+        <View style={mm.pauseBox}>
+          <Text style={mm.pauseTitle}>⏸ විරාමය</Text>
+          <TouchableOpacity style={mm.pauseBtn} onPress={onResume}>
+            <LinearGradient colors={['#7E57C2','#E91E8C']} style={mm.pauseBtnGrad}>
+              <Text style={mm.pauseBtnT}>▶ ඉදිරියට</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          <TouchableOpacity style={mm.pauseBtnAlt} onPress={onRestart}>
+            <Text style={mm.pauseBtnAltT}>🔄 නැවත ආරම්භ</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={mm.pauseBtnAlt} onPress={onQuit}>
+            <Text style={[mm.pauseBtnAltT,{color:'#E53935'}]}>🚪 ක්‍රීඩාව අවසන්</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
+// Main component
+const MemoryMatch = ({ navigation, onGoBack }) => {
+  const [screen, setScreen] = useState('select'); // 'select' | 'play'
+  const [unlocked, setUnlocked] = useState(1);
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [cards, setCards] = useState([]);
+  const [sel, setSel] = useState([]);
+  const [moves, setMoves] = useState(0);
+  const [matched, setMatched] = useState(0);
+  const [locked, setLocked] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [showCompletion, setShowCompletion] = useState(false);
+  const [showPause, setShowPause] = useState(false);
+  const [paused, setPaused] = useState(false);
+
+  const timerRef = useRef(null);
+  const startRef  = useRef(null);
+  const elapsedRef = useRef(0);
+
+  // Load unlocked level on mount
+  useEffect(() => {
+    loadMMUnlocked().then(u => setUnlocked(u));
+  }, []);
+
+  // Timer
+  useEffect(() => {
+    if (screen !== 'play' || paused) {
+      clearInterval(timerRef.current);
+      return;
+    }
+    startRef.current = Date.now() - elapsedRef.current * 1000;
+    timerRef.current = setInterval(() => {
+      const s = Math.round((Date.now() - startRef.current) / 1000);
+      elapsedRef.current = s;
+      setElapsed(s);
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [screen, paused]);
+
+  const initLevel = (lvl) => {
+    clearInterval(timerRef.current);
+    elapsedRef.current = 0;
+    setCurrentLevel(lvl);
+    setCards(makeMMCards(lvl));
+    setSel([]);
+    setMoves(0);
+    setMatched(0);
+    setLocked(false);
+    setElapsed(0);
+    setPaused(false);
+    setShowCompletion(false);
+    setShowPause(false);
+    setScreen('play');
+  };
+
+  const cfg = MM_LEVELS[currentLevel - 1];
+  const pairs = (cfg.cols * cfg.rows) / 2;
+  const cardGap = 6;
+  const cardW = Math.floor((width - spacing.md * 2 - cardGap * (cfg.cols - 1) - 8) / cfg.cols);
+  const cardH = Math.floor(cardW * 1.2);
+
+  const tapCard = (card) => {
+    if (locked || card.flipped || card.matched || paused) return;
+    const next = cards.map(c => c.id === card.id ? { ...c, flipped: true } : c);
+    setCards(next);
+    const newSel = [...sel, card];
+    if (newSel.length === 2) {
+      setMoves(m => m + 1);
+      setLocked(true);
+      setTimeout(() => {
+        if (newSel[0].emoji === newSel[1].emoji) {
+          setCards(prev => prev.map(c =>
+            c.emoji === newSel[0].emoji ? { ...c, matched: true, flipped: true } : c
+          ));
+          setMatched(m => {
+            const nm = m + 1;
+            if (nm === pairs) {
+              clearInterval(timerRef.current);
+              const dur = elapsedRef.current;
+              saveMMProgress(currentLevel, moves + 1, dur);
+              const nextUnlocked = Math.max(unlocked, currentLevel + 1);
+              setUnlocked(nextUnlocked);
+              saveMMUnlocked(nextUnlocked);
+              setTimeout(() => setShowCompletion(true), 400);
+            }
+            return nm;
+          });
+        } else {
+          setCards(prev => prev.map(c =>
+            newSel.some(s => s.id === c.id) && !c.matched ? { ...c, flipped: false } : c
+          ));
+        }
+        setSel([]);
+        setLocked(false);
+      }, 700);
+    } else {
+      setSel(newSel);
+    }
+  };
+
+  const handleContinue = () => {
+    setShowCompletion(false);
+    const next = Math.min(currentLevel + 1, MM_LEVELS.length);
+    initLevel(next);
+  };
+
+  const handleReplay = () => {
+    setShowCompletion(false);
+    initLevel(currentLevel);
+  };
+
+  const handleBack = () => {
+    clearInterval(timerRef.current);
+    setShowCompletion(false);
+    setShowPause(false);
+    setScreen('select');
+  };
+
+  const handleQuit = () => {
+    handleBack();
+    if (navigation?.canGoBack && navigation.canGoBack()) {
+      navigation.goBack();
+    } else if (onGoBack) {
+      onGoBack();
+    }
+  };
+
+  // ─── Level-select view ───────────────────────────────────────────────────
+  if (screen === 'select') {
+    return <MMlevelSelect unlocked={unlocked} onSelect={initLevel} />;
+  }
+
+  // ─── Play view ───────────────────────────────────────────────────────────
+  const fmt = (s) => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+  return (
+    <View style={mm.playCont}>
+      {/* Completion popup */}
+      <MMCompletionPopup
+        visible={showCompletion}
+        level={currentLevel}
+        moves={moves}
+        duration={elapsed}
+        onContinue={handleContinue}
+        onReplay={handleReplay}
+        onBack={handleBack}
+      />
+
+      {/* Pause modal */}
+      <MMPauseModal
+        visible={showPause}
+        onResume={() => { setShowPause(false); setPaused(false); }}
+        onRestart={() => { setShowPause(false); initLevel(currentLevel); }}
+        onQuit={handleQuit}
+      />
+
+      {/* Header */}
+      <LinearGradient colors={['#EDE7F6','#FCE4EC']} style={mm.playHeader}>
+        <TouchableOpacity onPress={handleBack} style={mm.playBackBtn}>
+          <Text style={mm.playBackT}>← ආපසු</Text>
+        </TouchableOpacity>
+        <View style={mm.playMeta}>
+          <Text style={mm.playLvl}>මට්ටම {currentLevel}</Text>
+        </View>
+        <TouchableOpacity onPress={() => { setShowPause(true); setPaused(true); }} style={mm.pauseIconBtn}>
+          <Text style={mm.pauseIconT}>⏸</Text>
+        </TouchableOpacity>
+      </LinearGradient>
+
+      {/* Stats row */}
+      <View style={mm.statsRow}>
+        <View style={mm.statPill}>
+          <Text style={mm.statPillLbl}>👆 ඇදීම්</Text>
+          <Text style={mm.statPillVal}>{moves}</Text>
+        </View>
+        <View style={mm.statPill}>
+          <Text style={mm.statPillLbl}>✅ ගළපීම</Text>
+          <Text style={mm.statPillVal}>{matched}/{pairs}</Text>
+        </View>
+        <View style={mm.statPill}>
+          <Text style={mm.statPillLbl}>⏱ කාලය</Text>
+          <Text style={mm.statPillVal}>{fmt(elapsed)}</Text>
+        </View>
+      </View>
+
+      {/* Card grid */}
+      <View style={[mm.playGrid, { gap: cardGap }]}>
+        {cards.map(card => (
+          <TouchableOpacity
+            key={card.id}
+            onPress={() => tapCard(card)}
+            activeOpacity={0.85}
+            style={[mm.playCard, { width: cardW, height: cardH }]}
+          >
+            <Animated.View style={mm.playCardInner}>
+              {card.flipped || card.matched ? (
+                <LinearGradient
+                  colors={card.matched ? ['#C8E6C9','#A5D6A7'] : ['#E1BEE7','#CE93D8']}
+                  style={[mm.playCardFace, { borderRadius: 12 }]}
+                >
+                  <Text style={{ fontSize: Math.max(18, Math.floor(cardW * 0.42)) }}>{card.emoji}</Text>
+                </LinearGradient>
+              ) : (
+                <LinearGradient
+                  colors={['#D1C4E9','#B39DDB']}
+                  style={[mm.playCardBack, { borderRadius: 12 }]}
+                >
+                  <Text style={{ fontSize: Math.max(16, Math.floor(cardW * 0.36)) }}>💜</Text>
+                </LinearGradient>
+              )}
+            </Animated.View>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
 };
 
 // BABY MOOD (image comment block)
@@ -712,7 +1086,68 @@ const gd=StyleSheet.create({intro:{padding:16,borderRadius:radius.lg,marginBotto
 const pr=StyleSheet.create({intro:{padding:16,borderRadius:radius.lg,marginBottom:20},introText:{fontSize:15,color:'#333',textAlign:'center',lineHeight:22},counter:{fontSize:14,color:'#888',textAlign:'center',marginBottom:12,fontWeight:'700'},card:{padding:32,borderRadius:radius.xl,alignItems:'center',marginBottom:24,...shadows.card},cardEmoji:{fontSize:48,marginBottom:16},cardText:{fontSize:18,color:'#555',textAlign:'center',lineHeight:26,fontWeight:'600'},btnRow:{flexDirection:'row',justifyContent:'center',gap:16},prev:{paddingVertical:14,paddingHorizontal:24,backgroundColor:'white',borderRadius:99,...shadows.soft},prevT:{color:'#7E57C2',fontWeight:'800',fontSize:15},next:{borderRadius:99,...shadows.soft},nextIn:{paddingVertical:14,paddingHorizontal:32,borderRadius:99},nextT:{color:'white',fontWeight:'800',fontSize:15},done:{paddingVertical:14,paddingHorizontal:32,borderRadius:99},doneT:{color:'#2E7D32',fontWeight:'900',fontSize:16}});
 const ws=StyleSheet.create({cont:{alignItems:'center'},header:{flexDirection:'row',justifyContent:'space-between',width:'100%',marginBottom:8,alignItems:'center'},title:{fontSize:22,fontWeight:'900',color:'#7E57C2'},badge:{backgroundColor:'#F3E5F5',paddingHorizontal:12,paddingVertical:4,borderRadius:12},badgeTxt:{color:'#7E57C2',fontWeight:'900',fontSize:14},subtitle:{fontSize:15,color:'#666',marginBottom:16,alignSelf:'flex-start'},wonCard:{width:'100%',padding:16,borderRadius:radius.lg,alignItems:'center',marginBottom:16},wonEmoji:{fontSize:32,marginBottom:8},wonTitle:{fontSize:18,fontWeight:'900',color:'#2E7D32'},gridWrap:{backgroundColor:'white',padding:5,borderRadius:radius.lg,...shadows.card,marginBottom:20},gridRow:{flexDirection:'row'},cell:{justifyContent:'center',alignItems:'center',margin:1.5,borderRadius:6,backgroundColor:'#F8F9FA'},cellSel:{backgroundColor:'#E1BEE7'},cellFound:{backgroundColor:'#C8E6C9'},cellWrong:{backgroundColor:'#FFCDD2'},cellTxt:{fontWeight:'800',color:'#757575'},cellTxtS:{color:'#6A1B9A'},cellTxtF:{color:'#2E7D32'},wordList:{flexDirection:'row',flexWrap:'wrap',justifyContent:'center',gap:8,marginBottom:24},chip:{backgroundColor:'white',paddingHorizontal:12,paddingVertical:6,borderRadius:16,...shadows.soft},chipFound:{backgroundColor:'#E8F5E9'},chipTxt:{color:'#555',fontWeight:'700',fontSize:13},chipTxtF:{color:'#2E7D32'},diffRow:{flexDirection:'row',gap:8,marginBottom:20},diffBtn:{paddingHorizontal:16,paddingVertical:8,borderRadius:20,backgroundColor:'#F5F5F5'},diffBtnOn:{backgroundColor:'#7E57C2'},diffTxt:{color:'#666',fontWeight:'700'},diffTxtOn:{color:'white'},newBtn:{backgroundColor:'white',paddingHorizontal:24,paddingVertical:12,borderRadius:24,...shadows.soft},newBtnTxt:{color:'#E91E8C',fontWeight:'900'}});
 const bi=StyleSheet.create({cont:{alignItems:'center'},header:{flexDirection:'row',justifyContent:'space-between',width:'100%',marginBottom:16},title:{fontSize:22,fontWeight:'900',color:'#C2185B'},count:{fontSize:16,color:'#C2185B',fontWeight:'800'},babyCard:{width:'100%',padding:32,borderRadius:radius.xl,alignItems:'center',marginBottom:24,...shadows.card},babyEmoji:{fontSize:72,marginBottom:16},moodLabel:{fontSize:20,fontWeight:'900',color:'#888',marginBottom:16},responseBox:{backgroundColor:'rgba(255,255,255,0.8)',paddingHorizontal:20,paddingVertical:12,borderRadius:20,flexDirection:'row',alignItems:'center',gap:10},responseEmoji:{fontSize:24},responseText:{fontSize:16,fontWeight:'800',color:'#555'},actLabel:{fontSize:16,fontWeight:'800',color:'#666',alignSelf:'flex-start',marginBottom:12},actGrid:{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between'},actWrap:{width:'31%',marginBottom:12},actBtn:{paddingVertical:16,borderRadius:radius.lg,alignItems:'center',...shadows.soft},actBtnText:{fontWeight:'900',color:'#555',fontSize:14},badge:{paddingVertical:12,paddingHorizontal:24,borderRadius:24,marginTop:10},badgeText:{color:'#F57F17',fontWeight:'900',fontSize:16}});
-const mm=StyleSheet.create({cont:{alignItems:'center'},header:{flexDirection:'row',justifyContent:'space-between',width:'100%',marginBottom:8},title:{fontSize:22,fontWeight:'900',color:'#7E57C2'},stats:{flexDirection:'row',gap:8},statChip:{backgroundColor:'#F3E5F5',paddingHorizontal:10,paddingVertical:4,borderRadius:12},statTxt:{color:'#7E57C2',fontWeight:'900'},hint:{fontSize:14,color:'#666',marginBottom:20,alignSelf:'flex-start'},grid:{flexDirection:'row',flexWrap:'wrap',justifyContent:'center',gap:6,marginBottom:24},card:{},cardInner:{flex:1,borderRadius:8,justifyContent:'center',alignItems:'center',...shadows.soft},resetBtn:{backgroundColor:'white',paddingHorizontal:24,paddingVertical:12,borderRadius:24,...shadows.soft},resetBtnT:{color:'#7E57C2',fontWeight:'900'}});
+const mm = StyleSheet.create({
+  // ── Level-select ──────────────────────────────────────────────────────────
+  lsCont:         { alignItems:'center', paddingBottom:20 },
+  lsTitle:        { fontSize:24, fontWeight:'900', color:'#7E57C2', marginBottom:6, textAlign:'center' },
+  lsSub:          { fontSize:14, color:'#999', marginBottom:20, fontWeight:'700' },
+  lsGrid:         { flexDirection:'row', flexWrap:'wrap', justifyContent:'center', gap:12 },
+  lsCard:         { width:70, height:70, borderRadius:16, overflow:'hidden', ...shadows.soft },
+  lsCardLocked:   { opacity:0.55 },
+  lsCardGrad:     { flex:1, justifyContent:'center', alignItems:'center' },
+  lsNum:          { fontSize:22, fontWeight:'900', color:'#7E57C2' },
+  lsGrid2:        { fontSize:11, fontWeight:'700', color:'#9E9E9E', marginTop:2 },
+  // ── Play screen ──────────────────────────────────────────────────────────
+  playCont:       { flex:1, alignItems:'center' },
+  playHeader:     { flexDirection:'row', alignItems:'center', justifyContent:'space-between',
+                    width:'100%', paddingHorizontal:16, paddingVertical:10, borderRadius:16, marginBottom:10 },
+  playBackBtn:    { paddingVertical:6, paddingHorizontal:4 },
+  playBackT:      { color:'#7E57C2', fontWeight:'800', fontSize:15 },
+  playMeta:       { alignItems:'center' },
+  playLvl:        { fontSize:17, fontWeight:'900', color:'#7E57C2' },
+  pauseIconBtn:   { padding:6 },
+  pauseIconT:     { fontSize:20 },
+  statsRow:       { flexDirection:'row', gap:10, marginBottom:12, width:'100%', justifyContent:'center' },
+  statPill:       { backgroundColor:'white', borderRadius:20, paddingHorizontal:12, paddingVertical:8,
+                    alignItems:'center', ...shadows.soft, minWidth:80 },
+  statPillLbl:    { fontSize:11, fontWeight:'700', color:'#9E9E9E', marginBottom:2 },
+  statPillVal:    { fontSize:15, fontWeight:'900', color:'#7E57C2' },
+  playGrid:       { flexDirection:'row', flexWrap:'wrap', justifyContent:'center', width:'100%' },
+  playCard:       { margin:3, borderRadius:12, overflow:'hidden' },
+  playCardInner:  { flex:1 },
+  playCardFace:   { flex:1, justifyContent:'center', alignItems:'center' },
+  playCardBack:   { flex:1, justifyContent:'center', alignItems:'center' },
+  // ── Completion popup ──────────────────────────────────────────────────────
+  cpOverlay:      { flex:1, backgroundColor:'rgba(0,0,0,0.55)', justifyContent:'center', alignItems:'center', padding:24 },
+  cpBox:          { backgroundColor:'white', borderRadius:28, padding:26, alignItems:'center', width:'100%', maxWidth:340, ...shadows.card },
+  cpConfetti:     { fontSize:22, letterSpacing:6, marginBottom:6 },
+  cpBig:          { fontSize:56, marginBottom:4 },
+  cpTitle:        { fontSize:24, fontWeight:'900', color:'#E91E8C', marginBottom:2, textAlign:'center' },
+  cpLevel:        { fontSize:15, fontWeight:'700', color:'#888', marginBottom:16 },
+  cpStats:        { flexDirection:'row', backgroundColor:'#F3E5F5', borderRadius:16,
+                    paddingVertical:12, paddingHorizontal:16, width:'100%',
+                    justifyContent:'space-around', alignItems:'center', marginBottom:20 },
+  cpStat:         { alignItems:'center' },
+  cpStatLbl:      { fontSize:12, fontWeight:'700', color:'#999', marginBottom:3 },
+  cpStatVal:      { fontSize:18, fontWeight:'900', color:'#7E57C2' },
+  cpStatDiv:      { width:1, height:28, backgroundColor:'#E0E0E0' },
+  cpBtns:         { width:'100%', gap:10 },
+  cpBtnMain:      { borderRadius:999, overflow:'hidden', width:'100%' },
+  cpBtnGrad:      { paddingVertical:14, alignItems:'center' },
+  cpBtnMainT:     { color:'white', fontWeight:'900', fontSize:15 },
+  cpBtnSec:       { backgroundColor:'#F3E5F5', paddingVertical:13, borderRadius:999, alignItems:'center', width:'100%' },
+  cpBtnSecT:      { color:'#7E57C2', fontWeight:'800', fontSize:14 },
+  cpBtnBack:      { backgroundColor:'#FCE4EC', paddingVertical:13, borderRadius:999, alignItems:'center', width:'100%' },
+  cpBtnBackT:     { color:'#E91E8C', fontWeight:'800', fontSize:14 },
+  // ── Pause modal ───────────────────────────────────────────────────────────
+  pauseBox:       { backgroundColor:'white', borderRadius:24, padding:28, alignItems:'center', width:'80%', maxWidth:300, ...shadows.card },
+  pauseTitle:     { fontSize:22, fontWeight:'900', color:'#7E57C2', marginBottom:20 },
+  pauseBtn:       { borderRadius:999, overflow:'hidden', width:'100%', marginBottom:10 },
+  pauseBtnGrad:   { paddingVertical:14, alignItems:'center' },
+  pauseBtnT:      { color:'white', fontWeight:'900', fontSize:15 },
+  pauseBtnAlt:    { backgroundColor:'#F5F5F5', paddingVertical:12, borderRadius:999, alignItems:'center', width:'100%', marginBottom:8 },
+  pauseBtnAltT:   { color:'#7E57C2', fontWeight:'800', fontSize:14 },
+});
 const bm=StyleSheet.create({cont:{alignItems:'center'},header:{flexDirection:'row',justifyContent:'space-between',width:'100%',marginBottom:16},title:{fontSize:22,fontWeight:'900',color:'#F57F17'},score:{fontSize:16,color:'#F57F17',fontWeight:'800'},faceCard:{width:'100%',padding:40,borderRadius:radius.xl,alignItems:'center',marginBottom:24,...shadows.card},babyFace:{fontSize:80,marginBottom:16},faceLabel:{fontSize:18,fontWeight:'900',color:'#555',marginBottom:16},resultBadge:{paddingHorizontal:16,paddingVertical:8,borderRadius:20,marginBottom:8},correctBadge:{backgroundColor:'#C8E6C9'},wrongBadge:{backgroundColor:'#FFCDD2'},resultText:{fontWeight:'900',fontSize:15,color:'#2E7D32'},hintText:{fontSize:14,color:'#7E57C2',fontWeight:'700',marginTop:8},options:{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between'},optBtn:{width:'48%',backgroundColor:'white',paddingVertical:16,borderRadius:radius.lg,alignItems:'center',marginBottom:12,...shadows.soft},optCorrect:{backgroundColor:'#C8E6C9',borderColor:'#2E7D32',borderWidth:2},optWrong:{backgroundColor:'#FFCDD2'},optText:{fontWeight:'800',color:'#555',fontSize:15},btnRow:{flexDirection:'row',gap:16,marginTop:10},hintBtn:{backgroundColor:'white',paddingHorizontal:24,paddingVertical:12,borderRadius:24,...shadows.soft},hintBtnT:{color:'#7E57C2',fontWeight:'900'},nextBtn:{borderRadius:24,...shadows.soft},nextBtnIn:{paddingHorizontal:24,paddingVertical:12,borderRadius:24},nextBtnT:{color:'white',fontWeight:'900'}});
 const sc=StyleSheet.create({cont:{},header:{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginBottom:16},title:{fontSize:22,fontWeight:'900',color:'#2E7D32'},pts:{fontSize:18,fontWeight:'900',color:'#F57F17'},badgeCard:{padding:20,borderRadius:radius.lg,alignItems:'center',marginBottom:20,...shadows.soft},badgeEmoji:{fontSize:48,marginBottom:8},badgeName:{fontSize:20,fontWeight:'900',color:'#333',marginBottom:12},nextBadgeT:{fontSize:12,color:'#666',fontWeight:'700',marginBottom:6},progressBg:{width:'100%',height:8,backgroundColor:'#ddd',borderRadius:4,marginBottom:6},progressFill:{height:'100%',backgroundColor:'#4CAF50',borderRadius:4},progressT:{fontSize:12,color:'#888',fontWeight:'700'},popup:{padding:16,borderRadius:radius.lg,alignItems:'center',marginBottom:20},popupEmoji:{fontSize:32,marginBottom:8},popupT:{fontSize:16,fontWeight:'900',color:'#F57F17'},taskLbl:{fontSize:16,fontWeight:'800',color:'#666',marginBottom:12},taskCard:{flexDirection:'row',alignItems:'center',padding:16,borderRadius:radius.md,marginBottom:10},taskDone:{opacity:0.8},taskIcon:{fontSize:24,marginRight:12},taskLabel2:{flex:1,fontSize:15,fontWeight:'700',color:'#444'},taskLblDone:{textDecorationLine:'line-through',color:'#888'},taskPts:{fontSize:14,fontWeight:'900',color:'#F57F17',marginRight:12},cb:{width:24,height:24,borderRadius:12,borderWidth:2,borderColor:'#ccc',justifyContent:'center',alignItems:'center'},cbDone:{backgroundColor:'#4CAF50',borderColor:'#4CAF50'},cbCheck:{color:'white',fontWeight:'900',fontSize:14},note:{padding:16,borderRadius:radius.lg,alignItems:'center',marginTop:20},noteT:{fontSize:14,fontWeight:'800',color:'#7E57C2'}});
 const bp=StyleSheet.create({cont:{alignItems:'center'},header:{flexDirection:'row',justifyContent:'space-between',width:'100%',marginBottom:8},title:{fontSize:22,fontWeight:'900',color:'#1565C0'},stats:{flexDirection:'row',gap:12},scoreT:{fontWeight:'900',color:'#E91E8C'},livesT:{fontSize:12,marginTop:2},timerT:{fontWeight:'900',color:'#555'},rule:{fontSize:13,color:'#666',marginBottom:20,alignSelf:'flex-start'},startBtn:{borderRadius:99},startBtnIn:{paddingHorizontal:32,paddingVertical:14,borderRadius:99},startBtnT:{color:'white',fontWeight:'900',fontSize:16},gameOverCard:{padding:32,borderRadius:radius.xl,alignItems:'center',width:'100%'},gameOverT:{fontSize:24,fontWeight:'900',color:'#C62828',marginBottom:8},gameOverScore:{fontSize:32,fontWeight:'900',color:'#E91E8C',marginBottom:20},retryBtn:{backgroundColor:'white',paddingHorizontal:24,paddingVertical:12,borderRadius:24,...shadows.soft},retryBtnT:{color:'#7E57C2',fontWeight:'900'},area:{width:'100%',height:320,backgroundColor:'white',borderRadius:radius.lg,position:'relative',overflow:'hidden',...shadows.inner},bubble:{position:'absolute',justifyContent:'center',alignItems:'center'},bubbleGrad:{flex:1,width:'100%',height:'100%',justifyContent:'center',alignItems:'center',borderWidth:1,borderColor:'rgba(255,255,255,0.5)'}});
