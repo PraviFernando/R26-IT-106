@@ -88,11 +88,20 @@ const RISK_CFG = {
   high: { label: '🔴 ඉහළ අවදානම', bg: '#FFEBEE', col: '#D32F2F' },
 };
 
-const openYouTube = async (url, title) => {
-  if (!url) {
-    Alert.alert('සබැඳියක් නැත', `"${title || 'මෙම අන්තර්ගතය'}" සඳහා සබැඳියක් නැත.`);
-    return;
+const openYouTube = async (itemOrUrl, title, titleEn) => {
+  let url = typeof itemOrUrl === 'string' ? itemOrUrl : itemOrUrl?.url;
+  let searchTitle = typeof itemOrUrl === 'object'
+    ? (itemOrUrl?.titleEn || itemOrUrl?.title || itemOrUrl?.label)
+    : (titleEn || title);
+
+  if (!url && searchTitle) {
+    url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTitle + ' music video relaxation')}`;
   }
+
+  if (!url) {
+    url = 'https://www.youtube.com/results?search_query=postpartum+relaxation+music';
+  }
+
   try {
     await Linking.openURL(url);
   } catch (e) {
@@ -303,7 +312,15 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   <TouchableOpacity
                     key={item.id || idx}
                     style={s.mediaCard}
-                    onPress={() => item.url ? openYouTube(item.url, item.title) : null}
+                    onPress={() => {
+                      if (item.itemType?.includes('Game') || item.itemType?.includes('ක්‍රීඩාව')) {
+                        navigation.navigate('Activity', { gameId: item.id });
+                      } else if (item.itemType?.includes('Activity') || item.itemType?.includes('ක්‍රියාකාරකම')) {
+                        navigation.navigate('Activity', { activityId: item.id });
+                      } else {
+                        openYouTube(item);
+                      }
+                    }}
                   >
                     <View style={[s.mediaIcon, { backgroundColor: colors.lavenderLight }]}>
                       <Text style={s.mediaEmoji}>{item.emoji || item.thumbnail || '📌'}</Text>
@@ -352,21 +369,24 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 {tab === 'activities' && (
                   <View>
                     <Text style={s.tabIntro}>ඔබ වෙනුවෙන් තෝරාගත් ක්‍රියාකාරකම් 🧘 (උපරිම 4)</Text>
-                    {finalActivities.map((act, idx) => (
-                      <TouchableOpacity
-                        key={act.id || idx}
-                        onPress={() => navigation.navigate('Activity', { activityId: act.id })}
-                        style={s.actCard}
-                      >
-                        <LinearGradient colors={act.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
-                          <Text style={s.actIcon}>{act.icon || '🌸'}</Text>
-                          <View style={s.actInfo}>
-                            <Text style={[s.actTitle, { color: act.accent || '#7E57C2' }]}>{act.label || act}</Text>
-                            <Text style={s.actDesc}>{act.purpose || act.desc || 'සන්සුන් ක්‍රියාකාරකමක්'}</Text>
-                          </View>
-                        </LinearGradient>
-                      </TouchableOpacity>
-                    ))}
+                    {finalActivities.map((act, idx) => {
+                      const actId = typeof act === 'string' ? act : act?.id;
+                      return (
+                        <TouchableOpacity
+                          key={actId || idx}
+                          onPress={() => navigation.navigate('Activity', { activityId: actId })}
+                          style={s.actCard}
+                        >
+                          <LinearGradient colors={act.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
+                            <Text style={s.actIcon}>{act.icon || '🌸'}</Text>
+                            <View style={s.actInfo}>
+                              <Text style={[s.actTitle, { color: act.accent || '#7E57C2' }]}>{act.label || act}</Text>
+                              <Text style={s.actDesc}>{act.purpose || act.desc || 'සන්සුන් ක්‍රියාකාරකමක්'}</Text>
+                            </View>
+                          </LinearGradient>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 )}
 
@@ -374,20 +394,23 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 {tab === 'games' && (
                   <View>
                     <Text style={s.tabIntro}>සන්සුන් ක්‍රීඩා 🎮 (උපරිම 3)</Text>
-                    {finalGames.map((game) => (
-                      <TouchableOpacity
-                        key={game.id}
-                        onPress={() => navigation.navigate(game.id === 'mandala' || game.id === 'colouring' ? 'Art' : 'Activity', { gameId: game.id })}
-                      >
-                        <LinearGradient colors={game.color || ['#EDE7F6', '#D1C4E9']} style={s.primaryGameCard}>
-                          <Text style={s.primaryGameIcon}>{game.icon || '🎮'}</Text>
-                          <View style={s.primaryGameInfo}>
-                            <Text style={[s.primaryGameName, { color: game.accent || '#7E57C2' }]}>{game.label}</Text>
-                            <Text style={s.primaryGameSub}>{game.labelEn || 'සුවය ලබාදෙන ක්‍රීඩාව'}</Text>
-                          </View>
-                        </LinearGradient>
-                      </TouchableOpacity>
-                    ))}
+                    {finalGames.map((game, idx) => {
+                      const gId = typeof game === 'string' ? game : game?.id;
+                      return (
+                        <TouchableOpacity
+                          key={gId || idx}
+                          onPress={() => navigation.navigate(gId === 'mandala' || gId === 'colouring' ? 'Art' : 'Activity', { gameId: gId })}
+                        >
+                          <LinearGradient colors={game.color || ['#EDE7F6', '#D1C4E9']} style={s.primaryGameCard}>
+                            <Text style={s.primaryGameIcon}>{game.icon || '🎮'}</Text>
+                            <View style={s.primaryGameInfo}>
+                              <Text style={[s.primaryGameName, { color: game.accent || '#7E57C2' }]}>{game.label || game}</Text>
+                              <Text style={s.primaryGameSub}>{game.labelEn || 'සුවය ලබාදෙන ක්‍රීඩාව'}</Text>
+                            </View>
+                          </LinearGradient>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 )}
 
@@ -396,7 +419,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   <View>
                     <Text style={s.tabIntro}>සන්සුන් සංගීතය 🎵 (උපරිම 4)</Text>
                     {finalMusic.map((track, idx) => (
-                      <TouchableOpacity key={track.id || idx} style={s.mediaCard} onPress={() => openYouTube(track.url, track.title)}>
+                      <TouchableOpacity key={track.id || idx} style={s.mediaCard} onPress={() => openYouTube(track)}>
                         <View style={[s.mediaIcon, { backgroundColor: colors.lavenderLight }]}>
                           <Text style={s.mediaEmoji}>{track.emoji || '🎵'}</Text>
                         </View>
@@ -414,7 +437,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   <View>
                     <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (උපරිම 4)</Text>
                     {displayedVideos.map((video, idx) => (
-                      <TouchableOpacity key={video.id || idx} style={s.mediaCard} onPress={() => openYouTube(video.url, video.title)}>
+                      <TouchableOpacity key={video.id || idx} style={s.mediaCard} onPress={() => openYouTube(video)}>
                         <View style={[s.mediaIcon, { backgroundColor: colors.roseLight }]}>
                           <Text style={s.mediaEmoji}>{video.emoji || '🎬'}</Text>
                         </View>
@@ -446,7 +469,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                     </ScrollView>
 
                     {getKnowledgeResources().map((res) => (
-                      <TouchableOpacity key={res.id} style={s.mediaCard} onPress={() => openYouTube(res.url, res.title)}>
+                      <TouchableOpacity key={res.id} style={s.mediaCard} onPress={() => openYouTube(res)}>
                         <View style={[s.mediaIcon, { backgroundColor: colors.mintLight }]}>
                           <Text style={s.mediaEmoji}>{res.thumbnail}</Text>
                         </View>
