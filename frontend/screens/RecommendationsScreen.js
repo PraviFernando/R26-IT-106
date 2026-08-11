@@ -406,9 +406,9 @@ const RecommendationsScreen = ({ navigation, route }) => {
                           key={actId || idx}
                           onPress={() => {
                             if (actId === 'baby_mood') {
-                              navigation.navigate('Activity', { gameId: 'baby_mood' });
+                              navigation.navigate('Activity', { gameId: 'baby_mood', fromRecommendations: true });
                             } else {
-                              navigation.navigate('Activity', { activityId: actId });
+                              navigation.navigate('Activity', { activityId: actId, fromRecommendations: true });
                             }
                           }}
                           style={s.actCard}
@@ -435,7 +435,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       return (
                         <TouchableOpacity
                           key={gId || idx}
-                          onPress={() => navigation.navigate(gId === 'mandala' || gId === 'colouring' ? 'Art' : 'Activity', { gameId: gId })}
+                          onPress={() => navigation.navigate(gId === 'mandala' || gId === 'colouring' ? 'Art' : 'Activity', { gameId: gId, fromRecommendations: true })}
                         >
                           <LinearGradient colors={game.color || ['#EDE7F6', '#D1C4E9']} style={s.primaryGameCard}>
                             <Text style={s.primaryGameIcon}>{game.icon || '🎮'}</Text>

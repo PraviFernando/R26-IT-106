@@ -1106,7 +1106,7 @@ const BabyMoodGuess = ({ onGoBack }) => {
       <View style={bm.btnRow}>
         {phase === 'wrong' && (
           <TouchableOpacity style={bm.hintBtn} onPress={handleTryAgain}>
-            <Text style={bm.hintBtnT}>നැවත උත්සාහ කරන්න</Text>
+            <Text style={bm.hintBtnT}>නැවත උත්සාහ කරන්න</Text>
           </TouchableOpacity>
         )}
         {phase === 'correct' && (
@@ -3112,10 +3112,18 @@ const ActivityScreen = ({ navigation, route }) => {
   };
 
   const goBack = () => {
-    setView('list');
-    setSelAct(null);
-    setSelGame(null);
-    setDone(false);
+    if (route?.params?.gameId || route?.params?.activityId || route?.params?.fromRecommendations) {
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('Recommendations');
+      }
+    } else {
+      setView('list');
+      setSelAct(null);
+      setSelGame(null);
+      setDone(false);
+    }
   };
 
   const renderGame = (id) => {
