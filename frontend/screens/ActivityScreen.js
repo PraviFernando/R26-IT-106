@@ -1,6 +1,6 @@
 // ActivityScreen.js — Bloom Postpartum App (Full Sinhala)
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Animated, Modal } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Animated, Modal, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, shadows } from '../theme';
 import { ALL_ACTIVITIES, NEW_ACTIVITIES } from '../services/activitiesLibrary';
@@ -931,120 +931,294 @@ const MemoryMatch = ({ navigation, onGoBack }) => {
   );
 };
 
-// BABY MOOD GUESS
-const BM_MOODS = [
-  { emoji: '😢', correct: 'කුස ගිනි 🍼', options: ['කුස ගිනි 🍼', 'නිදිමත 💤', 'සතුටු 😊', 'ඩයිපර් 🧷'], hint: 'ළදරු හඬනවා!' },
-  { emoji: '😴', correct: 'නිදිමත 💤', options: ['කුස ගිනි 🍼', 'නිදිමත 💤', 'සතුටු 😊', 'ගෑස් 💨'], hint: 'නිදිය!' },
-  { emoji: '😊', correct: 'සතුටු 😊', options: ['කුස ගිනි 🍼', 'ගෑස් 💨', 'සතුටු 😊', 'ඩයිපර් 🧷'], hint: 'හොඳින්!' },
-  { emoji: '😣', correct: 'ඩයිපර් 🧷', options: ['නිදිමත 💤', 'සතුටු 😊', 'කුස ගිනි 🍼', 'ඩයිපර් 🧷'], hint: 'ඩයිපර්!' },
-  { emoji: '😤', correct: 'ගෑස් 💨', options: ['කුස ගිනි 🍼', 'ගෑස් 💨', 'සතුටු 😊', 'ඩයිපර් 🧷'], hint: 'හොඹවන්න!' },
-  { emoji: '🥱', correct: 'වැඩිය 😵', options: ['කුස ගිනි 🍼', 'නිදිමත 💤', 'වැඩිය 😵', 'සතුටු 😊'], hint: 'නිශ්ශබ්ද!' },
-  { emoji: '😌', correct: 'සංතෘප්ති 🌸', options: ['කුස ගිනි 🍼', 'සංතෘප්ති 🌸', 'ඩයිපර් 🧷', 'ගෑස් 💨'], hint: 'හොඳින්!' },
+// BABY CUES / ළදරු හැඟීම
+const BABY_CUES_DATA = [
+  {
+    id: "sleepy",
+    sinhala: "නිදිමතයි",
+    english: "Sleepy",
+    emoji: "😴",
+    image: require('../assets/baby-cues/sleepy.png'),
+    explanation: "නිදිමත ඇති විට බබාට yawning, eye rubbing වැනි cues පෙන්විය හැක. (Eye rubbing, yawning, or turning away can be signs of sleepiness.)"
+  },
+  {
+    id: "hungry",
+    sinhala: "බඩගිනියි",
+    english: "Hungry",
+    emoji: "🍼",
+    image: require('../assets/baby-cues/hungry.png'),
+    explanation: "බබා බඩගිනි වූ විට hand-to-mouth movement, lip smacking, or sucking වැනි feeding cues පෙන්විය හැක. (Rooting, lip smacking, or putting hands to mouth are common hunger cues.)"
+  },
+  {
+    id: "burp",
+    sinhala: "බර්ප් අවශ්‍යයි",
+    english: "Needs to Burp",
+    emoji: "🤱",
+    image: require('../assets/baby-cues/burp.png'),
+    explanation: "බබාට බර්ප් අවශ්‍ය වූ විට squirming, grimacing, or crying during feeding වැනි cues පෙන්විය හැක. (Arching the back or squirming during feed might mean a burp is needed.)"
+  },
+  {
+    id: "overstimulated",
+    sinhala: "වැඩියෙන් උත්තේජනය වී ඇත",
+    english: "Overstimulated",
+    emoji: "😣",
+    image: require('../assets/baby-cues/overstimulated.png'),
+    explanation: "වැඩියෙන් උත්තේජනය වී ඇති විට turning head away, crying, or yawning වැනි cues පෙන්විය හැක. (Turning away, crying, or closing eyes can show overstimulation.)"
+  },
+  {
+    id: "comfort",
+    sinhala: "මාව සැනසීමට අවශ්‍යයි",
+    english: "Wants Comfort",
+    emoji: "🤗",
+    image: require('../assets/baby-cues/wants-comfort.png'),
+    explanation: "සැනසීමට අවශ්‍ය වූ විට whimpering, reaching out, or needing physical touch වැනි cues පෙන්විය හැක. (Whimpering or wanting to be held indicates a need for comfort.)"
+  },
+  {
+    id: "gas",
+    sinhala: "ගෑස් / බඩේ අපහසුතාවයක්",
+    english: "Gas / Tummy Discomfort",
+    emoji: "💨",
+    image: require('../assets/baby-cues/gas.png'),
+    explanation: "බඩේ අපහසුතාවයක් ඇති විට pulling legs up to tummy, grunting වැනි cues පෙන්විය හැක. (Pulling legs up to the chest or grunting can be signs of gas.)"
+  },
+  {
+    id: "alert-curious",
+    sinhala: "අවධානයෙන් / කුතුහලයෙන්",
+    english: "Alert & Curious",
+    emoji: "👀",
+    image: require('../assets/baby-cues/alert-curious.png'),
+    explanation: "කුතුහලයෙන් සිටින විට bright eyes, looking around, or scanning faces වැනි cues පෙන්විය හැක. (Wide eyes and smooth body movements show an active alert state.)"
+  },
+  {
+    id: "happy",
+    sinhala: "සුවපහසුයි / සතුටින්",
+    english: "Safe & Happy",
+    emoji: "😊",
+    image: require('../assets/baby-cues/happy.png'),
+    explanation: "සතුටින් සිටින විට relaxed face, smiling, cooing, or soft eyes වැනි cues පෙන්විය හැක. (A relaxed face, smiles, and coos mean your baby feels content.)"
+  },
+  {
+    id: "too-cold",
+    sinhala: "සීතලයි",
+    english: "Too Cold",
+    emoji: "🥶",
+    image: require('../assets/baby-cues/Too Cold.png'),
+    explanation: "සීතල වූ විට shivering, pale skin, or cold hands and feet වැනි cues පෙන්විය හැක. (Shivering, fussiness, or cold chest area can mean the baby is too cold.)"
+  }
 ];
 
+const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
 const BabyMoodGuess = ({ onGoBack }) => {
-  const session = useGameSession({ gameId: 'baby_mood', gameName: 'ළදරු හැඟීම', icon: '😊', onGoBack });
-  const [idx, setIdx] = useState(0);
-  const [picked, setPicked] = useState(null);
+  const session = useGameSession({ gameId: 'baby_mood', gameName: 'ළදරු හැඟීම', icon: '👶', onGoBack });
+  
+  const [screen, setScreen] = useState('intro'); // 'intro' | 'play' | 'complete'
+  const [order, setOrder] = useState([]);
+  const [currentIdx, setCurrentIdx] = useState(0);
+  const [selectedOpt, setSelectedOpt] = useState(null);
+  const [phase, setPhase] = useState('question'); // 'question' | 'correct' | 'wrong'
+  const [options, setOptions] = useState([]);
   const [score, setScore] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [hint, setHint] = useState(false);
 
-  const ba = useRef(new Animated.Value(1)).current;
-  const mood = BM_MOODS[idx % BM_MOODS.length];
-  const opts = useRef([...mood.options].sort(() => Math.random() - 0.5));
-  const correct = picked === mood.correct;
+  const initGame = () => {
+    const shuffledOrder = shuffleArray(Array.from({ length: BABY_CUES_DATA.length }, (_, i) => i));
+    setOrder(shuffledOrder);
+    setCurrentIdx(0);
+    setScore(0);
+    setScreen('play');
+    setupQuestion(shuffledOrder[0]);
+  };
 
-  const guess = (opt) => {
-    if (picked) return;
-    setPicked(opt);
-    const newTotal = total + 1;
-    setTotal(newTotal);
-    let newScore = score;
-    if (opt === mood.correct) {
-      newScore = score + 1;
-      setScore(newScore);
-      Animated.sequence([
-        Animated.timing(ba, { toValue: 1.4, duration: 200, useNativeDriver: true }),
-        Animated.timing(ba, { toValue: 1.0, duration: 200, useNativeDriver: true }),
-      ]).start();
-    }
-    if (newTotal >= 5) {
-      session.triggerComplete(`ලකුණු: ${newScore}/${newTotal}`);
+  const setupQuestion = (cueIdx) => {
+    setSelectedOpt(null);
+    setPhase('question');
+    const correctCue = BABY_CUES_DATA[cueIdx];
+    const distractors = BABY_CUES_DATA.filter((c) => c.id !== correctCue.id);
+    const chosenDistractors = shuffleArray(distractors).slice(0, 3);
+    const newOpts = shuffleArray([correctCue, ...chosenDistractors]);
+    setOptions(newOpts);
+  };
+
+  const handleSelect = (opt) => {
+    if (phase === 'correct') return;
+    const correctCue = BABY_CUES_DATA[order[currentIdx]];
+    setSelectedOpt(opt);
+
+    if (opt.id === correctCue.id) {
+      setPhase('correct');
+      setScore((s) => s + 1);
+    } else {
+      setPhase('wrong');
     }
   };
 
-  const next = () => {
-    setPicked(null);
-    setHint(false);
-    opts.current = [...BM_MOODS[(idx + 1) % BM_MOODS.length].options].sort(() => Math.random() - 0.5);
-    setIdx((i) => i + 1);
-    ba.setValue(1);
+  const handleNext = () => {
+    if (currentIdx + 1 >= BABY_CUES_DATA.length) {
+      setScreen('complete');
+      session.triggerComplete(`ලකුණු: ${score + 1}/9`);
+    } else {
+      const nextIdx = currentIdx + 1;
+      setCurrentIdx(nextIdx);
+      setupQuestion(order[nextIdx]);
+    }
+  };
+
+  const handleTryAgain = () => {
+    setPhase('question');
+    setSelectedOpt(null);
   };
 
   const resetGame = () => {
-    setScore(0);
-    setTotal(0);
-    next();
+    setScreen('intro');
   };
+
+  const activeCue = order.length > 0 ? BABY_CUES_DATA[order[currentIdx]] : null;
+
+  if (screen === 'intro') {
+    return (
+      <View style={bm.cont}>
+        <TouchableOpacity onPress={() => session.handleBack()} style={[s.backBtn, { alignSelf: 'flex-start' }]}>
+          <Text style={s.backText}>← ආපසු</Text>
+        </TouchableOpacity>
+        <LinearGradient colors={['#FCE4EC', '#EDE7F6']} style={bm.introCard}>
+          <Text style={bm.introTitle}>👶 ළදරු හැඟීම</Text>
+          <Text style={bm.introSubtitle}>Baby Cues</Text>
+          <Text style={bm.introDesc}>
+            පින්තූරය බලලා බබා පෙන්වන cue එක තෝරන්න. බබාගේ ඉඟි හඳුනාගැනීම ඉගෙන ගනිමු.
+          </Text>
+          <TouchableOpacity style={bm.startBtn} onPress={initGame}>
+            <LinearGradient colors={['#7E57C2', '#E91E8C']} style={bm.startBtnIn}>
+              <Text style={bm.startBtnT}>▶ පටන් ගන්න</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+          <Text style={bm.disclaimerText}>
+            මෙය අධ්‍යාපනික ක්‍රියාකාරකමක් පමණි. බබාගේ හැඟීම් සහ අවශ්‍යතා විවිධ විය හැක.
+          </Text>
+        </LinearGradient>
+      </View>
+    );
+  }
+
+  if (screen === 'complete') {
+    return (
+      <View style={bm.cont}>
+        <CongratsPopup
+          visible={session.showCompletion}
+          onPlayAgain={() => session.handlePlayAgain(initGame)}
+          onClose={session.handleClose}
+          title="🎉 හොඳින් කළා!"
+          msg={`ඔබ අද baby cues 9ක් හඳුනාගත්තා. 💜\nබබාගේ හැසිරීම් සහ ඉඟි හඳුනාගැනීම කාලයත් සමඟ ඉගෙන ගත හැකි දෙයක්.`}
+          playAgainText="🎮 නැවත ක්‍රීඩා කරන්න"
+          closeText="✕ වසන්න"
+        />
+        <LinearGradient colors={['#E8F5E9', '#C8E6C9']} style={bm.introCard}>
+          <Text style={bm.introTitle}>🌸 ඉතා හොඳයි!</Text>
+          <Text style={bm.introDesc}>
+            ඔබ අද baby cues 9ක් හඳුනාගත්තා. බබාගේ හැසිරීම් සහ ඉඟි හඳුනාගැනීම කාලයත් සමඟ ඉගෙන ගත හැකි දෙයක්.
+          </Text>
+          <View style={bm.btnRow}>
+            <TouchableOpacity style={bm.nextBtn} onPress={initGame}>
+              <LinearGradient colors={['#7E57C2', '#E91E8C']} style={bm.nextBtnIn}>
+                <Text style={bm.nextBtnT}>නැවත ක්‍රීඩා කරන්න</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+            <TouchableOpacity style={bm.hintBtn} onPress={() => session.handleClose()}>
+              <Text style={bm.hintBtnT}>වසන්න</Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+      </View>
+    );
+  }
 
   return (
     <View style={bm.cont}>
       <CongratsPopup
         visible={session.showCompletion}
-        onPlayAgain={() => session.handlePlayAgain(resetGame)}
+        onPlayAgain={() => session.handlePlayAgain(initGame)}
         onClose={session.handleClose}
-        title="ශ්‍රේෂ්ඨයි! 😊"
-        msg={`ලකුණු ${score}/${total} 💜`}
+        title="🎉 හොඳින් කළා!"
+        msg={`ඔබ අද baby cues 9ක් හඳුනාගත්තා. 💜\nබබාගේ හැසිරීම් සහ ඉඟි හඳුනාගැනීම කාලයත් සමඟ ඉගෙන ගත හැකි දෙයක්.`}
+        playAgainText="🎮 නැවත ක්‍රීඩා කරන්න"
+        closeText="✕ වසන්න"
       />
       <TouchableOpacity onPress={() => session.handleBack()} style={[s.backBtn, { alignSelf: 'flex-start' }]}>
         <Text style={s.backText}>← ආපසු</Text>
       </TouchableOpacity>
+
       <View style={bm.header}>
-        <Text style={bm.title}>😊 ළදරු හැඟීම</Text>
-        <Text style={bm.score}>{score}/{total} 💜</Text>
+        <Text style={bm.title}>👶 ළදරු හැඟීම (Baby Cues)</Text>
+        <Text style={bm.score}>{currentIdx + 1} / 9</Text>
       </View>
-      <LinearGradient colors={['#FCE4EC', '#EDE7F6']} style={bm.faceCard}>
-        <Animated.Text style={[bm.babyFace, { transform: [{ scale: ba }] }]}>{mood.emoji}</Animated.Text>
-        <Text style={bm.faceLabel}>👶 ළදරු…</Text>
-        {picked && (
-          <View style={[bm.resultBadge, correct ? bm.correctBadge : bm.wrongBadge]}>
-            <Text style={bm.resultText}>{correct ? '✓ නිවැරදි! 🌸' : '✗ නැහැ!'}</Text>
+
+      <LinearGradient colors={['#F5F7FA', '#E4E8F0']} style={bm.faceCard}>
+        {activeCue && (
+          <Image
+            source={activeCue.image}
+            style={bm.babyImage}
+            resizeMode="contain"
+            accessibilityLabel={`Newborn baby showing ${activeCue.english} cue`}
+          />
+        )}
+        <Text style={bm.faceLabel}>මේ බබා ඔබට කියන්න උත්සාහ කරන්නේ කුමක්ද?</Text>
+
+        {phase === 'correct' && (
+          <View style={[bm.feedbackBox, bm.correctBadge]}>
+            <Text style={bm.resultText}>✓ නිවැරදියි! හොඳින් හඳුනාගත්තා.</Text>
+            <View style={bm.explanationBox}>
+              <Text style={bm.explanationT}>{activeCue?.explanation}</Text>
+            </View>
           </View>
         )}
-        {hint && <Text style={bm.hintText}>{mood.hint}</Text>}
+
+        {phase === 'wrong' && (
+          <View style={[bm.feedbackBox, bm.wrongBadge]}>
+            <Text style={[bm.resultText, { color: '#C62828' }]}>
+              නැහැ. ඒක මේ අවස්ථාවේ හොඳම පිළිතුර නොවෙයි.
+            </Text>
+            <Text style={{ fontSize: 13, color: '#555', marginTop: 4, textAlign: 'center' }}>
+              මෙම බබාගේ ඉඟිය ගැන නැවත බලමු.
+            </Text>
+          </View>
+        )}
       </LinearGradient>
-      <View style={bm.options}>
-        {opts.current.map((opt) => (
-          <TouchableOpacity
-            key={opt}
-            onPress={() => guess(opt)}
-            disabled={!!picked}
-            style={[
-              bm.optBtn,
-              picked === opt && correct && bm.optCorrect,
-              picked === opt && !correct && bm.optWrong,
-              picked && opt === mood.correct && bm.optCorrect,
-            ]}
-          >
-            <Text style={bm.optText}>{opt}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+
+      {phase === 'question' && (
+        <View style={bm.options}>
+          {options.map((opt) => (
+            <TouchableOpacity
+              key={opt.id}
+              onPress={() => handleSelect(opt)}
+              style={bm.optBtn}
+            >
+              <Text style={{ fontSize: 24, marginBottom: 4 }}>{opt.emoji}</Text>
+              <Text style={bm.optText}>{opt.sinhala}</Text>
+              <Text style={bm.optSubtext}>{opt.english}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
       <View style={bm.btnRow}>
-        {!picked && (
-          <TouchableOpacity style={bm.hintBtn} onPress={() => setHint(true)}>
-            <Text style={bm.hintBtnT}>💡 ඉඟිය</Text>
+        {phase === 'wrong' && (
+          <TouchableOpacity style={bm.hintBtn} onPress={handleTryAgain}>
+            <Text style={bm.hintBtnT}>നැවත උත්සාහ කරන්න</Text>
           </TouchableOpacity>
         )}
-        {picked && (
-          <TouchableOpacity style={bm.nextBtn} onPress={next}>
+        {phase === 'correct' && (
+          <TouchableOpacity style={bm.nextBtn} onPress={handleNext}>
             <LinearGradient colors={['#7E57C2', '#E91E8C']} style={bm.nextBtnIn}>
-              <Text style={bm.nextBtnT}>ඊළඟ →</Text>
+              <Text style={bm.nextBtnT}>
+                {currentIdx + 1 >= BABY_CUES_DATA.length ? "අවසන් කරන්න →" : "ඊළඟ එක →"}
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         )}
       </View>
+
+      <Text style={bm.disclaimerText}>
+        සටහන: බබාගේ ඉඟි එකිනෙකට වෙනස් විය හැක. මෙම ක්‍රියාකාරකම අධ්‍යාපනික අරමුණක් සඳහා පමණි.
+      </Text>
     </View>
   );
 };
@@ -3405,28 +3579,36 @@ const mm = StyleSheet.create({
 });
 
 const bm = StyleSheet.create({
-  cont: { alignItems: 'center' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 16 },
-  title: { fontSize: 22, fontWeight: '900', color: '#F57F17' },
-  score: { fontSize: 16, color: '#F57F17', fontWeight: '800' },
-  faceCard: { width: '100%', padding: 40, borderRadius: radius.xl, alignItems: 'center', marginBottom: 24, ...shadows.card },
-  babyFace: { fontSize: 80, marginBottom: 16 },
-  faceLabel: { fontSize: 18, fontWeight: '900', color: '#555', marginBottom: 16 },
-  resultBadge: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginBottom: 8 },
-  correctBadge: { backgroundColor: '#C8E6C9' },
-  wrongBadge: { backgroundColor: '#FFCDD2' },
-  resultText: { fontWeight: '900', fontSize: 15, color: '#2E7D32' },
-  hintText: { fontSize: 14, color: '#7E57C2', fontWeight: '700', marginTop: 8 },
-  options: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  optBtn: { width: '48%', backgroundColor: 'white', paddingVertical: 16, borderRadius: radius.lg, alignItems: 'center', marginBottom: 12, ...shadows.soft },
-  optCorrect: { backgroundColor: '#C8E6C9', borderColor: '#2E7D32', borderWidth: 2 },
-  optWrong: { backgroundColor: '#FFCDD2' },
-  optText: { fontWeight: '800', color: '#555', fontSize: 15 },
-  btnRow: { flexDirection: 'row', gap: 16, marginTop: 10 },
-  hintBtn: { backgroundColor: 'white', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24, ...shadows.soft },
-  hintBtnT: { color: '#7E57C2', fontWeight: '900' },
+  cont: { width: '100%', paddingBottom: 24 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 16, alignItems: 'center' },
+  title: { fontSize: 18, fontWeight: '900', color: '#7E57C2' },
+  score: { fontSize: 16, color: '#E91E8C', fontWeight: '900' },
+  introCard: { padding: 24, borderRadius: radius.xl, alignItems: 'center', width: '100%', ...shadows.card },
+  introTitle: { fontSize: 26, fontWeight: '900', color: '#E91E8C', marginBottom: 6 },
+  introSubtitle: { fontSize: 18, fontWeight: '800', color: '#7E57C2', marginBottom: 16 },
+  introDesc: { fontSize: 14, color: '#4A5568', textAlign: 'center', lineHeight: 22, marginBottom: 24 },
+  startBtn: { borderRadius: 99 },
+  startBtnIn: { paddingHorizontal: 36, paddingVertical: 14, borderRadius: 99 },
+  startBtnT: { color: 'white', fontWeight: '900', fontSize: 16 },
+  disclaimerText: { fontSize: 11, color: '#718096', textAlign: 'center', marginTop: 20, fontStyle: 'italic', lineHeight: 16 },
+  faceCard: { width: '100%', padding: 18, borderRadius: radius.xl, alignItems: 'center', marginBottom: 16, ...shadows.card, backgroundColor: 'white' },
+  babyImage: { width: '100%', height: 210, borderRadius: 12, marginBottom: 14 },
+  faceLabel: { fontSize: 15, fontWeight: '800', color: '#2D3748', textAlign: 'center', marginBottom: 12 },
+  feedbackBox: { padding: 12, borderRadius: 12, alignItems: 'center', width: '100%', marginTop: 8 },
+  correctBadge: { backgroundColor: '#E8F5E9' },
+  wrongBadge: { backgroundColor: '#FFEBEE' },
+  resultText: { fontWeight: '900', fontSize: 14, color: '#2E7D32', textAlign: 'center' },
+  explanationBox: { backgroundColor: '#F3E5F5', padding: 10, borderRadius: 8, marginTop: 8, width: '100%' },
+  explanationT: { fontSize: 13, color: '#4A5568', textAlign: 'center', lineHeight: 18 },
+  options: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', width: '100%' },
+  optBtn: { width: '48%', backgroundColor: 'white', paddingVertical: 12, paddingHorizontal: 8, borderRadius: radius.md, alignItems: 'center', marginBottom: 12, ...shadows.soft, borderWidth: 1, borderColor: '#E2E8F0' },
+  optText: { fontWeight: '900', color: '#2D3748', fontSize: 13, textAlign: 'center', marginTop: 2 },
+  optSubtext: { fontSize: 10, color: '#718096', textAlign: 'center', marginTop: 1 },
+  btnRow: { flexDirection: 'row', gap: 16, marginTop: 10, justifyContent: 'center', width: '100%' },
+  hintBtn: { backgroundColor: 'white', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24, ...shadows.soft, borderWidth: 1, borderColor: '#E2E8F0' },
+  hintBtnT: { color: '#E53935', fontWeight: '900' },
   nextBtn: { borderRadius: 24, ...shadows.soft },
-  nextBtnIn: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24 },
+  nextBtnIn: { paddingHorizontal: 28, paddingVertical: 12, borderRadius: 24 },
   nextBtnT: { color: 'white', fontWeight: '900' },
 });
 
