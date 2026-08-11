@@ -2580,15 +2580,21 @@ const NewActivityDetail = ({ activity, onComplete }) => {
   );
 };
 
-const EMOTIONS = [
-  { emoji: '😔', label: 'දුකයි', color: ['#E3F2FD', '#BBDEFB'], reflection: 'ඔබේ හැඟීම් ස්වාභාවිකයි 💙' },
-  { emoji: '😤', label: 'කෝප', color: ['#FFEBEE', '#FFCDD2'], reflection: 'කෝපය සාමාන්‍ය. ඇවිදින්න 🌿' },
-  { emoji: '😴', label: 'ශ්‍රාන්ත', color: ['#F3E5F5', '#E1BEE7'], reflection: 'නිදාගන්න 💜' },
-  { emoji: '😟', label: 'කාංසා', color: ['#FFF9C4', '#FFF3A0'], reflection: 'ශ්වාස ගන්න. ආරක්ෂිතයි ⭐' },
-  { emoji: '😊', label: 'සතුටු', color: ['#E8F5E9', '#C8E6C9'], reflection: 'ඔබේ සතුට ආශිර්වාදයකි! 🌸' },
-  { emoji: '🥹', label: 'කෘතඥ', color: ['#FCE4EC', '#F8BBD9'], reflection: 'කෘතඥභාවය ශක්‍යතාව! 💜' },
-  { emoji: '😐', label: 'නොදනිමි', color: ['#EEEEEE', '#F5F5F5'], reflection: 'හැඟීම් වෙනස් 🌙' },
-  { emoji: '💪', label: 'ශක්‍ය', color: ['#E8F5E9', '#A5D6A7'], reflection: 'ශ්‍රේෂ්ඨ අම්මා! 🏆' },
+const moodCards = [
+  { id: 'sad',       emoji: '😔', label: 'දුකයි',         color: ['#E3F2FD', '#BBDEFB'], reflection: 'ඔබේ හැඟීම් ස්වාභාවිකයි 💙' },
+  { id: 'angry',     emoji: '😡', label: 'තරහයි',         color: ['#FFEBEE', '#FFCDD2'], reflection: 'කෝපය පාලනය කර සන්සුන් වන්න 🌿' },
+  { id: 'calm',      emoji: '😴', label: 'ශාන්තයි',       color: ['#F3E5F5', '#E1BEE7'], reflection: 'මනස සන්සුන්ව තබාගන්න 🌙' },
+  { id: 'anxiety',   emoji: '😟', label: 'කාංසාව',         color: ['#FFF9C4', '#FFF3A0'], reflection: 'ගැඹුරු ශ්වාසයක් ගන්න. ඔබ සුරක්ෂිතයි ⭐' },
+  { id: 'happy',     emoji: '😊', label: 'සතුටුයි',       color: ['#E8F5E9', '#C8E6C9'], reflection: 'ඔබේ සතුට ආශිර්වාදයකි! 🌸' },
+  { id: 'grateful',  emoji: '🥺', label: 'කෘතඥයි',       color: ['#FCE4EC', '#F8BBD9'], reflection: 'කෘතඥභාවය සිතට සුවයක් ලබාදෙයි 💜' },
+  { id: 'uncertain', emoji: '😳', label: 'නොදනිමි',       color: ['#EEEEEE', '#F5F5F5'], reflection: 'හැඟීම් වෙනස් වීම ස්වාභාවිකයි 🌙' },
+  { id: 'strong',    emoji: '💪', label: 'ශක්තිමත්',     color: ['#E8F5E9', '#A5D6A7'], reflection: 'ඔබ ඉතා ශක්තිමත් අම්මා කෙනෙකි! 🏆' },
+  { id: 'empty',     emoji: '🫥', label: 'හිස් හැඟීමක්', color: ['#E0F7FA', '#B2EBF2'], reflection: 'කෙටි විවේකයක් ගෙන මනසට සහනය දෙන්න 🌸' },
+  { id: 'stress',    emoji: '😫', label: 'මානසික පීඩනය', color: ['#FFE0B2', '#FFCC80'], reflection: 'ඔබට විවේකයක් අවශ්‍යයි. සෙමෙන් හුස්ම ගන්න 🌿' },
+  { id: 'feared',    emoji: '😨', label: 'බියගැන්වුණු',   color: ['#FFF8E1', '#FFE082'], reflection: 'ඔබ තනිවී නැත, කනස්සල්ල දුරලන්න 💜' },
+  { id: 'loved',     emoji: '🥰', label: 'ආදරණීයයි',     color: ['#F8BBD9', '#F48FB1'], reflection: 'ආදරය සහ උණුසුම සැමවිටම විඳින්න 🌸' },
+  { id: 'tired',     emoji: '🥱', label: 'මහන්සියි',       color: ['#D1C4E9', '#B39DDB'], reflection: 'ප්‍රමාණවත් විවේකයක් ලබාගන්න 🌙' },
+  { id: 'lonely',    emoji: '🧍', label: 'තනිවෙලා',       color: ['#E1BEE7', '#CE93D8'], reflection: 'ඔබ තනිවී නැත, අප සැමවිටම ඔබ සමඟයි 💜' }
 ];
 
 const EmotionJournal = ({ onGoBack }) => {
@@ -2643,7 +2649,7 @@ const EmotionJournal = ({ onGoBack }) => {
       </View>
       <Text style={ej.hint}>ඔබේ හැඟීම ස්පර්ශ කරන්න 🌸</Text>
       {showRefl && selected ? (
-        <LinearGradient colors={selected.color} style={ej.reflCard}>
+        <LinearGradient colors={selected.color || ['#FCE4EC', '#F8BBD9']} style={ej.reflCard}>
           <Text style={ej.reflEmoji}>{selected.emoji}</Text>
           <Text style={ej.reflLabel}>{selected.label}</Text>
           <Text style={ej.reflText}>{selected.reflection}</Text>
@@ -2659,8 +2665,8 @@ const EmotionJournal = ({ onGoBack }) => {
       ) : (
         <>
           <View style={ej.grid}>
-            {EMOTIONS.map((em) => (
-              <TouchableOpacity key={em.emoji} onPress={() => selectEm(em)} style={[ej.emotionBtn, { backgroundColor: em.color[0] }]}>
+            {moodCards.map((em) => (
+              <TouchableOpacity key={em.id} onPress={() => selectEm(em)} style={[ej.emotionBtn, { backgroundColor: em.color[0] }]}>
                 <Text style={ej.emotionEmoji}>{em.emoji}</Text>
                 <Text style={ej.emotionLabel}>{em.label}</Text>
               </TouchableOpacity>
