@@ -98,13 +98,7 @@ export const SI = {
   score:           'ලකුණු:',
   perfectMatch:    '🎉 පරිපූර්ණ ගළපීම!',
 
-  // Games - Baby Dress
-  babyCare:        'ළදරු රැකවරණය 👶',
-  dressBabyHint:   'ඇඳුමක් තෝරා ඔබේ ළදරුවාට ඇඳවීම!',
-  chooseOutfit:    'ඇඳුම් තෝරන්න:',
-  dressBtn:        '👶 ළදරුවාට ඇඳවීම!',
-  dressedCount:    'ඔබ ළදරුවාට ඇඳවූ',
-  times:           'වාරය',
+
 
   // Games - Colouring
   colourGarden:    'ගස් පිංතාරය 🌺',

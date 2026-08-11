@@ -100,7 +100,7 @@ export const AppProvider = ({ children }) => {
         setDetectedBabyTopic(null);
       }
 
-      const recommendations = getRecommendations(analysis, userPreferredActivities, userPreferredGames);
+      const recommendations = getRecommendations(analysis, userPreferredActivities, userPreferredGames, diaryText);
       setLatestAnalysis(analysis);
       setLatestRecommendations(recommendations);
       updateMoodHistory(analysis);

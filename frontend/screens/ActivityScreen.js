@@ -465,103 +465,7 @@ const WordSearch = ({ onGoBack }) => {
   );
 };
 
-// BABY INTERACTION
-const BABY_RESP = {
-  talk: [{ msg: 'ළදරු සිනාසෙයි 🥰', mood: 'happy', emoji: '😊' }, { msg: 'ළදරු හඬ ඇසෙනවා 💜', mood: 'calm', emoji: '🥰' }],
-  sing: [{ msg: 'ළදරු ඇස් වහයි 😴', mood: 'sleepy', emoji: '😴' }, { msg: 'නළවෙයි 🎵', mood: 'calm', emoji: '🎵' }],
-  smile: [{ msg: 'ළදරු සිනාසෙයි! 🌸', mood: 'happy', emoji: '😁' }, { msg: 'ඇස් දිදුලයි 💫', mood: 'happy', emoji: '🤩' }],
-  feed: [{ msg: 'සෙමෙන් බොයි 🍼', mood: 'calm', emoji: '😌' }, { msg: 'නිදාගනී 💤', mood: 'sleepy', emoji: '😴' }],
-  hug: [{ msg: 'ළඟ හිඳියි 🤱', mood: 'calm', emoji: '🤗' }, { msg: 'ඇඟිල්ල 🤞', mood: 'happy', emoji: '💜' }],
-  rock: [{ msg: 'හිනාවෙලා 💤', mood: 'sleepy', emoji: '😪' }, { msg: 'නිදාගනී 🌙', mood: 'sleepy', emoji: '😴' }],
-};
-const MOOD_COLS = { happy: ['#FCE4EC', '#F8BBD9'], calm: ['#EDE7F6', '#D1C4E9'], sleepy: ['#E3F2FD', '#BBDEFB'] };
-const BI_ACTIONS = [
-  { key: 'talk', label: '💬 කතා', color: ['#EDE7F6', '#D1C4E9'] },
-  { key: 'sing', label: '🎵 ගී', color: ['#FCE4EC', '#F8BBD9'] },
-  { key: 'smile', label: '😊 සිනා', color: ['#E8F5E9', '#C8E6C9'] },
-  { key: 'feed', label: '🍼 කිරි', color: ['#FFF9C4', '#FFF3A0'] },
-  { key: 'hug', label: '🤱 ආදරය', color: ['#F3E5F5', '#E1BEE7'] },
-  { key: 'rock', label: '🌊 නළවන', color: ['#E3F2FD', '#BBDEFB'] },
-];
-const BabyInteractionGame = ({ onGoBack }) => {
-  const session = useGameSession({ gameId: 'baby_interaction', gameName: 'ළදරු බැඳීම', icon: '👶', onGoBack });
-  const [resp, setResp] = useState(null);
-  const [mood, setMood] = useState('calm');
-  const [cnt, setCnt] = useState(0);
-  const ba = useRef(new Animated.Value(1)).current;
-  const fa = useRef(new Animated.Value(0)).current;
 
-  const doAction = (key) => {
-    const opts = BABY_RESP[key];
-    const pick = opts[Math.floor(Math.random() * opts.length)];
-    setResp(pick);
-    setMood(pick.mood);
-    const newCnt = cnt + 1;
-    setCnt(newCnt);
-    Animated.sequence([
-      Animated.timing(ba, { toValue: 1.3, duration: 200, useNativeDriver: true }),
-      Animated.timing(ba, { toValue: 1.0, duration: 200, useNativeDriver: true }),
-    ]).start();
-    fa.setValue(0);
-    Animated.timing(fa, { toValue: 1, duration: 400, useNativeDriver: true }).start();
-
-    if (newCnt >= 5) {
-      session.triggerComplete(`ක්‍රියා: ${newCnt}`);
-    }
-  };
-
-  const resetGame = () => {
-    setCnt(0);
-    setResp(null);
-    setMood('calm');
-  };
-
-  return (
-    <View style={bi.cont}>
-      <CongratsPopup
-        visible={session.showCompletion}
-        onPlayAgain={() => session.handlePlayAgain(resetGame)}
-        onClose={session.handleClose}
-        title="අපූරුයි! 🌸"
-        msg="ළදරු බැඳීම සාර්ථකයි! 💜"
-      />
-      <TouchableOpacity onPress={() => session.handleBack()} style={[s.backBtn, { alignSelf: 'flex-start' }]}>
-        <Text style={s.backText}>← ආපසු</Text>
-      </TouchableOpacity>
-      <View style={bi.header}>
-        <Text style={bi.title}>👶 ළදරු බැඳීම</Text>
-        <Text style={bi.count}>{cnt} ක්‍රියා 💜</Text>
-      </View>
-      <LinearGradient colors={MOOD_COLS[mood]} style={bi.babyCard}>
-        <Animated.Text style={[bi.babyEmoji, { transform: [{ scale: ba }] }]}>👶</Animated.Text>
-        <Text style={bi.moodLabel}>
-          {mood === 'happy' ? 'සතුටු 🌸' : mood === 'sleepy' ? 'නිදිමත 💤' : 'සංසුන් 💜'}
-        </Text>
-        {resp && (
-          <Animated.View style={[bi.responseBox, { opacity: fa }]}>
-            <Text style={bi.responseEmoji}>{resp.emoji}</Text>
-            <Text style={bi.responseText}>{resp.msg}</Text>
-          </Animated.View>
-        )}
-      </LinearGradient>
-      <Text style={bi.actLabel}>ඔබ?</Text>
-      <View style={bi.actGrid}>
-        {BI_ACTIONS.map((act) => (
-          <TouchableOpacity key={act.key} onPress={() => doAction(act.key)} style={bi.actWrap}>
-            <LinearGradient colors={act.color} style={bi.actBtn}>
-              <Text style={bi.actBtnText}>{act.label}</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        ))}
-      </View>
-      {cnt >= 5 && (
-        <LinearGradient colors={['#FFF9C4', '#FCE4EC']} style={bi.badge}>
-          <Text style={bi.badgeText}>🌸 අපූරු! 💜</Text>
-        </LinearGradient>
-      )}
-    </View>
-  );
-};
 
 // MEMORY MATCH
 const MM_ALL_EMOJIS = ['🍼', '🧸', '🌸', '☁️', '⭐', '🌈', '🐥', '🐘', '🍎', '🌙', '❤️', '🦋', '🌺', '🎀', '🍭', '🐣', '🌻', '🎵'];
@@ -3112,7 +3016,7 @@ const GratitudeGarden = ({ onGoBack }) => {
 // GAMES LIST & MAIN SCREEN
 const ALL_GAMES_LIST = [
   { id: 'word_search', label: 'වචන සෙවීම', labelEn: 'Find hidden words', icon: '🔤', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
-  { id: 'baby_interaction', label: 'ළදරු බැඳීම', labelEn: 'Baby bonding', icon: '👶', color: ['#FCE4EC', '#F8BBD9'], accent: '#C2185B' },
+
   { id: 'memory_match', label: 'මතක ගැළපීම', labelEn: 'Find pairs', icon: '🃏', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'baby_mood', label: 'ළදරු හැඟීම', labelEn: "Baby's mood", icon: '😊', color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17' },
   { id: 'self_care', label: 'ස්වයං රැකවරණය', labelEn: 'Daily care', icon: '🌿', color: ['#E8F5E9', '#A5D6A7'], accent: '#2E7D32' },
@@ -3212,8 +3116,7 @@ const ActivityScreen = ({ navigation, route }) => {
     switch (id) {
       case 'word_search':
         return <WordSearch onGoBack={goBack} />;
-      case 'baby_interaction':
-        return <BabyInteractionGame onGoBack={goBack} />;
+
       case 'memory_match':
         return <MemoryMatch navigation={navigation} onGoBack={goBack} />;
       case 'baby_mood':

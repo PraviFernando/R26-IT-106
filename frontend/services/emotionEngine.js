@@ -117,11 +117,11 @@ export const analyzeDiary = (text) => {
 
 // ── GET RECOMMENDATIONS ───────────────────────────────────────
 // Uses exact IF-THEN rules: reason + riskLevel → specific content
-export const getRecommendations = (analysisResult, preferredActivities = [], preferredGames = []) => {
+export const getRecommendations = (analysisResult, preferredActivities = [], preferredGames = [], diaryText = '') => {
   const { detectedEmotion, primaryReason, riskLevel } = analysisResult;
 
   // Get the rule for this exact reason + risk combination
-  const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames);
+  const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames, diaryText);
 
   // Music: 10 tracks specific to this reason
   const music  = MUSIC_LIBRARY[rule.musicKey]  || MUSIC_LIBRARY.loneliness;

@@ -209,19 +209,7 @@ export const ALL_ACTIVITIES = [
     affirmations:['මම ශ්‍රේෂ්ඨ 💜','ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸','ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ✨','ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌿'],
     intro:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
   },
-  {
-    id:'baby_bonding', icon:'👶',
-    label:'ළදරු සම්බන්ධ ශ්‍රේෂ්ඨ', labelEn:'Talk and Interact With Baby',
-    desc:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', duration:'විනාඩි 10',
-    category:'බැඳීම', color:['#FCE4EC','#F8BBD9'], accent:'#C2185B',
-    type:'guided',
-    steps:[
-      {label:'ශ්‍රේෂ්ඨ', duration:60, text:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.'},
-      {label:'ශ්‍රේෂ්ඨ', duration:60, text:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.'},
-      {label:'ශ්‍රේෂ්ඨ', duration:90, text:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.'},
-    ],
-    intro:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
-  },
+
   {
     id:'positive_thinking_act', icon:'🌈',
     label:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', labelEn:'Positive Thinking Activity',
@@ -338,10 +326,38 @@ export const NEW_ACTIVITIES = [
     id: 'new_worry_box', icon: '📦', label: 'කනස්සල්ල බහාලන පෙට්ටිය', purpose: 'මව්වරුන්ට ඔවුන්ගේ කනස්සල්ල ප්‍රකාශ කිරීමට උපකාරී වේ.', duration: 'විනාඩි 5',
     instructions: ['එක් කනස්සල්ලක් ලියන්න.', 'ස්පර්ශ කරන්න', 'පෙට්ටියට දමන්න', 'යෙදුම සහයෝගය දක්වන පණිවිඩයක් ලබා දෙයි:', 'බෙදාගැනීම ගැන ස්තූතියි. ඔබේ හැඟීම් වැදගත්ය. හෙට යනු ඔබට සත්කාර කිරීමට ලැබෙන තවත් අවස්ථාවකි.'],
     benefits: ['කනස්සල්ල ප්‍රකාශ කිරීම', 'මානසික බර අඩු කිරීම', 'සහයෝගී ප්‍රතිපෝෂණ'], isNewFormat: true
+  },
+  {
+    id: 'baby_mood', icon: '👶', label: 'ළදරු හැඟීම', labelEn: 'Baby Cues',
+    purpose: 'ඔබේ බබා පෙන්වන විවිධ සංඥා හඳුනාගැනීමට මෙම ක්‍රියාකාරකම ඔබට උපකාරී වේ.', duration: 'විනාඩි 5–10',
+    instructions: ['පින්තූරය දෙස බලන්න.', 'බබාගේ හැඟීම හෝ අවශ්‍යතාවය තෝරන්න.', 'පොදු ළදරු සංඥා හඳුනාගැනීමට ඉගෙන ගන්න.'],
+    benefits: ['ළදරු සංඥා හඳුනාගැනීම', 'සන්නිවේදනය වැඩි දියුණු කිරීම', 'විශ්වාසය ඇතිකිරීම'],
+    color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17',
+    isNewFormat: true
   }
 ];
 
-export const getNewRecommendations = (emotion, reason, riskLevel) => {
+export const isBabyRelatedContent = (text = '') => {
+  if (!text || typeof text !== 'string') return false;
+  const t = text.toLowerCase().replace(/['’]/g, '');
+
+  const babyTerms = [
+    // English terms & phrases
+    'baby', 'babies', 'babys', 'newborn', 'newborns', 'little one', 'little girl', 'little boy',
+    'infant', 'infants', 'my child', 'my kid', 'caring for my baby', 'care for my baby',
+    'taking care of my baby', 'taking care of my newborn',
+
+    // Sinhala terms & phrases
+    'බබා', 'බබාගේ', 'බබාව', 'බබාට', 'බබෙක්',
+    'දරුවා', 'දරුවාගේ', 'දරුවාව', 'දරුවාට', 'දරුවෝ',
+    'ළදරුවා', 'ළදරුවාගේ', 'ළදරුවාව', 'ළදරුවාට',
+    'පුංචි එකා', 'පුංචි එකී', 'අලුත උපන්'
+  ];
+
+  return babyTerms.some(term => t.includes(term));
+};
+
+export const getNewRecommendations = (emotion, reason, riskLevel, diaryText = '') => {
   let recommendedIds = [];
 
   // 1. Risk Level
@@ -392,6 +408,9 @@ export const getNewRecommendations = (emotion, reason, riskLevel) => {
   
   // Re-prioritize based on Risk -> Reason -> Emotion
   let ordered = [];
+  if (isBabyRelatedContent(diaryText)) {
+    ordered.push('baby_mood');
+  }
   recommendedIds.forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
   byReason.forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
   byEmotion.forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
@@ -403,12 +422,11 @@ export const getNewRecommendations = (emotion, reason, riskLevel) => {
 export const ALL_GAMES = [
   { id:'bubble_pop',       icon:'🫧', label:'බුබුළු ෆොන් ෆොන්',      labelEn:'Bubble Pop',           color:['#E3F2FD','#BBDEFB'], accent:'#1565C0' },
   { id:'word_match',       icon:'💬', label:'වචන ගළපීම',              labelEn:'Word Match',            color:['#EDE7F6','#D1C4E9'], accent:'#7E57C2' },
-  { id:'puzzle',           icon:'🧩', label:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ',       labelEn:'Simple Puzzle',         color:['#FFF9C4','#FFF3A0'], accent:'#F57F17' },
-  { id:'affirmation_game', icon:'💜', label:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ',        labelEn:'Positive Affirmations', color:['#FCE4EC','#F8BBD9'], accent:'#C2185B' },
-  { id:'baby_interaction', icon:'🤱', label:'ළදරු ශ්‍රේෂ්ඨ',           labelEn:'Baby Interaction',      color:['#E8F5E9','#C8E6C9'], accent:'#2E7D32' },
-  { id:'dress_baby',       icon:'👗', label:'ළදරු ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ',  labelEn:'Baby Dress-Up',         color:['#F3E5F5','#E1BEE7'], accent:'#8E24AA' },
+  { id:'puzzle',           icon:'🧩', label:'ප්‍රහේලිකාව',            labelEn:'Simple Puzzle',         color:['#FFF9C4','#FFF3A0'], accent:'#F57F17' },
+  { id:'affirmation_game', icon:'💜', label:'ධනාත්මක ප්‍රකාශ',       labelEn:'Positive Affirmations', color:['#FCE4EC','#F8BBD9'], accent:'#C2185B' },
+  { id:'baby_mood',        icon:'😊', label:'ළදරු හැඟීම',            labelEn:'Baby Cues',             color:['#FFF9C4','#FFF3A0'], accent:'#F57F17' },
   { id:'mandala',          icon:'🔮', label:'මණ්ඩල කලා',              labelEn:'Mandala Art',           color:['#EDE7F6','#D1C4E9'], accent:'#7E57C2' },
-  { id:'colouring',        icon:'🎨', label:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ',        labelEn:'Colouring Pages',       color:['#E8F5E9','#C8E6C9'], accent:'#2E7D32' },
+  { id:'colouring',        icon:'🎨', label:'රූප පාටකිරීම',          labelEn:'Colouring Pages',       color:['#E8F5E9','#C8E6C9'], accent:'#2E7D32' },
 ];
 
 // ================================================================
@@ -485,18 +503,18 @@ const RULES = {
   },
 
   // ── BONDING ISSUES ───────────────────────────────────────────
-  // Music: Mother-baby bonding songs | Video: Parenting bonding | Activity: Talk with baby | Game: Baby interaction
+  // Music: Mother-baby bonding songs | Video: Parenting bonding | Activity: Talk with baby | Game: Baby Cues
   bonding_issues: {
     low: {
-      activityIds: ['baby_bonding', 'journaling', 'breathing_478', 'affirmation_activity'],
-      gameId:    'baby_interaction',
+      activityIds: ['journaling', 'breathing_478', 'affirmation_activity'],
+      gameId:    'baby_mood',
       musicKey:  'bonding_issues',
       videoKey:  'bonding_issues',
       supportMsg:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ — ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸',
     },
     medium: {
-      activityIds: ['baby_bonding', 'breathing_478'],
-      gameId:    'baby_interaction',
+      activityIds: ['breathing_478', 'journaling'],
+      gameId:    'baby_mood',
       musicKey:  'bonding_issues',
       videoKey:  'bonding_issues',
       supportMsg:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜',
@@ -580,11 +598,11 @@ const RULES = {
   },
 
   // ── PHYSICAL DISCOMFORT ──────────────────────────────────────
-  // Music: Soft calming music | Video: Light exercise | Activity: Gentle stretching | Game: Light interaction (dress_baby)
+  // Music: Soft calming music | Video: Light exercise | Activity: Gentle stretching | Game: Light interaction
   physical_discomfort: {
     low: {
       activityIds: ['gentle_stretch', 'rest_meditation', 'short_breathing', 'breathing_478'],
-      gameId:    'dress_baby',
+      gameId:    'colouring',
       musicKey:  'physical_discomfort',
       videoKey:  'physical_discomfort',
       supportMsg:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸',

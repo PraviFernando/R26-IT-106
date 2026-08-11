@@ -398,7 +398,13 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       return (
                         <TouchableOpacity
                           key={actId || idx}
-                          onPress={() => navigation.navigate('Activity', { activityId: actId })}
+                          onPress={() => {
+                            if (actId === 'baby_mood') {
+                              navigation.navigate('Activity', { gameId: 'baby_mood' });
+                            } else {
+                              navigation.navigate('Activity', { activityId: actId });
+                            }
+                          }}
                           style={s.actCard}
                         >
                           <LinearGradient colors={act.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
