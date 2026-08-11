@@ -768,8 +768,10 @@ const MemoryMatch = ({ navigation, onGoBack }) => {
   const cfg = MM_LEVELS[currentLevel - 1];
   const pairs = (cfg.cols * cfg.rows) / 2;
   const cardGap = 6;
-  const cardW = Math.floor((width - spacing.md * 2 - cardGap * (cfg.cols - 1) - 8) / cfg.cols);
-  const cardH = Math.floor(cardW * 1.2);
+  const gridWidth = Math.min(width - spacing.md * 2, 520);
+  const cardW = Math.floor((gridWidth - cardGap * (cfg.cols - 1) - 8) / cfg.cols);
+  const maxAvailableH = height - 320; // safe padding for headers and status bar
+  const cardH = Math.min(Math.floor(cardW * 1.25), Math.floor(maxAvailableH / cfg.rows));
 
   const tapCard = (card) => {
     if (locked || card.flipped || card.matched || paused) return;
