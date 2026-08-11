@@ -19,6 +19,16 @@ const DEMO_DIARIES = [
 
 const SI_DAYS = ['ඉරි', 'සඳු', 'අඟ', 'බදා', 'බ්‍රහ', 'සිකු', 'සෙන'];
 
+const INITIAL_MOOD_HISTORY = [
+  { day: 'සඳු', emotion: 'happy', risk: 'low', emoji: '😊', mood: '😊' },
+  { day: 'අඟ', emotion: 'stressed', risk: 'medium', emoji: '😪', mood: '😪' },
+  { day: 'බදා', emotion: 'happy', risk: 'low', emoji: '😊', mood: '😊' },
+  { day: 'බ්‍රහ', emotion: 'stressed', risk: 'low', emoji: '😟', mood: '😟' },
+  { day: 'සිකු', emotion: 'sad', risk: 'medium', emoji: '😔', mood: '😔' },
+  { day: 'සෙන', emotion: 'happy', risk: 'low', emoji: '😊', mood: '😊' },
+  { day: 'ඉරි', emotion: 'stressed', risk: 'low', emoji: '😌', mood: '😌' },
+];
+
 export const AppProvider = ({ children }) => {
   const [user] = useState({ name: 'සාරා', weekPostpartum: 6 });
   const [userPreferredActivities, setUserPreferredActivities] = useState([]);
@@ -27,17 +37,45 @@ export const AppProvider = ({ children }) => {
   const [latestAnalysis, setLatestAnalysis] = useState(null);
   const [latestRecommendations, setLatestRecommendations] = useState(null);
   const [detectedBabyTopic, setDetectedBabyTopic] = useState(null);
+  const [detectedBabyTopics, setDetectedBabyTopics] = useState([]);
   const [detectedBabyAge, setDetectedBabyAge] = useState(null);
   const [demoDiaryIdx, setDemoDiaryIdx] = useState(0);
-  const [moodHistory, setMoodHistory] = useState([
-    { day: 'සඳු', emotion: 'stressed', risk: 'medium' },
-    { day: 'අඟ', emotion: 'sad', risk: 'medium' },
-    { day: 'බදා', emotion: 'happy', risk: 'low' },
-    { day: 'බ්‍රහ', emotion: 'stressed', risk: 'low' },
-    { day: 'සිකු', emotion: 'sad', risk: 'medium' },
-    { day: 'සෙන', emotion: 'happy', risk: 'low' },
-    { day: 'ඉරි', emotion: 'stressed', risk: 'low' },
-  ]);
+  const [moodHistory, setMoodHistory] = useState(INITIAL_MOOD_HISTORY);
+
+  const updateMoodHistory = (analysis) => {
+    if (!analysis) return;
+    const todayDayName = SI_DAYS[new Date().getDay()];
+    const defaultEmotionEmojis = {
+      happy: '😊',
+      sad: '😔',
+      stressed: '😟'
+    };
+    const newEmoji = analysis.mood || analysis.emoji || defaultEmotionEmojis[analysis.detectedEmotion || analysis.emotion] || '😊';
+    const newEmotion = analysis.detectedEmotion || analysis.emotion || 'stressed';
+    const newRisk = analysis.riskLevel || 'low';
+
+    setMoodHistory(prev => {
+      const exists = prev.some(item => item.day === todayDayName);
+      if (exists) {
+        return prev.map(item => {
+          if (item.day === todayDayName) {
+            return {
+              ...item,
+              emotion: newEmotion,
+              risk: newRisk,
+              emoji: newEmoji,
+              mood: newEmoji,
+            };
+          }
+          return item;
+        });
+      }
+      return [
+        ...prev.slice(1),
+        { day: todayDayName, emotion: newEmotion, risk: newRisk, emoji: newEmoji, mood: newEmoji }
+      ];
+    });
+  };
 
   const processDiary = (diaryText) => {
     try {
@@ -51,18 +89,21 @@ export const AppProvider = ({ children }) => {
 
       // Detect Baby Care Topic using independent babyCareService
       const babyTopicRes = detectBabyTopic(diaryText);
-      if (babyTopicRes.topic) {
+      if (babyTopicRes && babyTopicRes.topics && babyTopicRes.topics.length > 0) {
+        setDetectedBabyTopics(babyTopicRes.topics);
+        setDetectedBabyTopic(babyTopicRes.topic || babyTopicRes.topics[0]);
+      } else if (babyTopicRes && babyTopicRes.topic) {
         setDetectedBabyTopic(babyTopicRes.topic);
+        setDetectedBabyTopics([babyTopicRes.topic]);
+      } else {
+        setDetectedBabyTopics([]);
+        setDetectedBabyTopic(null);
       }
 
       const recommendations = getRecommendations(analysis, userPreferredActivities, userPreferredGames);
       setLatestAnalysis(analysis);
       setLatestRecommendations(recommendations);
-      const today = SI_DAYS[new Date().getDay()];
-      setMoodHistory(prev => [
-        ...prev.slice(-6),
-        { day: today, emotion: analysis.detectedEmotion, risk: analysis.riskLevel },
-      ]);
+      updateMoodHistory(analysis);
       return { analysis, recommendations, babyTopic: babyTopicRes };
     } catch (err) {
       console.error('processDiary error:', err);
@@ -90,11 +131,7 @@ export const AppProvider = ({ children }) => {
     setLatestAnalysis(analysis);
     setLatestRecommendations(recommendations);
     if (analysis) {
-      const today = SI_DAYS[new Date().getDay()];
-      setMoodHistory(prev => [
-        ...prev.slice(-6),
-        { day: today, emotion: analysis.detectedEmotion || analysis.emotion, risk: analysis.riskLevel },
-      ]);
+      updateMoodHistory(analysis);
     }
   };
 
@@ -104,6 +141,7 @@ export const AppProvider = ({ children }) => {
       preferencesSet, savePreferences,
       latestAnalysis, latestRecommendations,
       detectedBabyTopic, setDetectedBabyTopic,
+      detectedBabyTopics, setDetectedBabyTopics,
       detectedBabyAge, setDetectedBabyAge,
       moodHistory, processDiary, simulateNextDiary, nextDemoPreview, demoDiaryIdx,
       setLatestData,

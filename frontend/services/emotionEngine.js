@@ -16,7 +16,7 @@
 import { getEnhancedRecommendationRule } from './activitiesLibrary';
 import { MUSIC_LIBRARY, VIDEO_LIBRARY } from './mediaLibrary';
 
-export const RISK = { LOW: 'low', MEDIUM: 'medium' };
+export const RISK = { LOW: 'low', MEDIUM: 'medium', HIGH: 'high' };
 
 // ── KEYWORD MAPS ─────────────────────────────────────────────
 const REASON_KW = {
@@ -43,10 +43,17 @@ const HIGH_RISK_REASONS = new Set([
   'negative_thoughts', 'bonding_issues', 'loss_of_confidence', 'lack_of_support',
 ]);
 
-// Crisis keywords → always medium risk regardless of reason
-const CRISIS_KW = [
-  'hopeless', 'hate myself', 'disappear', 'want to die', 'dark thoughts',
-  'no point in living', 'end it all', 'cant go on',
+// High crisis keywords → high risk
+const HIGH_CRISIS_KW = [
+  'hopeless', 'want to die', 'end it all', 'cannot control my emotions',
+  'cant control my emotions', 'panic very easily', 'failing as a mother',
+  'disappear', 'hate myself', 'dark thoughts', 'panic'
+];
+
+// Medium crisis keywords → medium risk
+const MEDIUM_CRISIS_KW = [
+  'exhausted', 'overwhelmed', 'lonely', 'isolated', 'scared', 'worried',
+  'barely sleep', 'cries every', 'not feeding well', 'fever', 'stress'
 ];
 
 // ── SUPPORT MESSAGES (no reason label shown to user) ─────────
@@ -87,11 +94,17 @@ export const analyzeDiary = (text) => {
   const secondaryReason  = sortedReasons[1]?.[1] > 0 ? sortedReasons[1][0] : null;
 
   // Step 3: Determine risk level
-  //   medium if: crisis keywords OR high-risk reason + sad mood OR crisis reason
-  const hasCrisis    = CRISIS_KW.some(k => t.includes(k));
-  const isHighRisk   = HIGH_RISK_REASONS.has(primaryReason);
-  const isSad        = detectedEmotion === 'sad';
-  const riskLevel    = (hasCrisis || (isHighRisk && isSad) || hasCrisis) ? RISK.MEDIUM : RISK.LOW;
+  const hasHighCrisis   = HIGH_CRISIS_KW.some(k => t.includes(k));
+  const hasMediumCrisis = MEDIUM_CRISIS_KW.some(k => t.includes(k));
+  const isHighReason    = HIGH_RISK_REASONS.has(primaryReason);
+  const isSad           = detectedEmotion === 'sad';
+
+  let riskLevel = RISK.LOW;
+  if (hasHighCrisis) {
+    riskLevel = RISK.HIGH;
+  } else if (hasMediumCrisis || (isHighReason && isSad)) {
+    riskLevel = RISK.MEDIUM;
+  }
 
   return {
     detectedEmotion,

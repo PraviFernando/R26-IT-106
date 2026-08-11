@@ -57,10 +57,13 @@ const ProgressScreen = ({ navigation }) => {
           const ec = emotionConfig[d.emotion]||emotionConfig.stressed;
           const rc = riskConfig[d.risk]||riskConfig.low;
           const barH = ((moodScore[d.emotion]||3)/5)*MAX_BAR;
-          const isToday = i===weekData.length-1;
+          const SI_DAYS = ['ඉරි', 'සඳු', 'අඟ', 'බදා', 'බ්‍රහ', 'සිකු', 'සෙන'];
+          const todayDayName = SI_DAYS[new Date().getDay()];
+          const isToday = d.day === todayDayName;
+          const displayEmoji = d.emoji || d.mood || ec.emoji;
           return (
             <View key={i} style={s.barCol}>
-              <Text style={s.barEmoji}>{ec.emoji}</Text>
+              <Text style={s.barEmoji}>{displayEmoji}</Text>
               <Text style={s.barRisk}>{rc.dot}</Text>
               <View style={[s.barBg,{backgroundColor:ec.barBg}]}>
                 <View style={[s.barFill,{height:barH,backgroundColor:ec.barColor}]}/>
@@ -97,13 +100,16 @@ const ProgressScreen = ({ navigation }) => {
         {weekData.map((d,i)=>{
           const ec=emotionConfig[d.emotion]||emotionConfig.stressed;
           const rc=riskConfig[d.risk]||riskConfig.low;
-          const isToday=i===weekData.length-1;
+          const SI_DAYS = ['ඉරි', 'සඳු', 'අඟ', 'බදා', 'බ්‍රහ', 'සිකු', 'සෙන'];
+          const todayDayName = SI_DAYS[new Date().getDay()];
+          const isToday = d.day === todayDayName;
+          const displayEmoji = d.emoji || d.mood || ec.emoji;
           return (
             <View key={i} style={s.riskRow}>
               <Text style={[s.riskDay,isToday&&{color:colors.lavenderDark,fontWeight:'800'}]}>
                 {d.day}{isToday?` ${SI.today}`:''}
               </Text>
-              <Text style={s.riskEmoji}>{ec.emoji}</Text>
+              <Text style={s.riskEmoji}>{displayEmoji}</Text>
               <View style={[s.riskBadge,{backgroundColor:rc.bg}]}>
                 <Text style={[s.riskLabel,{color:rc.color}]}>{rc.dot} {rc.label} {SI.risk}</Text>
               </View>

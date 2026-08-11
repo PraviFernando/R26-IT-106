@@ -94,7 +94,7 @@ const today = toDateString(new Date());
 
 export default function DiaryScreen({ navigation }) {
     const { t, i18n } = useTranslation();
-    const { setLatestData, setDetectedBabyTopic, setDetectedBabyAge } = useApp();
+    const { setLatestData, setDetectedBabyTopic, setDetectedBabyTopics, setDetectedBabyAge } = useApp();
     const [selectedDate, setSelectedDate] = useState(today);
     const [content, setContent] = useState('');
     const [isLocked, setIsLocked] = useState(false);
@@ -593,9 +593,18 @@ export default function DiaryScreen({ navigation }) {
                                     <TouchableOpacity 
                                         style={[s.recommendationBtn, { backgroundColor: tc.accent }]}
                                         onPress={() => {
-                                            const { topic, age } = detectBabyTopic(content);
-                                            setDetectedBabyTopic(topic);
-                                            setDetectedBabyAge(age);
+                                            const res = detectBabyTopic(content);
+                                            if (res && res.topics && res.topics.length > 0) {
+                                                setDetectedBabyTopics && setDetectedBabyTopics(res.topics);
+                                                setDetectedBabyTopic(res.topic || res.topics[0]);
+                                            } else if (res && res.topic) {
+                                                setDetectedBabyTopic(res.topic);
+                                                setDetectedBabyTopics && setDetectedBabyTopics([res.topic]);
+                                            } else {
+                                                setDetectedBabyTopics && setDetectedBabyTopics([]);
+                                                setDetectedBabyTopic(null);
+                                            }
+                                            setDetectedBabyAge(res ? res.age : null);
                                             navigation.navigate('Main', {
                                                 screen: 'Tabs',
                                                 params: {

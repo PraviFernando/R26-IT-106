@@ -111,7 +111,7 @@ const openYouTube = async (itemOrUrl, title, titleEn) => {
 };
 
 const RecommendationsScreen = ({ navigation, route }) => {
-  const { latestRecommendations, latestAnalysis, userPreferredActivities, userPreferredGames, detectedBabyTopic, detectedBabyAge } = useApp();
+  const { latestRecommendations, latestAnalysis, userPreferredActivities, userPreferredGames, detectedBabyTopic, detectedBabyTopics, detectedBabyAge } = useApp();
 
   // Quick Assessment State
   const hasAnalysis = Boolean(latestAnalysis);
@@ -124,12 +124,19 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const [localRuleRecs, setLocalRuleRecs] = useState(null);
 
   // Screen UI State
-  const initialTab = detectedBabyTopic ? 'videos' : (route?.params?.tab || 'activities');
+  const hasBabyCareTopic = Boolean(detectedBabyTopic || (detectedBabyTopics && detectedBabyTopics.length > 0));
+  const initialTab = route?.params?.tab || (hasBabyCareTopic ? 'videos' : 'activities');
   const [tab, setTab] = useState(initialTab);
-  const [videoTab, setVideoTab] = useState(detectedBabyTopic || 'Motivation');
+  const [videoTab, setVideoTab] = useState(hasBabyCareTopic ? 'නිර්දේශිත වීඩියෝ' : 'Motivation');
   const [kbCategory, setKbCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [feedbackSaved, setFeedbackSaved] = useState(false);
+
+  useEffect(() => {
+    if (route?.params?.tab) {
+      setTab(route.params.tab);
+    }
+  }, [route?.params?.tab]);
 
   const activeAnalysis = isSkipped
     ? null
@@ -189,28 +196,45 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const libraryMusic = MUSIC_LIBRARY[primaryReason] || MUSIC_LIBRARY.loneliness;
   const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
 
+  const activeBabyTopics = (detectedBabyTopics && detectedBabyTopics.length > 0)
+    ? detectedBabyTopics
+    : (detectedBabyTopic ? [detectedBabyTopic] : []);
+
   const libraryVideos = VIDEO_LIBRARY[primaryReason] || VIDEO_LIBRARY.loneliness;
-  const VIDEO_SUB_TABS = detectedBabyTopic
-    ? ['All', 'Motivation', 'Baby Feeding', 'Baby Food', 'Baby Sleep', 'Baby Health', 'Baby Development', 'Mother Care']
+  const VIDEO_SUB_TABS = activeBabyTopics.length > 0
+    ? ['නිර්දේශිත වීඩියෝ', 'Motivation', 'Baby Feeding', 'Baby Bathing', 'Baby Diapering', 'Baby Sleeping', 'Baby Crying', 'Baby Health', 'Baby Development', 'Vaccination', 'Baby Safety', 'Mother Care']
     : ['Motivation'];
 
-  const getAllBabyVideos = () => {
-    let all = [];
-    Object.values(BABY_VIDEO_LIBRARY).forEach(arr => {
-      all = all.concat(arr);
-    });
-    return all;
+  const getBabyCareVideos = () => {
+    if (activeBabyTopics.length === 0) return [];
+    const topicVideosMap = activeBabyTopics.map(t => BABY_VIDEO_LIBRARY[t] || []);
+    let mixed = [];
+    const maxLen = Math.max(...topicVideosMap.map(arr => arr.length), 0);
+    for (let i = 0; i < maxLen; i++) {
+      topicVideosMap.forEach(arr => {
+        if (arr[i]) mixed.push(arr[i]);
+      });
+    }
+    return mixed;
   };
 
   const getVideosForTab = () => {
-    if (isSkipped) return getAllBabyVideos().slice(0, 4);
-    if (videoTab === 'Motivation') return libraryVideos.slice(0, 4);
-
-    let rawVideos = BABY_VIDEO_LIBRARY[videoTab] || [];
-    if (videoTab === 'All') {
-      rawVideos = [...libraryVideos, ...(detectedBabyTopic ? getAllBabyVideos() : [])];
+    if (isSkipped) {
+      let all = [];
+      Object.values(BABY_VIDEO_LIBRARY).forEach(arr => { all = all.concat(arr); });
+      return all;
     }
-    return rawVideos.slice(0, 4);
+    if (videoTab === 'Motivation') return libraryVideos;
+    if (videoTab === 'නිර්දේශිත වීඩියෝ' || videoTab === 'DetectedTopics') {
+      const babyVids = getBabyCareVideos();
+      return babyVids.length > 0 ? babyVids : libraryVideos;
+    }
+    if (videoTab === 'All') {
+      let all = [...libraryVideos];
+      Object.values(BABY_VIDEO_LIBRARY).forEach(arr => { all = all.concat(arr); });
+      return all;
+    }
+    return BABY_VIDEO_LIBRARY[videoTab] || libraryVideos;
   };
 
   const displayedVideos = getVideosForTab();
@@ -286,13 +310,13 @@ const RecommendationsScreen = ({ navigation, route }) => {
           </View>
 
           {/* Emergency Medical Callout Banner */}
-          {isEmergencyTopic && (
+          {(isEmergencyTopic || risk === 'high') && (
             <View style={s.emergencyBanner}>
-              <Text style={s.emergencyIcon}>⚠️</Text>
+              <Text style={s.emergencyIcon}>🆘</Text>
               <View style={{ flex: 1 }}>
-                <Text style={s.emergencyTitle}>වෛද්‍ය උපදෙස් සඳහා සටහන:</Text>
+                <Text style={s.emergencyTitle}>ක්ෂණික වෛද්‍ය හා වෘත්තීය සහාය (Immediate Professional Support):</Text>
                 <Text style={s.emergencyText}>
-                  මෙම තොරතුරු අධ්‍යාපනික අරමුණු සඳහා පමණක් වන අතර සුදුසුකම් ලත් වෛද්‍ය උපදෙස් වෙනුවට භාවිත කළ නොහැක. දරුවාට අධික උණ හෝ අසනීප ස්වභාවයක් ඇත්නම් වහාම ආසන්නතම රෝහල හෝ වෛද්‍යවරයා හමුවන්න. (හදිසි ඇමතුම් 1926).
+                  ඔබ අධික පීඩනයකින් හෝ බලාපොරොත්තු රහිත ස්වභාවයකින් පෙළෙන්නේ නම්, කරුණාකර වහාම නොමිලේ උපදේශන සේවාව හමුවන්න (හදිසි ඇමතුම් 1926) හෝ ආසන්නතම සෞඛ්‍ය නිලධාරී / පවුල් සෞඛ්‍ය සේවිකා මුණගැසෙන්න.
                 </Text>
               </View>
             </View>
@@ -435,7 +459,36 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 {/* 4. VIDEOS TAB */}
                 {tab === 'videos' && (
                   <View>
-                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (උපරිම 4)</Text>
+                    {activeBabyTopics.length > 0 && (
+                      <View style={s.detectedTopicsBanner}>
+                        <Text style={s.detectedTopicsTitle}>🍼 හඳුනාගත් ළදරු සාත්තු මාතෘකා ({activeBabyTopics.length}):</Text>
+                        <View style={s.topicBadgesRow}>
+                          {activeBabyTopics.map((top, idx) => (
+                            <View key={idx} style={s.topicBadgeItem}>
+                              <Text style={s.topicBadgeText}>{top}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+
+                    {VIDEO_SUB_TABS.length > 1 && (
+                      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.videoTabsScroll}>
+                        {VIDEO_SUB_TABS.map(vTab => (
+                          <TouchableOpacity
+                            key={vTab}
+                            onPress={() => setVideoTab(vTab)}
+                            style={[s.videoSubTab, videoTab === vTab && s.videoSubTabActive]}
+                          >
+                            <Text style={[s.videoSubTabLabel, videoTab === vTab && s.videoSubTabLabelActive]}>
+                              {vTab}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    )}
+
+                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬</Text>
                     {displayedVideos.map((video, idx) => (
                       <TouchableOpacity key={video.id || idx} style={s.mediaCard} onPress={() => openYouTube(video)}>
                         <View style={[s.mediaIcon, { backgroundColor: colors.roseLight }]}>
@@ -617,6 +670,11 @@ const s = StyleSheet.create({
   emergencyIcon: { fontSize: 24 },
   emergencyTitle: { fontSize: 13, fontWeight: '900', color: '#D32F2F', marginBottom: 2 },
   emergencyText: { fontSize: 11, color: '#B71C1C', lineHeight: 17 },
+  detectedTopicsBanner: { backgroundColor: '#F3E8FF', borderWidth: 1.5, borderColor: '#9333EA', borderRadius: radius.lg, padding: 12, marginBottom: 14 },
+  detectedTopicsTitle: { fontSize: 13, fontWeight: '900', color: '#7E22CE', marginBottom: 6 },
+  topicBadgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  topicBadgeItem: { backgroundColor: '#9333EA', borderRadius: radius.full, paddingVertical: 4, paddingHorizontal: 10 },
+  topicBadgeText: { fontSize: 11, fontWeight: '800', color: '#FFFFFF' },
   badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: spacing.md },
   badge: { borderRadius: radius.full, paddingVertical: 6, paddingHorizontal: 14 },
   badgeText: { fontSize: 12, fontWeight: '700' },

@@ -9,14 +9,15 @@ import{LinearGradient}from'expo-linear-gradient';
 import{colors,spacing,radius,shadows}from'../theme';
 import{ALL_ACTIVITIES, NEW_ACTIVITIES}from'../services/activitiesLibrary';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../services/api';
 const{width,height}=Dimensions.get('window');
 
-const CongratsPopup=({visible,onClose,title='ශ්‍රේෂ්ඨයි!',msg='ඔබ අපූරුයි! 💜'})=>{
+const CongratsPopup=({visible,onClose,title='ශ්‍රේෂ්ඨයි!',msg='ඔබ අපූරුයි! 💜',showClose=false,onClosePress,playAgainText='🎮 නැවත!'})=>{
   const scale=useRef(new Animated.Value(0)).current;
   const bounce=useRef(new Animated.Value(0)).current;
-  useEffect(()=>{if(visible){Animated.spring(scale,{toValue:1,friction:5,tension:90,useNativeDriver:true}).start();Animated.loop(Animated.sequence([Animated.timing(bounce,{toValue:-10,duration:400,useNativeDriver:true}),Animated.timing(bounce,{toValue:0,duration:400,useNativeDriver:true})])).start();}else{scale.setValue(0);bounce.setValue(0);}},[visible]);
-  if(!visible)return null;
-  return(<Modal transparent visible={visible} onRequestClose={onClose}><View style={cp.overlay}><Animated.View style={[cp.box,{transform:[{scale}]}]}><View style={cp.row}>{['🎉','🌸','✨','💜','⭐'].map((c,i)=><Text key={i} style={cp.conf}>{c}</Text>)}</View><Animated.Text style={[cp.big,{transform:[{translateY:bounce}]}]}>🌟</Animated.Text><Text style={cp.title}>{title}</Text><Text style={cp.msg}>{msg}</Text><View style={cp.row}>{['🎊','💫','🌺','🌟','💕'].map((c,i)=><Text key={i} style={cp.conf}>{c}</Text>)}</View><TouchableOpacity style={cp.btn} onPress={onClose}><LinearGradient colors={['#E91E8C','#7E57C2']} style={cp.btnIn}><Text style={cp.btnT}>🎮 නැවත!</Text></LinearGradient></TouchableOpacity></Animated.View></View></Modal>);
+  useEffect(() => { if (visible) { Animated.spring(scale, { toValue: 1, friction: 5, tension: 90, useNativeDriver: true }).start(); Animated.loop(Animated.sequence([Animated.timing(bounce, { toValue: -10, duration: 400, useNativeDriver: true }), Animated.timing(bounce, { toValue: 0, duration: 400, useNativeDriver: true })])).start(); } else { scale.setValue(0); bounce.setValue(0); } }, [visible]);
+  if (!visible) return null;
+  return (<Modal transparent visible={visible} onRequestClose={onClose}><View style={cp.overlay}><Animated.View style={[cp.box, { transform: [{ scale }] }]}><View style={cp.row}>{['🎉', '🌸', '✨', '💜', '⭐'].map((c, i) => <Text key={i} style={cp.conf}>{c}</Text>)}</View><Animated.Text style={[cp.big, { transform: [{ translateY: bounce }] }]}>🌟</Animated.Text><Text style={cp.title}>{title}</Text><Text style={cp.msg}>{msg}</Text><View style={cp.row}>{['🎊', '💫', '🌺', '🌟', '💕'].map((c, i) => <Text key={i} style={cp.conf}>{c}</Text>)}</View><TouchableOpacity style={cp.btn} onPress={onClose}><LinearGradient colors={['#E91E8C', '#7E57C2']} style={cp.btnIn}><Text style={cp.btnT}>{playAgainText}</Text></LinearGradient></TouchableOpacity>{showClose && <TouchableOpacity style={[cp.btn, {marginTop: 10}]} onPress={onClosePress}><LinearGradient colors={['#757575', '#9E9E9E']} style={cp.btnIn}><Text style={cp.btnT}>✕ වසන්න</Text></LinearGradient></TouchableOpacity>}</Animated.View></View></Modal>);
 };
 const cp=StyleSheet.create({overlay:{flex:1,backgroundColor:'rgba(0,0,0,0.6)',justifyContent:'center',alignItems:'center',padding:24},box:{backgroundColor:'white',borderRadius:26,padding:26,alignItems:'center',width:'100%',maxWidth:340},row:{flexDirection:'row',gap:6,marginBottom:10},conf:{fontSize:20},big:{fontSize:60,marginBottom:8},title:{fontSize:24,fontWeight:'900',color:'#E91E8C',marginBottom:6,textAlign:'center'},msg:{fontSize:14,color:'#555',textAlign:'center',marginBottom:14,lineHeight:22},btn:{borderRadius:999,overflow:'hidden',width:'100%'},btnIn:{paddingVertical:14,alignItems:'center'},btnT:{color:'white',fontWeight:'900',fontSize:15}});
 
@@ -516,7 +517,7 @@ const saveBubblePopActivity = async (score, duration) => {
   }
 };
 
-const BubblePopCompletionPopup = ({ visible, score, duration, lives, onPlayAgain, onClose, onBack }) => {
+const BubblePopCompletionPopup = ({ visible, score, duration, lives, onPlayAgain, onClose }) => {
   const scale = useRef(new Animated.Value(0)).current;
   const bounce = useRef(new Animated.Value(0)).current;
 
@@ -548,42 +549,21 @@ const BubblePopCompletionPopup = ({ visible, score, duration, lives, onPlayAgain
           </View>
 
           <Animated.Text style={[bpp.bigEmoji, { transform: [{ translateY: bounce }] }]}>
-            ⭐
+            🎉
           </Animated.Text>
 
-          <Text style={bpp.title}>අපූරුයි! 🎉</Text>
-          <Text style={bpp.subtitle}>බුබුළු ක්‍රීඩාව සම්පූර්ණයි! 💜</Text>
-
-          <View style={bpp.statsCard}>
-            <View style={bpp.statItem}>
-              <Text style={bpp.statLabel}>⭐ ලකුණු</Text>
-              <Text style={bpp.statVal}>🌸 {score}</Text>
-            </View>
-            <View style={bpp.divider} />
-            <View style={bpp.statItem}>
-              <Text style={bpp.statLabel}>⏱ කාලය</Text>
-              <Text style={bpp.statVal}>{duration}s</Text>
-            </View>
-            <View style={bpp.divider} />
-            <View style={bpp.statItem}>
-              <Text style={bpp.statLabel}>❤️ ජීවිත</Text>
-              <Text style={bpp.statVal}>{'❤️'.repeat(Math.max(0, lives))}{lives < 3 ? '🖤'.repeat(3 - lives) : ''}</Text>
-            </View>
-          </View>
+          <Text style={bpp.title}>ජයයි!</Text>
+          <Text style={bpp.subtitle}>ඔබ ලකුණු {score} ක් ලබාගත්තා</Text>
 
           <View style={bpp.btnGroup}>
             <TouchableOpacity style={bpp.btnMain} onPress={onPlayAgain} activeOpacity={0.85}>
               <LinearGradient colors={['#E91E8C', '#7E57C2']} style={bpp.btnMainIn}>
-                <Text style={bpp.btnMainT}>🔄 නැවත (Play Again)</Text>
+                <Text style={bpp.btnMainT}>🎮 නැවත ක්‍රීඩා කරන්න</Text>
               </LinearGradient>
             </TouchableOpacity>
 
             <TouchableOpacity style={bpp.btnClose} onPress={onClose} activeOpacity={0.85}>
-              <Text style={bpp.btnCloseT}>❌ වසා දමන්න (Close)</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={bpp.btnBack} onPress={onBack} activeOpacity={0.85}>
-              <Text style={bpp.btnBackT}>🏠 ආපසු (Back)</Text>
+              <Text style={bpp.btnCloseT}>✕ වසන්න</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -601,10 +581,11 @@ const BubblePop = ({ navigation, onGoBack }) => {
   const [gameOver, setGameOver] = useState(false);
   const [showC, setShowC] = useState(false);
   const [playDuration, setPlayDuration] = useState(0);
+  const [startTime, setStartTime] = useState(null);
+  const [hasSavedSession, setHasSavedSession] = useState(false);
 
   const timerRef = useRef(null);
   const spawnRef = useRef(null);
-  const startTimeRef = useRef(null);
 
   const startGame = () => {
     setScore(0);
@@ -614,8 +595,41 @@ const BubblePop = ({ navigation, onGoBack }) => {
     setGameOver(false);
     setShowC(false);
     setPlayDuration(0);
-    startTimeRef.current = Date.now();
+    setStartTime(Date.now());
+    setHasSavedSession(false);
     setRunning(true);
+  };
+
+  const recordSession = async (isCompleted) => {
+    if (!startTime) return;
+    if (hasSavedSession) return;
+    setHasSavedSession(true);
+
+    const duration = startTime ? Math.round((Date.now() - startTime) / 1000) : 0;
+    const d = new Date();
+    const todayDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const hour = d.getHours();
+    let timeOfDay = 'Night';
+    if (hour >= 5 && hour < 12) timeOfDay = 'Morning';
+    else if (hour >= 12 && hour < 15) timeOfDay = 'Midday';
+    else if (hour >= 15 && hour < 19) timeOfDay = 'Afternoon';
+
+    try {
+      const sessionActivityId = `bubble_pop_${startTime}`;
+      await api.post('/plan/activity', {
+        date: todayDateStr,
+        activityId: sessionActivityId,
+        activityName: 'බුබුළු',
+        timeOfDay,
+        icon: '🌸',
+        completed: isCompleted,
+        timerSeconds: duration,
+        isCustom: false,
+        note: `ලකුණු: ${score}`
+      });
+    } catch (err) {
+      console.error('Error saving game session:', err);
+    }
   };
 
   const handleEndGame = useCallback((finalScore) => {
@@ -623,13 +637,13 @@ const BubblePop = ({ navigation, onGoBack }) => {
     setGameOver(true);
     clearInterval(timerRef.current);
     clearInterval(spawnRef.current);
-    const duration = startTimeRef.current
-      ? Math.min(45, Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000)))
+    const duration = startTime
+      ? Math.min(45, Math.max(1, Math.round((Date.now() - startTime) / 1000)))
       : 45;
     setPlayDuration(duration);
-    saveBubblePopActivity(finalScore, duration);
+    recordSession(true);
     setTimeout(() => setShowC(true), 350);
-  }, []);
+  }, [startTime, score]);
 
   useEffect(() => {
     if (!running) return;
@@ -683,9 +697,11 @@ const BubblePop = ({ navigation, onGoBack }) => {
 
   const handleBackNavigation = () => {
     setShowC(false);
-    if (navigation?.canGoBack && navigation.canGoBack()) {
-      navigation.goBack();
-    } else if (onGoBack) {
+    setRunning(false);
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (spawnRef.current) clearInterval(spawnRef.current);
+    recordSession(false);
+    if (onGoBack) {
       onGoBack();
     }
   };
@@ -698,9 +714,12 @@ const BubblePop = ({ navigation, onGoBack }) => {
         duration={playDuration}
         lives={lives}
         onPlayAgain={startGame}
-        onClose={() => setShowC(false)}
-        onBack={handleBackNavigation}
+        onClose={handleBackNavigation}
       />
+
+      <TouchableOpacity onPress={handleBackNavigation} style={[s.backBtn, { alignSelf: 'flex-start', marginBottom: 10 }]}>
+        <Text style={s.backText}>← ආපසු</Text>
+      </TouchableOpacity>
 
       <View style={bp.header}>
         <Text style={bp.title}>🫧 බුබුළු</Text>
@@ -759,10 +778,7 @@ const BubblePop = ({ navigation, onGoBack }) => {
                 },
               ]}
             >
-              <LinearGradient
-                colors={b.cols}
-                style={[bp.bubbleGrad, { borderRadius: b.size / 2 }]}
-              >
+              <LinearGradient colors={b.cols} style={[bp.bubbleGrad, { borderRadius: b.size / 2 }]}>
                 <Text style={{ fontSize: b.size * 0.44 }}>{b.emoji}</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -1027,7 +1043,7 @@ const ActivityScreen=({navigation,route})=>{
   }};
   const goBack=()=>{setView('list');setSelAct(null);setSelGame(null);setDone(false);};
   if(view==='activity'&&selAct)return(<View style={s.container}><LinearGradient colors={['#F8F4FF','#F0FAFF']} style={s.gradient}><ScrollView contentContainerStyle={s.scroll}><TouchableOpacity onPress={goBack} style={s.backBtn}><Text style={s.backText}>← ආපසු</Text></TouchableOpacity><Text style={s.actTitle}>{selAct.label}</Text><Text style={s.actSub}>{selAct.desc}</Text>{renderAct(selAct)}{done&&<LinearGradient colors={['#EDE7F6','#FCE4EC']} style={s.banner}><Text style={s.bannerT}>🌸 සම්පූර්ණ! 💜</Text></LinearGradient>}<View style={{height:110}}/></ScrollView></LinearGradient></View>);
-  if(view==='game'&&selGame)return(<View style={s.container}><LinearGradient colors={['#F8F4FF','#F0FAFF']} style={s.gradient}><ScrollView contentContainerStyle={s.scroll}><TouchableOpacity onPress={goBack} style={s.backBtn}><Text style={s.backText}>← ආපසු</Text></TouchableOpacity>{renderGame(selGame.id)}<View style={{height:110}}/></ScrollView></LinearGradient></View>);
+  if (view === 'game' && selGame) return (<View style={s.container}><LinearGradient colors={['#F8F4FF', '#F0FAFF']} style={s.gradient}><ScrollView contentContainerStyle={s.scroll}>{selGame.id !== 'bubble_pop' && <TouchableOpacity onPress={goBack} style={s.backBtn}><Text style={s.backText}>← ආපසු</Text></TouchableOpacity>}{renderGame(selGame.id)}<View style={{ height: 110 }} /></ScrollView></LinearGradient></View>);
   return(<View style={s.container}><LinearGradient colors={['#F8F4FF','#F0FAFF']} style={s.gradient}><ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
     <Text style={s.pageTitle}>ක්‍රියාකාරකම් සහ ක්‍රීඩා 🌸</Text><Text style={s.pageSub}>ඔබේ යහපැවැත්ම 💜</Text>
     <TouchableOpacity onPress={()=>navigation.navigate('Art')} style={s.artBanner}><Text style={s.artBannerIcon}>🎨</Text><View style={s.artBannerInfo}><Text style={s.artBannerTitle}>කලා සහ රූප</Text><Text style={s.artBannerSub}>10 මණ්ඩල + 10 රූප</Text></View><Text style={s.artBannerArrow}>→</Text></TouchableOpacity>

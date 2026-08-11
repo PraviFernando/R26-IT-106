@@ -139,6 +139,8 @@ export const MUSIC_LIBRARY = {
     { id: 'nt9', title: 'සෙමින් නැවත නැඟිටීම', titleEn: 'Rise Again Slowly', duration: '6:00', emoji: '🌱', url: 'https://www.youtube.com/results?search_query=rise+again+slowly+meditation+music', source: null },
     { id: 'nt10', title: 'ධෛර්යවන්ත කුඩා හදවත', titleEn: 'Brave Little Heart', duration: '5:30', emoji: '❤️', url: 'https://www.youtube.com/results?search_query=brave+little+heart+uplifting+music', source: null },
   ],
+};
+
 export const VIDEO_LIBRARY = {
   // ── LONELINESS ──────────────────────────────────────────
   loneliness: [
@@ -269,15 +271,6 @@ export const VIDEO_LIBRARY = {
     { id: 'vnt8', title: 'අඳුරු මොහොත ගෙවී යයි', titleEn: 'Dark Moments Pass', duration: '8 min', emoji: '🌊', url: 'https://www.youtube.com/results?search_query=this+too+shall+pass+motherhood', source: null },
     { id: 'vnt9', title: 'දිවි ගලවා ගත් අය කතා බෙදා ගනිති', titleEn: 'Survivors Share Stories', duration: '15 min', emoji: '🌱', url: 'https://www.youtube.com/results?search_query=postpartum+depression+survivors+share+stories', source: null },
     { id: 'vnt10', title: 'මේ මොහොතේ ආරක්ෂිතයි', titleEn: 'Safe in This Moment', duration: '7 min', emoji: '🛡️', url: 'https://www.youtube.com/results?search_query=you+are+safe+in+this+moment+relaxation', source: null },
-  ],
-};youtu.be/1n46HPsYsHM' },
-    { id: 'vsl4', title: 'සන්සුන් නින්දට පෙර කතා', titleEn: 'Calm Bedtime Stories', duration: '12 min', emoji: '📖', url: 'https://youtu.be/Y2IZNS39kM8' },
-    { id: 'vsl5', title: 'නින්ද සඳහා භාවනා මගපෙන්වීම', titleEn: 'Sleep Meditation Guide', duration: '15 min', emoji: '🧘', source: null },
-    { id: 'vsl6', title: 'රාත්‍රී ලිහිල් කිරීමේ මගපෙන්වීම', titleEn: 'Night Relaxation Guide', duration: '12 min', emoji: '🌟', source: null },
-    { id: 'vsl7', title: 'නින්ද නොලැබීම සඳහා විසඳුම්', titleEn: 'Sleep Deprivation Solutions', duration: '9 min', emoji: '💡', source: null },
-    { id: 'vsl8', title: 'නින්දට පෙර ශරීරය ලිහිල් කිරීම', titleEn: 'Body Relaxation Before Sleep', duration: '8 min', emoji: '🧘', source: null },
-    { id: 'vsl9', title: 'විවේකය තුළින් සුවය', titleEn: 'Healing Through Rest', duration: '7 min', emoji: '💜', source: null },
-    { id: 'vsl10', title: 'නින්ද යනු ස්වයං රැකවරණයකි', titleEn: 'Sleep Is Self-Care', duration: '6 min', emoji: '🌸', source: null },
   ],
   // ── LOSS OF CONFIDENCE ──────────────────────────────────
   loss_of_confidence: [

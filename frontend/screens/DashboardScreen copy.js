@@ -123,10 +123,13 @@ const DashboardScreenCopy = ({ navigation }) => {
             <View style={s.weekStrip}>
               {weekDays.map((d, i) => {
                 const e = emotionConfig[d.emotion] || emotionConfig.stressed;
-                const isToday = i === weekDays.length - 1;
+                const SI_DAYS = ['ඉරි', 'සඳු', 'අඟ', 'බදා', 'බ්‍රහ', 'සිකු', 'සෙන'];
+                const todayDayName = SI_DAYS[new Date().getDay()];
+                const isToday = d.day === todayDayName;
+                const displayEmoji = d.emoji || d.mood || e.emoji;
                 return (
                   <View key={i} style={[s.dayChip, { backgroundColor: e.bg }, isToday && s.dayChipToday]}>
-                    <Text style={s.dayEmoji}>{e.emoji}</Text>
+                    <Text style={s.dayEmoji}>{displayEmoji}</Text>
                     <Text style={[s.dayLabel, isToday && { color: colors.lavenderDark, fontWeight: '800' }]}>{d.day}</Text>
                     <Text style={s.riskDot}>{d.risk === 'medium' ? '🟡' : '🟢'}</Text>
                   </View>
