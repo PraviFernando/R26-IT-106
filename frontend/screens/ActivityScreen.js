@@ -858,7 +858,7 @@ const BABY_CUES_DATA = [
     sinhala: "බර්ප් අවශ්‍යයි",
     english: "Needs to Burp",
     emoji: "🤱",
-    image: require('../assets/baby-cues/gas.png'),
+    image: require('../assets/baby-cues/burp.png'),
     explanation: "බබාට බර්ප් අවශ්‍ය වූ විට squirming, grimacing, or crying during feeding වැනි cues පෙන්විය හැක. (Arching the back or squirming during feed might mean a burp is needed.)"
   },
   {
@@ -882,7 +882,7 @@ const BABY_CUES_DATA = [
     sinhala: "ගෑස් / බඩේ අපහසුතාවයක්",
     english: "Gas / Tummy Discomfort",
     emoji: "💨",
-    image: require('../assets/baby-cues/burp.png'),
+    image: require('../assets/baby-cues/gas.png'),
     explanation: "බඩේ අපහසුතාවයක් ඇති විට pulling legs up to tummy, grunting වැනි cues පෙන්විය හැක. (Pulling legs up to the chest or grunting can be signs of gas.)"
   },
   {

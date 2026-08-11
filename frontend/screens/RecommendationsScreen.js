@@ -188,8 +188,14 @@ const RecommendationsScreen = ({ navigation, route }) => {
   // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
   const finalActivities = isSkipped ? ALL_GAMES.slice(0, 4) : rawActivities.slice(0, 4);
   
-  const recommendedGameIds = rawGames;
-  const filteredGames = ALL_GAMES.filter(g => recommendedGameIds.includes(g.id));
+  const recommendedGameIds = rawGames.map(g => (typeof g === 'string' ? g : g?.id)).filter(Boolean);
+  let filteredGames = ALL_GAMES.filter(g => recommendedGameIds.includes(g.id));
+  if (rawActivities.some(a => (typeof a === 'string' ? a : a?.id) === 'baby_mood') && !filteredGames.some(g => g.id === 'baby_mood')) {
+    const babyMoodGame = ALL_GAMES.find(g => g.id === 'baby_mood');
+    if (babyMoodGame) {
+      filteredGames = [babyMoodGame, ...filteredGames];
+    }
+  }
   const finalGames = isSkipped ? ALL_GAMES.slice(0, 3) : (filteredGames.length > 0 ? filteredGames.slice(0, 3) : ALL_GAMES.slice(0, 3));
 
   const primaryReason = activeAnalysis?.primaryReason || selReason || 'loneliness';

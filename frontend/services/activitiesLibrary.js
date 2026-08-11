@@ -673,12 +673,25 @@ export const getRecommendationRule = (reason, riskLevel, preferredActivities = [
   };
 };
 
-export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, preferredActivities = [], preferredGames = []) => {
+export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, preferredActivities = [], preferredGames = [], diaryText = '') => {
   const existingRecommendations = getRecommendationRule(reason, riskLevel, preferredActivities, preferredGames);
-  const newActivities = getNewRecommendations(emotion, reason, riskLevel);
+  const newActivities = getNewRecommendations(emotion, reason, riskLevel, diaryText);
+
+  let games = existingRecommendations.games || [];
+  let game = existingRecommendations.game;
+
+  if (isBabyRelatedContent(diaryText)) {
+    const babyMoodGame = ALL_GAMES.find(g => g.id === 'baby_mood');
+    if (babyMoodGame) {
+      game = babyMoodGame;
+      games = [babyMoodGame, ...games.filter(g => g.id !== 'baby_mood')];
+    }
+  }
 
   return {
     ...existingRecommendations,
+    game,
+    games,
     newActivities // Return the 4 personalized new activities
   };
 };
