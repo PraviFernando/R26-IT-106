@@ -13,8 +13,10 @@
 //   Reason=LackSupp, Mood=Sad,      Risk=Low    → gratitude_writing + affirmation_game
 // ================================================================
 
-import { getEnhancedRecommendationRule } from './activitiesLibrary';
+import { getEnhancedRecommendationRule, getPersonalizedRecommendations, isBabyRelatedReason } from './activitiesLibrary';
 import { MUSIC_LIBRARY, VIDEO_LIBRARY } from './mediaLibrary';
+
+export { getPersonalizedRecommendations, isBabyRelatedReason };
 
 export const RISK = { LOW: 'low', MEDIUM: 'medium', HIGH: 'high' };
 

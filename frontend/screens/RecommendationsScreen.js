@@ -12,9 +12,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
-import { ALL_GAMES, getEnhancedRecommendationRule } from '../services/activitiesLibrary';
+import { ALL_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule } from '../services/activitiesLibrary';
+import { getPersonalizedRecommendations } from '../services/emotionEngine';
 import { MUSIC_LIBRARY, VIDEO_LIBRARY } from '../services/mediaLibrary';
-import { BABY_VIDEO_LIBRARY } from '../services/babyMediaLibrary';
+import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibrary';
 import { KNOWLEDGE_CATEGORIES, KNOWLEDGE_RESOURCES } from '../services/knowledgeLibrary';
 
 const { width } = Dimensions.get('window');
@@ -30,56 +31,57 @@ const TABS = [
 const EMOTION_CFG = {
   happy: { emoji: '😊', label: 'සතුටුයි', badge: ['#FFF9C4', '#FFF3A0'], col: '#E65100' },
   sad: { emoji: '😔', label: 'දුකයි', badge: ['#EDE7F6', '#D1C4E9'], col: '#6A1B9A' },
+  crying: { emoji: '😢', label: 'අඬන්න හිතෙනවා', badge: ['#EDE7F6', '#D1C4E9'], col: '#4A148C' },
   stressed: { emoji: '😟', label: 'ආතතියයි', badge: ['#FCE4EC', '#F8BBD9'], col: '#C2185B' },
   anxious: { emoji: '😰', label: 'කනස්සල්ල', badge: ['#FCE4EC', '#F8BBD9'], col: '#C2185B' },
   tired: { emoji: '😪', label: 'මහන්සියි', badge: ['#E0F7FA', '#B2EBF2'], col: '#00838F' },
   angry: { emoji: '😡', label: 'කේන්තියි', badge: ['#FFEBEE', '#FFCDD2'], col: '#C62828' },
+  frustrated: { emoji: '😞', label: 'කලකිරීමෙන්', badge: ['#F3E5F5', '#E1BEE7'], col: '#4A148C' },
   lonely: { emoji: '😞', label: 'තනිකම', badge: ['#F3E5F5', '#E1BEE7'], col: '#4A148C' },
   sleepy: { emoji: '😴', label: 'නිදිමතයි', badge: ['#ECEFF1', '#CFD8DC'], col: '#37474F' },
   calm: { emoji: '😌', label: 'සන්සුන්', badge: ['#E8F5E9', '#C8E6C9'], col: '#2E7D32' },
 };
 
 const EMOTION_OPTIONS = [
-  { key: 'happy', emoji: '😊', label: 'සතුටුයි' },
-  { key: 'sad', emoji: '😔', label: 'දුකයි' },
-  { key: 'crying', emoji: '😢', label: 'අඬන්න හිතෙනවා' },
-  { key: 'anxious', emoji: '😰', label: 'කනස්සල්ලයි' },
-  { key: 'tired', emoji: '😪', label: 'මහන්සියි' },
-  { key: 'angry', emoji: '😡', label: 'කේන්තියි' },
-  { key: 'lonely', emoji: '😞', label: 'තනිකමක්' },
-  { key: 'sleepy', emoji: '😴', label: 'නිදිමතයි' },
-  { key: 'calm', emoji: '😌', label: 'සන්සුන්' },
+  { key: 'happy', emoji: '😊', label: 'සතුටින් — Happy' },
+  { key: 'sad', emoji: '😔', label: 'දුකින් — Sad' },
+  { key: 'crying', emoji: '😢', label: 'අඬන්න හිතෙනවා — Feeling like crying' },
+  { key: 'anxious', emoji: '😰', label: 'කනස්සල්ලෙන් — Anxious' },
+  { key: 'tired', emoji: '😪', label: 'මහන්සියි — Tired' },
+  { key: 'angry', emoji: '😡', label: 'කෝපයෙන් — Angry' },
+  { key: 'frustrated', emoji: '😞', label: 'කලකිරීමෙන් — Frustrated' },
+  { key: 'sleepy', emoji: '😴', label: 'නිදිමතයි — Sleepy' },
+  { key: 'calm', emoji: '😌', label: 'සන්සුන් — Calm' },
 ];
 
 const REASON_OPTIONS = [
-  { key: 'sleep_problems', label: 'Sleep problems' },
-  { key: 'baby_feeding', label: 'Baby feeding concern' },
-  { key: 'baby_crying', label: 'Baby crying' },
-  { key: 'baby_sleep', label: 'Baby won\'t sleep' },
-  { key: 'overwhelmed', label: 'Feeling overwhelmed' },
-  { key: 'loneliness', label: 'Loneliness' },
-  { key: 'relationship', label: 'Relationship issues' },
-  { key: 'lack_support', label: 'No family support' },
-  { key: 'financial', label: 'Financial stress' },
-  { key: 'anxiety', label: 'Anxiety' },
-  { key: 'confidence', label: 'Lack of confidence' },
-  { key: 'recovery_pain', label: 'Recovery pain' },
-  { key: 'baby_health', label: 'Baby health concern' },
-  { key: 'mother_health', label: 'Mother health concern' },
-  { key: 'general_stress', label: 'General stress' },
-  { key: 'other', label: 'Other' },
+  { key: 'baby_crying', label: 'Baby crying (ළදරුවා හැඬීම)' },
+  { key: 'baby_feeding', label: 'Baby feeding (ළදරුවාට කිරි දීම)' },
+  { key: 'baby_sleep', label: 'Baby sleep (ළදරුවාගේ නින්ද)' },
+  { key: 'understanding_baby', label: 'Difficulty understanding baby\'s needs (අවශ්‍යතා වටහා ගැනීමේ අපහසුව)' },
+  { key: 'mother_sleep', label: 'Mother sleep problems (මවගේ නින්ද නොයාම)' },
+  { key: 'feeling_lonely', label: 'Feeling lonely (තනිකමක් දැනීම)' },
+  { key: 'feeling_overwhelmed', label: 'Feeling overwhelmed (මානසිකව වෙහෙස වීම)' },
+  { key: 'family_problems', label: 'Family/relationship problems (පවුලේ / සබඳතා ගැටලු)' },
+  { key: 'financial_worries', label: 'Financial worries (මූල්‍යමය කනස්සල්ල)' },
+  { key: 'physical_recovery', label: 'Physical recovery (ශාරීරික සුවවීමේ අපහසුතා)' },
+  { key: 'breastfeeding_concerns', label: 'Breastfeeding concerns (මව්කිරි දීමේ ගැටලු)' },
+  { key: 'caring_for_baby', label: 'Difficulty caring for baby (ළදරුවා සාත්තු කිරීමේ අපහසුව)' },
+  { key: 'lack_of_support', label: 'Lack of support (සහයෝගය මදි වීම)' },
+  { key: 'daily_responsibilities', label: 'Daily responsibilities (දෛනික වගකීම් අධික වීම)' },
+  { key: 'other_concern', label: 'Other / General concern (වෙනත් / සාමාන්‍ය කනස්සල්ල)' },
 ];
 
 const HELP_NEEDED_OPTIONS = [
-  { key: 'activities', label: 'ක්‍රියාකාරකම් (Activities)' },
-  { key: 'videos', label: 'වීඩියෝ (Videos)' },
-  { key: 'music', label: 'සංගීතය (Music)' },
-  { key: 'games', label: 'ක්‍රීඩා (Games)' },
-  { key: 'baby_care', label: 'දරුවාගේ රැකවරණය (Baby Care)' },
-  { key: 'reading', label: 'කියවීම් (Reading)' },
-  { key: 'podcasts', label: 'පොඩ්කාස්ට් (Podcasts)' },
-  { key: 'mindfulness', label: 'ධ්‍යාන (Mindfulness)' },
-  { key: 'books', label: 'පොත් (Books)' },
+  { key: 'activities', label: '🌿 Activities (ක්‍රියාකාරකම්)' },
+  { key: 'games', label: '🎮 Games (ක්‍රීඩා)' },
+  { key: 'music', label: '🎵 Music (සංගීතය)' },
+  { key: 'videos', label: '🎥 Videos (වීඩියෝ)' },
+  { key: 'baby_care', label: '👶 Baby Care (ළදරු සාත්තු)' },
+  { key: 'mindfulness', label: '🧘 Relaxation / Meditation (සන්සුන්කම / භාවනා)' },
+  { key: 'reading', label: '📚 Reading / Knowledge (කියවීම් / දැනුම)' },
+  { key: 'podcasts', label: '🎧 Podcasts (පොඩ්කාස්ට්)' },
+  { key: 'tips', label: '💡 Tips (උපදෙස්)' },
 ];
 
 const RISK_CFG = {
@@ -117,9 +119,9 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const hasAnalysis = Boolean(latestAnalysis);
   const [showAssessment, setShowAssessment] = useState(!hasAnalysis);
   const [step, setStep] = useState(1);
-  const [selEmotion, setSelEmotion] = useState('stressed');
-  const [selReason, setSelReason] = useState('loneliness');
-  const [selHelp, setSelHelp] = useState([]);
+  const [selEmotion, setSelEmotion] = useState('anxious');
+  const [selReason, setSelReason] = useState('baby_crying');
+  const [selHelp, setSelHelp] = useState(['activities', 'baby_care']);
   const [isSkipped, setIsSkipped] = useState(false);
   const [localRuleRecs, setLocalRuleRecs] = useState(null);
 
@@ -140,17 +142,24 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
   const activeAnalysis = isSkipped
     ? null
-    : (hasAnalysis ? latestAnalysis : { detectedEmotion: selEmotion, primaryReason: selReason, riskLevel: 'low' });
+    : (hasAnalysis ? latestAnalysis : { detectedEmotion: selEmotion, primaryReason: selReason, riskLevel: latestAnalysis?.riskLevel || null });
 
-  const emotion = activeAnalysis?.detectedEmotion || 'stressed';
-  const risk = activeAnalysis?.riskLevel || 'low';
+  const emotion = activeAnalysis?.detectedEmotion || selEmotion || 'stressed';
+  const risk = activeAnalysis?.riskLevel || null;
   const ec = EMOTION_CFG[emotion] || EMOTION_CFG.stressed;
-  const rc = RISK_CFG[risk] || RISK_CFG.low;
+  const rc = risk ? (RISK_CFG[risk] || RISK_CFG.low) : null;
 
   // Handle Assessment Completion
   const handleAssessmentContinue = () => {
-    const rule = getEnhancedRecommendationRule(selEmotion, selReason, 'low', userPreferredActivities, userPreferredGames);
-    setLocalRuleRecs(rule);
+    const recs = getPersonalizedRecommendations({
+      emotion: selEmotion,
+      reason: selReason,
+      helpCategories: selHelp,
+      riskLevel: latestAnalysis?.riskLevel || null, // Receives existing risk level if available (does not calculate risk inside)
+      preferredActivities: userPreferredActivities,
+      preferredGames: userPreferredGames,
+    });
+    setLocalRuleRecs(recs);
     setShowAssessment(false);
     setIsSkipped(false);
   };
@@ -186,7 +195,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const rawGames = (hasAnalysis ? latestRecommendations?.games : localRuleRecs?.games) || [];
 
   // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
-  const finalActivities = isSkipped ? ALL_GAMES.slice(0, 4) : rawActivities.slice(0, 4);
+  const finalActivities = isSkipped ? ALL_ACTIVITIES.slice(0, 4) : rawActivities.slice(0, 4);
   
   const recommendedGameIds = rawGames.map(g => (typeof g === 'string' ? g : g?.id)).filter(Boolean);
   let filteredGames = ALL_GAMES.filter(g => recommendedGameIds.includes(g.id));
@@ -373,15 +382,23 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 <LinearGradient colors={ec.badge} style={s.badge}>
                   <Text style={[s.badgeText, { color: ec.col }]}>{ec.emoji} {ec.label}</Text>
                 </LinearGradient>
-                <View style={[s.badge, { backgroundColor: rc.bg }]}>
-                  <Text style={[s.badgeText, { color: rc.col }]}>{rc.label}</Text>
-                </View>
+                {rc && (
+                  <View style={[s.badge, { backgroundColor: rc.bg }]}>
+                    <Text style={[s.badgeText, { color: rc.col }]}>{rc.label}</Text>
+                  </View>
+                )}
                 {isSkipped && (
                   <View style={[s.badge, { backgroundColor: '#E0F2FE' }]}>
                     <Text style={[s.badgeText, { color: '#0369A1' }]}>🌐 සියලු අන්තර්ගතයන්</Text>
                   </View>
                 )}
               </View>
+
+              {!isSkipped && (localRuleRecs || hasAnalysis) && (
+                <Text style={s.supportiveNotice}>
+                  ඔබ තෝරාගත් කරුණු මත පදනම්ව, අද ඔබට උපකාරී විය හැකි ඇතැම් සම්පත් මෙන්න. 🌸
+                </Text>
+              )}
 
               {/* Main Category Tabs */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.tabsScroll} contentContainerStyle={s.tabsCont}>
@@ -576,11 +593,19 @@ const RecommendationsScreen = ({ navigation, route }) => {
       <Modal visible={showAssessment} animationType="slide" transparent>
         <View style={s.modalOverlay}>
           <View style={s.modalCard}>
+            {/* Step Indicator */}
+            <View style={s.stepIndicatorRow}>
+              <Text style={s.stepIndicatorText}>පියවර {step} / 3</Text>
+              <TouchableOpacity onPress={handleAssessmentSkip}>
+                <Text style={s.closeModalText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
             {step === 1 && (
               <View>
-                <Text style={s.modalTitle}>අද ඔබට කොහොමද හැඟෙන්නේ?</Text>
-                <Text style={s.modalSub}>අද ඔබට ගැළපෙන පුද්ගලික නිර්දේශ ලබාදීමට පහත තොරතුරු තෝරන්න.</Text>
-                <View style={s.emojiGrid}>
+                <Text style={s.modalTitle}>ඔබට දැන් කොහොමද දැනෙන්නේ?</Text>
+                <Text style={s.modalSub}>ඔබට වඩාත්ම ගැළපෙන පුද්ගලික නිර්දේශ ලබාදීමට ඔබේ වත්මන් හැඟීම තෝරන්න.</Text>
+                <ScrollView style={{ maxHeight: 260 }} contentContainerStyle={s.emojiGrid}>
                   {EMOTION_OPTIONS.map(opt => (
                     <TouchableOpacity
                       key={opt.key}
@@ -591,18 +616,23 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       <Text style={s.emojiCardLabel}>{opt.label}</Text>
                     </TouchableOpacity>
                   ))}
+                </ScrollView>
+                <View style={s.modalActionRow}>
+                  <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentSkip}>
+                    <Text style={s.skipBtnText}>දැන් අවශ්‍ය නැහැ (Skip)</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={s.modalNextBtn} onPress={() => setStep(2)}>
+                    <Text style={s.modalNextBtnText}>ඊළඟ පියවර →</Text>
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={s.modalNextBtn} onPress={() => setStep(2)}>
-                  <Text style={s.modalNextBtnText}>ඊළඟ පියවර →</Text>
-                </TouchableOpacity>
               </View>
             )}
 
             {step === 2 && (
               <View>
-                <Text style={s.modalTitle}>ප්‍රධාන හේතුව තෝරන්න</Text>
-                <Text style={s.modalSub}>ඔබගේ වත්මන් හැඟීමට මූලික වූ හේතුව කුමක්ද?</Text>
-                <ScrollView style={{ maxHeight: 220 }} showsVerticalScrollIndicator={true}>
+                <Text style={s.modalTitle}>ඔබට මෙහෙම දැනෙන්න ප්‍රධාන හේතුව මොකක්ද?</Text>
+                <Text style={s.modalSub}>කරුණාකර ඔබට බලපාන ප්‍රධාන හේතුව තෝරන්න.</Text>
+                <ScrollView style={{ maxHeight: 240 }} showsVerticalScrollIndicator={true}>
                   {REASON_OPTIONS.map(r => (
                     <TouchableOpacity
                       key={r.key}
@@ -617,6 +647,9 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   <TouchableOpacity style={s.modalBackBtn} onPress={() => setStep(1)}>
                     <Text style={s.modalBackBtnText}>← ආපසු</Text>
                   </TouchableOpacity>
+                  <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentSkip}>
+                    <Text style={s.skipBtnText}>Skip</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity style={s.modalNextBtn} onPress={() => setStep(3)}>
                     <Text style={s.modalNextBtnText}>ඊළඟ පියවර →</Text>
                   </TouchableOpacity>
@@ -626,9 +659,9 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
             {step === 3 && (
               <View>
-                <Text style={s.modalTitle}>ඔබට අවශ්‍ය සහනය කුමක්ද?</Text>
-                <Text style={s.modalSub}>ඔබ වඩාත්ම කැමති අංශ තෝරන්න (Optional)</Text>
-                <ScrollView style={{ maxHeight: 200 }}>
+                <Text style={s.modalTitle}>අද ඔබට අවශ්‍ය උදව් මොනවාද?</Text>
+                <Text style={s.modalSub}>ඔබ වඩාත්ම කැමති අංශ තෝරන්න (එකක් හෝ කිහිපයක්).</Text>
+                <ScrollView style={{ maxHeight: 220 }}>
                   {HELP_NEEDED_OPTIONS.map(h => {
                     const isSel = selHelp.includes(h.key);
                     return (
@@ -647,11 +680,14 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   })}
                 </ScrollView>
                 <View style={s.modalActionRow}>
+                  <TouchableOpacity style={s.modalBackBtn} onPress={() => setStep(2)}>
+                    <Text style={s.modalBackBtnText}>← ආපසු</Text>
+                  </TouchableOpacity>
                   <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentSkip}>
-                    <Text style={s.skipBtnText}>Skip (සියල්ල පෙන්වන්න)</Text>
+                    <Text style={s.skipBtnText}>Skip</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={s.modalNextBtn} onPress={handleAssessmentContinue}>
-                    <Text style={s.modalNextBtnText}>නිරීක්ෂණය කරන්න ✓</Text>
+                    <Text style={s.modalNextBtnText}>පුද්ගලික නිර්දේශ බලන්න ✨</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -758,6 +794,10 @@ const s = StyleSheet.create({
   modalBackBtnText: { color: colors.textMuted, fontWeight: '700', fontSize: 13 },
   skipBtn: { paddingVertical: 10, paddingHorizontal: 10 },
   skipBtnText: { color: colors.lavenderDark, fontWeight: '800', fontSize: 12 },
+  stepIndicatorRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  stepIndicatorText: { fontSize: 11, fontWeight: '800', color: colors.lavenderDark, backgroundColor: colors.lavenderLight, paddingVertical: 3, paddingHorizontal: 10, borderRadius: radius.full },
+  closeModalText: { fontSize: 16, color: colors.textMuted, paddingHorizontal: 6, fontWeight: '800' },
+  supportiveNotice: { fontSize: 12, color: colors.lavenderDark, fontWeight: '700', backgroundColor: '#F3E8FF', padding: 10, borderRadius: radius.md, marginBottom: 12, textAlign: 'center' },
 });
 
 export default RecommendationsScreen;

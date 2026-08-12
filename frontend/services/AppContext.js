@@ -125,7 +125,8 @@ export const AppProvider = ({ children }) => {
 
   const nextDemoPreview = DEMO_DIARIES[(demoDiaryIdx + 1) % DEMO_DIARIES.length];
 
-  useEffect(() => { processDiary(DEMO_DIARIES[0]); }, []);
+  // Initial state: latestAnalysis remains null until diary is processed or assessment is run
+  // useEffect(() => { processDiary(DEMO_DIARIES[0]); }, []);
 
   const setLatestData = (analysis, recommendations) => {
     setLatestAnalysis(analysis);

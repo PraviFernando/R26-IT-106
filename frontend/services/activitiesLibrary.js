@@ -695,3 +695,75 @@ export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, prefer
     newActivities // Return the 4 personalized new activities
   };
 };
+
+export const isBabyRelatedReason = (reason = '') => {
+  if (!reason || typeof reason !== 'string') return false;
+  const r = reason.toLowerCase();
+  const babyKeys = [
+    'baby', 'crying', 'feeding', 'breastfeeding', 'understanding_baby',
+    'caring_for_baby', 'baby_crying', 'baby_feeding', 'baby_sleep',
+    'baby_needs', 'baby_health', 'baby_behaviour', 'ළදරු', 'බබා', 'දරුවා'
+  ];
+  return babyKeys.some(k => r.includes(k));
+};
+
+export const getPersonalizedRecommendations = ({
+  emotion,
+  reason,
+  helpCategories = [],
+  riskLevel = null,
+  preferredActivities = [],
+  preferredGames = [],
+}) => {
+  const isBaby = isBabyRelatedReason(reason);
+  const normalizedRisk = riskLevel ? String(riskLevel).toLowerCase() : null;
+
+  let candidateIds = [];
+
+  if (normalizedRisk === 'high') {
+    candidateIds = ['new_deep_breathing', 'new_guided_meditation', 'new_worry_box', 'new_relaxing_music'];
+  } else if (normalizedRisk === 'medium') {
+    candidateIds = ['new_guided_meditation', 'new_478_breathing', 'new_five_senses_grounding', 'new_box_breathing', 'new_sleep_reflection', 'new_emotion_check_in'];
+  } else {
+    // Low risk or null risk
+    const emotLower = (emotion || '').toLowerCase();
+    const reasonLower = (reason || '').toLowerCase();
+
+    if (emotLower.includes('anx') || emotLower.includes('කනස්සල්ල')) {
+      candidateIds.push('new_478_breathing', 'new_five_senses_grounding', 'new_deep_breathing', 'new_box_breathing');
+    } else if (emotLower.includes('tired') || emotLower.includes('මහන්සියි') || reasonLower.includes('sleep')) {
+      candidateIds.push('new_sleep_reflection', 'new_deep_breathing', 'new_relaxing_music', 'new_guided_meditation');
+    } else if (emotLower.includes('sad') || emotLower.includes('දුකින්') || emotLower.includes('crying')) {
+      candidateIds.push('new_positive_affirmations', 'new_gratitude_journal', 'new_emotion_check_in', 'new_smile_challenge');
+    } else {
+      candidateIds.push('new_deep_breathing', 'new_emotion_check_in', 'new_gratitude_journal', 'new_five_senses_grounding');
+    }
+  }
+
+  let orderedIds = [];
+  if (isBaby) {
+    orderedIds.push('baby_mood');
+  }
+
+  candidateIds.forEach(id => {
+    if (!orderedIds.includes(id)) {
+      orderedIds.push(id);
+    }
+  });
+
+  // Strict enforcement: Maximum 4 activity recommendations
+  orderedIds = orderedIds.slice(0, 4);
+
+  const personalizedActivities = orderedIds
+    .map(id => NEW_ACTIVITIES.find(a => a.id === id) || ALL_ACTIVITIES.find(a => a.id === id))
+    .filter(Boolean);
+
+  return {
+    emotion,
+    reason,
+    riskLevel: normalizedRisk,
+    activities: personalizedActivities,
+    newActivities: personalizedActivities,
+    isBabyRelated: isBaby,
+  };
+};
