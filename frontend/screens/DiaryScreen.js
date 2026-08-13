@@ -94,7 +94,7 @@ const today = toDateString(new Date());
 
 export default function DiaryScreen({ navigation }) {
     const { t, i18n } = useTranslation();
-    const { setLatestData, setDetectedBabyTopic, setDetectedBabyTopics, setDetectedBabyAge } = useApp();
+    const { processDiary, setLatestData, setDetectedBabyTopic, setDetectedBabyTopics, setDetectedBabyAge } = useApp();
     const [selectedDate, setSelectedDate] = useState(today);
     const [content, setContent] = useState('');
     const [isLocked, setIsLocked] = useState(false);
@@ -593,6 +593,9 @@ export default function DiaryScreen({ navigation }) {
                                     <TouchableOpacity 
                                         style={[s.recommendationBtn, { backgroundColor: tc.accent }]}
                                         onPress={() => {
+                                            if (content && content.trim()) {
+                                                processDiary(content);
+                                            }
                                             const res = detectBabyTopic(content);
                                             if (res && res.topics && res.topics.length > 0) {
                                                 setDetectedBabyTopics && setDetectedBabyTopics(res.topics);

@@ -236,14 +236,14 @@ const RecommendationsScreen = ({ navigation, route }) => {
     : dynamicRecommendedGames;
 
   const primaryReason = activeAnalysis?.primaryReason || selReason || 'loneliness';
-  const libraryMusic = MUSIC_LIBRARY[primaryReason] || MUSIC_LIBRARY.loneliness;
+  const libraryMusic = MUSIC_LIBRARY[primaryReason] || (isBabyActive ? MUSIC_LIBRARY.bonding_issues : MUSIC_LIBRARY.loneliness);
   const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
 
   const activeBabyTopics = (detectedBabyTopics && detectedBabyTopics.length > 0)
     ? detectedBabyTopics
     : (detectedBabyTopic ? [detectedBabyTopic] : []);
 
-  const libraryVideos = VIDEO_LIBRARY[primaryReason] || VIDEO_LIBRARY.loneliness;
+  const libraryVideos = VIDEO_LIBRARY[primaryReason] || (isBabyActive ? VIDEO_LIBRARY.bonding_issues : VIDEO_LIBRARY.loneliness);
   const VIDEO_SUB_TABS = activeBabyTopics.length > 0
     ? ['නිර්දේශිත වීඩියෝ', 'Motivation', 'Baby Feeding', 'Baby Bathing', 'Baby Diapering', 'Baby Sleeping', 'Baby Crying', 'Baby Health', 'Baby Development', 'Vaccination', 'Baby Safety', 'Mother Care']
     : ['Motivation'];

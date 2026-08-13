@@ -1,64 +1,128 @@
 // ================================================================
-// EMOTION ENGINE — emotionEngine.js
-// ================================================================
-// EXACT LOGIC:
-//   diary text → detectEmotion + detectReason → riskLevel
-//   reason + riskLevel → getRecommendationRule()
-//   → specific music, video, activities, game
-//
-// EXAMPLES:
-//   Reason=Anxiety,  Mood=Stressed, Risk=Medium → breathing_478, guided_meditation + bubble_pop
-//   Reason=Bonding,  Mood=Sad,      Risk=Medium → baby_bonding + baby_interaction
-//   Reason=Sleep,    Mood=Stressed, Risk=Medium → night_breathing, rest_meditation + colouring
-//   Reason=LackSupp, Mood=Sad,      Risk=Low    → gratitude_writing + affirmation_game
+// EMOTION ENGINE — emotionEngine.js (Multilingual: EN + SI + Singlish)
 // ================================================================
 
-import { getEnhancedRecommendationRule, getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent } from './activitiesLibrary';
-import { MUSIC_LIBRARY, VIDEO_LIBRARY } from './mediaLibrary';
+import { getEnhancedRecommendationRule, getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent } from './activitiesLibrary.js';
+import { MUSIC_LIBRARY, VIDEO_LIBRARY } from './mediaLibrary.js';
 
 export { getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent };
 
 export const RISK = { LOW: 'low', MEDIUM: 'medium', HIGH: 'high' };
 
-// ── KEYWORD MAPS ─────────────────────────────────────────────
+// ── MULTILINGUAL TEXT NORMALIZATION ─────────────────────────
+export const normalizeMultilingualText = (text = '') => {
+  if (!text || typeof text !== 'string') return '';
+  let cleaned = text.toLowerCase().trim();
+
+  // Normalize common Singlish spelling variations to standard forms
+  cleaned = cleaned
+    .replace(/adanawa/g, 'andanawa')
+    .replace(/andanne/g, 'andanawa')
+    .replace(/andana/g, 'andanawa')
+    .replace(/therenne\s*na\b/g, 'therenne naha')
+    .replace(/therenne\s*nehe/g, 'therenne naha')
+    .replace(/therum\s*ganna\s*ba\b/g, 'therum ganna baha')
+    .replace(/nida\s*na\b/g, 'nida ganne naha')
+    .replace(/nida\s*nehe/g, 'nida ganne naha')
+    .replace(/ninda\s*yanne\s*na\b/g, 'ninda yanne naha')
+    .replace(/baya\s*hithenawa/g, 'baya')
+    .replace(/mahansi\b/g, 'mahansiyi')
+    .replace(/['’]/g, '');
+
+  // Keep alphanumeric, spaces, and Sinhala Unicode range (\u0D80-\u0DFF)
+  cleaned = cleaned.replace(/[^\w\s\u0D80-\u0DFF]/g, ' ');
+  return cleaned.replace(/\s+/g, ' ').trim();
+};
+
+// ── KEYWORD MAPS (EN + SI + SINGLISH) ─────────────────────────
 const REASON_KW = {
-  loneliness:          ['alone','lonely','isolated','nobody','no one','miss','empty','no friends','left out'],
-  fatigue:             ['tired','exhausted','drained','no energy','worn out','sleepy','burnt out','sluggish'],
-  anxiety:             ['anxious','worried','panic','scared','nervous','overthinking','heart racing','restless'],
-  bonding_issues:      ['bond','bonding','feel nothing','not attached','distant from baby','no connection','indifferent'],
-  lack_of_support:     ['husband','partner','no help','unsupported','nobody helps','no family','doing it alone'],
-  sleep_problems:      ['sleep','insomnia','awake all night','sleep deprived','cant sleep','no sleep','exhausted'],
-  loss_of_confidence:  ['confidence','self-doubt','failure','bad mother','useless','not capable','worthless'],
-  overwhelmed:         ['overwhelmed','too much','drowning','breaking down','cant cope','too hard','falling apart'],
-  physical_discomfort: ['pain','hurt','sore','c-section','recovery','stitches','body aches','discomfort'],
-  negative_thoughts:   ['hopeless','hate myself','dark','disappear','dark thoughts','no point','worthless'],
+  loneliness: [
+    'alone', 'lonely', 'isolated', 'nobody', 'no one', 'miss', 'empty', 'no friends', 'left out',
+    'තනිවෙලා', 'පාළුයි', 'පාළුවක්', 'කවුරුත් නෑ', 'කවුරුත් නැහැ', 'තනියම', 'පාළු',
+    'paluyi', 'taniyen', 'taniwela', 'kugewat na', 'kawuruth naha', 'palu'
+  ],
+  fatigue: [
+    'tired', 'exhausted', 'drained', 'no energy', 'worn out', 'sleepy', 'burnt out', 'sluggish',
+    'මහන්සියි', 'වෙහෙසයි', 'වෙහෙස', 'නින්ද මදි', 'ශක්තියක් නෑ', 'අමාරුයි',
+    'mahansiyi', 'wehesayi', 'mahansi', 'shakthiyak naha', 'hondata mahansiyi'
+  ],
+  anxiety: [
+    'anxious', 'worried', 'panic', 'scared', 'nervous', 'overthinking', 'heart racing', 'restless',
+    'බයයි', 'කාංසාව', 'ලොකු බයක්', 'කනස්සල්ල', 'බියක්', 'බය හිතෙනවා',
+    'baye', 'baya', 'baya hithenawa', 'bayaයි', 'kansawa'
+  ],
+  bonding_issues: [
+    'bond', 'bonding', 'feel nothing', 'not attached', 'distant from baby', 'no connection', 'indifferent',
+    'බැඳීමක් නෑ', 'ආදරයක් දැනෙන්නේ නෑ', 'සම්බන්ධයක් නෑ', 'කිසිම හැඟීමක් නෑ',
+    'bandimak naha', 'daranne naha', 'connection ekak naha'
+  ],
+  lack_of_support: [
+    'husband', 'partner', 'no help', 'unsupported', 'nobody helps', 'no family', 'doing it alone',
+    'සැමියා උදව් කරන්නේ නැහැ', 'සැමියා උදව් කරන්නේ නෑ', 'උදව්වක් නෑ', 'කාගෙවත් සහයක් නෑ', 'උදව් නෑ',
+    'husband udaw naha', 'udawwak naha', 'kagegenwat support naha'
+  ],
+  sleep_problems: [
+    'sleep', 'insomnia', 'awake all night', 'sleep deprived', 'cant sleep', 'no sleep',
+    'නින්ද', 'නිදාගන්නේ නැහැ', 'නිදාගන්නෙ නෑ', 'නින්දක් නෑ', 'නින්ද යන්නෙ නෑ', 'රාත්‍රියට නිදි නෑ',
+    'ninda', 'nida ganne naha', 'nida na', 'ninda yanne naha', 'nidaganna baha'
+  ],
+  loss_of_confidence: [
+    'confidence', 'self-doubt', 'failure', 'bad mother', 'useless', 'not capable', 'worthless',
+    'විශ්වාසයක් නෑ', 'නරක අම්මා කෙනෙක්', 'මට බැහැ', 'අසාර්ථකයි',
+    'naraka amma', 'mata baha', 'confidence naha'
+  ],
+  overwhelmed: [
+    'overwhelmed', 'too much', 'drowning', 'breaking down', 'cant cope', 'too hard', 'falling apart',
+    'දරාගන්න බැහැ', 'දරාගන්න බෑ', 'ඔළුව රිදෙනවා', 'ඔක්කොම වැඩ', 'අමාරුයි',
+    'daraganna baha', 'daraganna ba', 'amaruwi', 'godak wada'
+  ],
+  physical_discomfort: [
+    'pain', 'hurt', 'sore', 'c-section', 'recovery', 'stitches', 'body aches', 'discomfort',
+    'කැක්කුමයි', 'රිදෙනවා', 'තුවාලය', 'සිරුරේ කැක්කුම',
+    'kakkumai', 'ridenawa', 'thuwala', 'kakul ridenawa'
+  ],
+  negative_thoughts: [
+    'hopeless', 'hate myself', 'dark', 'disappear', 'dark thoughts', 'no point', 'worthless',
+    'ජීවිතේ එපා වෙලා', 'මැරෙන්න හිතෙනවා', 'කිසිම තේරුමක් නෑ', 'අඳුරු සිතුවිලි',
+    'jeewithe epa wela', 'merenna hithenawa', 'therumak naha'
+  ],
 };
 
 const EMOTION_KW = {
-  happy:    ['happy','joy','smile','grateful','wonderful','positive','hopeful','great','good day'],
-  sad:      ['sad','cry','unhappy','depressed','hopeless','hurt','empty','down','devastated'],
-  stressed: ['stress','overwhelmed','tense','frustrated','on edge','pressure','anxious','irritated'],
+  happy: [
+    'happy', 'joy', 'smile', 'grateful', 'wonderful', 'positive', 'hopeful', 'great', 'good day',
+    'සතුටුයි', 'සතුටක්', 'ආසයි', 'සන්තෝෂයි', 'සුන්දරයි',
+    'sathutuyi', 'sathuta', 'gasp', 'good day'
+  ],
+  sad: [
+    'sad', 'cry', 'unhappy', 'depressed', 'hopeless', 'hurt', 'empty', 'down', 'devastated',
+    'දුකයි', 'කඳුළු', 'අඬනවා', 'කනගාටුයි', 'වේදනාව',
+    'dukai', 'dukayi', 'andana', 'kandulu'
+  ],
+  stressed: [
+    'stress', 'overwhelmed', 'tense', 'frustrated', 'on edge', 'pressure', 'anxious', 'irritated',
+    'ආතතිය', 'මහන්සියි', 'බයයි', 'කලබලයි', 'පීඩනය',
+    'stress', 'athathiya', 'baya', 'mahansi'
+  ],
 };
 
-// These reasons + sad mood = medium risk automatically
 const HIGH_RISK_REASONS = new Set([
   'negative_thoughts', 'bonding_issues', 'loss_of_confidence', 'lack_of_support',
 ]);
 
-// High crisis keywords → high risk
 const HIGH_CRISIS_KW = [
   'hopeless', 'want to die', 'end it all', 'cannot control my emotions',
   'cant control my emotions', 'panic very easily', 'failing as a mother',
-  'disappear', 'hate myself', 'dark thoughts', 'panic'
+  'disappear', 'hate myself', 'dark thoughts', 'panic',
+  'මැරෙන්න හිතෙනවා', 'ජීවිතේ එපා වෙලා', 'merenna hithenawa'
 ];
 
-// Medium crisis keywords → medium risk
 const MEDIUM_CRISIS_KW = [
   'exhausted', 'overwhelmed', 'lonely', 'isolated', 'scared', 'worried',
-  'barely sleep', 'cries every', 'not feeding well', 'fever', 'stress'
+  'barely sleep', 'cries every', 'not feeding well', 'fever', 'stress',
+  'මහන්සියි', 'බයයි', 'ආතතිය', 'උණ', 'අසනීප'
 ];
 
-// ── SUPPORT MESSAGES (no reason label shown to user) ─────────
 const SUPPORT_MESSAGES = {
   loneliness:          ['ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
   fatigue:             ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌙', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
@@ -70,101 +134,144 @@ const SUPPORT_MESSAGES = {
   overwhelmed:         ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
   physical_discomfort: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
   negative_thoughts:   ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
+  baby_crying:         ['ඔබේ බබාගේ ඇඬීම ස්වාභාවිකය. ඔබ හොඳින් සැලකිලිමත් වෙනවා 💜', 'බබා සමඟ සන්සුන්ව සිටින්න 🌸'],
+  baby_needs:          ['බබාගේ සංඥා තේරුම් ගැනීමට කාලය දෙන්න 💜', 'ඔබ ඔබේ බබා වෙනුවෙන් ඉගෙන ගනිමින් සිටිනවා 🌸'],
+  baby_feeding:        ['කිරි දීම කාලය සමඟ පහසු වෙයි 💜', 'ඔබේ මෘදු බව බබාට සහනයකි 🌸'],
+  baby_sleep:          ['බබාගේ නින්ද රටාව වර්ධනය වෙමින් පවතී 🌙', 'කෙටි විවේක පවා ඔබට උපකාරී වෙයි 💜'],
+  baby_health:         ['සෞඛ්‍යය කෙරෙහි සැලකිලිමත් වීම අගනේය 💜', 'වෛද්‍ය උපදෙස් ලබා ගැනීම සැමවිටම සුදුසුයි 🌸'],
+  caring_for_baby:     ['දරුවා රැකබලා ගැනීම උතුම් කාර්යයකි 💜', 'ඔබ අද්භූත මවකි 🌸'],
 };
 
 export const detectBabyIntents = (text = '') => {
   if (!text || typeof text !== 'string') {
     return { baby_related: false, baby_crying: false, baby_needs: false, baby_sleep: false, baby_feeding: false, baby_health: false };
   }
-  const t = text.toLowerCase().replace(/['’]/g, '');
+  const norm = normalizeMultilingualText(text);
   const isBabyRelated = isBabyRelatedContent(text);
 
-  const cryingKW = ['crying', 'cries', 'cry', 'andana', 'andanawa', 'අඬනවා', 'අඬන', 'අඬන බබා'];
+  const cryingKW = [
+    'crying', 'cries', 'cry', 'andana', 'andanawa', 'adanawa',
+    'අඬනවා', 'අඬන', 'අඬන බබා', 'ඇඬීම', 'කෑගහනවා', 'නවත්තන්න බැරි තරම් අඬනවා'
+  ];
   const needsKW = [
     'needs', 'want', 'wants', 'understand', 'dont know what', 'dont understand',
-    'therenne naha', 'therenne na', 'one kiyala', 'mokakda one',
-    'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා', 'අවශ්යතා', 'තේරුම් ගන්න', 'මොනවා කරන්නද'
+    'therenne naha', 'therenne na', 'therum ganna baha', 'one kiyala', 'mokakda one', 'monawada one',
+    'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා', 'අවශ්යතා', 'තේරුම් ගන්න', 'මොනවා කරන්නද', 'දන්නේ නැහැ', 'දන්නෙ නෑ'
   ];
-  const sleepKW = ['sleep', 'sleeping', 'ninda', 'ninda yanne', 'නින්ද', 'නිදා'];
-  const feedingKW = ['feeding', 'feed', 'breastfeeding', 'milk', 'kiri', 'කිරි', 'කිරි දෙන්න'];
-  const healthKW = ['fever', 'sick', 'health', 'unwell', 'baya', 'bayaයි', 'බයයි', 'ලෙඩ', 'උණ'];
+  const sleepKW = [
+    'sleep', 'sleeping', 'ninda', 'ninda yanne', 'nida', 'nida ganne',
+    'නින්ද', 'නිදා', 'නිදාගන්නේ', 'නිදාගන්නෙ නෑ'
+  ];
+  const feedingKW = [
+    'feeding', 'feed', 'breastfeeding', 'milk', 'kiri', 'kiri denna',
+    'කිරි', 'කිරි දෙන්න', 'කිරි බොන්නේ', 'කිරි දීම'
+  ];
+  const healthKW = [
+    'fever', 'sick', 'health', 'unwell', 'baya', 'bayaයි', 'බයයි', 'ලෙඩ', 'උණ', 'අසනීප', 'asanipa', 'una', 'leda'
+  ];
 
   return {
     baby_related: isBabyRelated,
-    baby_crying: isBabyRelated && cryingKW.some(k => t.includes(k)),
-    baby_needs: isBabyRelated && needsKW.some(k => t.includes(k)),
-    baby_sleep: isBabyRelated && sleepKW.some(k => t.includes(k)),
-    baby_feeding: isBabyRelated && feedingKW.some(k => t.includes(k)),
-    baby_health: isBabyRelated && healthKW.some(k => t.includes(k)),
+    baby_crying: isBabyRelated && cryingKW.some(k => norm.includes(k)),
+    baby_needs: isBabyRelated && needsKW.some(k => norm.includes(k)),
+    baby_sleep: isBabyRelated && sleepKW.some(k => norm.includes(k)),
+    baby_feeding: isBabyRelated && feedingKW.some(k => norm.includes(k)),
+    baby_health: isBabyRelated && healthKW.some(k => norm.includes(k)),
   };
 };
 
 // ── ANALYZE DIARY ─────────────────────────────────────────────
 export const analyzeDiary = (text) => {
-  const t = text.toLowerCase();
+  const norm = normalizeMultilingualText(text);
 
   // Step 1: Score emotions
   let eScores = {};
   Object.entries(EMOTION_KW).forEach(([e, kws]) => {
-    eScores[e] = kws.filter(k => t.includes(k)).length;
+    eScores[e] = kws.filter(k => norm.includes(k)).length;
   });
-  const total = Object.values(eScores).reduce((a, b) => a + b, 0);
-  const detectedEmotion = total > 0
+  const totalE = Object.values(eScores).reduce((a, b) => a + b, 0);
+  const detectedEmotion = totalE > 0
     ? Object.entries(eScores).sort((a, b) => b[1] - a[1])[0][0]
     : 'stressed';
 
   // Step 2: Score reasons
   let rScores = {};
   Object.entries(REASON_KW).forEach(([r, kws]) => {
-    rScores[r] = kws.filter(k => t.includes(k)).length;
+    rScores[r] = kws.filter(k => norm.includes(k)).length;
   });
   const sortedReasons = Object.entries(rScores).sort((a, b) => b[1] - a[1]);
-  const primaryReason    = sortedReasons[0][0];
-  const secondaryReason  = sortedReasons[1]?.[1] > 0 ? sortedReasons[1][0] : null;
+  const motherReason = sortedReasons[0][1] > 0 ? sortedReasons[0][0] : 'fatigue';
+  const secondaryReason = sortedReasons[1]?.[1] > 0 ? sortedReasons[1][0] : null;
 
-  // Step 3: Determine risk level
-  const hasHighCrisis   = HIGH_CRISIS_KW.some(k => t.includes(k));
-  const hasMediumCrisis = MEDIUM_CRISIS_KW.some(k => t.includes(k));
-  const isHighReason    = HIGH_RISK_REASONS.has(primaryReason);
-  const isSad           = detectedEmotion === 'sad';
+  const babyIntents = detectBabyIntents(text);
+
+  // Step 3: Determine primary reason priority
+  let primaryReason = motherReason;
+  if (babyIntents.baby_crying) {
+    primaryReason = 'baby_crying';
+  } else if (babyIntents.baby_needs) {
+    primaryReason = 'baby_needs';
+  } else if (babyIntents.baby_health) {
+    primaryReason = 'baby_health';
+  } else if (babyIntents.baby_feeding) {
+    primaryReason = 'baby_feeding';
+  } else if (babyIntents.baby_sleep) {
+    primaryReason = 'baby_sleep';
+  } else if (babyIntents.baby_related) {
+    primaryReason = 'caring_for_baby';
+  }
+
+  // Step 4: Determine risk level
+  const hasHighCrisis = HIGH_CRISIS_KW.some(k => norm.includes(k));
+  const hasMediumCrisis = MEDIUM_CRISIS_KW.some(k => norm.includes(k));
+  const isHighReason = HIGH_RISK_REASONS.has(primaryReason) || HIGH_RISK_REASONS.has(motherReason);
+  const isSad = detectedEmotion === 'sad';
 
   let riskLevel = RISK.LOW;
   if (hasHighCrisis) {
     riskLevel = RISK.HIGH;
-  } else if (hasMediumCrisis || (isHighReason && isSad)) {
+  } else if (hasMediumCrisis || (isHighReason && isSad) || babyIntents.baby_health) {
     riskLevel = RISK.MEDIUM;
   }
 
-  const babyIntents = detectBabyIntents(text);
+  const isSinhala = /[\u0D80-\u0DFF]/.test(text);
+  const isSinglish = !isSinhala && /(baba|andanawa|ninda|kiri|daruwa|putha|duwa|mahansi|baya|duk)/i.test(text);
 
   return {
     detectedEmotion,
     primaryReason,
-    secondaryReason,
+    secondaryReason: secondaryReason !== primaryReason ? secondaryReason : null,
     riskLevel,
     babyIntents,
     scores: { eScores, rScores },
+    _debug: {
+      originalText: text,
+      normalizedText: norm,
+      detectedLanguageSignals: isSinhala ? ['sinhala'] : isSinglish ? ['singlish'] : ['english'],
+      keywordMatches: babyIntents,
+      finalClassification: {
+        emotion: detectedEmotion,
+        primaryReason,
+        secondaryReason,
+        riskLevel
+      }
+    }
   };
 };
 
 // ── GET RECOMMENDATIONS ───────────────────────────────────────
-// Uses exact IF-THEN rules: reason + riskLevel → specific content
 export const getRecommendations = (analysisResult, preferredActivities = [], preferredGames = [], diaryText = '') => {
   const { detectedEmotion, primaryReason, riskLevel } = analysisResult;
 
-  // Get the rule for this exact reason + risk combination
   const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames, diaryText);
 
-  // Music: 10 tracks specific to this reason
-  const music  = MUSIC_LIBRARY[rule.musicKey]  || MUSIC_LIBRARY.loneliness;
+  const musicKey = rule.musicKey || (primaryReason.includes('baby') ? 'bonding_issues' : primaryReason);
+  const videoKey = rule.videoKey || (primaryReason.includes('baby') ? 'bonding_issues' : primaryReason);
 
-  // Videos: 10 videos specific to this reason
-  const videos = VIDEO_LIBRARY[rule.videoKey]  || VIDEO_LIBRARY.loneliness;
-
-  // Support messages (no reason label shown to user)
+  const music = MUSIC_LIBRARY[musicKey] || MUSIC_LIBRARY.loneliness;
+  const videos = VIDEO_LIBRARY[videoKey] || VIDEO_LIBRARY.loneliness;
   const messages = SUPPORT_MESSAGES[primaryReason] || SUPPORT_MESSAGES.overwhelmed;
 
-  // Urgency message for medium risk
   const urgencyMessage = riskLevel === RISK.MEDIUM
     ? 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'
     : null;
@@ -174,13 +281,14 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
     riskLevel,
     music,
     videos,
-    activities:    rule.activities,   // filtered activities for this reason+risk
-    newActivities: rule.newActivities, // newly added activities
-    games:         rule.games,         // single recommended game as array
-    game:          rule.game,          // single recommended game object
+    activities: rule.activities,
+    newActivities: rule.newActivities,
+    games: rule.games,
+    game: rule.game,
     messages,
     urgencyMessage,
-    supportMsg:    rule.supportMsg,
-    _internal:     { primaryReason }, // never shown to user as label
+    supportMsg: rule.supportMsg,
+    _internal: { primaryReason },
   };
 };
+

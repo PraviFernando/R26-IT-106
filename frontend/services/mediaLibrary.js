@@ -325,3 +325,18 @@ export const VIDEO_LIBRARY = {
     { id: 'vnt10', title: 'මේ මොහොතේ ආරක්ෂිතයි', titleEn: 'Safe in This Moment', duration: '7 min', emoji: '🛡️', source: null },
   ],
 };
+
+// ── BABY INTENT ALIASES FOR MUSIC & VIDEO LIBRARIES ─────────
+MUSIC_LIBRARY.baby_crying = MUSIC_LIBRARY.bonding_issues;
+MUSIC_LIBRARY.baby_needs = MUSIC_LIBRARY.bonding_issues;
+MUSIC_LIBRARY.baby_feeding = MUSIC_LIBRARY.bonding_issues;
+MUSIC_LIBRARY.caring_for_baby = MUSIC_LIBRARY.bonding_issues;
+MUSIC_LIBRARY.baby_sleep = MUSIC_LIBRARY.sleep_problems;
+MUSIC_LIBRARY.baby_health = MUSIC_LIBRARY.anxiety;
+
+VIDEO_LIBRARY.baby_crying = VIDEO_LIBRARY.bonding_issues;
+VIDEO_LIBRARY.baby_needs = VIDEO_LIBRARY.bonding_issues;
+VIDEO_LIBRARY.baby_feeding = VIDEO_LIBRARY.bonding_issues;
+VIDEO_LIBRARY.caring_for_baby = VIDEO_LIBRARY.bonding_issues;
+VIDEO_LIBRARY.baby_sleep = VIDEO_LIBRARY.sleep_problems;
+VIDEO_LIBRARY.baby_health = VIDEO_LIBRARY.anxiety;

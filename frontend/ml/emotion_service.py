@@ -132,6 +132,14 @@ def preprocess(text: str) -> str:
     for c, expanded in CONTRACTIONS.items():
         text = text.replace(c, expanded)
 
+    # Normalize Singlish spelling variations
+    text = re.sub(r"\badanawa\b", "andanawa", text)
+    text = re.sub(r"\bandanne\b", "andanawa", text)
+    text = re.sub(r"\bandana\b", "andanawa", text)
+    text = re.sub(r"\btherenne\s*na\b", "therenne naha", text)
+    text = re.sub(r"\btherenne\s*nehe\b", "therenne naha", text)
+    text = re.sub(r"\bnida\s*na\b", "nida ganne naha", text)
+
     # KEEP Sinhala + English
     text = re.sub(r"[^\w\s\u0D80-\u0DFF]", " ", text)
 
@@ -426,21 +434,22 @@ def analyze():
         if explicit_reason:
             reason = explicit_reason.lower().replace(" ", "_")
         else:
-            # Simple keyword matching for direct "issue" detection
-            # Categories: loneliness, fatigue, anxiety, bonding_issues,
-            # lack_of_support, sleep_problems, loss_of_confidence,
-            # overwhelmed, physical_discomfort, negative_thoughts
             keywords = {
-                "loneliness": ["lonely", "alone", "isolated"],
-                "fatigue": ["tired", "fatigue", "exhausted", "no energy"],
-                "anxiety": ["anxious", "worry", "panic", "scared"],
-                "bonding_issues": ["bond", "connection", "baby", "attach"],
-                "lack_of_support": ["support", "help", "husband", "family"],
-                "sleep_problems": ["sleep", "insomnia", "awake"],
-                "loss_of_confidence": ["confidence", "failure", "not good enough"],
-                "overwhelmed": ["overwhelmed", "too much", "cope"],
-                "physical_discomfort": ["pain", "hurt", "body", "recovery"],
-                "negative_thoughts": ["hopeless", "dark", "die", "pointless"]
+                "baby_crying": ["crying", "cries", "cry", "andanawa", "adanawa", "andana", "අඬනවා", "අඬන", "කෑගහනවා"],
+                "baby_needs": ["therenne naha", "therenne na", "therum ganna baha", "one kiyala", "monawada one", "තේරෙන්නේ නැහැ", "තේරෙන්නේ නෑ", "ඕන කියලා"],
+                "baby_feeding": ["feeding", "feed", "breastfeeding", "milk", "kiri", "කිරි", "කිරි දෙන්න"],
+                "baby_sleep": ["ninda", "nida ganne naha", "nida na", "නින්ද", "නිදාගන්නේ නැහැ"],
+                "baby_health": ["fever", "sick", "unwell", "una", "asanipa", "leda", "උණ", "අසනීප", "ලෙඩ"],
+                "loneliness": ["lonely", "alone", "isolated", "තනිවෙලා", "පාළුයි", "තනියම", "paluyi", "taniyen", "taniwela"],
+                "fatigue": ["tired", "fatigue", "exhausted", "no energy", "මහන්සියි", "වෙහෙසයි", "mahansiyi", "wehesayi", "mahansi"],
+                "anxiety": ["anxious", "worry", "panic", "scared", "බයයි", "කාංසාව", "baye", "baya"],
+                "bonding_issues": ["bond", "connection", "baby", "attach", "ආදරයක් දැනෙන්නේ නෑ", "බැඳීමක් නෑ", "bandimak naha"],
+                "lack_of_support": ["support", "help", "husband", "family", "සැමියා", "උදව්වක් නෑ", "udawwak naha"],
+                "sleep_problems": ["sleep", "insomnia", "awake", "නින්ද", "නිදාගන්නේ නැහැ"],
+                "loss_of_confidence": ["confidence", "failure", "not good enough", "විශ්වාසයක් නෑ", "නරක අම්මා", "naraka amma"],
+                "overwhelmed": ["overwhelmed", "too much", "cope", "දරාගන්න බැහැ", "daraganna baha"],
+                "physical_discomfort": ["pain", "hurt", "body", "recovery", "කැක්කුමයි", "රිදෙනවා", "kakkumai", "ridenawa"],
+                "negative_thoughts": ["hopeless", "dark", "die", "pointless", "ජීවිතේ එපා වෙලා", "මැරෙන්න හිතෙනවා", "merenna hithenawa"]
             }
 
             text_lower = text.lower()

@@ -450,29 +450,30 @@ export const ALL_GAMES = [
 ];
 
 export const GAME_RECOMMENDATION_MAP = {
-  // Baby-related reasons
+  // Baby-related reasons (baby_mood forced as #1)
   baby_crying:        ['baby_mood', 'sequence_order', 'memory_match', 'number_seq'],
-  baby_needs:         ['baby_mood', 'memory_match', 'number_seq', 'spot_diff'],
+  baby_needs:         ['baby_mood', 'word_match', 'spot_diff', 'memory_match'],
   caring_for_baby:    ['baby_mood', 'sequence_order', 'pattern_repeat', 'word_match'],
-  baby_feeding:       ['baby_mood', 'sequence_order', 'number_seq', 'memory_match'],
-  baby_sleep:         ['baby_mood', 'pattern_repeat', 'sliding_puzzle', 'word_match'],
-  baby_health:        ['baby_mood', 'sequence_order', 'memory_match', 'number_seq'],
+  baby_feeding:       ['baby_mood', 'pattern_repeat', 'number_seq', 'memory_match'],
+  baby_sleep:         ['baby_mood', 'mindful_tap', 'sliding_puzzle', 'word_match'],
+  baby_health:        ['baby_mood', 'spot_diff', 'sequence_order', 'memory_match'],
   bonding_issues:     ['baby_mood', 'memory_match', 'pattern_repeat', 'word_match'],
 
-  // Mother emotional reasons
-  fatigue:            ['coin_maze', 'sliding_puzzle', 'word_match', 'memory_match'],
+  // Mother emotional reasons (distinct pools, no baby_mood)
+  fatigue:            ['coin_maze', 'sliding_puzzle', 'word_match', 'colouring'],
   sadness:            ['bubble_pop', 'memory_match', 'pattern_repeat', 'word_builder'],
-  anxiety:            ['bubble_pop', 'number_seq', 'spot_diff', 'mindful_tap'],
+  anxiety:            ['bubble_pop', 'mindful_tap', 'spot_diff', 'number_seq'],
   loneliness:         ['memory_match', 'word_builder', 'word_match', 'pattern_repeat'],
   anger:              ['bubble_pop', 'coin_maze', 'spot_diff', 'sliding_puzzle'],
-  overwhelmed:        ['bubble_pop', 'number_seq', 'sequence_order', 'word_match'],
+  overwhelmed:        ['bubble_pop', 'mindful_tap', 'sequence_order', 'word_match'],
   stress:             ['bubble_pop', 'spot_diff', 'sliding_puzzle', 'mindful_tap'],
-  loss_of_confidence: ['memory_match', 'word_builder', 'pattern_repeat', 'number_seq'],
-  lack_of_support:    ['word_match', 'memory_match', 'word_builder', 'coin_maze'],
-  physical_discomfort:['mindful_tap', 'word_match', 'memory_match', 'sliding_puzzle'],
-  negative_thoughts:  ['word_builder', 'pattern_repeat', 'spot_diff', 'memory_match'],
+  loss_of_confidence: ['affirmation_game', 'word_builder', 'pattern_repeat', 'memory_match'],
+  lack_of_support:    ['word_match', 'affirmation_game', 'memory_match', 'coin_maze'],
+  sleep_problems:     ['colouring', 'mandala', 'mindful_tap', 'sliding_puzzle'],
+  physical_discomfort:['mindful_tap', 'colouring', 'word_match', 'sliding_puzzle'],
+  negative_thoughts:  ['affirmation_game', 'word_builder', 'spot_diff', 'mandala'],
 
-  // Neutral / General fallback (No specific reason or no baby context)
+  // Neutral / General fallback
   general:            ['memory_match', 'pattern_repeat', 'word_builder', 'spot_diff']
 };
 
@@ -742,6 +743,104 @@ const RULES = {
       supportMsg:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸',
     },
   },
+
+  // ── BABY INTENTS RULES ───────────────────────────────────────
+  baby_crying: {
+    low: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'බබාගේ අඬන සංඥා තේරුම් ගැනීමට සහ සන්සුන් වීමට ඔබට උපකාරී වෙයි 💜',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'new_deep_breathing'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'බබාගේ අඬන සංඥා තේරුම් ගැනීමට සෙමෙන් හුස්ම ගන්න 🌸',
+    },
+  },
+  baby_needs: {
+    low: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'බබාගේ අවශ්‍යතා හඳුනා ගැනීමට සහ සන්සුන් වීමට උපදෙස් 💜',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'new_deep_breathing'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'බබාගේ අවශ්‍යතා තේරුම් ගැනීමට සන්සුන් වන්න 🌸',
+    },
+  },
+  baby_feeding: {
+    low: {
+      activityIds: ['baby_mood', 'new_drink_water', 'new_gentle_stretch', 'new_relaxing_music'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'පෝෂණය කිරීමේදී ඔබේ සුවපහසුවද ඉතා වැදගත්ය 💜',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'new_drink_water'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'පෝෂණය කිරීමේදී සෙමෙන් හුස්ම ගන්න 🌸',
+    },
+  },
+  baby_sleep: {
+    low: {
+      activityIds: ['baby_mood', 'new_sleep_reflection', 'night_breathing', 'rest_meditation'],
+      gameId:    'baby_mood',
+      musicKey:  'sleep_problems',
+      videoKey:  'sleep_problems',
+      supportMsg:'බබාගේ නින්ද රටාව වර්ධනය වෙමින් පවතී 🌙',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'night_breathing'],
+      gameId:    'baby_mood',
+      musicKey:  'sleep_problems',
+      videoKey:  'sleep_problems',
+      supportMsg:'කෙටි විවේක පවා ඔබට උපකාරී වෙයි 💜',
+    },
+  },
+  baby_health: {
+    low: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_positive_affirmations', 'grounding_54321'],
+      gameId:    'baby_mood',
+      musicKey:  'anxiety',
+      videoKey:  'anxiety',
+      supportMsg:'සෞඛ්‍ය තත්ත්වයන් හමුවේ සන්සුන්ව සිටීමට උපදෙස් 🌸',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'new_deep_breathing'],
+      gameId:    'baby_mood',
+      musicKey:  'anxiety',
+      videoKey:  'anxiety',
+      supportMsg:'අවශ්‍ය නම් වහාම සෞඛ්‍ය උපදෙස් ලබාගන්න 🆘',
+    },
+  },
+  caring_for_baby: {
+    low: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'ළදරු සාත්තු කිරීමේදී ඔබට සහාය වන උපදෙස් 💜',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'new_deep_breathing'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'ළදරු සාත්තු කිරීමේදී සන්සුන් වන්න 🌸',
+    },
+  },
 };
 
 // ── PUBLIC API ────────────────────────────────────────────────
@@ -785,16 +884,8 @@ export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, prefer
   const existingRecommendations = getRecommendationRule(reason, riskLevel, preferredActivities, preferredGames);
   const newActivities = getNewRecommendations(emotion, reason, riskLevel, diaryText);
 
-  let games = existingRecommendations.games || [];
-  let game = existingRecommendations.game;
-
-  if (isBabyRelatedContent(diaryText)) {
-    const babyMoodGame = ALL_GAMES.find(g => g.id === 'baby_mood');
-    if (babyMoodGame) {
-      game = babyMoodGame;
-      games = [babyMoodGame, ...games.filter(g => g.id !== 'baby_mood')];
-    }
-  }
+  const games = getRecommendedGames({}, diaryText, reason, 4);
+  const game = games[0] || existingRecommendations.game;
 
   return {
     ...existingRecommendations,
