@@ -338,17 +338,24 @@ const getHealthData = async (req, res, next) => {
         const userId = req.user.id;
         const { date } = req.params;
         
-        const data = await PostpartumHealthData.findOne({ userId, date });
+        let data = await PostpartumHealthData.findOne({ userId, date });
+        
         if (!data) {
-            return res.json({ exists: false });
+            const latestData = await PostpartumHealthData.findOne({ userId }).sort({ createdAt: -1 });
+            return res.json({ 
+                exists: false,
+                healthData: latestData ? latestData.toObject() : null
+            });
         }
         
         res.json({
             exists: true,
             safetyStatus: data.safetyStatus,
             safetyMessage: data.safetyMessage,
+            safetyMessageSi: data.safetyMessageSi,
             recommendedExercises: data.recommendedExercises,
-            date: data.date
+            date: data.date,
+            healthData: data.toObject()
         });
     } catch (err) {
         next(err);

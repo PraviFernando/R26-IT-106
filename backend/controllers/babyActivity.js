@@ -159,17 +159,50 @@ const getActivities = async (req, res, next) => {
             query.category = category;
         }
 
-        if (ageFilter && ageFilter !== 'All') {
-            const cleanAge = ageFilter.replace('–', '-').replace(' ', '').trim().toLowerCase();
-            if (cleanAge.includes('0-3')) {
-                query.age_stage = { $in: ['Newborn / Early Months', 'Developmentally Ready'] };
-            } else if (cleanAge.includes('3-6')) {
-                query.age_stage = { $in: ['Newborn / Early Months', 'Around 2-4 Months', 'Around 4-6 Months', 'Developmentally Ready'] };
-            } else if (cleanAge.includes('6-9')) {
-                query.age_stage = { $in: ['Around 2-4 Months', 'Around 4-6 Months', 'Around 6-9 Months', 'Developmentally Ready'] };
-            } else if (cleanAge.includes('9-12')) {
-                query.age_stage = { $in: ['Around 6-9 Months', 'Developmentally Ready'] };
+        // Get baby's age from User's deliveryDate
+        const User = require('../models/User');
+        const user = await User.findById(req.user.id);
+        const deliveryDate = user ? user.deliveryDate : null;
+
+        let calculatedAgeFilter = null;
+        if (deliveryDate) {
+            try {
+                const birthDate = new Date(deliveryDate);
+                const today = new Date();
+                if (!isNaN(birthDate.getTime())) {
+                    const diffTime = today - birthDate;
+                    if (diffTime >= 0) {
+                        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+                        const diffMonths = diffDays / 30;
+                        if (diffMonths >= 0 && diffMonths < 3) {
+                            calculatedAgeFilter = '0–3 months';
+                        } else if (diffMonths >= 3 && diffMonths < 6) {
+                            calculatedAgeFilter = '3–6 months';
+                        } else if (diffMonths >= 6 && diffMonths < 9) {
+                            calculatedAgeFilter = '6–9 months';
+                        } else if (diffMonths >= 9) {
+                            calculatedAgeFilter = '9–12 months';
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log("Error calculating baby age on backend", e);
             }
+        }
+
+        const finalAgeFilter = calculatedAgeFilter || (ageFilter && ageFilter !== 'All' ? ageFilter : '0–3 months');
+
+        const cleanAge = finalAgeFilter.replace('–', '-').replace(' ', '').trim().toLowerCase();
+        if (cleanAge.includes('0-3')) {
+            query.age_stage = { $in: ['Newborn / Early Months', 'Developmentally Ready'] };
+        } else if (cleanAge.includes('3-6')) {
+            query.age_stage = { $in: ['Newborn / Early Months', 'Around 2-4 Months', 'Around 4-6 Months', 'Developmentally Ready'] };
+        } else if (cleanAge.includes('6-9')) {
+            query.age_stage = { $in: ['Around 2-4 Months', 'Around 4-6 Months', 'Around 6-9 Months', 'Developmentally Ready'] };
+        } else if (cleanAge.includes('9-12')) {
+            query.age_stage = { $in: ['Around 6-9 Months', 'Developmentally Ready'] };
+        } else {
+            query.age_stage = { $in: ['Newborn / Early Months', 'Developmentally Ready'] };
         }
 
         if (search) {
@@ -210,8 +243,8 @@ const getActivities = async (req, res, next) => {
                         short_description_sinhala: `${item.snippet.channelTitle} විසින් ඉදිරිපත් කරන අධ්‍යාපනික වීඩියෝවකි.`,
                         purpose: "Encourages motor skills, early infant movement and developmental coordination.",
                         purpose_sinhala: "මෝටර් කුසලතා, මුල් ළදරු චලනය සහ සංවර්ධන සම්බන්ධීකරණය දිරිමත් කරයි.",
-                        age_stage: ageFilter !== 'All' ? ageFilter : "Developmentally Ready",
-                        age_stage_sinhala: ageFilter !== 'All' ? ageFilter : "සංවර්ධනයට සූදානම්",
+                        age_stage: finalAgeFilter !== 'All' ? finalAgeFilter : "Developmentally Ready",
+                        age_stage_sinhala: finalAgeFilter !== 'All' ? finalAgeFilter : "සංවර්ධනයට සූදානම්",
                         duration: "5 min",
                         instructions_english: [
                             "Watch the video with your baby awake.",
@@ -236,7 +269,7 @@ const getActivities = async (req, res, next) => {
             }
         }
 
-        res.json({ success: true, activities });
+        res.json({ success: true, activities, babyAgeFilter: calculatedAgeFilter });
     } catch (err) {
         next(err);
     }

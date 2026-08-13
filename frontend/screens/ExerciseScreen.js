@@ -13,6 +13,7 @@ import { WebView } from 'react-native-webview';
 import exerciseService from '../services/exerciseService';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -264,6 +265,22 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
     const [mobility, setMobility] = useState(initialData?.mobilityLevel || 'normal');
     const [muscleWeakness, setMuscleWeakness] = useState(initialData?.muscleWeakness || false);
     const [willingness, setWillingness] = useState(initialData?.willingnessToExercise || 'medium');
+    
+    useEffect(() => {
+        if (initialData) {
+            if (initialData.weeksAfterDelivery !== undefined && initialData.weeksAfterDelivery !== '') setWeeks(String(initialData.weeksAfterDelivery));
+            if (initialData.deliveryType) setDeliveryType(initialData.deliveryType);
+            if (initialData.pelvicPain !== undefined) setPelvicPain(initialData.pelvicPain);
+            if (initialData.backPain !== undefined) setBackPain(initialData.backPain);
+            if (initialData.abdominalPain !== undefined) setAbdominalPain(initialData.abdominalPain);
+            if (initialData.bleedingComplications !== undefined) setBleeding(initialData.bleedingComplications);
+            if (initialData.doctorRestrictions !== undefined) setDoctorRestrictions(initialData.doctorRestrictions);
+            if (initialData.fatigueLevel) setFatigue(initialData.fatigueLevel);
+            if (initialData.mobilityLevel) setMobility(initialData.mobilityLevel);
+            if (initialData.muscleWeakness !== undefined) setMuscleWeakness(initialData.muscleWeakness);
+            if (initialData.willingnessToExercise) setWillingness(initialData.willingnessToExercise);
+        }
+    }, [initialData]);
     
     const handleSubmit = () => {
         if (!weeks) {
@@ -603,65 +620,66 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
         setVideoModal(false);
     };
     
+    const handleCardPress = () => {
+        if (videoList.length > 0) {
+            setSelectedVideo(videoList[0]);
+            setStopwatchTime(0);
+            setIsStopwatchRunning(false);
+            setVideoModal(true);
+        }
+    };
+
     return (
-        <LinearGradient
-            colors={isCompleted ? ['#E8F5E9', '#C8E6C9'] : ['#FFFFFF', '#F5F3FF']}
-            style={[styles.exerciseCard, isCompleted && styles.exerciseCardCompleted]}
-        >
-            {isYoutubeCard && thumbnailUrl && (
-                <View style={styles.thumbnailContainer}>
-                    <Image source={{ uri: thumbnailUrl }} style={styles.cardThumbnail} resizeMode="cover" />
-                    <View style={styles.thumbnailPlayOverlay}>
-                        <Text style={styles.playOverlayIcon}>▶️</Text>
-                    </View>
-                </View>
-            )}
-            
-            <View style={styles.exerciseHeader}>
-                {!isYoutubeCard && <Text style={styles.exerciseIcon}>{getExerciseIcon(details.type)}</Text>}
-                <View style={styles.exerciseInfo}>
-                    <Text style={styles.exerciseName}>
-                        {title}
-                    </Text>
-                    <Text style={styles.exerciseMeta}>
-                        ⏱️ {t('Duration')}: {String(duration).includes(':') ? duration : `${duration} ${t('min')}`}
-                        {!isYoutubeCard && ` • 📊 ${t('Intensity')}: ${details.intensity === 'low' ? t('Low') : details.intensity === 'medium' ? t('Medium') : t('Controlled')}`}
-                        {isYoutubeCard && ` • 🏷️ ${channelName}`}
-                    </Text>
-                </View>
-                {watchPercentage > 0 && !isCompleted && (
-                    <View style={styles.progressBadge}>
-                        <Text style={styles.progressBadgeText}>{Math.round(watchPercentage)}%</Text>
-                    </View>
-                )}
-                {isCompleted && (
-                    <View style={styles.completedBadge}>
-                        <Text style={styles.completedBadgeText}>✓ {t('Done')}</Text>
-                    </View>
-                )}
-            </View>
-            
-            {!isYoutubeCard && (
-                <Text style={styles.exerciseDesc}>
-                     {details.descriptionSi || details.description}
-                </Text>
-            )}
-            
-            {videoList.length > 0 && (
-                <TouchableOpacity
-                    style={styles.watchVideoBtn}
-                    onPress={() => {
-                        setSelectedVideo(videoList[0]);
-                        setStopwatchTime(0);
-                        setIsStopwatchRunning(false);
-                        setVideoModal(true);
-                    }}
+        <>
+            <TouchableOpacity 
+                activeOpacity={0.85}
+                onPress={handleCardPress}
+                disabled={videoList.length === 0}
+            >
+                <LinearGradient
+                    colors={isCompleted ? ['#E8F5E9', '#C8E6C9'] : ['#FFFFFF', '#F5F3FF']}
+                    style={[styles.exerciseCard, isCompleted && styles.exerciseCardCompleted]}
                 >
-                    <Text style={styles.watchVideoBtnText}>
-                        ▶️ {t('Watch & Perform Exercise')}
-                    </Text>
-                </TouchableOpacity>
-            )}
+                    {isYoutubeCard && thumbnailUrl && (
+                        <View style={styles.thumbnailContainer}>
+                            <Image source={{ uri: thumbnailUrl }} style={styles.cardThumbnail} resizeMode="cover" />
+                            <View style={styles.thumbnailPlayOverlay}>
+                                <Text style={styles.playOverlayIcon}>▶️</Text>
+                            </View>
+                        </View>
+                    )}
+                    
+                    <View style={styles.exerciseHeader}>
+                        {!isYoutubeCard && <Text style={styles.exerciseIcon}>{getExerciseIcon(details.type)}</Text>}
+                        <View style={styles.exerciseInfo}>
+                            <Text style={styles.exerciseName}>
+                                {title}
+                            </Text>
+                            <Text style={styles.exerciseMeta}>
+                                ⏱️ {t('Duration')}: {String(duration).includes(':') ? duration : `${duration} ${t('min')}`}
+                                {!isYoutubeCard && ` • 📊 ${t('Intensity')}: ${details.intensity === 'low' ? t('Low') : details.intensity === 'medium' ? t('Medium') : t('Controlled')}`}
+                                {isYoutubeCard && ` • 🏷️ ${channelName}`}
+                            </Text>
+                        </View>
+                        {watchPercentage > 0 && !isCompleted && (
+                            <View style={styles.progressBadge}>
+                                <Text style={styles.progressBadgeText}>{Math.round(watchPercentage)}%</Text>
+                            </View>
+                        )}
+                        {isCompleted && (
+                            <View style={styles.completedBadge}>
+                                <Text style={styles.completedBadgeText}>✓ {t('Done')}</Text>
+                            </View>
+                        )}
+                    </View>
+                    
+                    {!isYoutubeCard && (
+                        <Text style={styles.exerciseDesc}>
+                             {details.descriptionSi || details.description}
+                        </Text>
+                    )}
+                </LinearGradient>
+            </TouchableOpacity>
             
             {/* Video Modal with Stopwatch */}
             <Modal visible={videoModal} transparent animationType="slide" onRequestClose={handleCloseVideoModal}>
@@ -815,7 +833,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                     </View>
                 </View>
             </Modal>
-        </LinearGradient>
+        </>
     );
 };
 
@@ -920,11 +938,17 @@ const SafetyWarning = ({ safetyStatus, safetyMessage, safetyMessageSi }) => {
     );
 };
 
+let promptShownDate = null;
+
 // Main Exercise Screen
 export default function ExerciseScreen({ navigation }) {
     const { t, i18n } = useTranslation();
+    const isSinhala = i18n.language === 'si';
     const { user } = useAuth();
+    const scrollViewRef = useRef(null);
     const [hasData, setHasData] = useState(false);
+    const [initialHealthData, setInitialHealthData] = useState(null);
+    const [showHealthPromptModal, setShowHealthPromptModal] = useState(false);
     const [recommendations, setRecommendations] = useState([]);
     const [safetyStatus, setSafetyStatus] = useState(null);
     const [safetyMessage, setSafetyMessage] = useState('');
@@ -952,9 +976,26 @@ export default function ExerciseScreen({ navigation }) {
     const checkTodayData = async () => {
         try {
             const data = await exerciseService.getHealthData(todayStr());
+            if (data.healthData) {
+                setInitialHealthData(data.healthData);
+            } else if (data.recommendedExercises) {
+                setInitialHealthData(data);
+            }
             if (data.exists) {
                 setHasData(true);
                 await loadRecommendations();
+                
+                const userId = user?.id || user?._id || user?.email || 'default';
+                const storageKey = `exercise_prompt_shown_${userId}`;
+                const lastShownDate = await AsyncStorage.getItem(storageKey);
+                
+                if (lastShownDate !== todayStr()) {
+                    await AsyncStorage.setItem(storageKey, todayStr());
+                    setShowHealthPromptModal(true);
+                }
+            } else {
+                setHasData(false);
+                setShowForm(true);
             }
         } catch (err) {
             console.error('Failed to check data:', err);
@@ -982,13 +1023,27 @@ export default function ExerciseScreen({ navigation }) {
         try {
             const response = await exerciseService.submitHealthData(healthData);
             if (response.success) {
+                setInitialHealthData(healthData);
                 setSafetyStatus(response.safetyStatus);
                 setSafetyMessage(response.safetyMessage);
                 setSafetyMessageSi(response.safetyMessageSi);
                 setDetectedMood(response.detectedMood || null);
-                setRecommendations(response.recommendedExercises || []);
+                
+                // Reset completed tab by forcing completed: false and watchPercentage: 0 for new session
+                const resetRecs = (response.recommendedExercises || []).map(rec => ({
+                    ...rec,
+                    completed: false,
+                    watchPercentage: 0
+                }));
+                setRecommendations(resetRecs);
+                setActiveTab('todo');
                 setHasData(true);
                 setShowForm(false);
+                
+                // Scroll to top of the exercise page after submitting health form
+                setTimeout(() => {
+                    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                }, 100);
                 
                 Toast.show({
                     type: response.safetyStatus === 'blocked' ? 'error' : 'success',
@@ -1116,7 +1171,7 @@ export default function ExerciseScreen({ navigation }) {
                     </View>
                     <View style={styles.backBtn} />
                 </View>
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+                <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                     <TouchableOpacity 
                         style={styles.viewProgressBtn}
                         onPress={() => navigation.navigate('Progress')}
@@ -1143,6 +1198,7 @@ export default function ExerciseScreen({ navigation }) {
                             onSubmit={handleSubmitHealthData}
                             loading={loading}
                             user={user}
+                            initialData={initialHealthData}
                         />
                     )}
                     
@@ -1252,6 +1308,58 @@ export default function ExerciseScreen({ navigation }) {
                     <View style={{ height: 40 }} />
                 </ScrollView>
             </LinearGradient>
+
+            {/* Health Condition Change Prompt Modal */}
+            <Modal visible={showHealthPromptModal} transparent animationType="fade" onRequestClose={() => setShowHealthPromptModal(false)}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.promptModalContent}>
+                        <Text style={styles.promptEmoji}>🩺</Text>
+                        <Text style={styles.promptTitle}>
+                            {isSinhala ? 'සෞඛ්‍ය තත්ත්වය වෙනස් කරනවාද?' : 'Change Health Condition?'}
+                        </Text>
+                        <Text style={styles.promptSubtitle}>
+                            {isSinhala 
+                                ? 'අද දින සඳහා ඔබේ සෞඛ්‍ය තත්ත්වයේ යම් වෙනසක් සිදුවී ඇත්ද?' 
+                                : 'Would you like to update your health condition for today before viewing exercises?'}
+                        </Text>
+                        
+                        <View style={styles.promptBtnRow}>
+                            <TouchableOpacity 
+                                style={[styles.promptBtn, styles.thumbsUpBtn]} 
+                                onPress={() => {
+                                    setShowForm(true);
+                                    setShowHealthPromptModal(false);
+                                    setTimeout(() => {
+                                        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                                    }, 100);
+                                }}
+                            >
+                                <Text style={styles.promptBtnEmoji}>👍</Text>
+                                <Text style={styles.promptBtnTextActive}>
+                                    {isSinhala ? 'ඔව්, වෙනස් කරන්න' : 'Yes, Update Form'}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity 
+                                style={[styles.promptBtn, styles.thumbsDownBtn]} 
+                                onPress={() => {
+                                    setShowForm(false);
+                                    setShowHealthPromptModal(false);
+                                    setTimeout(() => {
+                                        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                                    }, 100);
+                                }}
+                            >
+                                <Text style={styles.promptBtnEmoji}>👎</Text>
+                                <Text style={styles.promptBtnText}>
+                                    {isSinhala ? 'නැත, වීඩියෝ පෙන්වන්න' : 'No, Show Exercises'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
             <Toast />
         </SafeAreaView>
     );
@@ -1886,5 +1994,87 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: 'rgba(255, 255, 255, 0.85)',
         marginTop: 2,
+    },
+    promptModalContent: {
+        backgroundColor: '#FFF',
+        borderRadius: 32,
+        padding: 24,
+        width: width - 40,
+        alignItems: 'center',
+        elevation: 5,
+    },
+    promptEmoji: {
+        fontSize: 44,
+        marginBottom: 10,
+    },
+    promptTitle: {
+        fontSize: 18,
+        fontWeight: '900',
+        color: '#1E293B',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    promptSubtitle: {
+        fontSize: 13,
+        color: '#64748B',
+        textAlign: 'center',
+        lineHeight: 18,
+        marginBottom: 20,
+    },
+    promptBtnRow: {
+        flexDirection: 'row',
+        gap: 12,
+        width: '100%',
+    },
+    promptBtn: {
+        flex: 1,
+        paddingVertical: 14,
+        paddingHorizontal: 8,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1.5,
+    },
+    thumbsUpBtn: {
+        backgroundColor: '#F5F3FF',
+        borderColor: '#7C3AED',
+    },
+    thumbsDownBtn: {
+        backgroundColor: '#F8FAFC',
+        borderColor: '#CBD5E1',
+    },
+    promptBtnEmoji: {
+        fontSize: 26,
+        marginBottom: 4,
+    },
+    promptBtnTextActive: {
+        color: '#7C3AED',
+        fontWeight: '800',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    promptBtnText: {
+        color: '#64748B',
+        fontWeight: '700',
+        fontSize: 12,
+        textAlign: 'center',
+    },
+    playIconButton: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        backgroundColor: '#7C3AED',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 8,
+        elevation: 3,
+        shadowColor: '#7C3AED',
+        shadowOpacity: 0.3,
+        shadowRadius: 6,
+        shadowOffset: { height: 2, width: 0 },
+    },
+    playIconText: {
+        fontSize: 16,
+        color: '#FFF',
     },
 });

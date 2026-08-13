@@ -18,13 +18,13 @@ export default function BabyCategoryScreen({ route, navigation }) {
     const { user } = useAuth();
 
     const getInitialAgeFilter = (deliveryDate) => {
-        if (!deliveryDate) return 'All';
+        if (!deliveryDate) return '0–3 months';
         try {
             const birthDate = new Date(deliveryDate);
             const today = new Date();
-            if (isNaN(birthDate.getTime())) return 'All';
+            if (isNaN(birthDate.getTime())) return '0–3 months';
             const diffTime = today - birthDate;
-            if (diffTime < 0) return 'All';
+            if (diffTime < 0) return '0–3 months';
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
             const diffMonths = diffDays / 30;
             
@@ -34,19 +34,20 @@ export default function BabyCategoryScreen({ route, navigation }) {
                 return '3–6 months';
             } else if (diffMonths >= 6 && diffMonths < 9) {
                 return '6–9 months';
-            } else if (diffMonths >= 9 && diffMonths <= 12) {
+            } else if (diffMonths >= 9) {
                 return '9–12 months';
             }
         } catch (e) {
             console.log("Error calculating age filter", e);
         }
-        return 'All';
+        return '0–3 months';
     };
 
     const displayName = isSinhala ? (categoryNameSi || categoryName) : categoryName;
 
     const [search, setSearch] = useState('');
     const [ageFilter, setAgeFilter] = useState(() => getInitialAgeFilter(user?.deliveryDate));
+    const [babyAgeFilter, setBabyAgeFilter] = useState(null);
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -64,6 +65,10 @@ export default function BabyCategoryScreen({ route, navigation }) {
             const res = await babyActivityService.getActivities(filters);
             if (res.success) {
                 setActivities(res.activities || []);
+                if (res.babyAgeFilter) {
+                    setBabyAgeFilter(res.babyAgeFilter);
+                    setAgeFilter(res.babyAgeFilter);
+                }
             }
         } catch (err) {
             console.error('Failed to load baby activities for category:', err);
@@ -147,22 +152,6 @@ export default function BabyCategoryScreen({ route, navigation }) {
                                 />
                             </View>
 
-                            {/* Age Filter */}
-                            <Text style={styles.sectionLabel}>{isSinhala ? "බිළිඳාගේ වයස" : "Baby's Age"}</Text>
-                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
-                                {['All', '0–3 months', '3–6 months', '6–9 months', '9–12 months'].map(age => (
-                                    <TouchableOpacity 
-                                        key={age}
-                                        style={[styles.filterChip, ageFilter === age && styles.filterChipActive]}
-                                        onPress={() => setAgeFilter(age)}
-                                    >
-                                        <Text style={[styles.filterChipText, ageFilter === age && styles.filterChipTextActive]}>
-                                            {age === 'All' ? (isSinhala ? 'සියල්ල' : 'All') : age}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </ScrollView>
-
                             <Text style={[styles.sectionLabel, { marginTop: 14 }]}>
                                 {isSinhala ? 'වීඩියෝ සහ ක්‍රියාකාරකම්' : 'Videos & Activities'}
                             </Text>
@@ -182,8 +171,8 @@ export default function BabyCategoryScreen({ route, navigation }) {
                                     </Text>
                                     <Text style={styles.emptySub}>
                                         {isSinhala
-                                            ? 'කරුණාකර වෙනත් වයස් කාණ්ඩයක් හෝ සෙවුම් පදයක් භාවිතා කරන්න.'
-                                            : 'Please try another age filter or search term.'}
+                                            ? 'කරුණාකර වෙනත් සෙවුම් පදයක් භාවිතා කරන්න.'
+                                            : 'Please try another search term.'}
                                     </Text>
                                 </>
                             )}
