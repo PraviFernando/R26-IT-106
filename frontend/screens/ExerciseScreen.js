@@ -306,159 +306,210 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
     
     return (
         <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
-            <Text style={styles.formTitle}>
-                {t('Today\'s Health Status')}
-            </Text>
-            
-            {(!user?.deliveryDate) && (
+            {/* Form header */}
+            <View style={styles.formHeaderRow}>
+                <Text style={styles.formHeaderEmoji}>🩺</Text>
+                <View style={{ flex: 1 }}>
+                    <Text style={styles.formTitle}>
+                        {t("Today's Health Status")}
+                    </Text>
+                    <Text style={styles.formSubtitle}>
+                        {t('Help us personalise your exercise plan')}
+                    </Text>
+                </View>
+            </View>
+
+            {/* Section: Delivery Info */}
+            <View style={styles.formSection}>
+                <Text style={styles.formSectionLabel}>📅 {t('Delivery Info')}</Text>
+
+                {(!user?.deliveryDate) && (
+                    <View style={styles.inputGroup}>
+                        <Text style={styles.label}>
+                            {t('Delivery Date')} ({t('YYYY-MM-DD')})
+                        </Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder={t("2024-05-10")}
+                            value={deliveryDate}
+                            onChangeText={setDeliveryDate}
+                            placeholderTextColor="#9CA3AF"
+                        />
+                    </View>
+                )}
+
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>
-                        {t('Delivery Date')} ({t('YYYY-MM-DD')})
+                        {t('Weeks After Delivery')}
                     </Text>
                     <TextInput
-                        style={styles.input}
-                        placeholder={t("2024-05-10")}
-                        value={deliveryDate}
-                        onChangeText={setDeliveryDate}
+                        style={[styles.input, deliveryDate ? { backgroundColor: '#F3F4F6', color: '#6B7280' } : {}]}
+                        placeholder={t("e.g., 4")}
+                        keyboardType="numeric"
+                        value={String(weeks)}
+                        onChangeText={setWeeks}
+                        editable={!deliveryDate}
                         placeholderTextColor="#9CA3AF"
                     />
                 </View>
-            )}
-            
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>
-                    {t('Weeks After Delivery')}
-                </Text>
-                <TextInput
-                    style={[styles.input, deliveryDate ? { backgroundColor: '#F3F4F6', color: '#6B7280' } : {}]}
-                    placeholder={t("e.g., 4")}
-                    keyboardType="numeric"
-                    value={String(weeks)}
-                    onChangeText={setWeeks}
-                    editable={!deliveryDate}
-                    placeholderTextColor="#9CA3AF"
-                />
+
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>{t('Delivery Type')}</Text>
+                    <View style={styles.rowButtons}>
+                        <TouchableOpacity
+                            style={[styles.optionBtn, deliveryType === 'normal' && styles.optionBtnActive]}
+                            onPress={() => setDeliveryType('normal')}
+                        >
+                            <Text style={[styles.optionText, deliveryType === 'normal' && styles.optionTextActive]}>
+                                🤱 {t('Normal')}
+                            </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.optionBtn, deliveryType === 'c-section' && styles.optionBtnActive]}
+                            onPress={() => setDeliveryType('c-section')}
+                        >
+                            <Text style={[styles.optionText, deliveryType === 'c-section' && styles.optionTextActive]}>
+                                🏥 {t('C-Section')}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
-            
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>{t('Delivery Type')}</Text>
-                <View style={styles.rowButtons}>
-                    <TouchableOpacity
-                        style={[styles.optionBtn, deliveryType === 'normal' && styles.optionBtnActive]}
-                        onPress={() => setDeliveryType('normal')}
-                    >
-                        <Text style={[styles.optionText, deliveryType === 'normal' && styles.optionTextActive]}>
-                            {t('Normal')}
-                        </Text>
+
+            {/* Section: Pain Conditions */}
+            <View style={styles.formSection}>
+                <Text style={styles.formSectionLabel}>⚡ {t('Pain Conditions')}</Text>
+                <View style={styles.checkboxGroup}>
+                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setPelvicPain(!pelvicPain)}>
+                        <View style={[styles.checkbox, pelvicPain && styles.checkboxChecked]}>
+                            {pelvicPain && <Text style={styles.checkboxTick}>✓</Text>}
+                        </View>
+                        <Text style={styles.checkboxLabel}>{t('Pelvic Pain')}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.optionBtn, deliveryType === 'c-section' && styles.optionBtnActive]}
-                        onPress={() => setDeliveryType('c-section')}
-                    >
-                        <Text style={[styles.optionText, deliveryType === 'c-section' && styles.optionTextActive]}>
-                            {t('C-Section')}
-                        </Text>
+                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setBackPain(!backPain)}>
+                        <View style={[styles.checkbox, backPain && styles.checkboxChecked]}>
+                            {backPain && <Text style={styles.checkboxTick}>✓</Text>}
+                        </View>
+                        <Text style={styles.checkboxLabel}>{t('Back Pain')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setAbdominalPain(!abdominalPain)}>
+                        <View style={[styles.checkbox, abdominalPain && styles.checkboxChecked]}>
+                            {abdominalPain && <Text style={styles.checkboxTick}>✓</Text>}
+                        </View>
+                        <Text style={styles.checkboxLabel}>{t('Abdominal Pain')}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
-            
-            <Text style={[styles.label, { marginTop: 8 }]}>
-                {t('Pain Conditions')}
-            </Text>
-            <View style={styles.checkboxGroup}>
-                <TouchableOpacity style={styles.checkboxRow} onPress={() => setPelvicPain(!pelvicPain)}>
-                    <View style={[styles.checkbox, pelvicPain && styles.checkboxChecked]} />
-                    <Text style={styles.checkboxLabel}>{t('Pelvic Pain')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.checkboxRow} onPress={() => setBackPain(!backPain)}>
-                    <View style={[styles.checkbox, backPain && styles.checkboxChecked]} />
-                    <Text style={styles.checkboxLabel}>{t('Back Pain')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.checkboxRow} onPress={() => setAbdominalPain(!abdominalPain)}>
-                    <View style={[styles.checkbox, abdominalPain && styles.checkboxChecked]} />
-                    <Text style={styles.checkboxLabel}>{t('Abdominal Pain')}</Text>
-                </TouchableOpacity>
-            </View>
-            
-            <View style={styles.checkboxGroup}>
-                <TouchableOpacity style={styles.checkboxRow} onPress={() => setBleeding(!bleeding)}>
-                    <View style={[styles.checkbox, bleeding && styles.checkboxChecked]} />
-                    <Text style={styles.checkboxLabel}>{t('Bleeding Complications')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.checkboxRow} onPress={() => setDoctorRestrictions(!doctorRestrictions)}>
-                    <View style={[styles.checkbox, doctorRestrictions && styles.checkboxChecked]} />
-                    <Text style={styles.checkboxLabel}>{t('Doctor Restrictions')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.checkboxRow} onPress={() => setMuscleWeakness(!muscleWeakness)}>
-                    <View style={[styles.checkbox, muscleWeakness && styles.checkboxChecked]} />
-                    <Text style={styles.checkboxLabel}>{t('Muscle Weakness')}</Text>
-                </TouchableOpacity>
-            </View>
-            
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>{t('Fatigue Level')}</Text>
-                <View style={styles.rowButtons}>
-                    {['low', 'medium', 'high'].map(level => (
-                        <TouchableOpacity
-                            key={level}
-                            style={[styles.optionBtn, fatigue === level && styles.optionBtnActive]}
-                            onPress={() => setFatigue(level)}
-                        >
-                            <Text style={[styles.optionText, fatigue === level && styles.optionTextActive]}>
-                                {t(level.charAt(0).toUpperCase() + level.slice(1))}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+
+            {/* Section: Other Health Flags */}
+            <View style={styles.formSection}>
+                <Text style={styles.formSectionLabel}>🚩 {t('Other Health Flags')}</Text>
+                <View style={styles.checkboxGroup}>
+                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setBleeding(!bleeding)}>
+                        <View style={[styles.checkbox, bleeding && styles.checkboxChecked]}>
+                            {bleeding && <Text style={styles.checkboxTick}>✓</Text>}
+                        </View>
+                        <Text style={styles.checkboxLabel}>{t('Bleeding Complications')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setDoctorRestrictions(!doctorRestrictions)}>
+                        <View style={[styles.checkbox, doctorRestrictions && styles.checkboxChecked]}>
+                            {doctorRestrictions && <Text style={styles.checkboxTick}>✓</Text>}
+                        </View>
+                        <Text style={styles.checkboxLabel}>{t('Doctor Restrictions')}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setMuscleWeakness(!muscleWeakness)}>
+                        <View style={[styles.checkbox, muscleWeakness && styles.checkboxChecked]}>
+                            {muscleWeakness && <Text style={styles.checkboxTick}>✓</Text>}
+                        </View>
+                        <Text style={styles.checkboxLabel}>{t('Muscle Weakness')}</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
-            
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>{t('Mobility Level')}</Text>
-                <View style={styles.columnButtons}>
-                    {['very_limited', 'limited', 'normal'].map(level => (
-                        <TouchableOpacity
-                            key={level}
-                            style={[styles.optionBtnWide, mobility === level && styles.optionBtnActive]}
-                            onPress={() => setMobility(level)}
-                        >
-                            <Text style={[styles.optionText, mobility === level && styles.optionTextActive]}>
-                                {level === 'very_limited' ? t('Very Restricted') : level === 'limited' ? t('Restricted') : t('Normal Mobility')}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
+
+            {/* Section: Energy & Mobility */}
+            <View style={styles.formSection}>
+                <Text style={styles.formSectionLabel}>⚡ {t('Energy & Mobility')}</Text>
+
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>{t('Fatigue Level')}</Text>
+                    <View style={styles.rowButtons}>
+                        {['low', 'medium', 'high'].map(level => (
+                            <TouchableOpacity
+                                key={level}
+                                style={[styles.optionBtn, fatigue === level && styles.optionBtnActive]}
+                                onPress={() => setFatigue(level)}
+                            >
+                                <Text style={[styles.optionText, fatigue === level && styles.optionTextActive]}>
+                                    {level === 'low' ? '😊' : level === 'medium' ? '😐' : '😩'} {t(level.charAt(0).toUpperCase() + level.slice(1))}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>{t('Mobility Level')}</Text>
+                    <View style={styles.columnButtons}>
+                        {['very_limited', 'limited', 'normal'].map(level => (
+                            <TouchableOpacity
+                                key={level}
+                                style={[styles.optionBtnWide, mobility === level && styles.optionBtnActive]}
+                                onPress={() => setMobility(level)}
+                            >
+                                <Text style={[styles.optionText, mobility === level && styles.optionTextActive]}>
+                                    {level === 'very_limited' ? '🦽 ' : level === 'limited' ? '🚶 ' : '🏃 '}
+                                    {level === 'very_limited' ? t('Very Restricted') : level === 'limited' ? t('Restricted') : t('Normal Mobility')}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+
+                <View style={styles.inputGroup}>
+                    <Text style={styles.label}>{t('Willingness to Exercise')}</Text>
+                    <View style={styles.rowButtons}>
+                        {['low', 'medium', 'high'].map(level => (
+                            <TouchableOpacity
+                                key={level}
+                                style={[styles.optionBtn, willingness === level && styles.optionBtnActive]}
+                                onPress={() => setWillingness(level)}
+                            >
+                                <Text style={[styles.optionText, willingness === level && styles.optionTextActive]}>
+                                    {level === 'low' ? '😴' : level === 'medium' ? '🙂' : '💪'} {t(level.charAt(0).toUpperCase() + level.slice(1))}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
                 </View>
             </View>
-            
-            <View style={styles.inputGroup}>
-                <Text style={styles.label}>{t('Willingness to Exercise')}</Text>
-                <View style={styles.rowButtons}>
-                    {['low', 'medium', 'high'].map(level => (
-                        <TouchableOpacity
-                            key={level}
-                            style={[styles.optionBtn, willingness === level && styles.optionBtnActive]}
-                            onPress={() => setWillingness(level)}
-                        >
-                            <Text style={[styles.optionText, willingness === level && styles.optionTextActive]}>
-                                {t(level.charAt(0).toUpperCase() + level.slice(1))}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </View>
-            
+
+            {/* Submit button */}
             <TouchableOpacity
                 style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
                 onPress={handleSubmit}
                 disabled={loading}
+                activeOpacity={0.85}
             >
-                {loading ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <Text style={styles.submitBtnText}>
-                        {t('Get Exercise Recommendations')}
-                    </Text>
-                )}
+                <LinearGradient
+                    colors={loading ? ['#A78BFA', '#C4B5FD'] : ['#7C3AED', '#6D28D9']}
+                    style={styles.submitBtnGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                >
+                    {loading ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <>
+                            <Text style={styles.submitBtnEmoji}>✨</Text>
+                            <Text style={styles.submitBtnText}>
+                                {t('Get Exercise Recommendations')}
+                            </Text>
+                        </>
+                    )}
+                </LinearGradient>
             </TouchableOpacity>
+
+            <View style={{ height: 24 }} />
         </ScrollView>
     );
 };
@@ -1158,10 +1209,12 @@ export default function ExerciseScreen({ navigation }) {
     
     return (
         <SafeAreaView style={styles.safe}>
-            <LinearGradient colors={['#F4F0FB', '#FDFCFE']} style={styles.gradient}>
+            <LinearGradient colors={['#F7F3FF', '#FDFBFF', '#EBE0FF']} style={styles.gradient}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                        <Text style={styles.backIcon}>←</Text>
+                        <View style={styles.backCircle}>
+                            <Text style={styles.backIcon}>←</Text>
+                        </View>
                     </TouchableOpacity>
                     <View style={styles.headerCenter}>
                         <Text style={styles.headerEmoji}>🏃‍♀️</Text>
@@ -1169,7 +1222,7 @@ export default function ExerciseScreen({ navigation }) {
                             {t('Postpartum Exercise')}
                         </Text>
                     </View>
-                    <View style={styles.backBtn} />
+                    <View style={styles.backBtnPlaceholder} />
                 </View>
                 <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                     <TouchableOpacity 
@@ -1204,13 +1257,33 @@ export default function ExerciseScreen({ navigation }) {
                     
                     {!showForm && hasData && recommendations.length > 0 && safetyStatus !== 'blocked' && (
                         <View style={styles.recommendationsContainer}>
-                            <Text style={styles.recommendationsTitle}>
-                                {t("Today's Exercise Plan")}
-                            </Text>
+
+                            {/* Plan header banner */}
+                            <LinearGradient
+                                colors={['#7C3AED', '#A78BFA']}
+                                style={styles.planBanner}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                            >
+                                <View>
+                                    <Text style={styles.planBannerTitle}>
+                                        🏋️‍♀️ {t("Today's Exercise Plan")}
+                                    </Text>
+                                    <Text style={styles.planBannerSub}>
+                                        {recommendations.filter(r => r.completed).length}/{Math.min(5, recommendations.length)} {t('completed')}
+                                    </Text>
+                                </View>
+                                <View style={styles.planBannerBadge}>
+                                    <Text style={styles.planBannerBadgeText}>
+                                        {Math.min(5, recommendations.length)}
+                                    </Text>
+                                    <Text style={styles.planBannerBadgeLabel}>{t('exercises')}</Text>
+                                </View>
+                            </LinearGradient>
 
                             {/* Tab Switcher */}
                             <View style={styles.tabContainer}>
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={[styles.tabButton, activeTab === 'todo' && styles.tabButtonActive]}
                                     onPress={() => setActiveTab('todo')}
                                 >
@@ -1218,7 +1291,7 @@ export default function ExerciseScreen({ navigation }) {
                                         📋 {i18n.language === 'si' ? 'කිරීමට ඇති' : t('To Do')} ({Math.min(5, recommendations.filter(rec => !rec.completed).length)})
                                     </Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={[styles.tabButton, activeTab === 'completed' && styles.tabButtonActive]}
                                     onPress={() => setActiveTab('completed')}
                                 >
@@ -1365,716 +1438,371 @@ export default function ExerciseScreen({ navigation }) {
     );
 }
 
-// Keep all existing styles as they are (they remain unchanged)
 const styles = StyleSheet.create({
-    safe: { flex: 1 },
+    // Layout
+    safe: { flex: 1, backgroundColor: '#F7F3FF' },
     gradient: { flex: 1 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 20, paddingTop: 16, paddingBottom: 10,
+        paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12,
         backgroundColor: 'transparent',
     },
-    backBtn: { padding: 8, width: 44, alignItems: 'center', justifyContent: 'center' },
-    backIcon: { fontSize: 32, color: '#a18cd1', fontWeight: '900' },
-    headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    headerEmoji: { fontSize: 26 },
-    headerTitle: { fontSize: 20, fontWeight: '800', color: '#334155' },
+    backBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+    backBtnPlaceholder: { width: 44 },
+    backCircle: {
+        width: 38, height: 38, borderRadius: 19,
+        backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center',
+        elevation: 3, shadowColor: '#7C3AED', shadowOpacity: 0.1,
+        shadowRadius: 8, shadowOffset: { width: 0, height: 3 },
+    },
+    backIcon: { fontSize: 20, color: '#7C3AED', fontWeight: '900' },
+    headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'center' },
+    headerEmoji: { fontSize: 24 },
+    headerTitle: { fontSize: 17, fontWeight: '800', color: '#1E293B', textAlign: 'center' },
     scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
 
-    // Progress
+    // Progress dashboard (inline on Exercise screen)
     progressContainer: {
-        backgroundColor: 'rgba(255,255,255,0.85)',
-        borderRadius: 28,
-        padding: 20,
-        marginBottom: 16,
-        elevation: 4,
-        shadowColor: '#a18cd1',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.12,
-        shadowRadius: 12,
+        backgroundColor: '#FFF', borderRadius: 28, padding: 20, marginBottom: 16,
+        elevation: 3, shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.06, shadowRadius: 16, borderWidth: 1,
+        borderColor: 'rgba(124,58,237,0.05)',
     },
-    progressTitle: { fontSize: 20, fontWeight: '800', color: '#334155', marginBottom: 14 },
+    progressTitle: { fontSize: 17, fontWeight: '900', color: '#1E293B', marginBottom: 14 },
     statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     statBox: {
-        flex: 1,
-        borderRadius: 24,
-        paddingVertical: 18,
-        paddingHorizontal: 10,
-        alignItems: 'center',
-        minWidth: (width - 60) / 3,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOpacity: 0.10,
-        shadowRadius: 10,
-        shadowOffset: { height: 5, width: 0 },
+        flex: 1, borderRadius: 20, paddingVertical: 18, paddingHorizontal: 10,
+        alignItems: 'center', minWidth: (width - 60) / 3, elevation: 2,
+        shadowColor: '#7C3AED', shadowOpacity: 0.08, shadowRadius: 8,
+        shadowOffset: { height: 3, width: 0 },
     },
     statValue: { fontSize: 24, fontWeight: '900', color: '#FFF' },
-    statLabel: { fontSize: 11, color: '#FFF', fontWeight: '700', marginTop: 4, textAlign: 'center' },
+    statLabel: { fontSize: 11, color: 'rgba(255,255,255,0.9)', fontWeight: '700', marginTop: 4, textAlign: 'center' },
     chartContainer: { marginTop: 16 },
-    chartTitle: { fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 12 },
+    chartTitle: { fontSize: 13, fontWeight: '700', color: '#1E293B', marginBottom: 12 },
     barChart: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', height: 100 },
     barItem: { alignItems: 'center', width: 35 },
-    bar: { width: 24, backgroundColor: '#a18cd1', borderRadius: 6, marginBottom: 8, minHeight: 4 },
-    barLabel: { fontSize: 9, color: '#6B7280' },
+    bar: { width: 24, backgroundColor: '#7C3AED', borderRadius: 6, marginBottom: 8, minHeight: 4 },
+    barLabel: { fontSize: 9, color: '#64748B' },
 
-    // Safety
+    // Safety banners
     safetyBlocked: {
-        backgroundColor: '#FEE2E2',
-        borderRadius: 28,
-        padding: 20,
-        marginBottom: 16,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#EF4444',
-        elevation: 2,
-        shadowColor: '#EF4444',
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        shadowOffset: { height: 3, width: 0 },
+        backgroundColor: '#FFF1F2', borderRadius: 24, padding: 20, marginBottom: 16,
+        alignItems: 'center', borderWidth: 1.5, borderColor: '#FDA4AF',
+        elevation: 2, shadowColor: '#E11D48', shadowOpacity: 0.05,
+        shadowRadius: 10, shadowOffset: { height: 3, width: 0 },
     },
     safetyLimited: {
-        backgroundColor: '#FEF3C7',
-        borderRadius: 28,
-        padding: 20,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: '#F59E0B',
-        elevation: 2,
-        shadowColor: '#F59E0B',
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        shadowOffset: { height: 3, width: 0 },
+        backgroundColor: '#FFFBEB', borderRadius: 24, padding: 20, marginBottom: 16,
+        borderWidth: 1.5, borderColor: '#FDE68A',
+        elevation: 2, shadowColor: '#D97706', shadowOpacity: 0.05,
+        shadowRadius: 10, shadowOffset: { height: 3, width: 0 },
     },
     safetySafe: {
-        backgroundColor: '#D1FAE5',
-        borderRadius: 28,
-        padding: 20,
-        marginBottom: 16,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#10B981',
-        elevation: 2,
-        shadowColor: '#10B981',
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        shadowOffset: { height: 3, width: 0 },
+        backgroundColor: '#ECFDF5', borderRadius: 24, padding: 20, marginBottom: 16,
+        alignItems: 'center', borderWidth: 1.5, borderColor: '#A7F3D0',
+        elevation: 2, shadowColor: '#059669', shadowOpacity: 0.05,
+        shadowRadius: 10, shadowOffset: { height: 3, width: 0 },
     },
-    safetyIcon: { fontSize: 36, marginBottom: 8 },
-    safetyTitle: { fontSize: 18, fontWeight: '800', color: '#1F2937', marginBottom: 8 },
-    safetyMessage: { fontSize: 14, color: '#374151', textAlign: 'center', marginBottom: 8, lineHeight: 20 },
-    safetySubtext: { fontSize: 12, color: '#6B7280', textAlign: 'center' },
-    safetyAdvice: { fontSize: 13, fontWeight: '700', color: '#EF4444' },
+    safetyIcon: { fontSize: 30, marginBottom: 8 },
+    safetyTitle: { fontSize: 15, fontWeight: '900', color: '#1E293B', marginBottom: 6 },
+    safetyMessage: { fontSize: 13, color: '#475569', textAlign: 'center', marginBottom: 8, lineHeight: 19 },
+    safetySubtext: { fontSize: 12, color: '#64748B', textAlign: 'center' },
+    safetyAdvice: { fontSize: 13, fontWeight: '800', color: '#EF4444' },
 
-    // Form
+    // Health form
     formContainer: {
-        backgroundColor: 'rgba(255,255,255,0.92)',
-        borderRadius: 32,
-        padding: 24,
-        marginBottom: 16,
-        elevation: 4,
-        shadowColor: '#a18cd1',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.10,
-        shadowRadius: 16,
+        backgroundColor: '#FFF', borderRadius: 28, padding: 22, marginBottom: 16,
+        elevation: 3, shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.05, shadowRadius: 16, borderWidth: 1,
+        borderColor: 'rgba(124,58,237,0.05)',
     },
-    formTitle: { fontSize: 20, fontWeight: '800', color: '#334155', marginBottom: 18 },
+    formHeaderRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 20 },
+    formHeaderEmoji: { fontSize: 36, marginTop: 2 },
+    formTitle: { fontSize: 17, fontWeight: '900', color: '#1E293B', marginBottom: 3 },
+    formSubtitle: { fontSize: 12, color: '#94A3B8', fontWeight: '500' },
+    formSection: {
+        backgroundColor: '#FAFAF9', borderRadius: 20, padding: 16,
+        marginBottom: 14, borderWidth: 1, borderColor: '#EDE9FE',
+    },
+    formSectionLabel: { fontSize: 13, fontWeight: '800', color: '#7C3AED', marginBottom: 14, letterSpacing: 0.3 },
+
     inputGroup: { marginBottom: 18 },
-    label: { fontSize: 14, fontWeight: '700', color: '#334155', marginBottom: 8 },
+    label: { fontSize: 14, fontWeight: '700', color: '#1E293B', marginBottom: 8 },
     input: {
-        borderWidth: 1.5,
-        borderColor: '#E5E7EB',
-        borderRadius: 16,
-        padding: 14,
-        fontSize: 14,
-        backgroundColor: '#F1F5F9',
-        color: '#1F2937',
+        borderWidth: 1.5, borderColor: '#EDE9FE', borderRadius: 16,
+        padding: 14, fontSize: 14, backgroundColor: '#FAFAF9', color: '#1E293B',
     },
     rowButtons: { flexDirection: 'row', gap: 10 },
     columnButtons: { gap: 8 },
     optionBtn: {
-        flex: 1,
-        paddingVertical: 12,
-        borderRadius: 14,
-        backgroundColor: '#F1F5F9',
-        alignItems: 'center',
-        borderWidth: 1.5,
-        borderColor: '#E5E7EB',
+        flex: 1, paddingVertical: 12, borderRadius: 14,
+        backgroundColor: '#FAFAF9', alignItems: 'center',
+        borderWidth: 1.5, borderColor: '#EDE9FE',
     },
     optionBtnWide: {
-        paddingVertical: 12,
-        borderRadius: 14,
-        backgroundColor: '#F1F5F9',
-        alignItems: 'center',
-        borderWidth: 1.5,
-        borderColor: '#E5E7EB',
+        paddingVertical: 12, borderRadius: 14,
+        backgroundColor: '#FAFAF9', alignItems: 'center',
+        borderWidth: 1.5, borderColor: '#EDE9FE',
     },
-    optionBtnActive: { backgroundColor: '#a18cd1', borderColor: '#a18cd1' },
-    optionText: { fontSize: 14, color: '#334155', fontWeight: '600' },
-    optionTextActive: { color: '#fff', fontWeight: '700' },
+    optionBtnActive: { backgroundColor: '#7C3AED', borderColor: '#7C3AED' },
+    optionText: { fontSize: 14, color: '#475569', fontWeight: '600' },
+    optionTextActive: { color: '#FFF', fontWeight: '800' },
     checkboxGroup: { marginBottom: 12 },
-    checkboxRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 6 },
+    checkboxRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 7 },
     checkbox: {
-        width: 24,
-        height: 24,
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: '#D1D5DB',
-        marginRight: 12,
-        backgroundColor: '#fff',
+        width: 24, height: 24, borderRadius: 8, borderWidth: 2,
+        borderColor: '#DDD6FE', marginRight: 12, backgroundColor: '#FFF',
     },
-    checkboxChecked: { backgroundColor: '#a18cd1', borderColor: '#a18cd1' },
-    checkboxLabel: { fontSize: 14, color: '#334155', fontWeight: '500' },
+    checkboxChecked: { backgroundColor: '#7C3AED', borderColor: '#7C3AED', alignItems: 'center', justifyContent: 'center' },
+    checkboxTick: { color: '#FFF', fontSize: 13, fontWeight: '900' },
+    checkboxLabel: { fontSize: 14, color: '#475569', fontWeight: '600' },
     submitBtn: {
-        backgroundColor: '#a18cd1',
-        padding: 16,
-        borderRadius: 20,
-        alignItems: 'center',
-        marginTop: 10,
-        elevation: 4,
-        shadowColor: '#a18cd1',
-        shadowOpacity: 0.35,
-        shadowRadius: 10,
+        backgroundColor: '#7C3AED', padding: 16, borderRadius: 20,
+        alignItems: 'center', marginTop: 10, elevation: 4,
+        shadowColor: '#7C3AED', shadowOpacity: 0.25, shadowRadius: 10,
         shadowOffset: { height: 4, width: 0 },
     },
-    submitBtnDisabled: { opacity: 0.7 },
-    submitBtnText: { color: '#fff', fontWeight: '800', fontSize: 16 },
+    submitBtnDisabled: { opacity: 0.65 },
+    submitBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 16, borderRadius: 20 },
+    submitBtnEmoji: { fontSize: 18 },
+    submitBtnText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
 
-    // Exercise Cards
+    // Exercise plan banner
+    planBanner: {
+        borderRadius: 24, padding: 20, marginBottom: 14,
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        elevation: 4, shadowColor: '#7C3AED', shadowOpacity: 0.2,
+        shadowRadius: 12, shadowOffset: { width: 0, height: 6 },
+    },
+    planBannerTitle: { fontSize: 16, fontWeight: '900', color: '#FFF', marginBottom: 4 },
+    planBannerSub: { fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
+    planBannerBadge: {
+        backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 16,
+        paddingHorizontal: 14, paddingVertical: 10, alignItems: 'center',
+    },
+    planBannerBadgeText: { fontSize: 24, fontWeight: '900', color: '#FFF' },
+    planBannerBadgeLabel: { fontSize: 10, color: 'rgba(255,255,255,0.85)', fontWeight: '700', marginTop: 2 },
+
+    // Exercise cards
     recommendationsContainer: { marginBottom: 16 },
-    recommendationsTitle: { fontSize: 20, fontWeight: '800', color: '#334155', marginBottom: 14 },
+    recommendationsTitle: { fontSize: 17, fontWeight: '900', color: '#1E293B', marginBottom: 14 },
     exerciseCard: {
-        borderRadius: 28,
-        padding: 20,
-        marginBottom: 14,
-        elevation: 3,
-        shadowColor: '#a18cd1',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.08,
-        shadowRadius: 10,
+        borderRadius: 28, padding: 18, marginBottom: 14, elevation: 3,
+        shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.06, shadowRadius: 16, borderWidth: 1,
+        borderColor: 'rgba(124,58,237,0.05)',
     },
     thumbnailContainer: {
-        width: '100%',
-        height: 160,
-        borderRadius: 18,
-        overflow: 'hidden',
-        marginBottom: 12,
-        position: 'relative',
-        backgroundColor: '#000'
+        width: '100%', height: 168, borderRadius: 20,
+        overflow: 'hidden', marginBottom: 14, position: 'relative',
+        backgroundColor: '#EDE9FE',
     },
-    cardThumbnail: {
-        width: '100%',
-        height: '100%',
-    },
+    cardThumbnail: { width: '100%', height: '100%' },
     thumbnailPlayOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.15)'
+        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+        justifyContent: 'center', alignItems: 'center',
+        backgroundColor: 'rgba(109,40,217,0.12)',
     },
-    playOverlayIcon: {
-        fontSize: 36,
-        color: '#fff',
-    },
+    playOverlayIcon: { fontSize: 44 },
     exerciseCardCompleted: { opacity: 0.82 },
-    exerciseHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+    exerciseHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
     exerciseIcon: { fontSize: 34, marginRight: 14 },
     exerciseInfo: { flex: 1 },
-    exerciseName: { fontSize: 17, fontWeight: '800', color: '#1E293B' },
-    exerciseMeta: { fontSize: 12, color: '#64748B', marginTop: 3 },
-    completeBtn: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#a18cd1',
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 2,
-        shadowColor: '#a18cd1',
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
-        shadowOffset: { height: 3, width: 0 },
-    },
-    completeBtnText: { color: '#fff', fontSize: 20, fontWeight: 'bold' },
+    exerciseName: { fontSize: 15, fontWeight: '900', color: '#1E293B', lineHeight: 20 },
+    exerciseMeta: { fontSize: 11, color: '#64748B', marginTop: 4, fontWeight: '600', lineHeight: 16 },
     completedBadge: {
-        backgroundColor: '#10B981',
-        paddingHorizontal: 12,
-        paddingVertical: 5,
-        borderRadius: 14,
+        backgroundColor: '#10B981', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 14,
     },
-    completedBadgeText: { fontSize: 12, color: '#fff', fontWeight: '700' },
+    completedBadgeText: { fontSize: 12, color: '#FFF', fontWeight: '800' },
     progressBadge: {
-        backgroundColor: 'rgba(124, 58, 237, 0.15)',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: '#EDE9FE', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12,
     },
-    progressBadgeText: {
-        color: '#7C3AED',
-        fontSize: 12,
-        fontWeight: '700',
-    },
-    exerciseDesc: { fontSize: 13, color: '#64748B', marginBottom: 12, lineHeight: 20 },
-    stepsContainer: { marginBottom: 12 },
-    stepsTitle: { fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 6 },
-    stepText: { fontSize: 12, color: '#64748B', marginLeft: 8, marginBottom: 3, lineHeight: 18 },
+    progressBadgeText: { color: '#7C3AED', fontSize: 12, fontWeight: '800' },
+    exerciseDesc: { fontSize: 13, color: '#475569', marginBottom: 12, lineHeight: 20 },
 
-    // Video
-    watchVideoBtn: {
-        backgroundColor: '#a18cd1',
-        padding: 14,
-        borderRadius: 16,
-        alignItems: 'center',
-        marginTop: 10,
-        elevation: 3,
-        shadowColor: '#a18cd1',
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        shadowOffset: { height: 3, width: 0 },
+    // Video modal
+    videoModalContent: {
+        backgroundColor: '#FFF', borderRadius: 32, padding: 24,
+        width: width - 40, alignItems: 'center', maxHeight: '90%',
+        elevation: 8, shadowColor: '#7C3AED', shadowOpacity: 0.1,
+        shadowRadius: 24, shadowOffset: { width: 0, height: 12 },
     },
-    watchVideoBtnText: { fontSize: 14, color: '#fff', fontWeight: '700' },
-    videoBtn: {
-        backgroundColor: '#F1F5F9',
-        padding: 14,
-        borderRadius: 16,
-        alignItems: 'center',
-        marginTop: 8,
-    },
-    videoBtnText: { fontSize: 14, color: '#a18cd1', fontWeight: '700' },
-
-    // Video Modal
-    videoModalContent: { backgroundColor: '#fff', borderRadius: 32, padding: 24, width: width - 40, alignItems: 'center', maxHeight: '90%' },
-    videoPlayer: { width: width - 80, height: 220, borderRadius: 16, marginBottom: 16, backgroundColor: '#000' },
+    modalTitle: { fontSize: 15, fontWeight: '800', color: '#1E293B', marginBottom: 14, textAlign: 'center' },
+    videoPlayer: { width: '100%', height: 220, borderRadius: 20, marginBottom: 16, backgroundColor: '#000' },
     videoPlayerCentered: { justifyContent: 'center', alignItems: 'center' },
-    videoControls: { flexDirection: 'row', justifyContent: 'center', marginBottom: 16 },
-    playBtn: { backgroundColor: '#a18cd1', paddingHorizontal: 28, paddingVertical: 12, borderRadius: 24 },
-    playBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-    videoList: { width: '100%', maxHeight: 400 },
-    videoOption: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F1F5F9',
-        borderRadius: 16,
-        padding: 14,
-        marginBottom: 10,
-    },
-    videoOptionIcon: { fontSize: 24, marginRight: 12 },
-    videoOptionInfo: { flex: 1 },
-    videoOptionTitle: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
-    videoOptionDuration: { fontSize: 11, color: '#64748B', marginTop: 2 },
-    videoOptionArrow: { fontSize: 18, color: '#9CA3AF' },
-    backToVideoList: { alignSelf: 'flex-start', marginBottom: 12 },
-    backToVideoListText: { fontSize: 14, color: '#a18cd1', fontWeight: '700' },
-    videoTitle: { fontSize: 14, color: '#334155', textAlign: 'center', marginBottom: 12, fontWeight: '600' },
-
-    // WebView
+    modalCloseBtn: { alignItems: 'center', paddingVertical: 12, paddingHorizontal: 24 },
+    modalCloseText: { color: '#64748B', fontSize: 14, fontWeight: '700' },
     webView: { flex: 1 },
     webViewLoadingContainer: {
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-        justifyContent: 'center', alignItems: 'center',
-        backgroundColor: '#000', zIndex: 10,
+        justifyContent: 'center', alignItems: 'center', backgroundColor: '#000', zIndex: 10,
     },
     webViewErrorContainer: {
         position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-        justifyContent: 'center', alignItems: 'center',
-        backgroundColor: '#000', zIndex: 10,
+        justifyContent: 'center', alignItems: 'center', backgroundColor: '#111', zIndex: 10,
     },
-    webViewErrorText: { color: '#fff', fontSize: 14, marginBottom: 15 },
-    webViewRetryBtn: { backgroundColor: '#a18cd1', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12 },
-    webViewRetryBtnText: { color: '#fff', fontWeight: '700' },
+    webViewErrorText: { color: '#FFF', fontSize: 14, marginBottom: 15, textAlign: 'center' },
+    webViewRetryBtn: {
+        backgroundColor: '#7C3AED', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14,
+    },
+    webViewRetryBtnText: { color: '#FFF', fontWeight: '800' },
 
-    // Empty State
+    // Empty states
     emptyContainer: {
-        backgroundColor: 'rgba(255,255,255,0.85)',
-        borderRadius: 32,
-        padding: 36,
-        alignItems: 'center',
-        marginBottom: 16,
-        elevation: 3,
-        shadowColor: '#a18cd1',
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        shadowOffset: { height: 4, width: 0 },
+        backgroundColor: '#FFF', borderRadius: 28, padding: 36, alignItems: 'center',
+        marginBottom: 16, elevation: 3, shadowColor: '#7C3AED', shadowOpacity: 0.05,
+        shadowRadius: 16, shadowOffset: { height: 6, width: 0 }, borderWidth: 1,
+        borderColor: 'rgba(124,58,237,0.04)',
     },
-    emptyEmoji: { fontSize: 52, marginBottom: 16 },
-    emptyTitle: { fontSize: 22, fontWeight: '900', color: '#1E293B', marginBottom: 8 },
-    emptyText: { fontSize: 14, color: '#64748B', textAlign: 'center', lineHeight: 22 },
-
-    // Add Data Button
-    addDataBtn: {
-        backgroundColor: 'rgba(161,140,209,0.08)',
-        padding: 16,
-        borderRadius: 20,
-        alignItems: 'center',
-        borderWidth: 1.5,
-        borderColor: '#a18cd1',
-        borderStyle: 'dashed',
-        marginBottom: 16,
-    },
-    addDataBtnText: { fontSize: 14, color: '#a18cd1', fontWeight: '700' },
-
-    // Modal
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
-    modalContent: { backgroundColor: '#fff', borderRadius: 32, padding: 24, width: width - 40, maxHeight: '80%' },
-    modalTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B', marginBottom: 8, textAlign: 'center' },
-    modalSubtitle: { fontSize: 13, color: '#64748B', marginBottom: 16, textAlign: 'center' },
-    videoPreview: { width: '100%', height: 200, borderRadius: 16, marginBottom: 16 },
-    pickVideoBtn: { backgroundColor: '#a18cd1', padding: 14, borderRadius: 16, alignItems: 'center', marginBottom: 12 },
-    pickVideoBtnText: { color: '#fff', fontWeight: '700' },
-    modalCloseBtn: { alignItems: 'center', padding: 12 },
-    modalCloseText: { color: '#64748B', fontSize: 14, fontWeight: '600' },
-
-    // Feedback Modal Styles
-    feedbackModalContent: {
-        backgroundColor: '#fff',
-        borderRadius: 32,
-        padding: 26,
-        alignItems: 'center',
-        width: width - 50,
-        elevation: 6,
-        shadowColor: '#a18cd1',
-        shadowOpacity: 0.25,
-        shadowRadius: 16,
-        shadowOffset: { height: 6, width: 0 },
-    },
-    feedbackEmojiTitle: { fontSize: 42, marginBottom: 10 },
-    feedbackTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
-    feedbackSubtitle: { fontSize: 13, color: '#64748B', textAlign: 'center', marginBottom: 20, paddingHorizontal: 10 },
-    ratingRow: { flexDirection: 'row', gap: 14, marginBottom: 22 },
-    ratingBtn: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: '#F1F5F9',
-        alignItems: 'center',
-        justifyContent: 'center',
-        elevation: 2,
-    },
-    ratingEmoji: { fontSize: 26 },
-    feedbackSkipBtn: { paddingVertical: 10, paddingHorizontal: 20 },
-    feedbackSkipText: { color: '#94A3B8', fontWeight: '600', fontSize: 14 },
-
-    // Tab Switcher Styles
-    tabContainer: {
-        flexDirection: 'row',
-        backgroundColor: '#F1F5F9',
-        borderRadius: 16,
-        padding: 4,
-        marginBottom: 16,
-    },
-    tabButton: {
-        flex: 1,
-        paddingVertical: 10,
-        alignItems: 'center',
-        borderRadius: 12,
-    },
-    tabButtonActive: {
-        backgroundColor: '#fff',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-    },
-    tabText: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#64748B',
-    },
-    tabTextActive: {
-        color: '#7C3AED',
-        fontWeight: '800',
-    },
-
-    // Small Empty State
+    emptyEmoji: { fontSize: 52, marginBottom: 14 },
+    emptyTitle: { fontSize: 20, fontWeight: '900', color: '#1E293B', marginBottom: 8 },
+    emptyText: { fontSize: 13, color: '#64748B', textAlign: 'center', lineHeight: 20 },
     emptyContainerSmall: {
-        alignItems: 'center',
-        padding: 24,
-        backgroundColor: 'rgba(255,255,255,0.7)',
-        borderRadius: 24,
-        borderWidth: 1,
-        borderColor: '#E2E8F0',
-        borderStyle: 'dashed',
+        alignItems: 'center', padding: 28, backgroundColor: '#FFF', borderRadius: 24,
+        borderWidth: 1, borderColor: 'rgba(124,58,237,0.04)', elevation: 2,
+        shadowColor: '#7C3AED', shadowOpacity: 0.04, shadowRadius: 10,
     },
-    emptyTitleSmall: {
-        fontSize: 15,
-        fontWeight: '800',
-        color: '#475569',
-        marginBottom: 4,
+    emptyTitleSmall: { fontSize: 15, fontWeight: '900', color: '#1E293B', marginBottom: 4 },
+    emptyTextSmall: { fontSize: 12, color: '#64748B', textAlign: 'center', lineHeight: 18 },
+
+    // Add data button
+    addDataBtn: {
+        backgroundColor: '#FFF', padding: 16, borderRadius: 20,
+        alignItems: 'center', borderWidth: 1.5, borderColor: '#7C3AED',
+        borderStyle: 'dashed', marginBottom: 16,
     },
-    emptyTextSmall: {
-        fontSize: 12,
-        color: '#94A3B8',
-        textAlign: 'center',
+    addDataBtnText: { fontSize: 14, color: '#7C3AED', fontWeight: '800' },
+
+    // Modals overlay
+    modalOverlay: {
+        flex: 1, backgroundColor: 'rgba(15,23,42,0.45)',
+        justifyContent: 'center', alignItems: 'center',
     },
-    // Survey and Stopwatch Styles
-    stopwatchContainer: {
-        width: '100%',
-        alignItems: 'center',
-        backgroundColor: '#F8FAFC',
-        borderRadius: 20,
-        padding: 16,
-        marginVertical: 12,
-        borderWidth: 1,
-        borderColor: '#E2E8F0',
-    },
-    stopwatchLabel: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#64748B',
-        marginBottom: 4,
-    },
-    stopwatchDisplay: {
-        fontSize: 32,
-        fontWeight: '900',
-        color: '#1E293B',
-        letterSpacing: 2,
-        marginBottom: 12,
-    },
-    stopwatchRow: {
-        flexDirection: 'row',
-        gap: 10,
-        width: '100%',
-    },
-    controlBtn: {
-        flex: 1,
-        paddingVertical: 12,
-        borderRadius: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    startBtn: {
-        backgroundColor: '#10B981',
-    },
-    pauseBtn: {
-        backgroundColor: '#F59E0B',
-    },
-    stopBtn: {
-        backgroundColor: '#EF4444',
-    },
-    controlBtnText: {
-        color: '#FFF',
-        fontWeight: '700',
-        fontSize: 13,
-    },
+
+    // Survey modal
     questionsModalContent: {
-        backgroundColor: '#FFF',
-        borderRadius: 32,
-        padding: 24,
-        width: width - 40,
-        alignItems: 'stretch',
+        backgroundColor: '#FFF', borderRadius: 32, padding: 24,
+        width: width - 40, alignItems: 'stretch',
+        elevation: 8, shadowColor: '#7C3AED', shadowOpacity: 0.1,
+        shadowRadius: 24, shadowOffset: { width: 0, height: 12 },
     },
+    feedbackEmojiTitle: { fontSize: 44, textAlign: 'center', marginBottom: 8 },
+    feedbackTitle: { fontSize: 20, fontWeight: '900', color: '#1E293B', marginBottom: 6, textAlign: 'center' },
+    feedbackSubtitle: { fontSize: 13, color: '#64748B', textAlign: 'center', lineHeight: 20, marginBottom: 8 },
     questionText: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#334155',
-        marginTop: 14,
-        marginBottom: 8,
+        fontSize: 14, fontWeight: '800', color: '#1E293B', marginTop: 14, marginBottom: 8,
     },
-    btnRow: {
-        flexDirection: 'row',
-        gap: 8,
-        marginBottom: 8,
-    },
+    btnRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
     surveyBtn: {
-        flex: 1,
-        paddingVertical: 10,
-        borderWidth: 1.5,
-        borderColor: '#CBD5E1',
-        borderRadius: 12,
-        alignItems: 'center',
-        backgroundColor: '#FFF',
+        flex: 1, paddingVertical: 11, borderWidth: 1.5, borderColor: '#DDD6FE',
+        borderRadius: 14, alignItems: 'center', backgroundColor: '#FAFAF9',
     },
-    surveyBtnActive: {
-        borderColor: '#7C3AED',
-        backgroundColor: '#F5F3FF',
-    },
-    surveyBtnText: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#64748B',
-    },
-    surveyBtnTextActive: {
-        color: '#7C3AED',
-        fontWeight: '800',
-    },
+    surveyBtnActive: { borderColor: '#7C3AED', backgroundColor: '#EDE9FE' },
+    surveyBtnText: { fontSize: 13, fontWeight: '600', color: '#475569' },
+    surveyBtnTextActive: { color: '#7C3AED', fontWeight: '800' },
     submitSurveyBtn: {
-        backgroundColor: '#7C3AED',
-        paddingVertical: 14,
-        borderRadius: 16,
-        alignItems: 'center',
-        marginTop: 20,
+        backgroundColor: '#7C3AED', paddingVertical: 15, borderRadius: 20,
+        alignItems: 'center', marginTop: 20, elevation: 3,
+        shadowColor: '#7C3AED', shadowOpacity: 0.2, shadowRadius: 8,
     },
-    submitSurveyBtnText: {
-        color: '#FFF',
-        fontWeight: '800',
-        fontSize: 15,
-    },
+    submitSurveyBtnText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
+
+    // Results modal
     resultsModalContent: {
-        backgroundColor: '#FFF',
-        borderRadius: 32,
-        padding: 24,
-        width: width - 40,
-        alignItems: 'center',
+        backgroundColor: '#FFF', borderRadius: 32, padding: 24,
+        width: width - 40, alignItems: 'center',
+        elevation: 8, shadowColor: '#7C3AED', shadowOpacity: 0.1,
+        shadowRadius: 24, shadowOffset: { width: 0, height: 12 },
     },
-    resultsInfoBlock: {
-        width: '100%',
-        marginVertical: 16,
-    },
-    resultsRowText: {
-        fontSize: 14,
-        color: '#475569',
-        marginVertical: 4,
-    },
-    dividerLine: {
-        height: 1.5,
-        backgroundColor: '#F1F5F9',
-        marginVertical: 12,
-    },
-    resultsFeedbackTitle: {
-        fontSize: 15,
-        fontWeight: '800',
-        color: '#1E293B',
-        marginBottom: 6,
-    },
+    resultsInfoBlock: { width: '100%', marginVertical: 16 },
+    resultsRowText: { fontSize: 14, color: '#475569', marginVertical: 5, lineHeight: 20 },
+    dividerLine: { height: 1.5, backgroundColor: '#F1F5F9', marginVertical: 14 },
+    resultsFeedbackTitle: { fontSize: 15, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
     resultsFeedbackText: {
-        fontSize: 14,
-        color: '#475569',
-        lineHeight: 20,
-        fontStyle: 'italic',
-        backgroundColor: '#F8FAFC',
-        padding: 12,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#E2E8F0',
+        fontSize: 13, color: '#475569', lineHeight: 20, fontStyle: 'italic',
+        backgroundColor: '#F5F3FF', padding: 14, borderRadius: 16,
+        borderWidth: 1, borderColor: '#DDD6FE',
     },
     resultsCloseBtn: {
-        backgroundColor: '#7C3AED',
-        width: '100%',
-        paddingVertical: 12,
-        borderRadius: 16,
-        alignItems: 'center',
+        backgroundColor: '#7C3AED', width: '100%', paddingVertical: 14,
+        borderRadius: 20, alignItems: 'center', elevation: 3,
+        shadowColor: '#7C3AED', shadowOpacity: 0.2, shadowRadius: 8,
     },
-    resultsCloseBtnText: {
-        color: '#FFF',
-        fontWeight: '700',
-        fontSize: 15,
-    },
+    resultsCloseBtnText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
+
+    // View progress banner
     viewProgressBtn: {
-        marginHorizontal: 20,
-        marginVertical: 14,
-        borderRadius: 24,
-        overflow: 'hidden',
-        elevation: 4,
-        shadowColor: '#7C3AED',
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 4 },
+        marginVertical: 14, borderRadius: 24, overflow: 'hidden', elevation: 5,
+        shadowColor: '#7C3AED', shadowOpacity: 0.18, shadowRadius: 12,
+        shadowOffset: { width: 0, height: 5 },
     },
-    viewProgressBtnGrad: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 18,
-        gap: 14,
-    },
-    viewProgressBtnEmoji: {
-        fontSize: 28,
-        color: '#FFF',
-    },
-    viewProgressBtnTitle: {
-        fontSize: 15,
-        fontWeight: '900',
-        color: '#FFF',
-    },
-    viewProgressBtnSub: {
-        fontSize: 11,
-        color: 'rgba(255, 255, 255, 0.85)',
-        marginTop: 2,
-    },
+    viewProgressBtnGrad: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16 },
+    viewProgressBtnEmoji: { fontSize: 30 },
+    viewProgressBtnTitle: { fontSize: 15, fontWeight: '900', color: '#FFF' },
+    viewProgressBtnSub: { fontSize: 11, color: 'rgba(255,255,255,0.85)', marginTop: 3 },
+
+    // Daily health prompt modal
     promptModalContent: {
-        backgroundColor: '#FFF',
-        borderRadius: 32,
-        padding: 24,
-        width: width - 40,
-        alignItems: 'center',
-        elevation: 5,
+        backgroundColor: '#FFF', borderRadius: 32, padding: 26,
+        width: width - 40, alignItems: 'center', elevation: 8,
+        shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.1, shadowRadius: 20,
     },
-    promptEmoji: {
-        fontSize: 44,
-        marginBottom: 10,
-    },
-    promptTitle: {
-        fontSize: 18,
-        fontWeight: '900',
-        color: '#1E293B',
-        marginBottom: 8,
-        textAlign: 'center',
-    },
-    promptSubtitle: {
-        fontSize: 13,
-        color: '#64748B',
-        textAlign: 'center',
-        lineHeight: 18,
-        marginBottom: 20,
-    },
-    promptBtnRow: {
-        flexDirection: 'row',
-        gap: 12,
-        width: '100%',
-    },
+    promptEmoji: { fontSize: 48, marginBottom: 12 },
+    promptTitle: { fontSize: 18, fontWeight: '900', color: '#1E293B', marginBottom: 8, textAlign: 'center' },
+    promptSubtitle: { fontSize: 13, color: '#64748B', textAlign: 'center', lineHeight: 20, marginBottom: 22 },
+    promptBtnRow: { flexDirection: 'row', gap: 12, width: '100%' },
     promptBtn: {
-        flex: 1,
-        paddingVertical: 14,
-        paddingHorizontal: 8,
-        borderRadius: 20,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 1.5,
+        flex: 1, paddingVertical: 14, paddingHorizontal: 8, borderRadius: 20,
+        alignItems: 'center', justifyContent: 'center', borderWidth: 1.5,
     },
-    thumbsUpBtn: {
-        backgroundColor: '#F5F3FF',
-        borderColor: '#7C3AED',
+    thumbsUpBtn: { backgroundColor: '#F5F3FF', borderColor: '#7C3AED' },
+    thumbsDownBtn: { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' },
+    promptBtnEmoji: { fontSize: 28, marginBottom: 5 },
+    promptBtnTextActive: { color: '#7C3AED', fontWeight: '800', fontSize: 12, textAlign: 'center' },
+    promptBtnText: { color: '#64748B', fontWeight: '700', fontSize: 12, textAlign: 'center' },
+
+    // Tab switcher
+    tabContainer: {
+        flexDirection: 'row', backgroundColor: 'rgba(109,40,217,0.06)',
+        borderRadius: 20, padding: 4, marginBottom: 16,
     },
-    thumbsDownBtn: {
-        backgroundColor: '#F8FAFC',
-        borderColor: '#CBD5E1',
+    tabButton: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 16 },
+    tabButtonActive: {
+        backgroundColor: '#FFF', elevation: 3, shadowColor: '#7C3AED',
+        shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 3 },
     },
-    promptBtnEmoji: {
-        fontSize: 26,
-        marginBottom: 4,
+    tabText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
+    tabTextActive: { color: '#7C3AED', fontWeight: '900' },
+
+    // Stopwatch
+    stopwatchContainer: {
+        width: '100%', alignItems: 'center', backgroundColor: '#F5F3FF',
+        borderRadius: 20, padding: 18, marginVertical: 14,
+        borderWidth: 1.5, borderColor: '#DDD6FE',
     },
-    promptBtnTextActive: {
-        color: '#7C3AED',
-        fontWeight: '800',
-        fontSize: 12,
-        textAlign: 'center',
+    stopwatchLabel: { fontSize: 13, fontWeight: '700', color: '#7C3AED', marginBottom: 6 },
+    stopwatchDisplay: {
+        fontSize: 36, fontWeight: '900', color: '#1E293B',
+        letterSpacing: 3, marginBottom: 16, fontVariant: ['tabular-nums'],
     },
-    promptBtnText: {
-        color: '#64748B',
-        fontWeight: '700',
-        fontSize: 12,
-        textAlign: 'center',
+    stopwatchRow: { flexDirection: 'row', gap: 10, width: '100%' },
+    controlBtn: {
+        flex: 1, paddingVertical: 13, borderRadius: 16,
+        alignItems: 'center', justifyContent: 'center', elevation: 2,
     },
+    startBtn: { backgroundColor: '#10B981', shadowColor: '#10B981', shadowOpacity: 0.25, shadowRadius: 6 },
+    pauseBtn: { backgroundColor: '#F59E0B', shadowColor: '#F59E0B', shadowOpacity: 0.25, shadowRadius: 6 },
+    stopBtn: { backgroundColor: '#EF4444', shadowColor: '#EF4444', shadowOpacity: 0.25, shadowRadius: 6 },
+    controlBtnText: { color: '#FFF', fontWeight: '800', fontSize: 13 },
+
+    // Misc
     playIconButton: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
-        backgroundColor: '#7C3AED',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginLeft: 8,
-        elevation: 3,
-        shadowColor: '#7C3AED',
-        shadowOpacity: 0.3,
-        shadowRadius: 6,
+        width: 40, height: 40, borderRadius: 20, backgroundColor: '#7C3AED',
+        alignItems: 'center', justifyContent: 'center', marginLeft: 8, elevation: 3,
+        shadowColor: '#7C3AED', shadowOpacity: 0.3, shadowRadius: 6,
         shadowOffset: { height: 2, width: 0 },
     },
-    playIconText: {
-        fontSize: 16,
-        color: '#FFF',
-    },
+    playIconText: { fontSize: 16, color: '#FFF' },
 });
