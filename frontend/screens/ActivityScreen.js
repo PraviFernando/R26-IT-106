@@ -3021,18 +3021,22 @@ const ActivityScreen = ({ navigation, route }) => {
   };
 
   const goBack = () => {
-    if (route?.params?.gameId || route?.params?.activityId || route?.params?.fromRecommendations) {
+    if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
+      navigation.navigate('Recommendations');
+      return;
+    }
+    if (route?.params?.gameId || route?.params?.activityId) {
       if (navigation.canGoBack()) {
         navigation.goBack();
       } else {
-        navigation.navigate('Recommendations');
+        navigation.navigate('Home');
       }
-    } else {
-      setView('list');
-      setSelAct(null);
-      setSelGame(null);
-      setDone(false);
+      return;
     }
+    setView('list');
+    setSelAct(null);
+    setSelGame(null);
+    setDone(false);
   };
 
   const renderGame = (id) => {

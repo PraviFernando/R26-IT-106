@@ -1335,7 +1335,7 @@ const ArtCard = ({ item, onPress }) => {
 // ================================================================
 //  MAIN SCREEN
 // ================================================================
-const ArtScreen = ({ navigation }) => {
+const ArtScreen = ({ navigation, route }) => {
   const [tab, setTab] = useState('mandala');
   const [selected, setSelected] = useState(null);
 
@@ -1366,7 +1366,15 @@ const ArtScreen = ({ navigation }) => {
       <LinearGradient colors={['#F8F4FF', '#FFF0F8']} style={s.flex}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
-          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+          <TouchableOpacity onPress={() => {
+            if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
+              navigation.navigate('Recommendations');
+            } else if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('Home');
+            }
+          }} style={s.backBtn}>
             <Text style={s.backTxt}>← ආපසු</Text>
           </TouchableOpacity>
 
