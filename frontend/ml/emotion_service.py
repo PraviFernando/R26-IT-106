@@ -291,9 +291,30 @@ def get_recommendations(risk, reason, emotion):
                 return []
             return [x.strip() for x in str(val).split(",") if x.strip()]
 
+        raw_acts = split_csv(row.get("recommended_activities"))
+        acts = []
+        for a in raw_acts:
+            if a in ["baby_bonding", "new_baby_interaction_ideas"]:
+                if "baby_mood" not in acts:
+                    acts.append("baby_mood")
+            else:
+                acts.append(a)
+
+        raw_games = split_csv(row.get("recommended_games"))
+        games = []
+        for g in raw_games:
+            if g in ["baby_bonding", "new_baby_interaction_ideas"]:
+                if "baby_mood" not in games:
+                    games.append("baby_mood")
+            else:
+                games.append(g)
+
+        if ("baby" in reason or reason in ["bonding_issues", "caring_for_baby", "baby_crying", "baby_feeding", "baby_sleep"]) and "baby_mood" not in acts:
+            acts.insert(0, "baby_mood")
+
         return {
-            "activities": split_csv(row.get("recommended_activities")),
-            "games": split_csv(row.get("recommended_games")),
+            "activities": acts,
+            "games": games,
             "music": split_csv(row.get("recommended_music")),
             "videos": split_csv(row.get("recommended_videos")),
             # Keep videoUrl for backward compatibility (first video in list)

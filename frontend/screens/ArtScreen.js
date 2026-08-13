@@ -27,11 +27,11 @@ const CANVAS_H = CANVAS_W; // square
 //  PALETTE  (5 rows × 8 cols — matches coloringonline.com style)
 // ================================================================
 const PALETTE_ROWS = [
-  ['#FF0000','#FF6600','#FF9900','#FFCC00','#FFFF00','#CCFF00','#00FF00','#00FF99'],
-  ['#00FFFF','#00CCFF','#0099FF','#0033FF','#3300FF','#9900FF','#FF00FF','#FF0099'],
-  ['#FF6699','#FFAACC','#FFCCAA','#FFEEAA','#CCFFAA','#AAFFEE','#AACCFF','#CCAAFF'],
-  ['#993300','#996600','#669900','#006666','#003399','#330099','#990066','#660033'],
-  ['#FFFFFF','#DDDDDD','#BBBBBB','#888888','#555555','#333333','#111111','#000000'],
+  ['#FF0000', '#FF6600', '#FF9900', '#FFCC00', '#FFFF00', '#CCFF00', '#00FF00', '#00FF99'],
+  ['#00FFFF', '#00CCFF', '#0099FF', '#0033FF', '#3300FF', '#9900FF', '#FF00FF', '#FF0099'],
+  ['#FF6699', '#FFAACC', '#FFCCAA', '#FFEEAA', '#CCFFAA', '#AAFFEE', '#AACCFF', '#CCAAFF'],
+  ['#993300', '#996600', '#669900', '#006666', '#003399', '#330099', '#990066', '#660033'],
+  ['#FFFFFF', '#DDDDDD', '#BBBBBB', '#888888', '#555555', '#333333', '#111111', '#000000'],
 ];
 
 // ================================================================
@@ -43,8 +43,8 @@ const PALETTE_ROWS = [
 // ── MANDALAS ──────────────────────────────────────────────────
 const MANDALAS = [
   {
-    id:'m1', name:'මල් මණ්ඩලය', nameEn:'Flower Mandala', icon:'🌸', bg:'#FFF5FF',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'm1', name: 'මල් මණ්ඩලය', nameEn: 'Flower Mandala', icon: '🌸', bg: '#FFF5FF',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <circle cx="200" cy="200" r="192" fill="none" stroke="#111" stroke-width="3"/>
 <circle cx="200" cy="200" r="155" fill="none" stroke="#222" stroke-width="1.2"/>
@@ -98,8 +98,8 @@ const MANDALAS = [
 </svg>`,
   },
   {
-    id:'m2', name:'ලෝටස් මණ්ඩලය', nameEn:'Lotus Mandala', icon:'🪷', bg:'#FFF0F8',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'm2', name: 'ලෝටස් මණ්ඩලය', nameEn: 'Lotus Mandala', icon: '🪷', bg: '#FFF0F8',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <circle cx="200" cy="200" r="192" fill="none" stroke="#111" stroke-width="3"/>
 <circle cx="200" cy="200" r="150" fill="none" stroke="#333" stroke-width="1"/>
@@ -127,8 +127,8 @@ const MANDALAS = [
 </svg>`,
   },
   {
-    id:'m3', name:'ස්ටාර් මණ්ඩලය', nameEn:'Star Mandala', icon:'⭐', bg:'#FFFFF0',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'm3', name: 'ස්ටාර් මණ්ඩලය', nameEn: 'Star Mandala', icon: '⭐', bg: '#FFFFF0',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <circle cx="200" cy="200" r="192" fill="none" stroke="#111" stroke-width="3"/>
 <!-- 12 star points -->
@@ -164,8 +164,8 @@ const MANDALAS = [
 </svg>`,
   },
   {
-    id:'m4', name:'රෝස මණ්ඩලය', nameEn:'Rose Mandala', icon:'🌹', bg:'#FFF5F5',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'm4', name: 'රෝස මණ්ඩලය', nameEn: 'Rose Mandala', icon: '🌹', bg: '#FFF5F5',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <circle cx="200" cy="200" r="192" fill="none" stroke="#111" stroke-width="3"/>
 <!-- 12 rose petals -->
@@ -202,8 +202,8 @@ const MANDALAS = [
 </svg>`,
   },
   {
-    id:'m5', name:'සූර්ය මණ්ඩලය', nameEn:'Sun Mandala', icon:'☀️', bg:'#FFFDE7',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'm5', name: 'සූර්ය මණ්ඩලය', nameEn: 'Sun Mandala', icon: '☀️', bg: '#FFFDE7',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <circle cx="200" cy="200" r="192" fill="none" stroke="#111" stroke-width="3"/>
 <!-- 16 sun rays -->
@@ -243,8 +243,8 @@ const MANDALAS = [
 </svg>`,
   },
   {
-    id:'m6', name:'ක්‍රිස්ටල් මණ්ඩලය', nameEn:'Crystal Mandala', icon:'💎', bg:'#F0F4FF',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'm6', name: 'ක්‍රිස්ටල් මණ්ඩලය', nameEn: 'Crystal Mandala', icon: '💎', bg: '#F0F4FF',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <circle cx="200" cy="200" r="192" fill="none" stroke="#111" stroke-width="3"/>
 <!-- 12 crystal spikes -->
@@ -274,8 +274,8 @@ const MANDALAS = [
 </svg>`,
   },
   {
-    id:'m7', name:'සාගර මණ්ඩලය', nameEn:'Ocean Mandala', icon:'🌊', bg:'#F0FFFE',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'm7', name: 'සාගර මණ්ඩලය', nameEn: 'Ocean Mandala', icon: '🌊', bg: '#F0FFFE',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <circle cx="200" cy="200" r="192" fill="none" stroke="#111" stroke-width="3"/>
 <!-- 10 wave-drops -->
@@ -305,8 +305,8 @@ const MANDALAS = [
 </svg>`,
   },
   {
-    id:'m8', name:'සමනළ මණ්ඩලය', nameEn:'Butterfly Mandala', icon:'🦋', bg:'#F8F0FF',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'm8', name: 'සමනළ මණ්ඩලය', nameEn: 'Butterfly Mandala', icon: '🦋', bg: '#F8F0FF',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <circle cx="200" cy="200" r="192" fill="none" stroke="#111" stroke-width="3"/>
 <!-- 4 large butterfly wings -->
@@ -331,8 +331,8 @@ const MANDALAS = [
 </svg>`,
   },
   {
-    id:'m9', name:'සාම මණ්ඩලය', nameEn:'Peace Mandala', icon:'🕊️', bg:'#F0FFF4',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'm9', name: 'සාම මණ්ඩලය', nameEn: 'Peace Mandala', icon: '🕊️', bg: '#F0FFF4',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <circle cx="200" cy="200" r="192" fill="none" stroke="#111" stroke-width="3"/>
 <circle cx="200" cy="200" r="152" fill="none" stroke="#333" stroke-width="1"/>
@@ -376,8 +376,8 @@ const MANDALAS = [
 </svg>`,
   },
   {
-    id:'m10', name:'උයන් මණ්ඩලය', nameEn:'Garden Mandala', icon:'🌼', bg:'#FFFEF0',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'm10', name: 'උයන් මණ්ඩලය', nameEn: 'Garden Mandala', icon: '🌼', bg: '#FFFEF0',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <circle cx="200" cy="200" r="192" fill="none" stroke="#111" stroke-width="3"/>
 <!-- 8 large leaf-petals with inner -->
@@ -407,8 +407,8 @@ const MANDALAS = [
 // ── COLOURING PAGES ──────────────────────────────────────────
 const COLOUR_PAGES = [
   {
-    id:'c1', name:'ආදරේ බඳුන', nameEn:'Hearts in a Jar', icon:'🫙', bg:'#FFF0F5',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420">
+    id: 'c1', name: 'ආදරේ බඳුන', nameEn: 'Hearts in a Jar', icon: '🫙', bg: '#FFF0F5',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420">
 <rect width="400" height="420" fill="white"/>
 <!-- Jar body -->
 <path d="M108,152 Q86,206 86,282 Q86,366 200,374 Q314,366 314,282 Q314,206 292,152Z" fill="white" stroke="#111" stroke-width="3"/>
@@ -444,8 +444,8 @@ const COLOUR_PAGES = [
 </svg>`,
   },
   {
-    id:'c2', name:'ආදර හදවත', nameEn:'Heart in Basket', icon:'🧺', bg:'#FFF5F0',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420">
+    id: 'c2', name: 'ආදර හදවත', nameEn: 'Heart in Basket', icon: '🧺', bg: '#FFF5F0',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420">
 <rect width="400" height="420" fill="white"/>
 <!-- Basket body -->
 <path d="M86,252 Q74,314 80,368 Q86,402 200,408 Q314,402 320,368 Q326,314 314,252Z" fill="white" stroke="#111" stroke-width="3"/>
@@ -496,8 +496,8 @@ const COLOUR_PAGES = [
 </svg>`,
   },
   {
-    id:'c3', name:'ජ්‍යාමිතික හදවත', nameEn:'Geometric Heart', icon:'💎', bg:'#FFF0F5',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420">
+    id: 'c3', name: 'ජ්‍යාමිතික හදවත', nameEn: 'Geometric Heart', icon: '💎', bg: '#FFF0F5',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420">
 <rect width="400" height="420" fill="white"/>
 <path d="M200,378 L26,198 L26,116 L90,52 L166,52 L200,94 L234,52 L310,52 L374,116 L374,198 Z" fill="white" stroke="#111" stroke-width="3"/>
 <!-- Left top facets -->
@@ -536,8 +536,8 @@ const COLOUR_PAGES = [
 </svg>`,
   },
   {
-    id:'c4', name:'ළදරු කෑම', nameEn:'Baby Eating', icon:'👶', bg:'#FFFFF0',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 460">
+    id: 'c4', name: 'ළදරු කෑම', nameEn: 'Baby Eating', icon: '👶', bg: '#FFFFF0',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 460">
 <rect width="400" height="460" fill="white"/>
 <!-- Highchair legs -->
 <rect x="94" y="292" width="20" height="148" rx="7" fill="white" stroke="#111" stroke-width="2.5"/>
@@ -597,8 +597,8 @@ const COLOUR_PAGES = [
 </svg>`,
   },
   {
-    id:'c5', name:'ළදරු රෙදිකොළ', nameEn:'Baby Bunny', icon:'🐰', bg:'#FFF5FF',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 430">
+    id: 'c5', name: 'ළදරු රෙදිකොළ', nameEn: 'Baby Bunny', icon: '🐰', bg: '#FFF5FF',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 430">
 <rect width="400" height="430" fill="white"/>
 <!-- Left ear -->
 <ellipse cx="144" cy="86" rx="32" ry="74" fill="white" stroke="#111" stroke-width="2.5"/>
@@ -654,8 +654,8 @@ const COLOUR_PAGES = [
 </svg>`,
   },
   {
-    id:'c6', name:'සිනාසෙන මුහුණ', nameEn:'Happy Baby Face', icon:'😊', bg:'#FFF9E8',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    id: 'c6', name: 'සිනාසෙන මුහුණ', nameEn: 'Happy Baby Face', icon: '😊', bg: '#FFF9E8',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
 <rect width="400" height="400" fill="white"/>
 <!-- Background stars -->
 <polygon points="48,50 52,38 56,50 44,43 60,43" fill="white" stroke="#111" stroke-width="1.5"/>
@@ -702,8 +702,8 @@ const COLOUR_PAGES = [
 </svg>`,
   },
   {
-    id:'c7', name:'ළදරු ඇතා', nameEn:'Baby Elephant', icon:'🐘', bg:'#F0F8FF',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 380">
+    id: 'c7', name: 'ළදරු ඇතා', nameEn: 'Baby Elephant', icon: '🐘', bg: '#F0F8FF',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 380">
 <rect width="400" height="380" fill="white"/>
 <!-- Ground -->
 <path d="M0,322 Q200,308 400,322 L400,380 L0,380 Z" fill="white" stroke="#111" stroke-width="2"/>
@@ -764,8 +764,8 @@ const COLOUR_PAGES = [
 </svg>`,
   },
   {
-    id:'c8', name:'ළදරු බළලා', nameEn:'Cute Cat', icon:'🐱', bg:'#FFF8F0',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420">
+    id: 'c8', name: 'ළදරු බළලා', nameEn: 'Cute Cat', icon: '🐱', bg: '#FFF8F0',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420">
 <rect width="400" height="420" fill="white"/>
 <!-- Moon -->
 <path d="M346,56 Q328,78 336,102 Q358,112 372,96 Q360,68 346,56Z" fill="white" stroke="#111" stroke-width="2"/>
@@ -830,8 +830,8 @@ const COLOUR_PAGES = [
 </svg>`,
   },
   {
-    id:'c9', name:'අම්මා සහ ළදරු', nameEn:'Mother and Baby', icon:'🤱', bg:'#FFF5F8',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 450">
+    id: 'c9', name: 'අම්මා සහ ළදරු', nameEn: 'Mother and Baby', icon: '🤱', bg: '#FFF5F8',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 450">
 <rect width="400" height="450" fill="white"/>
 <!-- Floating hearts -->
 <path d="M342,64 Q349,52 358,58 Q366,64 366,74 Q366,84 342,98 Q318,84 318,74 Q318,64 326,58 Q335,52 342,64Z" fill="white" stroke="#111" stroke-width="2"/>
@@ -886,8 +886,8 @@ const COLOUR_PAGES = [
 </svg>`,
   },
   {
-    id:'c10', name:'ආදර ගස', nameEn:'Love Tree', icon:'🌳', bg:'#F5FFF5',
-    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420">
+    id: 'c10', name: 'ආදර ගස', nameEn: 'Love Tree', icon: '🌳', bg: '#F5FFF5',
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420">
 <rect width="400" height="420" fill="white"/>
 <!-- Sun -->
 <circle cx="330" cy="58" r="42" fill="white" stroke="#111" stroke-width="2.5"/>
@@ -1161,10 +1161,10 @@ window.receiveMessage = applyMsg;
 //  COLOUR CANVAS COMPONENT
 // ================================================================
 const ColourCanvas = ({ design }) => {
-  const iframeRef    = useRef(null);
-  const [selCol,     setSelCol]     = useState('#FF0000');
-  const [progress,   setProgress]   = useState(0);
-  const [iframeSrc,  setIframeSrc]  = useState('');
+  const iframeRef = useRef(null);
+  const [selCol, setSelCol] = useState('#FF0000');
+  const [progress, setProgress] = useState(0);
+  const [iframeSrc, setIframeSrc] = useState('');
   const isWeb = Platform.OS === 'web';
 
   // Rebuild blob URL whenever design changes
@@ -1172,7 +1172,7 @@ const ColourCanvas = ({ design }) => {
     if (!isWeb) return;
     const html = buildColourHTML(design.svg);
     const blob = new Blob([html], { type: 'text/html' });
-    const url  = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     setIframeSrc(url);
     setProgress(0);
     return () => URL.revokeObjectURL(url);
@@ -1185,7 +1185,7 @@ const ColourCanvas = ({ design }) => {
       try {
         const msg = JSON.parse(e.data);
         if (msg.type === 'progress') setProgress(msg.value);
-      } catch {}
+      } catch { }
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
@@ -1197,10 +1197,10 @@ const ColourCanvas = ({ design }) => {
     }
   }, [isWeb]);
 
-  const pickColor = (col) => { setSelCol(col); send({ type:'setColor', color: col }); };
-  const undo  = () => send({ type:'undo' });
-  const redo  = () => send({ type:'redo' });
-  const reset = () => { setProgress(0); send({ type:'reset' }); };
+  const pickColor = (col) => { setSelCol(col); send({ type: 'setColor', color: col }); };
+  const undo = () => send({ type: 'undo' });
+  const redo = () => send({ type: 'redo' });
+  const reset = () => { setProgress(0); send({ type: 'reset' }); };
 
   const handlePrint = () => {
     if (isWeb) { iframeRef.current?.contentWindow?.print(); return; }
@@ -1228,7 +1228,7 @@ const ColourCanvas = ({ design }) => {
           <iframe
             ref={iframeRef}
             src={iframeSrc}
-            style={{ width:'100%', height:'100%', border:'none', borderRadius:12, display:'block' }}
+            style={{ width: '100%', height: '100%', border: 'none', borderRadius: 12, display: 'block' }}
             title={design.nameEn}
             sandbox="allow-scripts allow-same-origin"
           />
@@ -1276,7 +1276,7 @@ const ColourCanvas = ({ design }) => {
         </TouchableOpacity>
         {progress > 5 && (
           <TouchableOpacity onPress={handlePrint} style={cv.printBtn}>
-            <LinearGradient colors={['#7E57C2','#E91E8C']} style={cv.printBtnIn}>
+            <LinearGradient colors={['#7E57C2', '#E91E8C']} style={cv.printBtnIn}>
               <Text style={cv.printTxt}>🖨️ Print</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -1284,7 +1284,7 @@ const ColourCanvas = ({ design }) => {
       </View>
 
       {progress >= 60 && (
-        <LinearGradient colors={['#EDE7F6','#FCE4EC']} style={cv.doneCard}>
+        <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={cv.doneCard}>
           <Text style={cv.doneTxt}>✨ ලස්සනයි! ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ! 💜</Text>
         </LinearGradient>
       )}
@@ -1314,9 +1314,8 @@ const ArtCard = ({ item, onPress }) => {
             boxShadow: '0 2px 8px rgba(126,87,194,.12)',
           }}
           dangerouslySetInnerHTML={{
-            __html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="118" height="118">${
-              item.svg.replace(/<svg[^>]*>/, '').replace('</svg>','')
-            }</svg>`,
+            __html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="118" height="118">${item.svg.replace(/<svg[^>]*>/, '').replace('</svg>', '')
+              }</svg>`,
           }}
         />
       ) : (
@@ -1337,7 +1336,7 @@ const ArtCard = ({ item, onPress }) => {
 //  MAIN SCREEN
 // ================================================================
 const ArtScreen = ({ navigation }) => {
-  const [tab,      setTab]      = useState('mandala');
+  const [tab, setTab] = useState('mandala');
   const [selected, setSelected] = useState(null);
 
   const items = tab === 'mandala' ? MANDALAS : COLOUR_PAGES;
@@ -1346,7 +1345,7 @@ const ArtScreen = ({ navigation }) => {
   if (selected) {
     return (
       <View style={s.root}>
-        <LinearGradient colors={['#F8F4FF','#FFF0F8']} style={s.flex}>
+        <LinearGradient colors={['#F8F4FF', '#FFF0F8']} style={s.flex}>
           <ScrollView contentContainerStyle={s.scroll} bounces={false}>
             <TouchableOpacity onPress={() => setSelected(null)} style={s.backBtn}>
               <Text style={s.backTxt}>← ආපසු</Text>
@@ -1364,7 +1363,7 @@ const ArtScreen = ({ navigation }) => {
   // ── Gallery view ──
   return (
     <View style={s.root}>
-      <LinearGradient colors={['#F8F4FF','#FFF0F8']} style={s.flex}>
+      <LinearGradient colors={['#F8F4FF', '#FFF0F8']} style={s.flex}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
           <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
@@ -1384,7 +1383,7 @@ const ArtScreen = ({ navigation }) => {
 
           {/* Tab switcher */}
           <View style={s.tabRow}>
-            {['mandala','colouring'].map(t => (
+            {['mandala', 'colouring'].map(t => (
               <TouchableOpacity
                 key={t}
                 style={[s.tab, tab === t && s.tabOn]}
@@ -1415,67 +1414,81 @@ const ArtScreen = ({ navigation }) => {
 //  STYLES
 // ================================================================
 const s = StyleSheet.create({
-  root:      { flex:1 },
-  flex:      { flex:1 },
-  scroll:    { paddingHorizontal:16, paddingTop:52 },
-  backBtn:   { marginBottom:12, alignSelf:'flex-start' },
-  backTxt:   { color:'#7E57C2', fontWeight:'700', fontSize:16 },
-  pageTitle: { fontSize:22, fontWeight:'900', color:'#3D2A5E', marginBottom:4 },
-  pageSub:   { fontSize:13, color:'#7B6A99', marginBottom:12 },
-  howTo:     { backgroundColor:'#EDE7F6', borderRadius:14, padding:12, marginBottom:14 },
-  howToTxt:  { fontSize:12, color:'#5C3D9A', lineHeight:19 },
-  tabRow:    { flexDirection:'row', gap:10, marginBottom:16 },
-  tab:       { flex:1, paddingVertical:12, borderRadius:999, backgroundColor:'white', alignItems:'center',
-               shadowColor:'#9C7CC0', shadowOffset:{width:0,height:3}, shadowOpacity:0.1, elevation:3 },
-  tabOn:     { backgroundColor:'#7E57C2' },
-  tabTxt:    { fontSize:13, fontWeight:'700', color:'#7B6A99' },
-  tabTxtOn:  { color:'white' },
-  grid:      { flexDirection:'row', flexWrap:'wrap', gap:12 },
+  root: { flex: 1 },
+  flex: { flex: 1 },
+  scroll: { paddingHorizontal: 16, paddingTop: 52 },
+  backBtn: { marginBottom: 12, alignSelf: 'flex-start' },
+  backTxt: { color: '#7E57C2', fontWeight: '700', fontSize: 16 },
+  pageTitle: { fontSize: 22, fontWeight: '900', color: '#3D2A5E', marginBottom: 4 },
+  pageSub: { fontSize: 13, color: '#7B6A99', marginBottom: 12 },
+  howTo: { backgroundColor: '#EDE7F6', borderRadius: 14, padding: 12, marginBottom: 14 },
+  howToTxt: { fontSize: 12, color: '#5C3D9A', lineHeight: 19 },
+  tabRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  tab: {
+    flex: 1, paddingVertical: 12, borderRadius: 999, backgroundColor: 'white', alignItems: 'center',
+    shadowColor: '#9C7CC0', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, elevation: 3
+  },
+  tabOn: { backgroundColor: '#7E57C2' },
+  tabTxt: { fontSize: 13, fontWeight: '700', color: '#7B6A99' },
+  tabTxtOn: { color: 'white' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
 });
 
 const gc = StyleSheet.create({
-  card:     { width:(SCREEN_W-44)/2, borderRadius:20, padding:12, alignItems:'center',
-              shadowColor:'#7E57C2', shadowOffset:{width:0,height:4}, shadowOpacity:0.12, elevation:3 },
-  emojiBox: { width:118, height:118, backgroundColor:'white', borderRadius:12,
-              justifyContent:'center', alignItems:'center', marginBottom:8 },
-  emoji:    { fontSize:52 },
-  name:     { fontSize:12, fontWeight:'800', color:'#3D2A5E', textAlign:'center', marginBottom:2 },
-  sub:      { fontSize:10, color:'#B0A4CC', textAlign:'center', marginBottom:10 },
-  startBtn: { backgroundColor:'#7E57C2', borderRadius:999, paddingVertical:7, paddingHorizontal:18 },
-  startTxt: { fontSize:12, fontWeight:'800', color:'white' },
+  card: {
+    width: (SCREEN_W - 44) / 2, borderRadius: 20, padding: 12, alignItems: 'center',
+    shadowColor: '#7E57C2', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, elevation: 3
+  },
+  emojiBox: {
+    width: 118, height: 118, backgroundColor: 'white', borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 8
+  },
+  emoji: { fontSize: 52 },
+  name: { fontSize: 12, fontWeight: '800', color: '#3D2A5E', textAlign: 'center', marginBottom: 2 },
+  sub: { fontSize: 10, color: '#B0A4CC', textAlign: 'center', marginBottom: 10 },
+  startBtn: { backgroundColor: '#7E57C2', borderRadius: 999, paddingVertical: 7, paddingHorizontal: 18 },
+  startTxt: { fontSize: 12, fontWeight: '800', color: 'white' },
 });
 
 const cv = StyleSheet.create({
-  container:  { width:'100%', alignItems:'center' },
-  progRow:    { flexDirection:'row', alignItems:'center', gap:8, marginBottom:6, width:'100%' },
-  progBg:     { flex:1, height:7, backgroundColor:'#EDE7F6', borderRadius:4, overflow:'hidden' },
-  progFill:   { height:7, backgroundColor:'#7E57C2', borderRadius:4 },
-  progPct:    { fontSize:12, color:'#7E57C2', fontWeight:'700', width:38, textAlign:'right' },
-  tip:        { fontSize:11, color:'#9E88CC', fontStyle:'italic', textAlign:'center',
-               marginBottom:8, width:'100%', lineHeight:16 },
-  canvasWrap: { borderRadius:12, overflow:'hidden', backgroundColor:'white', marginBottom:14,
-               alignSelf:'center',
-               shadowColor:'#7E57C2', shadowOffset:{width:0,height:6}, shadowOpacity:0.16, elevation:6 },
-  nativeMsg:  { flex:1, justifyContent:'center', alignItems:'center', padding:20 },
-  nativeTxt:  { color:'#7B6A99', fontSize:13, textAlign:'center', lineHeight:22 },
+  container: { width: '100%', alignItems: 'center' },
+  progRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6, width: '100%' },
+  progBg: { flex: 1, height: 7, backgroundColor: '#EDE7F6', borderRadius: 4, overflow: 'hidden' },
+  progFill: { height: 7, backgroundColor: '#7E57C2', borderRadius: 4 },
+  progPct: { fontSize: 12, color: '#7E57C2', fontWeight: '700', width: 38, textAlign: 'right' },
+  tip: {
+    fontSize: 11, color: '#9E88CC', fontStyle: 'italic', textAlign: 'center',
+    marginBottom: 8, width: '100%', lineHeight: 16
+  },
+  canvasWrap: {
+    borderRadius: 12, overflow: 'hidden', backgroundColor: 'white', marginBottom: 14,
+    alignSelf: 'center',
+    shadowColor: '#7E57C2', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.16, elevation: 6
+  },
+  nativeMsg: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  nativeTxt: { color: '#7B6A99', fontSize: 13, textAlign: 'center', lineHeight: 22 },
   // Palette
-  palSection: { width:'100%', marginBottom:10 },
-  palTitle:   { fontSize:13, fontWeight:'700', color:'#7B6A99', marginBottom:6 },
-  palRow:     { flexDirection:'row', gap:3, marginBottom:3 },
-  swatch:     { flex:1, aspectRatio:1, borderRadius:4, minWidth:32, minHeight:32,
-               justifyContent:'center', alignItems:'center' },
-  swatchTick: { width:8, height:8, borderRadius:4, backgroundColor:'rgba(0,0,0,0.35)' },
+  palSection: { width: '100%', marginBottom: 10 },
+  palTitle: { fontSize: 13, fontWeight: '700', color: '#7B6A99', marginBottom: 6 },
+  palRow: { flexDirection: 'row', gap: 3, marginBottom: 3 },
+  swatch: {
+    flex: 1, aspectRatio: 1, borderRadius: 4, minWidth: 32, minHeight: 32,
+    justifyContent: 'center', alignItems: 'center'
+  },
+  swatchTick: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.35)' },
   // Toolbar
-  toolbar:    { flexDirection:'row', gap:8, width:'100%', marginBottom:10 },
-  toolBtn:    { flex:1, backgroundColor:'#F0ECF8', borderRadius:999,
-               paddingVertical:10, alignItems:'center' },
-  toolTxt:    { fontSize:12, color:'#7E57C2', fontWeight:'700' },
-  printBtn:   { flex:1, borderRadius:999, overflow:'hidden' },
-  printBtnIn: { paddingVertical:10, alignItems:'center' },
-  printTxt:   { color:'white', fontWeight:'800', fontSize:13 },
+  toolbar: { flexDirection: 'row', gap: 8, width: '100%', marginBottom: 10 },
+  toolBtn: {
+    flex: 1, backgroundColor: '#F0ECF8', borderRadius: 999,
+    paddingVertical: 10, alignItems: 'center'
+  },
+  toolTxt: { fontSize: 12, color: '#7E57C2', fontWeight: '700' },
+  printBtn: { flex: 1, borderRadius: 999, overflow: 'hidden' },
+  printBtnIn: { paddingVertical: 10, alignItems: 'center' },
+  printTxt: { color: 'white', fontWeight: '800', fontSize: 13 },
   // Done card
-  doneCard:   { borderRadius:16, padding:14, alignItems:'center', width:'100%' },
-  doneTxt:    { fontSize:15, fontWeight:'800', color:'#3D2A5E' },
+  doneCard: { borderRadius: 16, padding: 14, alignItems: 'center', width: '100%' },
+  doneTxt: { fontSize: 15, fontWeight: '800', color: '#3D2A5E' },
 });
 
 export default ArtScreen;

@@ -13,10 +13,10 @@
 //   Reason=LackSupp, Mood=Sad,      Risk=Low    → gratitude_writing + affirmation_game
 // ================================================================
 
-import { getEnhancedRecommendationRule, getPersonalizedRecommendations, isBabyRelatedReason } from './activitiesLibrary';
+import { getEnhancedRecommendationRule, getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent } from './activitiesLibrary';
 import { MUSIC_LIBRARY, VIDEO_LIBRARY } from './mediaLibrary';
 
-export { getPersonalizedRecommendations, isBabyRelatedReason };
+export { getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent };
 
 export const RISK = { LOW: 'low', MEDIUM: 'medium', HIGH: 'high' };
 
@@ -72,6 +72,33 @@ const SUPPORT_MESSAGES = {
   negative_thoughts:   ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
 };
 
+export const detectBabyIntents = (text = '') => {
+  if (!text || typeof text !== 'string') {
+    return { baby_related: false, baby_crying: false, baby_needs: false, baby_sleep: false, baby_feeding: false, baby_health: false };
+  }
+  const t = text.toLowerCase().replace(/['’]/g, '');
+  const isBabyRelated = isBabyRelatedContent(text);
+
+  const cryingKW = ['crying', 'cries', 'cry', 'andana', 'andanawa', 'අඬනවා', 'අඬන', 'අඬන බබා'];
+  const needsKW = [
+    'needs', 'want', 'wants', 'understand', 'dont know what', 'dont understand',
+    'therenne naha', 'therenne na', 'one kiyala', 'mokakda one',
+    'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා', 'අවශ්යතා', 'තේරුම් ගන්න', 'මොනවා කරන්නද'
+  ];
+  const sleepKW = ['sleep', 'sleeping', 'ninda', 'ninda yanne', 'නින්ද', 'නිදා'];
+  const feedingKW = ['feeding', 'feed', 'breastfeeding', 'milk', 'kiri', 'කිරි', 'කිරි දෙන්න'];
+  const healthKW = ['fever', 'sick', 'health', 'unwell', 'baya', 'bayaයි', 'බයයි', 'ලෙඩ', 'උණ'];
+
+  return {
+    baby_related: isBabyRelated,
+    baby_crying: isBabyRelated && cryingKW.some(k => t.includes(k)),
+    baby_needs: isBabyRelated && needsKW.some(k => t.includes(k)),
+    baby_sleep: isBabyRelated && sleepKW.some(k => t.includes(k)),
+    baby_feeding: isBabyRelated && feedingKW.some(k => t.includes(k)),
+    baby_health: isBabyRelated && healthKW.some(k => t.includes(k)),
+  };
+};
+
 // ── ANALYZE DIARY ─────────────────────────────────────────────
 export const analyzeDiary = (text) => {
   const t = text.toLowerCase();
@@ -108,11 +135,14 @@ export const analyzeDiary = (text) => {
     riskLevel = RISK.MEDIUM;
   }
 
+  const babyIntents = detectBabyIntents(text);
+
   return {
     detectedEmotion,
     primaryReason,
     secondaryReason,
     riskLevel,
+    babyIntents,
     scores: { eScores, rScores },
   };
 };

@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
-import { ALL_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule } from '../services/activitiesLibrary';
+import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames } from '../services/activitiesLibrary';
 import { getPersonalizedRecommendations } from '../services/emotionEngine';
 import { MUSIC_LIBRARY, VIDEO_LIBRARY } from '../services/mediaLibrary';
 import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibrary';
@@ -194,18 +194,46 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const rawActivities = (hasAnalysis ? (latestRecommendations?.newActivities || latestRecommendations?.activities) : localRuleRecs?.activities) || [];
   const rawGames = (hasAnalysis ? latestRecommendations?.games : localRuleRecs?.games) || [];
 
-  // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
-  const finalActivities = isSkipped ? ALL_ACTIVITIES.slice(0, 4) : rawActivities.slice(0, 4);
-  
-  const recommendedGameIds = rawGames.map(g => (typeof g === 'string' ? g : g?.id)).filter(Boolean);
-  let filteredGames = ALL_GAMES.filter(g => recommendedGameIds.includes(g.id));
-  if (rawActivities.some(a => (typeof a === 'string' ? a : a?.id) === 'baby_mood') && !filteredGames.some(g => g.id === 'baby_mood')) {
-    const babyMoodGame = ALL_GAMES.find(g => g.id === 'baby_mood');
-    if (babyMoodGame) {
-      filteredGames = [babyMoodGame, ...filteredGames];
+  // Map and clean rawActivities
+  const resolvedActivities = rawActivities.map(a => {
+    const id = typeof a === 'string' ? a : a?.id;
+    if (id === 'baby_bonding' || id === 'new_baby_interaction_ideas') {
+      return NEW_ACTIVITIES.find(item => item.id === 'baby_mood') || 'baby_mood';
     }
+    if (typeof a === 'object' && a !== null) return a;
+    return NEW_ACTIVITIES.find(item => item.id === id) || ALL_ACTIVITIES.find(item => item.id === id) || a;
+  }).filter(Boolean);
+
+  const isBabyActive = (activeAnalysis?.primaryReason && isBabyRelatedReason(activeAnalysis.primaryReason)) || (activeAnalysis?.diaryText && isBabyRelatedContent(activeAnalysis.diaryText)) || (latestRecommendations?.isBabyRelated) || (localRuleRecs?.isBabyRelated) || (detectedBabyTopic || (detectedBabyTopics && detectedBabyTopics.length > 0));
+
+  let finalActList = [...resolvedActivities];
+  if (isBabyActive) {
+    const babyMoodObj = NEW_ACTIVITIES.find(a => a.id === 'baby_mood') || ALL_ACTIVITIES.find(a => a.id === 'baby_mood') || { id: 'baby_mood', icon: '👶', label: 'ළදරු හැඟීම', labelEn: 'Baby Cues', purpose: 'ඔබේ බබා පෙන්වන විවිධ සංඥා හඳුනාගැනීමට මෙම ක්‍රියාකාරකම ඔබට උපකාරී වේ.' };
+    
+    // Remove any existing baby_mood from list
+    finalActList = finalActList.filter(a => (typeof a === 'string' ? a : a?.id) !== 'baby_mood');
+    // Insert baby_mood at position 0
+    finalActList = [babyMoodObj, ...finalActList];
   }
-  const finalGames = isSkipped ? ALL_GAMES.slice(0, 3) : (filteredGames.length > 0 ? filteredGames.slice(0, 3) : ALL_GAMES.slice(0, 3));
+
+  // Remove any remaining legacy bonding items
+  finalActList = finalActList.filter(a => {
+    const id = typeof a === 'string' ? a : a?.id;
+    return id !== 'baby_bonding' && id !== 'new_baby_interaction_ideas';
+  });
+
+  // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
+  const finalActivities = isSkipped ? ALL_ACTIVITIES.slice(0, 4) : finalActList.slice(0, 4);
+  
+  const activeIntents = activeAnalysis?.babyIntents || {};
+  const activeDiaryText = activeAnalysis?.diaryText || latestAnalysis?.diaryText || '';
+  const activeReason = activeAnalysis?.primaryReason || selReason || '';
+
+  const dynamicRecommendedGames = getRecommendedGames(activeIntents, activeDiaryText, activeReason, 4);
+
+  const finalGames = isSkipped
+    ? ALL_GAMES.filter(g => g.id !== 'baby_mood').slice(0, 4)
+    : dynamicRecommendedGames;
 
   const primaryReason = activeAnalysis?.primaryReason || selReason || 'loneliness';
   const libraryMusic = MUSIC_LIBRARY[primaryReason] || MUSIC_LIBRARY.loneliness;
@@ -423,9 +451,9 @@ const RecommendationsScreen = ({ navigation, route }) => {
                           key={actId || idx}
                           onPress={() => {
                             if (actId === 'baby_mood') {
-                              navigation.navigate('Activity', { gameId: 'baby_mood', fromRecommendations: true });
+                              navigation.navigate('Activity', { gameId: 'baby_mood', fromRecommendations: true, returnTo: 'Recommendations' });
                             } else {
-                              navigation.navigate('Activity', { activityId: actId, fromRecommendations: true });
+                              navigation.navigate('Activity', { activityId: actId, fromRecommendations: true, returnTo: 'Recommendations' });
                             }
                           }}
                           style={s.actCard}
@@ -452,7 +480,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       return (
                         <TouchableOpacity
                           key={gId || idx}
-                          onPress={() => navigation.navigate(gId === 'mandala' || gId === 'colouring' ? 'Art' : 'Activity', { gameId: gId, fromRecommendations: true })}
+                          onPress={() => navigation.navigate(gId === 'mandala' || gId === 'colouring' ? 'Art' : 'Activity', { gameId: gId, fromRecommendations: true, returnTo: 'Recommendations' })}
                         >
                           <LinearGradient colors={game.color || ['#EDE7F6', '#D1C4E9']} style={s.primaryGameCard}>
                             <Text style={s.primaryGameIcon}>{game.icon || '🎮'}</Text>

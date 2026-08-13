@@ -278,9 +278,9 @@ export const NEW_ACTIVITIES = [
     benefits: ['සාන්ද්‍රණය වැඩි කරයි', 'අවධානය යොමු කරයි', 'මෘදු මානසික ව්‍යායාමයකි'], isNewFormat: true
   },
   {
-    id: 'new_baby_interaction_ideas', icon: '👶', label: 'ළදරුවා සමඟ බැඳීම', purpose: 'නිරෝගී බැඳීමක් දිරිමත් කරයි.', duration: 'විනාඩි 10',
-    instructions: ['යෙදුම අහඹු ලෙස ක්‍රියාකාරකම් යෝජනා කරයි:', 'ඔබේ දරුවාට සිනාසෙන්න.', 'දරුවා සමඟ කතා කරන්න.', 'නැළවිලි ගීතයක් ගායනා කරන්න.', 'කෙටි කතාවක් කියවන්න.', 'දරුවා තුරුලු කරගන්න.', 'කිරි දෙන අතරතුර ඇස් දෙස බලන්න.', 'අවසන් වූ පසු සම්පූර්ණ කළා යන්න ස්පර්ශ කරන්න.'],
-    benefits: ['නිරෝගී බැඳීමක් ඇති කරයි', 'දරුවාගේ මනෝභාවය යහපත් කරයි', 'ආදරය වැඩි කරයි'], isNewFormat: true
+    id: 'new_baby_interaction_ideas', icon: '👶', label: 'ළදරු හැඟීම', labelEn: 'Baby Cues', purpose: 'ඔබේ බබා පෙන්වන විවිධ සංඥා හඳුනාගැනීමට මෙම ක්‍රියාකාරකම ඔබට උපකාරී වේ.', duration: 'විනාඩි 5–10',
+    instructions: ['පින්තූරය දෙස බලන්න.', 'බබාගේ හැඟීම හෝ අවශ්‍යතාවය තෝරන්න.', 'පොදු ළදරු සංඥා හඳුනාගැනීමට ඉගෙන ගන්න.'],
+    benefits: ['ළදරු සංඥා හඳුනාගැනීම', 'සන්නිවේදනය වැඩි දියුණු කිරීම', 'විශ්වාසය ඇතිකිරීම'], isNewFormat: true
   },
   {
     id: 'new_relaxing_music', icon: '🎵', label: 'සන්සුන් සංගීතය', purpose: 'මානසික විවේකය ලබා දෙයි.', duration: 'විනාඩි 10–20',
@@ -343,15 +343,22 @@ export const isBabyRelatedContent = (text = '') => {
 
   const babyTerms = [
     // English terms & phrases
-    'baby', 'babies', 'babys', 'newborn', 'newborns', 'little one', 'little girl', 'little boy',
-    'infant', 'infants', 'my child', 'my kid', 'caring for my baby', 'care for my baby',
-    'taking care of my baby', 'taking care of my newborn',
+    'baby', 'babies', 'babys', 'newborn', 'newborn baby', 'newborns', 'little one', 'my little one',
+    'little girl', 'little boy', 'baby boy', 'baby girl', 'infant', 'infants', 'my child', 'my kid',
+    'caring for my baby', 'care for my baby', 'taking care of my baby', 'taking care of my newborn',
+    'my boy', 'my girl', 'son', 'daughter',
 
     // Sinhala terms & phrases
-    'බබා', 'බබාගේ', 'බබාව', 'බබාට', 'බබෙක්',
-    'දරුවා', 'දරුවාගේ', 'දරුවාව', 'දරුවාට', 'දරුවෝ',
+    'බබා', 'මගේ බබා', 'බබාගේ', 'බබාව', 'බබාට', 'බබෙක්',
+    'දරුවා', 'මගේ දරුවා', 'දරුවාගේ', 'දරුවාව', 'දරුවාට', 'දරුවෝ',
     'ළදරුවා', 'ළදරුවාගේ', 'ළදරුවාව', 'ළදරුවාට',
-    'පුංචි එකා', 'පුංචි එකී', 'අලුත උපන්'
+    'පුංචි එකා', 'පුංචි එකී', 'අලුත උපන්', 'අලුත උපන් බබා', 'පුංචි බබා',
+    'පුතා', 'මගේ පුතා', 'පුතාගේ', 'පුතාට', 'දුව', 'මගේ දුව', 'දුවගේ', 'දුවට',
+
+    // Singlish terms & phrases
+    'baba', 'mage baba', 'babage', 'babaw', 'babata', 'daruwa',
+    'putha', 'mage putha', 'puthage', 'puthata',
+    'duwa', 'mage duwa', 'duwage', 'duwata', 'aluth upan baba'
   ];
 
   return babyTerms.some(term => t.includes(term));
@@ -408,26 +415,127 @@ export const getNewRecommendations = (emotion, reason, riskLevel, diaryText = ''
   
   // Re-prioritize based on Risk -> Reason -> Emotion
   let ordered = [];
-  if (isBabyRelatedContent(diaryText)) {
+  const isBaby = isBabyRelatedContent(diaryText) || isBabyRelatedReason(reason);
+  if (isBaby) {
     ordered.push('baby_mood');
   }
-  recommendedIds.forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
-  byReason.forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
-  byEmotion.forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
+
+  const EXCLUDE_IDS = ['baby_bonding', 'new_baby_interaction_ideas'];
+
+  recommendedIds.filter(id => !EXCLUDE_IDS.includes(id)).forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
+  byReason.filter(id => !EXCLUDE_IDS.includes(id)).forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
+  byEmotion.filter(id => !EXCLUDE_IDS.includes(id)).forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
 
   ordered = ordered.slice(0, 4);
-  return ordered.map(id => NEW_ACTIVITIES.find(a => a.id === id)).filter(Boolean);
+  return ordered.map(id => NEW_ACTIVITIES.find(a => a.id === id) || ALL_ACTIVITIES.find(a => a.id === id)).filter(Boolean);
 };
 
 export const ALL_GAMES = [
-  { id:'bubble_pop',       icon:'🫧', label:'බුබුළු ෆොන් ෆොන්',      labelEn:'Bubble Pop',           color:['#E3F2FD','#BBDEFB'], accent:'#1565C0' },
-  { id:'word_match',       icon:'💬', label:'වචන ගළපීම',              labelEn:'Word Match',            color:['#EDE7F6','#D1C4E9'], accent:'#7E57C2' },
-  { id:'puzzle',           icon:'🧩', label:'ප්‍රහේලිකාව',            labelEn:'Simple Puzzle',         color:['#FFF9C4','#FFF3A0'], accent:'#F57F17' },
-  { id:'affirmation_game', icon:'💜', label:'ධනාත්මක ප්‍රකාශ',       labelEn:'Positive Affirmations', color:['#FCE4EC','#F8BBD9'], accent:'#C2185B' },
-  { id:'baby_mood',        icon:'😊', label:'ළදරු හැඟීම',            labelEn:'Baby Cues',             color:['#FFF9C4','#FFF3A0'], accent:'#F57F17' },
-  { id:'mandala',          icon:'🔮', label:'මණ්ඩල කලා',              labelEn:'Mandala Art',           color:['#EDE7F6','#D1C4E9'], accent:'#7E57C2' },
-  { id:'colouring',        icon:'🎨', label:'රූප පාටකිරීම',          labelEn:'Colouring Pages',       color:['#E8F5E9','#C8E6C9'], accent:'#2E7D32' },
+  { id: 'baby_mood',        icon: '😊', label: 'ළදරු හැඟීම',            labelEn: 'Baby Cues',             color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17' },
+  { id: 'bubble_pop',       icon: '🫧', label: 'බුබුළු ෆොන් ෆොන්',      labelEn: 'Bubble Pop',           color: ['#E3F2FD', '#BBDEFB'], accent: '#1565C0' },
+  { id: 'memory_match',     icon: '🃏', label: 'මතක ගැළපීම',            labelEn: 'Memory Match',          color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
+  { id: 'word_match',       icon: '💬', label: 'වචන ගැළපීම',            labelEn: 'Word Match',            color: ['#F3E5F5', '#E1BEE7'], accent: '#7E57C2' },
+  { id: 'word_builder',     icon: '🔠', label: 'වචන ගොඩනැගීම',          labelEn: 'Word Builder',          color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
+  { id: 'pattern_repeat',   icon: '🧠', label: 'රටාව නැවත',            labelEn: 'Pattern Repeat',        color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
+  { id: 'spot_diff',        icon: '🔍', label: 'වෙනස සොයන්න',            labelEn: 'Spot Difference',       color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
+  { id: 'sequence_order',   icon: '🧩', label: 'අනුපිළිවෙල',            labelEn: 'Sequence Order',        color: ['#F3E5F5', '#E1BEE7'], accent: '#8E24AA' },
+  { id: 'number_seq',       icon: '🔢', label: 'අංක',                  labelEn: 'Number Sequence',       color: ['#E8F5E9', '#A5D6A7'], accent: '#2E7D32' },
+  { id: 'coin_maze',        icon: '🪙', label: 'කාසි මාලිම',            labelEn: 'Coin Maze',             color: ['#FFF9C4', '#FFF3E0'], accent: '#F57F17' },
+  { id: 'sliding_puzzle',   icon: '🧩', label: 'ස්ලයිඩ්',                labelEn: 'Sliding Puzzle',        color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
+  { id: 'mindful_tap',      icon: '🌿', label: 'සිහිකල්පනාව',            labelEn: 'Mindful Tap',           color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
+  { id: 'puzzle',           icon: '🧩', label: 'ප්‍රහේලිකාව',            labelEn: 'Simple Puzzle',         color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17' },
+  { id: 'affirmation_game', icon: '💜', label: 'ධනාත්මක ප්‍රකාශ',       labelEn: 'Positive Affirmations', color: ['#FCE4EC', '#F8BBD9'], accent: '#C2185B' },
+  { id: 'mandala',          icon: '🔮', label: 'මණ්ඩල කලා',              labelEn: 'Mandala Art',           color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
+  { id: 'colouring',        icon: '🎨', label: 'රූප පාටකිරීම',          labelEn: 'Colouring Pages',       color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
 ];
+
+export const GAME_RECOMMENDATION_MAP = {
+  // Baby-related reasons
+  baby_crying:        ['baby_mood', 'sequence_order', 'memory_match', 'number_seq'],
+  baby_needs:         ['baby_mood', 'memory_match', 'number_seq', 'spot_diff'],
+  caring_for_baby:    ['baby_mood', 'sequence_order', 'pattern_repeat', 'word_match'],
+  baby_feeding:       ['baby_mood', 'sequence_order', 'number_seq', 'memory_match'],
+  baby_sleep:         ['baby_mood', 'pattern_repeat', 'sliding_puzzle', 'word_match'],
+  baby_health:        ['baby_mood', 'sequence_order', 'memory_match', 'number_seq'],
+  bonding_issues:     ['baby_mood', 'memory_match', 'pattern_repeat', 'word_match'],
+
+  // Mother emotional reasons
+  fatigue:            ['coin_maze', 'sliding_puzzle', 'word_match', 'memory_match'],
+  sadness:            ['bubble_pop', 'memory_match', 'pattern_repeat', 'word_builder'],
+  anxiety:            ['bubble_pop', 'number_seq', 'spot_diff', 'mindful_tap'],
+  loneliness:         ['memory_match', 'word_builder', 'word_match', 'pattern_repeat'],
+  anger:              ['bubble_pop', 'coin_maze', 'spot_diff', 'sliding_puzzle'],
+  overwhelmed:        ['bubble_pop', 'number_seq', 'sequence_order', 'word_match'],
+  stress:             ['bubble_pop', 'spot_diff', 'sliding_puzzle', 'mindful_tap'],
+  loss_of_confidence: ['memory_match', 'word_builder', 'pattern_repeat', 'number_seq'],
+  lack_of_support:    ['word_match', 'memory_match', 'word_builder', 'coin_maze'],
+  physical_discomfort:['mindful_tap', 'word_match', 'memory_match', 'sliding_puzzle'],
+  negative_thoughts:  ['word_builder', 'pattern_repeat', 'spot_diff', 'memory_match'],
+
+  // Neutral / General fallback (No specific reason or no baby context)
+  general:            ['memory_match', 'pattern_repeat', 'word_builder', 'spot_diff']
+};
+
+export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', maxGames = 4) => {
+  const isBaby = (intents && (intents.baby_related || intents.baby_crying || intents.baby_needs || intents.baby_feeding || intents.baby_sleep || intents.baby_health))
+    || isBabyRelatedContent(diaryText)
+    || isBabyRelatedReason(reason);
+
+  const activeKeys = [];
+
+  if (intents.baby_crying) activeKeys.push('baby_crying');
+  if (intents.baby_needs) activeKeys.push('baby_needs');
+  if (intents.baby_feeding) activeKeys.push('baby_feeding');
+  if (intents.baby_sleep) activeKeys.push('baby_sleep');
+  if (intents.baby_health) activeKeys.push('baby_health');
+  if (isBaby && activeKeys.length === 0) activeKeys.push('caring_for_baby');
+
+  if (reason && GAME_RECOMMENDATION_MAP[reason] && !activeKeys.includes(reason)) {
+    activeKeys.push(reason);
+  }
+
+  const collected = [];
+  let maxLen = 0;
+  activeKeys.forEach(k => {
+    const list = GAME_RECOMMENDATION_MAP[k] || [];
+    if (list.length > maxLen) maxLen = list.length;
+  });
+
+  for (let i = 0; i < maxLen; i++) {
+    activeKeys.forEach(k => {
+      const list = GAME_RECOMMENDATION_MAP[k] || [];
+      if (list[i] && !collected.includes(list[i])) {
+        collected.push(list[i]);
+      }
+    });
+  }
+
+  // Filter out baby_mood if NOT baby context
+  let filtered = collected.filter(gId => {
+    if (gId === 'baby_mood' && !isBaby) return false;
+    return true;
+  });
+
+  // If baby context is active, force baby_mood to index 0
+  if (isBaby) {
+    filtered = ['baby_mood', ...filtered.filter(gId => gId !== 'baby_mood')];
+  }
+
+  // If we still need more games up to maxGames (4), fill from general fallback list
+  if (filtered.length < maxGames) {
+    const fallbacks = GAME_RECOMMENDATION_MAP.general.filter(gId => {
+      if (gId === 'baby_mood' && !isBaby) return false;
+      return !filtered.includes(gId);
+    });
+    filtered = [...filtered, ...fallbacks];
+  }
+
+  // Ensure unique and capped at maxGames
+  const uniqueIds = [...new Set(filtered)].slice(0, maxGames);
+
+  // Return full Game Objects from ALL_GAMES
+  return uniqueIds.map(gId => ALL_GAMES.find(g => g.id === gId) || { id: gId }).filter(Boolean);
+};
 
 // ================================================================
 // EXACT IF-THEN RECOMMENDATION RULES
@@ -702,7 +810,7 @@ export const isBabyRelatedReason = (reason = '') => {
   const babyKeys = [
     'baby', 'crying', 'feeding', 'breastfeeding', 'understanding_baby',
     'caring_for_baby', 'baby_crying', 'baby_feeding', 'baby_sleep',
-    'baby_needs', 'baby_health', 'baby_behaviour', 'ළදරු', 'බබා', 'දරුවා'
+    'baby_needs', 'baby_health', 'baby_behaviour', 'bonding_issues', 'ළදරු', 'බබා', 'දරුවා'
   ];
   return babyKeys.some(k => r.includes(k));
 };
@@ -740,12 +848,14 @@ export const getPersonalizedRecommendations = ({
     }
   }
 
+  const EXCLUDE_IDS = ['baby_bonding', 'new_baby_interaction_ideas'];
+
   let orderedIds = [];
   if (isBaby) {
     orderedIds.push('baby_mood');
   }
 
-  candidateIds.forEach(id => {
+  candidateIds.filter(id => !EXCLUDE_IDS.includes(id)).forEach(id => {
     if (!orderedIds.includes(id)) {
       orderedIds.push(id);
     }

@@ -494,7 +494,7 @@ const loadMMUnlocked = async () => {
 const saveMMUnlocked = async (lvl) => {
   try {
     await AsyncStorage.setItem(MM_STORAGE_KEY, JSON.stringify(lvl));
-  } catch (_) {}
+  } catch (_) { }
 };
 
 const makeMMCards = (level) => {
@@ -915,7 +915,7 @@ const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
 const BabyMoodGuess = ({ onGoBack }) => {
   const session = useGameSession({ gameId: 'baby_mood', gameName: 'ළදරු හැඟීම', icon: '👶', onGoBack });
-  
+
   const [screen, setScreen] = useState('intro'); // 'intro' | 'play' | 'complete'
   const [order, setOrder] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -1848,10 +1848,10 @@ const PatternRepeat = ({ onGoBack }) => {
               {phase === 'showing'
                 ? '👁 බලන්න…'
                 : phase === 'input'
-                ? `🎯 ඔබේ වාරය! (${userSeq.length}/${seq.length})`
-                : phase === 'correct'
-                ? '✅ නිවැරදි!'
-                : '❌ වැරදිලා!'}
+                  ? `🎯 ඔබේ වාරය! (${userSeq.length}/${seq.length})`
+                  : phase === 'correct'
+                    ? '✅ නිවැරදි!'
+                    : '❌ වැරදිලා!'}
             </Text>
           </View>
         )}
@@ -2581,20 +2581,20 @@ const NewActivityDetail = ({ activity, onComplete }) => {
 };
 
 const moodCards = [
-  { id: 'sad',       emoji: '😔', label: 'දුකයි',         color: ['#E3F2FD', '#BBDEFB'], reflection: 'ඔබේ හැඟීම් ස්වාභාවිකයි 💙' },
-  { id: 'angry',     emoji: '😡', label: 'තරහයි',         color: ['#FFEBEE', '#FFCDD2'], reflection: 'කෝපය පාලනය කර සන්සුන් වන්න 🌿' },
-  { id: 'calm',      emoji: '😴', label: 'ශාන්තයි',       color: ['#F3E5F5', '#E1BEE7'], reflection: 'මනස සන්සුන්ව තබාගන්න 🌙' },
-  { id: 'anxiety',   emoji: '😟', label: 'කාංසාව',         color: ['#FFF9C4', '#FFF3A0'], reflection: 'ගැඹුරු ශ්වාසයක් ගන්න. ඔබ සුරක්ෂිතයි ⭐' },
-  { id: 'happy',     emoji: '😊', label: 'සතුටුයි',       color: ['#E8F5E9', '#C8E6C9'], reflection: 'ඔබේ සතුට ආශිර්වාදයකි! 🌸' },
-  { id: 'grateful',  emoji: '🥺', label: 'කෘතඥයි',       color: ['#FCE4EC', '#F8BBD9'], reflection: 'කෘතඥභාවය සිතට සුවයක් ලබාදෙයි 💜' },
-  { id: 'uncertain', emoji: '😳', label: 'නොදනිමි',       color: ['#EEEEEE', '#F5F5F5'], reflection: 'හැඟීම් වෙනස් වීම ස්වාභාවිකයි 🌙' },
-  { id: 'strong',    emoji: '💪', label: 'ශක්තිමත්',     color: ['#E8F5E9', '#A5D6A7'], reflection: 'ඔබ ඉතා ශක්තිමත් අම්මා කෙනෙකි! 🏆' },
-  { id: 'empty',     emoji: '🫥', label: 'හිස් හැඟීමක්', color: ['#E0F7FA', '#B2EBF2'], reflection: 'කෙටි විවේකයක් ගෙන මනසට සහනය දෙන්න 🌸' },
-  { id: 'stress',    emoji: '😫', label: 'මානසික පීඩනය', color: ['#FFE0B2', '#FFCC80'], reflection: 'ඔබට විවේකයක් අවශ්‍යයි. සෙමෙන් හුස්ම ගන්න 🌿' },
-  { id: 'feared',    emoji: '😨', label: 'බියගැන්වුණු',   color: ['#FFF8E1', '#FFE082'], reflection: 'ඔබ තනිවී නැත, කනස්සල්ල දුරලන්න 💜' },
-  { id: 'loved',     emoji: '🥰', label: 'ආදරණීයයි',     color: ['#F8BBD9', '#F48FB1'], reflection: 'ආදරය සහ උණුසුම සැමවිටම විඳින්න 🌸' },
-  { id: 'tired',     emoji: '🥱', label: 'මහන්සියි',       color: ['#D1C4E9', '#B39DDB'], reflection: 'ප්‍රමාණවත් විවේකයක් ලබාගන්න 🌙' },
-  { id: 'lonely',    emoji: '🧍', label: 'තනිවෙලා',       color: ['#E1BEE7', '#CE93D8'], reflection: 'ඔබ තනිවී නැත, අප සැමවිටම ඔබ සමඟයි 💜' }
+  { id: 'sad', emoji: '😔', label: 'දුකයි', color: ['#E3F2FD', '#BBDEFB'], reflection: 'ඔබේ හැඟීම් ස්වාභාවිකයි 💙' },
+  { id: 'angry', emoji: '😡', label: 'තරහයි', color: ['#FFEBEE', '#FFCDD2'], reflection: 'කෝපය පාලනය කර සන්සුන් වන්න 🌿' },
+  { id: 'calm', emoji: '😴', label: 'ශාන්තයි', color: ['#F3E5F5', '#E1BEE7'], reflection: 'මනස සන්සුන්ව තබාගන්න 🌙' },
+  { id: 'anxiety', emoji: '😟', label: 'කාංසාව', color: ['#FFF9C4', '#FFF3A0'], reflection: 'ගැඹුරු ශ්වාසයක් ගන්න. ඔබ සුරක්ෂිතයි ⭐' },
+  { id: 'happy', emoji: '😊', label: 'සතුටුයි', color: ['#E8F5E9', '#C8E6C9'], reflection: 'ඔබේ සතුට ආශිර්වාදයකි! 🌸' },
+  { id: 'grateful', emoji: '🥺', label: 'කෘතඥයි', color: ['#FCE4EC', '#F8BBD9'], reflection: 'කෘතඥභාවය සිතට සුවයක් ලබාදෙයි 💜' },
+  { id: 'uncertain', emoji: '😳', label: 'නොදනිමි', color: ['#EEEEEE', '#F5F5F5'], reflection: 'හැඟීම් වෙනස් වීම ස්වාභාවිකයි 🌙' },
+  { id: 'strong', emoji: '💪', label: 'ශක්තිමත්', color: ['#E8F5E9', '#A5D6A7'], reflection: 'ඔබ ඉතා ශක්තිමත් අම්මා කෙනෙකි! 🏆' },
+  { id: 'empty', emoji: '🫥', label: 'හිස් හැඟීමක්', color: ['#E0F7FA', '#B2EBF2'], reflection: 'කෙටි විවේකයක් ගෙන මනසට සහනය දෙන්න 🌸' },
+  { id: 'stress', emoji: '😫', label: 'මානසික පීඩනය', color: ['#FFE0B2', '#FFCC80'], reflection: 'ඔබට විවේකයක් අවශ්‍යයි. සෙමෙන් හුස්ම ගන්න 🌿' },
+  { id: 'feared', emoji: '😨', label: 'බියගැන්වුණු', color: ['#FFF8E1', '#FFE082'], reflection: 'ඔබ තනිවී නැත, කනස්සල්ල දුරලන්න 💜' },
+  { id: 'loved', emoji: '🥰', label: 'ආදරණීයයි', color: ['#F8BBD9', '#F48FB1'], reflection: 'ආදරය සහ උණුසුම සැමවිටම විඳින්න 🌸' },
+  { id: 'tired', emoji: '🥱', label: 'මහන්සියි', color: ['#D1C4E9', '#B39DDB'], reflection: 'ප්‍රමාණවත් විවේකයක් ලබාගන්න 🌙' },
+  { id: 'lonely', emoji: '🧍', label: 'තනිවෙලා', color: ['#E1BEE7', '#CE93D8'], reflection: 'ඔබ තනිවී නැත, අප සැමවිටම ඔබ සමඟයි 💜' }
 ];
 
 const EmotionJournal = ({ onGoBack }) => {
@@ -2937,87 +2937,6 @@ const MoodBoard = ({ onGoBack }) => {
   );
 };
 
-// GRATITUDE GARDEN
-const GG_PROMPTS = ['අද ඔබ කෘතඥ?', 'ළදරු ගැන ආදරය?', 'ඔබව රැකගත්?', 'ශරීරය හොඳ?', 'නිදහස් ගණිතය?', 'ශ්‍රේෂ්ඨ ජය?'];
-const GG_FLOWERS = ['🌸', '🌺', '🌹', '🌻', '🌷', '🌼', '💐', '🏵️'];
-
-const GratitudeGarden = ({ onGoBack }) => {
-  const session = useGameSession({ gameId: 'gratitude_garden', gameName: 'කෘතඥ උද්‍යානය', icon: '🌸', onGoBack });
-  const [garden, setGarden] = useState([]);
-  const [promptIdx, setPromptIdx] = useState(0);
-  const [answered, setAnswered] = useState(false);
-
-  const gardenW = width - spacing.md * 2 - 8;
-  const gardenH = Math.floor(gardenW * 0.6);
-
-  const addFlower = () => {
-    if (garden.length >= 12) return;
-    const newLen = garden.length + 1;
-    setGarden((g) => [
-      ...g,
-      { id: Date.now(), emoji: GG_FLOWERS[g.length % GG_FLOWERS.length], x: Math.random() * 0.8 + 0.05, y: Math.random() * 0.7 + 0.1 },
-    ]);
-    setAnswered(true);
-    if (newLen >= 12) {
-      session.triggerComplete(`මල් ගණන: ${newLen}`);
-    }
-    setTimeout(() => {
-      setAnswered(false);
-      setPromptIdx((i) => (i + 1) % GG_PROMPTS.length);
-    }, 800);
-  };
-
-  const resetGame = () => {
-    setGarden([]);
-    setPromptIdx(0);
-    setAnswered(false);
-  };
-
-  return (
-    <View style={gg.cont}>
-      <CongratsPopup
-        visible={session.showCompletion}
-        onPlayAgain={() => session.handlePlayAgain(resetGame)}
-        onClose={session.handleClose}
-        title="උද්‍යානය පිරිලා! 🌸"
-        msg="ඔබේ කෘතඥ උද්‍යානය පිපී ඇත 💜"
-      />
-      <TouchableOpacity onPress={() => session.handleBack()} style={[s.backBtn, { alignSelf: 'flex-start' }]}>
-        <Text style={s.backText}>← ආපසු</Text>
-      </TouchableOpacity>
-      <View style={gg.header}>
-        <Text style={gg.title}>🌿 කෘතඥ උද්‍යානය</Text>
-        <Text style={gg.count}>🌸{garden.length}/12</Text>
-      </View>
-      <Text style={gg.hint}>සෑම "ඔව්" ස්පර්ශයකින් මලක් 🌸</Text>
-      <View style={[gg.garden, { width: gardenW, height: gardenH }]}>
-        <LinearGradient colors={['#E8F5E9', '#C8E6C9']} style={StyleSheet.absoluteFillObject} />
-        {garden.map((f) => (
-          <Text key={f.id} style={[gg.gardenFlower, { left: f.x * (gardenW - 36), top: f.y * (gardenH - 36) }]}>
-            {f.emoji}
-          </Text>
-        ))}
-        {garden.length === 0 && <Text style={gg.gardenEmpty}>ඔබේ උද්‍යානය 🌱</Text>}
-      </View>
-      <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={gg.promptCard}>
-        <Text style={gg.promptText}>{GG_PROMPTS[promptIdx]}</Text>
-        <TouchableOpacity style={gg.yesBtn} onPress={addFlower} disabled={answered || garden.length >= 12}>
-          <LinearGradient colors={answered ? ['#C8E6C9', '#A5D6A7'] : ['#7E57C2', '#E91E8C']} style={gg.yesBtnIn}>
-            <Text style={gg.yesBtnT}>{answered ? '🌸 ❤️' : '💚 ඔව්!'}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setPromptIdx((i) => (i + 1) % GG_PROMPTS.length)}>
-          <Text style={gg.skipT}>→ ඊළඟ</Text>
-        </TouchableOpacity>
-      </LinearGradient>
-      {garden.length >= 12 && (
-        <LinearGradient colors={['#FFF9C4', '#FCE4EC']} style={gg.fullCard}>
-          <Text style={gg.fullT}>🌻 පිරිලා! 💜</Text>
-        </LinearGradient>
-      )}
-    </View>
-  );
-};
 
 // GAMES LIST & MAIN SCREEN
 const ALL_GAMES_LIST = [
@@ -3039,11 +2958,10 @@ const ALL_GAMES_LIST = [
   { id: 'emotion_journal', label: 'හැඟීම් දිනපොත', labelEn: 'Track your mood', icon: '🎭', color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
   { id: 'mindful_tap', label: 'සිහිකල්පනාව', labelEn: 'Breathing rhythm', icon: '🌿', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
   { id: 'mood_board', label: 'මනෝභාව පුවරුව', labelEn: 'Express your mood', icon: '🎨', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
-  { id: 'gratitude_garden', label: 'කෘතඥ උද්‍යානය', labelEn: 'Gratitude garden', icon: '🌸', color: ['#E8F5E9', '#A5D6A7'], accent: '#2E7D32' },
   { id: 'mandala', label: 'මණ්ඩල කලා', labelEn: 'Colour mandalas', icon: '🔮', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'colouring', label: 'රූප පාටකිරීම', labelEn: 'Colouring pages', icon: '🎨', color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
 ];
-const MATURE_IDS = ['emotion_journal', 'mindful_tap', 'mood_board', 'gratitude_garden'];
+const MATURE_IDS = ['emotion_journal', 'mindful_tap', 'mood_board'];
 
 const ActivityScreen = ({ navigation, route }) => {
   const [selAct, setSelAct] = useState(null);
@@ -3052,6 +2970,14 @@ const ActivityScreen = ({ navigation, route }) => {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
+    if (route?.params?.activityId === 'baby_mood' || route?.params?.gameId === 'baby_mood') {
+      const found = ALL_GAMES_LIST.find((x) => x.id === 'baby_mood');
+      if (found) {
+        setSelGame(found);
+        setView('game');
+        return;
+      }
+    }
     if (route?.params?.activityId) {
       const a = [...ALL_ACTIVITIES, ...NEW_ACTIVITIES].find((x) => x.id === route.params.activityId);
       if (a) {
@@ -3163,8 +3089,6 @@ const ActivityScreen = ({ navigation, route }) => {
         return <MindfulTap onGoBack={goBack} />;
       case 'mood_board':
         return <MoodBoard onGoBack={goBack} />;
-      case 'gratitude_garden':
-        return <GratitudeGarden onGoBack={goBack} />;
       case 'mandala':
       case 'colouring':
         navigation.navigate('Art');
@@ -3860,24 +3784,6 @@ const mb = StyleSheet.create({
   historyDate: { fontSize: 12, fontWeight: '700', color: '#888' },
 });
 
-const gg = StyleSheet.create({
-  cont: { alignItems: 'center' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', marginBottom: 8 },
-  title: { fontSize: 22, fontWeight: '900', color: '#2E7D32' },
-  count: { fontSize: 16, color: '#2E7D32', fontWeight: '800' },
-  hint: { fontSize: 14, color: '#666', marginBottom: 16 },
-  garden: { borderRadius: radius.xl, overflow: 'hidden', position: 'relative', justifyContent: 'center', alignItems: 'center', marginBottom: 20, ...shadows.card },
-  gardenFlower: { position: 'absolute', fontSize: 32 },
-  gardenEmpty: { fontSize: 16, color: '#888', fontWeight: '700' },
-  promptCard: { width: '100%', padding: 24, borderRadius: radius.xl, alignItems: 'center', marginBottom: 16, ...shadows.card },
-  promptText: { fontSize: 18, fontWeight: '900', color: '#333', marginBottom: 16, textAlign: 'center' },
-  yesBtn: { borderRadius: 99, width: '100%', marginBottom: 12 },
-  yesBtnIn: { paddingVertical: 14, alignItems: 'center', borderRadius: 99 },
-  yesBtnT: { color: 'white', fontWeight: '900', fontSize: 16 },
-  skipT: { color: '#7E57C2', fontWeight: '800', fontSize: 14 },
-  fullCard: { padding: 16, borderRadius: radius.lg, alignItems: 'center' },
-  fullT: { fontSize: 16, fontWeight: '900', color: '#F57F17' },
-});
 
 const bpp = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center', padding: 20 },
