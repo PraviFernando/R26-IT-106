@@ -2692,13 +2692,11 @@ const EmotionJournal = ({ onGoBack }) => {
 
 // MINDFUL TAP
 const MT_PATTERNS = [
-  { name: 'ශ්වාස රිද්මය', cues: ['ශ්වාස…', 'රඳවා…', 'හළ…', 'රඳවා…'], durations: [4, 2, 4, 2], color: '#7E57C2' },
-  { name: 'සිත', cues: ['ස්ථාවර…', 'සිතනවා…', 'නිදහස්…', 'සිතනවා…'], durations: [3, 3, 3, 3], color: '#E91E8C' },
-  { name: 'සාමය', cues: ['සාමය…', 'ස්නේහය…', 'කෘතඥ…', 'ළදරු…'], durations: [4, 4, 4, 4], color: '#2E7D32' },
+  { name: 'ශ්වාස රිද්මය', cues: ['ශ්වාස… (ආශ්වාස)', 'රඳවා තබන්න…', 'පිට කරන්න… (ප්‍රශ්වාස)', 'රඳවා තබන්න…'], durations: [4, 2, 4, 2], color: '#7E57C2' },
 ];
+
 const MindfulTap = ({ onGoBack }) => {
   const session = useGameSession({ gameId: 'mindful_tap', gameName: 'සිහිකල්පනාව', icon: '🌿', onGoBack });
-  const [patIdx, setPatIdx] = useState(0);
   const [running, setRunning] = useState(false);
   const [cueIdx, setCueIdx] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -2706,7 +2704,7 @@ const MindfulTap = ({ onGoBack }) => {
   const [round, setRound] = useState(1);
   const [done, setDone] = useState(false);
 
-  const pat = MT_PATTERNS[patIdx];
+  const pat = MT_PATTERNS[0];
   const pulse = useRef(new Animated.Value(1)).current;
   const loopRef = useRef(null);
 
@@ -2716,8 +2714,8 @@ const MindfulTap = ({ onGoBack }) => {
     setTimeLeft(dur);
     loopRef.current = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1.3, duration: dur * 500, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 1.0, duration: dur * 500, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1.25, duration: (dur * 1000) / 2, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1.0, duration: (dur * 1000) / 2, useNativeDriver: true }),
       ])
     );
     loopRef.current.start();
@@ -2743,7 +2741,7 @@ const MindfulTap = ({ onGoBack }) => {
       clearTimeout(a);
       loopRef.current?.stop();
     };
-  }, [running, cueIdx, round, pat.durations, pat.cues.length, session, taps]);
+  }, [running, cueIdx, round]);
 
   const start = () => {
     setCueIdx(0);
@@ -2777,23 +2775,8 @@ const MindfulTap = ({ onGoBack }) => {
         <Text style={mt.title}>🌿 සිහිකල්පනාව</Text>
         <Text style={mt.score}>⭐{taps}</Text>
       </View>
-      <Text style={mt.hint}>ශ්වාස රිද්මය — කවය ස්පර්ශ 🌸</Text>
-      <View style={mt.patRow}>
-        {MT_PATTERNS.map((p, i) => (
-          <TouchableOpacity
-            key={i}
-            style={[mt.patBtn, patIdx === i && { borderColor: p.color, borderWidth: 2 }]}
-            onPress={() => {
-              setPatIdx(i);
-              setRunning(false);
-              setDone(false);
-            }}
-          >
-            <Text style={[mt.patBtnT, patIdx === i && { color: p.color, fontWeight: '800' }]}>{p.name}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 14 }}>
+      <Text style={mt.hint}>ශ්වාස රිද්මය — කවය ස්පර්ශ කරන්න 🌸</Text>
+      <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 20 }}>
         <Animated.View style={{ transform: [{ scale: pulse }] }}>
           <TouchableOpacity
             onPress={() => {
@@ -2812,7 +2795,7 @@ const MindfulTap = ({ onGoBack }) => {
               ) : done ? (
                 <Text style={mt.circleT}>🌸 සම්පූර්ණ!</Text>
               ) : (
-                <Text style={mt.circleT}>▶ ස්පර්ශ</Text>
+                <Text style={mt.circleT}>▶ ආරම්භ</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>
@@ -2820,7 +2803,7 @@ const MindfulTap = ({ onGoBack }) => {
       </View>
       {done && (
         <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={mt.doneCard}>
-          <Text style={mt.doneT}>🌸 {taps} වාරයක්! 💜</Text>
+          <Text style={mt.doneT}>🌸 සම්පූර්ණයි! ස්පර්ශ {taps} වාරයක්! 💜</Text>
         </LinearGradient>
       )}
     </View>
