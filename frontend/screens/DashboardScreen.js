@@ -93,6 +93,7 @@ const navItems = (t) => [
     { key: 'profile', label: t('Profile'), icon: '👤' },
     { key: 'settings', label: t('Settings'), icon: '⚙️' },
     { key: 'exercise', label: t('Exercise'), icon: '🏃‍♀️' },
+    { key: 'baby', label: t('Baby Dev'), icon: '👶' },
 ];
 
 // ─────────────────────────────────────────────
@@ -316,6 +317,7 @@ function Footer({ activeTab, onTabPress }) {
     const footerItems = [
         ...navItems(t).slice(0, 3), // home, screening, diary
         navItems(t).find((i) => i.key === 'exercise'),
+        navItems(t).find((i) => i.key === 'baby'),
         ...navItems(t).slice(3, 5), // plan, profile
     ];
 
@@ -362,6 +364,7 @@ export default function DashboardScreen({ navigation }) {
     const [loadingExercises, setLoadingExercises] = useState(true);
     const [videoModalVisible, setVideoModalVisible] = useState(false);
     const [selectedVideoUrl, setSelectedVideoUrl] = useState(null);
+    const [progressStats, setProgressStats] = useState(null);
 
     useEffect(() => {
         const fetchExercises = async () => {
@@ -377,7 +380,18 @@ export default function DashboardScreen({ navigation }) {
                 setLoadingExercises(false);
             }
         };
+
+        const fetchProgress = async () => {
+            try {
+                const data = await exerciseService.getProgress(30);
+                setProgressStats(data);
+            } catch (err) {
+                console.log('Failed to fetch progress stats', err);
+            }
+        };
+
         fetchExercises();
+        fetchProgress();
     }, []);
 
     const handleLogout = () => {
@@ -413,6 +427,8 @@ export default function DashboardScreen({ navigation }) {
             navigation.navigate('Plan');
         } else if (tab === 'exercise') {
             navigation.navigate('Exercise');
+        } else if (tab === 'baby') {
+            navigation.navigate('BabyDevelopment');
         } else if (tab !== 'home') {
             Toast.show({
                 type: 'info',
@@ -584,6 +600,38 @@ export default function DashboardScreen({ navigation }) {
                         fromZero
                     />
                 </View>
+
+                {/* ── Consistency & Recovery Trends ── */}
+                {progressStats && (
+                    <View style={styles.card}>
+                        <Text style={styles.cardTitle}>🏃‍♀️ Consistency & Recovery Trends</Text>
+                        <View style={[styles.statsGrid, { marginVertical: 8 }]}>
+                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#FF9A9E' }]}>
+                                <Text style={styles.dashboardMetricVal}>{progressStats.currentStreak} Days</Text>
+                                <Text style={styles.dashboardMetricLabel}>🔥 Current Streak</Text>
+                            </View>
+                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#F59E0B' }]}>
+                                <Text style={styles.dashboardMetricVal}>{progressStats.missedSessions ?? 0}</Text>
+                                <Text style={styles.dashboardMetricLabel}>⚠️ Missed Sessions</Text>
+                            </View>
+                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#10B981' }]}>
+                                <Text style={styles.dashboardMetricVal}>{progressStats.weeklyCompletionRate ?? 0}%</Text>
+                                <Text style={styles.dashboardMetricLabel}>📊 Weekly Rate</Text>
+                            </View>
+                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#7C3AED' }]}>
+                                <Text style={styles.dashboardMetricVal}>{progressStats.averageDuration ?? 0}m</Text>
+                                <Text style={styles.dashboardMetricLabel}>⏱️ Avg Duration</Text>
+                            </View>
+                        </View>
+                        
+                        {progressStats.recoveryTrend && (
+                            <View style={styles.trendContainer}>
+                                <Text style={styles.trendTitle}>🩺 Recovery Trend Analysis</Text>
+                                <Text style={styles.trendText}>{progressStats.recoveryTrend}</Text>
+                            </View>
+                        )}
+                    </View>
+                )}
 
                 {/* ── Health Indicators ── */}
                 <View style={styles.indicatorRow}>
@@ -1439,5 +1487,48 @@ const styles = StyleSheet.create({
     },
     dashboardVideo: {
         flex: 1,
+    },
+    dashboardMetricBox: {
+        flex: 1,
+        minWidth: '45%',
+        backgroundColor: '#F8FAFC',
+        borderLeftWidth: 4,
+        borderRadius: 12,
+        padding: 12,
+        margin: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
+    },
+    dashboardMetricVal: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: '#1E293B',
+    },
+    dashboardMetricLabel: {
+        fontSize: 11,
+        color: '#64748B',
+        marginTop: 2,
+    },
+    trendContainer: {
+        marginTop: 14,
+        backgroundColor: '#F8FAFC',
+        padding: 12,
+        borderRadius: 16,
+        borderLeftWidth: 4,
+        borderLeftColor: '#7C3AED',
+    },
+    trendTitle: {
+        fontSize: 13,
+        fontWeight: '800',
+        color: '#1E293B',
+        marginBottom: 2,
+    },
+    trendText: {
+        fontSize: 12,
+        color: '#475569',
+        lineHeight: 16,
     },
 });

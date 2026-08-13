@@ -16,7 +16,15 @@ const exerciseRecordSchema = new mongoose.Schema({
         stabilityScore: { type: Number, default: 0 }
     },
     userFeedback: { type: String },
-    liked: { type: Boolean, default: null }
+    liked: { type: Boolean, default: null },
+    actualDuration: { type: Number }, // stopwatch actual duration (minutes)
+    recommendedDuration: { type: Number }, // recommended duration (minutes)
+    videoDuration: { type: Number }, // total video duration (minutes)
+    adherenceScore: { type: Number }, // (actualDuration / recommendedDuration) * 100
+    pain: { type: String }, // "Yes" / "No"
+    difficulty: { type: String }, // "Easy" / "Moderate" / "Hard"
+    feelingAfter: { type: String }, // "Better" / "Same" / "Tired"
+    intelligentFeedback: { type: String }
 }, { timestamps: true });
 
 module.exports = mongoose.model('ExerciseRecord', exerciseRecordSchema);

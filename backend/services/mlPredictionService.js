@@ -1,190 +1,107 @@
 const axios = require('axios');
 
-const ML_API_URL = process.env.ML_API_URL || 'http://localhost:5001';
+const ML_API_URL = process.env.ML_API_URL || 'http://127.0.0.1:5001';
 
 class MLPredictionService {
     
     /**
-     * Predict risk level for a postpartum mother
+     * Map string inputs to numeric features expected by ML model
+     */
+    static preprocessFeatures(healthData) {
+        const fatigueMap = { 'low': 0, 'medium': 1, 'high': 2 };
+        const mobilityMap = { 'very_limited': 0, 'limited': 1, 'normal': 2 };
+        const willingnessMap = { 'low': 0, 'medium': 1, 'high': 2 };
+        
+        return {
+            weeks_after_delivery: Number(healthData.weeksAfterDelivery || 0),
+            delivery_type: (healthData.deliveryType === 'c-section' || healthData.deliveryType === 'c_section') ? 1 : 0,
+            pelvic_pain: healthData.pelvicPain ? 1 : 0,
+            back_pain: healthData.backPain ? 1 : 0,
+            abdominal_pain: healthData.abdominalPain ? 1 : 0,
+            bleeding: healthData.bleedingComplications ? 1 : 0,
+            doctor_restrictions: healthData.doctorRestrictions ? 1 : 0,
+            muscle_weakness: healthData.muscleWeakness ? 1 : 0,
+            fatigue_level: fatigueMap[healthData.fatigueLevel] ?? 0,
+            mobility_level: mobilityMap[healthData.mobilityLevel] ?? 2,
+            willingness: willingnessMap[healthData.willingnessToExercise] ?? 1
+        };
+    }
+
+    /**
+     * Predict risk level and exercise category for a postpartum mother
      * @param {Object} healthData - Postpartum health data
      * @returns {Promise<Object>} Prediction result
      */
     static async predictRisk(healthData) {
         try {
-            const pyData = {
-                weeks_after_delivery: healthData.weeksAfterDelivery,
-                delivery_type: healthData.deliveryType,
-                pelvic_pain: healthData.pelvicPain ? 1 : 0,
-                back_pain: healthData.backPain ? 1 : 0,
-                abdominal_pain: healthData.abdominalPain ? 1 : 0,
-                bleeding_complications: healthData.bleedingComplications ? 1 : 0,
-                doctor_restrictions: healthData.doctorRestrictions ? 1 : 0,
-                muscle_weakness: healthData.muscleWeakness ? 1 : 0,
-                fatigue_level: healthData.fatigueLevel,
-                mobility_level: healthData.mobilityLevel,
-                willingness_to_exercise: healthData.willingnessToExercise,
-                ppd_risk_level: healthData.ppdRiskLevel
-            };
+            const pyData = this.preprocessFeatures(healthData);
             
             const response = await axios.post(`${ML_API_URL}/predict`, pyData, {
-                timeout: 10000
+                timeout: 5000
             });
             
             if (response.data.success) {
                 return {
                     success: true,
-                    riskLevel: response.data.risk_level,
-                    modelUsed: response.data.model_used,
-                    recommendedExercises: response.data.recommended_exercises || []
+                    riskLevel: response.data.risk_score, // returns numeric score (0: High, 1: Low, 2: Medium)
+                    exerciseCategory: response.data.exercise_category, // returns category (1-4)
+                    categoryDescription: response.data.category_description
                 };
             } else {
                 throw new Error(response.data.error);
             }
         } catch (error) {
-            console.error('ML Prediction API error:', error.message);
-            // Fallback to rule-based prediction if ML API fails
+            console.error('ML Prediction API error, switching to fallback:', error.message);
             return this.fallbackPrediction(healthData);
         }
     }
     
     /**
-     * Get exercise recommendations based on health data
-     * @param {Object} healthData - Postpartum health data
-     * @returns {Promise<Object>} Exercise recommendations
-     */
-    static async recommendExercises(healthData) {
-        try {
-            const response = await axios.post(`${ML_API_URL}/recommend/exercises`, healthData, {
-                timeout: 10000
-            });
-            
-            if (response.data.success) {
-                return {
-                    success: true,
-                    riskLevel: response.data.risk_level,
-                    exercises: response.data.exercises
-                };
-            } else {
-                throw new Error(response.data.error);
-            }
-        } catch (error) {
-            console.error('Exercise recommendation API error:', error.message);
-            return this.fallbackExercises(healthData);
-        }
-    }
-    
-    /**
-     * Fallback exercise recommendations when ML API is unavailable
-     */
-    static fallbackExercises(healthData) {
-        const exercises = [];
-        const weeks = healthData.weeksAfterDelivery || 6;
-        const pain = healthData.pelvicPain || healthData.backPain || healthData.abdominalPain;
-        const mobility = healthData.mobilityLevel || 'normal';
-        const fatigue = healthData.fatigueLevel || 'low';
-        const riskLevel = healthData.ppdRiskLevel || 'low';
-        
-        // Always add breathing exercise
-        exercises.push({
-            name: 'Deep Breathing',
-            video_url: 'https://www.youtube.com/embed/ifXo8tJE-t4'
-        });
-        
-        // Add more exercises based on conditions
-        if (riskLevel !== 'high' && !pain && weeks >= 2) {
-            exercises.push({
-                name: 'Kegel Exercise',
-                video_url: 'https://www.youtube.com/embed/MJ7EfGu03-0'
-            });
-        }
-        
-        if (mobility !== 'very_limited' && !pain) {
-            exercises.push({
-                name: 'Pelvic Tilt',
-                video_url: 'https://www.youtube.com/embed/44fYnoSLL1c'
-            });
-        }
-        
-        exercises.push({
-            name: 'Neck Stretch',
-            video_url: 'https://www.youtube.com/embed/X3-gKPNyrTA'
-        });
-        
-        if (fatigue !== 'high' && mobility === 'normal') {
-            exercises.push({
-                name: 'Gentle Walking',
-                video_url: 'https://www.youtube.com/embed/enYITYwvPAQ'
-            });
-        }
-        
-        // Remove duplicates and limit to 5
-        const seen = new Set();
-        const uniqueExercises = exercises.filter(ex => {
-            if (seen.has(ex.name)) return false;
-            seen.add(ex.name);
-            return true;
-        });
-        
-        return {
-            success: true,
-            riskLevel: riskLevel,
-            exercises: uniqueExercises.slice(0, 5),
-            isFallback: true
-        };
-    }
-    
-    /**
-     * Fallback rule-based prediction when ML API is unavailable
+     * Fallback prediction when Flask server is offline.
+     * Calculates risk score and category based on symptoms.
      */
     static fallbackPrediction(healthData) {
-        let riskLevel = 'low';
+        let riskScore = 0; // Default to Low risk (0)
+        let exerciseCategory = 3; // Default to Strength & Core (3)
         
-        // High risk conditions
-        if (healthData.ppdRiskLevel === 'high' ||
-            healthData.doctorRestrictions === true ||
-            healthData.bleedingComplications === true ||
+        const symptomsCount = 
+            (healthData.pelvicPain ? 1 : 0) +
+            (healthData.backPain ? 1 : 0) +
+            (healthData.abdominalPain ? 1 : 0) +
+            (healthData.muscleWeakness ? 1 : 0);
+
+        // High risk checks
+        if (healthData.doctorRestrictions || 
+            healthData.bleedingComplications || 
             (healthData.deliveryType === 'c-section' && healthData.weeksAfterDelivery < 6)) {
-            riskLevel = 'high';
+            riskScore = 2; // High risk (2)
+            exerciseCategory = 1; // Bedrest (1)
         }
-        // Medium risk conditions
-        else if (healthData.ppdRiskLevel === 'medium' ||
-                 healthData.pelvicPain === true ||
-                 healthData.abdominalPain === true ||
-                 healthData.fatigueLevel === 'high' ||
-                 healthData.mobilityLevel === 'limited') {
-            riskLevel = 'medium';
+        // Medium risk checks
+        else if (symptomsCount >= 2 || healthData.fatigueLevel === 'high' || healthData.mobilityLevel === 'limited') {
+            riskScore = 1; // Medium risk (1)
+            exerciseCategory = 2; // Gentle Mobility (2)
         }
-        
-        // Get fallback exercises
-        const exercises = this.fallbackExercises(healthData).exercises;
-        
+        // Healthy / low risk
+        else if (healthData.weeksAfterDelivery >= 8 && healthData.mobilityLevel === 'normal' && healthData.fatigueLevel === 'low') {
+            riskScore = 0; // Low risk (0)
+            exerciseCategory = 4; // Full Functional (4)
+        }
+
+        const descriptions = {
+            1: "Bedrest/Breathing",
+            2: "Gentle Mobility",
+            3: "Strength & Core",
+            4: "Full Functional"
+        };
+
         return {
             success: true,
-            riskLevel: riskLevel,
-            confidenceScores: {
-                high: riskLevel === 'high' ? 0.8 : 0.1,
-                low: riskLevel === 'low' ? 0.8 : 0.1,
-                medium: riskLevel === 'medium' ? 0.8 : 0.1
-            },
-            modelUsed: 'fallback_rule_based',
-            isFallback: true,
-            recommendedExercises: exercises
+            riskLevel: riskScore,
+            exerciseCategory: exerciseCategory,
+            categoryDescription: descriptions[exerciseCategory],
+            isFallback: true
         };
-    }
-    
-    /**
-     * Batch prediction for multiple users
-     */
-    static async batchPredict(records) {
-        try {
-            const response = await axios.post(`${ML_API_URL}/predict/batch`, { records }, {
-                timeout: 30000
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Batch prediction error:', error.message);
-            return { success: false, error: error.message };
-        }
     }
     
     /**
@@ -192,7 +109,7 @@ class MLPredictionService {
      */
     static async healthCheck() {
         try {
-            const response = await axios.get(`${ML_API_URL}/health`, { timeout: 5000 });
+            const response = await axios.get(`${ML_API_URL}/health`, { timeout: 3000 });
             return response.data;
         } catch (error) {
             return { status: 'unavailable', error: error.message };

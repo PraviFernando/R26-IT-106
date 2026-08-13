@@ -15,6 +15,10 @@ import PlanScreen from './screens/PlanScreen';
 import AdminDashboardScreen from './screens/AdminDashboardScreen';
 import MidwifeDashboardScreen from './screens/MidwifeDashboardScreen';
 import ExerciseScreen from './screens/ExerciseScreen';
+import ProgressScreen from './screens/ProgressScreen';
+import BabyDevelopmentScreen from './screens/BabyDevelopmentScreen';
+import BabyActivityDetailScreen from './screens/BabyActivityDetailScreen';
+import BabyCategoryScreen from './screens/BabyCategoryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,6 +37,10 @@ export default function App() {
             <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} options={{ headerShown: false }} />
             <Stack.Screen name="MidwifeDashboard" component={MidwifeDashboardScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Exercise" component={ExerciseScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Progress" component={ProgressScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="BabyDevelopment" component={BabyDevelopmentScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="BabyActivityDetail" component={BabyActivityDetailScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="BabyCategory" component={BabyCategoryScreen} options={{ headerShown: false }} />
           </Stack.Navigator>
         </NavigationContainer>
         {/* Global Toast */}

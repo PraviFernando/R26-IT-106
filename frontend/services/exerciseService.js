@@ -35,6 +35,12 @@ const exerciseService = {
     getProgress: async (days = 30) => {
         const response = await api.get(`/exercise/progress?days=${days}`);
         return response.data;
+    },
+    
+    // Update watch progress percentage of recommendation
+    updateRecommendationProgress: async (data) => {
+        const response = await api.post('/exercise/recommendations/progress', data);
+        return response.data;
     }
 };
 

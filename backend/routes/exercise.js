@@ -8,7 +8,9 @@ const {
     saveExerciseRecord,
     uploadVideo,
     getProgress,
-    seedExercises
+    seedExercises,
+    submitFeedback,
+    updateRecommendationProgress
 } = require('../controllers/exercise');
 
 // All exercise routes require authentication
@@ -20,9 +22,13 @@ router.get('/health-data/:date', getHealthData);
 
 // Recommendations
 router.get('/recommendations/:date', getRecommendations);
+router.post('/recommendations/progress', updateRecommendationProgress);
 
 // Exercise records
 router.post('/record', saveExerciseRecord);
+
+// Feedback submissions
+router.post('/feedback', submitFeedback);
 
 // Video upload & analysis
 router.post('/video/upload', uploadVideo);

@@ -44,9 +44,12 @@ const postpartumHealthDataSchema = new mongoose.Schema({
         exerciseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },
         customName: String,
         videoUrl: String,
+        channelTitle: String,
+        thumbnailUrl: String,
         type: { type: String },
-        duration: Number,
-        completed: { type: Boolean, default: false }
+        duration: String,
+        completed: { type: Boolean, default: false },
+        watchPercentage: { type: Number, default: 0 }
     }]
 }, { timestamps: true });
 
