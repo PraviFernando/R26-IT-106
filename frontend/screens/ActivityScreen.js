@@ -1135,7 +1135,7 @@ const SC_TASKS = [
   { id: 4, icon: '🌸', label: 'ශ්වාස 3', pts: 10 },
   { id: 5, icon: '🚶', label: 'ඇවිදීම', pts: 15 },
   { id: 6, icon: '💜', label: 'ආදර වදන', pts: 20 },
-  { id: 7, icon: '<ctrl42>', label: 'ස්නාන', pts: 15 },
+  { id: 7, icon: '🛁', label: 'ස්නාන', pts: 15 },
   { id: 8, icon: '📞', label: 'ඇමතීම', pts: 10 },
 ];
 const SC_BADGES = [
