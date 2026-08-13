@@ -1728,7 +1728,7 @@ const WordBuilder = ({ onGoBack }) => {
 // PATTERN REPEAT
 const PAT_PADS = [
   { colors: ['#F472B6', '#EC4899'], name: 'රෝස', icon: '🌸' },
-  { colors: ['#A855F7', '#8B5CF6'], name: 'ජම්', icon: '💜' },
+  { colors: ['#A855F7', '#8B5CF6'], name: 'දම්', icon: '💜' },
   { colors: ['#34D399', '#10B981'], name: 'කොළ', icon: '🌿' },
   { colors: ['#60A5FA', '#3B82F6'], name: 'නිල්', icon: '💙' },
   { colors: ['#FBBF24', '#F59E0B'], name: 'රන්', icon: '⭐' },
