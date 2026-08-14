@@ -74,7 +74,7 @@ const parseISO8601Duration = (durationStr) => {
     const hours = matches[1] ? parseInt(matches[1]) : 0;
     const minutes = matches[2] ? parseInt(matches[2]) : 0;
     const seconds = matches[3] ? parseInt(matches[3]) : 0;
-    
+
     let result = '';
     if (hours > 0) {
         result += `${hours}:`;
@@ -116,7 +116,7 @@ const analyzeDiaryMood = (text, emoji, diarySentiment) => {
     else if (diarySentiment === 'Positive Mind') mood = 'happy';
 
     const happyEmojis = ['😊', '😄', '🥰', '🌟', '🌈', '🤩'];
-    const sadEmojis   = ['😔', '😢', '😭', '💔', '🥀', '😟'];
+    const sadEmojis = ['😔', '😢', '😭', '💔', '🥀', '😟'];
 
     if (happyEmojis.includes(emoji)) mood = 'happy';
     else if (sadEmojis.includes(emoji)) mood = 'sad';
@@ -136,13 +136,13 @@ const analyzeDiaryMood = (text, emoji, diarySentiment) => {
 // Apply Diary Rules (adjusting categories dynamically based on mood)
 const applyDiaryRules = (exerciseCategory, mood) => {
     let finalCategory = exerciseCategory;
-    
+
     // If the mood is detected as highly negative/sad, step down the exercise intensity
     if (mood === 'sad') {
         finalCategory = Math.max(1, exerciseCategory - 1);
         console.log(`[Diary Rule] Stepped down intensity due to sad mood: ${exerciseCategory} -> ${finalCategory}`);
     }
-    
+
     return finalCategory;
 };
 
@@ -152,12 +152,12 @@ const applyDiaryRules = (exerciseCategory, mood) => {
 const submitHealthData = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { 
+        const {
             date, weeksAfterDelivery, deliveryDate, deliveryType, pelvicPain, backPain, abdominalPain,
             bleedingComplications, doctorRestrictions, fatigueLevel, mobilityLevel,
-            muscleWeakness, willingnessToExercise, mood, sentiment, stressKeywords 
+            muscleWeakness, willingnessToExercise, mood, sentiment, stressKeywords
         } = req.body;
-        
+
         let finalWeeks = weeksAfterDelivery;
         let finalDeliveryDate = deliveryDate;
 
@@ -184,11 +184,11 @@ const submitHealthData = async (req, res, next) => {
             deliveryDate: finalDeliveryDate,
             weeksAfterDelivery: finalWeeks || weeksAfterDelivery || 0,
             deliveryType: deliveryType || 'normal',
-            pelvicPain: pelvicPain || false,
-            backPain: backPain || false,
-            abdominalPain: abdominalPain || false,
-            bleedingComplications: bleedingComplications || false,
-            doctorRestrictions: doctorRestrictions || false,
+            pelvicPain: pelvicPain === true || pelvicPain === 'true',
+            backPain: backPain === true || backPain === 'true',
+            abdominalPain: abdominalPain === true || abdominalPain === 'true',
+            bleedingComplications: bleedingComplications === true || bleedingComplications === 'true',
+            doctorRestrictions: doctorRestrictions === true || doctorRestrictions === 'true',
             fatigueLevel: fatigueLevel || 'low',
             mobilityLevel: mobilityLevel || 'normal',
             muscleWeakness: muscleWeakness || false,
@@ -236,10 +236,16 @@ const submitHealthData = async (req, res, next) => {
             console.log(`[AI Adaptation] Adjusted next session intensity down to Category ${exerciseCategory} due to previous pain/difficulty/incomplete session.`);
         }
 
-        // Set safety status to safe so frontend always renders the predicted cards
-        healthData.safetyStatus = 'safe';
-        healthData.safetyMessage = 'Your condition is suitable for exercise';
-        healthData.safetyMessageSi = 'ඔබේ තත්ත්වය ව්‍යායාම සඳහා සුදුසු වේ';
+        // Evaluate dynamic safety status using clinical safety evaluation function
+        const safetyEval = evaluateSafetyStatus(
+            healthData.weeksAfterDelivery,
+            healthData.deliveryType,
+            healthData.bleedingComplications,
+            healthData.doctorRestrictions
+        );
+        healthData.safetyStatus = safetyEval.safetyStatus;
+        healthData.safetyMessage = safetyEval.safetyMessage;
+        healthData.safetyMessageSi = safetyEval.safetyMessageSi;
 
         // 3. YouTube API integration to fetch matching videos
         let recommendedExercises = [];
@@ -260,7 +266,7 @@ const submitHealthData = async (req, res, next) => {
 
                 if (ytResponse.data && ytResponse.data.items) {
                     const videoIds = ytResponse.data.items.map(item => item.id.videoId).join(',');
-                    
+
                     // Query /videos API to retrieve contentDetails (which includes duration)
                     const detailsResponse = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
                         params: {
@@ -337,17 +343,17 @@ const getHealthData = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { date } = req.params;
-        
+
         let data = await PostpartumHealthData.findOne({ userId, date });
-        
+
         if (!data) {
             const latestData = await PostpartumHealthData.findOne({ userId }).sort({ createdAt: -1 });
-            return res.json({ 
+            return res.json({
                 exists: false,
                 healthData: latestData ? latestData.toObject() : null
             });
         }
-        
+
         res.json({
             exists: true,
             safetyStatus: data.safetyStatus,
@@ -369,21 +375,21 @@ const getRecommendations = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { date } = req.params;
-        
+
         let healthData = await PostpartumHealthData.findOne({ userId, date });
         if (!healthData) {
             return res.json({ recommendations: [], hasData: false });
         }
-        
+
         // Pad recommendations pool up to 10 for backward compatibility with old 5-video records
         if (healthData.recommendedExercises && healthData.recommendedExercises.length < 10) {
             // Find category
             const sampleRec = healthData.recommendedExercises[0];
             const exerciseCategory = (sampleRec && sampleRec.category) ? sampleRec.category : 3;
-            
+
             const currentUrls = new Set(healthData.recommendedExercises.map(r => r.videoUrl));
             const categoryFallbacks = FALLBACK_VIDEOS[exerciseCategory] || [];
-            
+
             for (const vid of categoryFallbacks) {
                 if (healthData.recommendedExercises.length >= 10) break;
                 if (!currentUrls.has(vid.videoUrl)) {
@@ -402,7 +408,7 @@ const getRecommendations = async (req, res, next) => {
             healthData.markModified('recommendedExercises');
             await healthData.save();
         }
-        
+
         res.json({
             recommendations: healthData.recommendedExercises,
             hasData: true,
@@ -421,13 +427,13 @@ const getRecommendations = async (req, res, next) => {
 const saveExerciseRecord = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { 
-            date, exerciseId, customActivityName, status, accuracy, 
+        const {
+            date, exerciseId, customActivityName, status, accuracy,
             durationCompleted, userFeedback, liked,
             actualDuration, recommendedDuration, videoDuration,
             pain, difficulty, feelingAfter
         } = req.body;
-        
+
         // Adherence score calculation
         let calculatedAdherence = 0;
         if (recommendedDuration > 0) {
@@ -453,9 +459,9 @@ const saveExerciseRecord = async (req, res, next) => {
 
         const record = await ExerciseRecord.findOneAndUpdate(
             { userId, date, customActivityName },
-            { 
-                userId, date, exerciseId, customActivityName, status, accuracy, 
-                durationCompleted: actualDuration || durationCompleted, 
+            {
+                userId, date, exerciseId, customActivityName, status, accuracy,
+                durationCompleted: actualDuration || durationCompleted,
                 userFeedback, liked, updatedAt: Date.now(),
                 actualDuration, recommendedDuration, videoDuration,
                 pain, difficulty, feelingAfter,
@@ -464,7 +470,7 @@ const saveExerciseRecord = async (req, res, next) => {
             },
             { upsert: true, new: true }
         );
-        
+
         res.json({ success: true, record });
     } catch (err) {
         next(err);
@@ -478,16 +484,16 @@ const uploadVideo = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { date, customActivityName, videoUri } = req.body;
-        
+
         const mockAccuracy = 70 + Math.floor(Math.random() * 25);
         const mockFeedback = mockAccuracy > 80 ? 'Excellent form!' : 'Good try! Keep practicing.';
-        
+
         const record = await ExerciseRecord.findOneAndUpdate(
             { userId, date, customActivityName },
             { videoUrl: videoUri, accuracy: mockAccuracy, feedback: mockFeedback },
             { upsert: true, new: true }
         );
-        
+
         res.json({
             success: true,
             accuracy: mockAccuracy,
@@ -505,24 +511,24 @@ const getProgress = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const { days = 30 } = req.query;
-        
+
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - Number(days));
         const startDateStr = startDate.toISOString().split('T')[0];
-        
+
         const records = await ExerciseRecord.find({
             userId,
             date: { $gte: startDateStr }
         }).sort({ date: 1 });
 
         const completedRecords = records.filter(r => r.status === 'completed');
-        
+
         // Calculate streak
         let currentStreak = 0;
         let bestStreak = 0;
         let tempStreak = 0;
         const completedDates = new Set(completedRecords.map(r => r.date));
-        
+
         const today = new Date();
         for (let i = 0; i <= Number(days); i++) {
             const d = new Date();
@@ -541,7 +547,7 @@ const getProgress = async (req, res, next) => {
         if (currentStreak === 0 && tempStreak > 0) {
             currentStreak = tempStreak;
         }
-        
+
         // Missed sessions
         let missedSessions = 0;
         for (let i = 1; i <= 7; i++) {
@@ -552,7 +558,7 @@ const getProgress = async (req, res, next) => {
                 missedSessions++;
             }
         }
-        
+
         // Weekly participation percentage
         const weeklyCompleted = completedRecords.filter(r => {
             const rDate = new Date(r.date);
@@ -561,35 +567,35 @@ const getProgress = async (req, res, next) => {
             return diffDays <= 7;
         }).length;
         const weeklyCompletionRate = Math.round((weeklyCompleted / 7) * 100);
-        
+
         // Average exercise duration
         const totalDuration = completedRecords.reduce((sum, r) => sum + (r.actualDuration || r.durationCompleted || 0), 0);
         const averageDuration = completedRecords.length > 0 ? Math.round(totalDuration / completedRecords.length) : 0;
-        
+
         // Recovery Trend Analysis
         const threeWeeksAgo = new Date();
         threeWeeksAgo.setDate(today.getDate() - 21);
         const threeWeeksAgoStr = threeWeeksAgo.toISOString().split('T')[0];
-        
+
         const healthRecords = await PostpartumHealthData.find({
             userId,
             date: { $gte: threeWeeksAgoStr }
         }).sort({ date: 1 });
-        
+
         let recoveryTrend = "No data yet to detect recovery trend. Keep logging daily health inputs.";
         if (healthRecords.length >= 3) {
             const firstThird = healthRecords.slice(0, Math.ceil(healthRecords.length / 3));
             const lastThird = healthRecords.slice(-Math.ceil(healthRecords.length / 3));
-            
+
             const fatigueScore = { 'low': 1, 'medium': 2, 'high': 3 };
             const mobilityScore = { 'very_limited': 1, 'limited': 2, 'normal': 3 };
-            
+
             const firstFatigueAvg = firstThird.reduce((sum, r) => sum + fatigueScore[r.fatigueLevel], 0) / firstThird.length;
             const lastFatigueAvg = lastThird.reduce((sum, r) => sum + fatigueScore[r.fatigueLevel], 0) / lastThird.length;
-            
+
             const firstMobilityAvg = firstThird.reduce((sum, r) => sum + mobilityScore[r.mobilityLevel], 0) / firstThird.length;
             const lastMobilityAvg = lastThird.reduce((sum, r) => sum + mobilityScore[r.mobilityLevel], 0) / lastThird.length;
-            
+
             if (lastFatigueAvg < firstFatigueAvg && lastMobilityAvg > firstMobilityAvg) {
                 recoveryTrend = "Fantastic recovery trend detected! Over the past few weeks, your fatigue has decreased and your mobility has improved.";
             } else if (lastFatigueAvg < firstFatigueAvg) {
@@ -605,11 +611,11 @@ const getProgress = async (req, res, next) => {
             date: r.date,
             avgAccuracy: r.accuracy || 80
         }));
-        
+
         res.json({
             progressData,
             totalExercises: completedRecords.length,
-            averageAccuracy: completedRecords.length > 0 ? 
+            averageAccuracy: completedRecords.length > 0 ?
                 Math.round(completedRecords.reduce((sum, r) => sum + (r.accuracy || 0), 0) / completedRecords.length) : 0,
             currentStreak,
             bestStreak,

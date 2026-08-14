@@ -27,9 +27,9 @@ const SEED_ACTIVITIES = [
             "මෙය කෙටි සහ ප්‍රීතිමත් වේලාවක් බවට පත්කරන්න."
         ],
         safety_notes: "Always supervise your baby during tummy time. Never leave them unattended. Stop if distressed.",
-        safety_notes_sinhala: "Tummy time අතරතුර සැමවිටම ඔබේ බිළිඳා දෙස බලා සිටින්න. කිසිවිටෙකත් තනි නොකරන්න.",
+        safety_notes_sinhala: "Tummy time අතරතුර සැමවිටම ඔබේ බිළිඳා දෙස බලා සිටින්න්න. කිසිවිටෙකත් තනි නොකරන්න.",
         video_source: "YouTube",
-        video_url: "https://www.youtube.com/embed/NKl8ImI3OVE",
+        video_url: "https://www.youtube.com/embed/H89k-xVLD98",
         reviewed_status: "approved"
     },
     {
@@ -58,7 +58,7 @@ const SEED_ACTIVITIES = [
         safety_notes: "Ensure baby's airway is clear. Do not fall asleep with the baby on your chest.",
         safety_notes_sinhala: "බිළිඳාගේ ශ්වසන මාර්ගය හොඳින් විවෘතව ඇති බව තහවුරු කරගන්න. බිළිඳා පපුව මත සිටින විට නින්දට නොයන්න.",
         video_source: "YouTube",
-        video_url: "https://www.youtube.com/embed/ifXo8tJE-t4",
+        video_url: "https://www.youtube.com/embed/vV95f1qZ2aM",
         reviewed_status: "approved"
     },
     {
@@ -124,6 +124,10 @@ const SEED_ACTIVITIES = [
 // Seed function called internally or on server startup
 const seedBabyActivities = async () => {
     try {
+        // Fix wrong YouTube URLs in existing DB documents
+        await BabyActivity.updateOne({ activity_id: "tummy_time_1" }, { video_url: "https://www.youtube.com/embed/H89k-xVLD98" });
+        await BabyActivity.updateOne({ activity_id: "tummy_time_2" }, { video_url: "https://www.youtube.com/embed/vV95f1qZ2aM" });
+
         const count = await BabyActivity.countDocuments();
         if (count === 0) {
             console.log('[Seeding] Seeding initial baby activities database...');
@@ -215,7 +219,7 @@ const getActivities = async (req, res, next) => {
             ];
         }
 
-        let activities = await BabyActivity.find(query);
+        let activities = [];
 
         // Dynamic fetch from YouTube Search API
         const youtubeApiKey = process.env.YOUTUBE_API_KEY;
@@ -225,7 +229,7 @@ const getActivities = async (req, res, next) => {
                 const ytResponse = await axios.get('https://www.googleapis.com/youtube/v3/search', {
                     params: {
                         part: 'snippet',
-                        maxResults: 6,
+                        maxResults: 12,
                         q: searchQuery,
                         type: 'video',
                         key: youtubeApiKey
@@ -233,11 +237,11 @@ const getActivities = async (req, res, next) => {
                 });
 
                 if (ytResponse.data && ytResponse.data.items) {
-                    const ytActivities = ytResponse.data.items.map((item) => ({
+                    activities = ytResponse.data.items.map((item) => ({
                         _id: `yt_${item.id.videoId}`,
                         activity_id: `yt_${item.id.videoId}`,
                         activity_name: item.snippet.title,
-                        activity_name_sinhala: `යූටියුබ් වීඩියෝ: ${item.snippet.title}`,
+                        activity_name_sinhala: `${item.snippet.title}`,
                         category: category,
                         short_description: `Supervised educational baby development video by ${item.snippet.channelTitle}.`,
                         short_description_sinhala: `${item.snippet.channelTitle} විසින් ඉදිරිපත් කරන අධ්‍යාපනික වීඩියෝවකි.`,
@@ -262,7 +266,6 @@ const getActivities = async (req, res, next) => {
                         video_url: `https://www.youtube.com/embed/${item.id.videoId}`,
                         reviewed_status: "approved"
                     }));
-                    activities = [...activities, ...ytActivities];
                 }
             } catch (ytErr) {
                 console.error('YouTube API call failed in babyActivity controller:', ytErr.message);

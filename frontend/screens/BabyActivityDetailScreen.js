@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-    View, Text, ScrollView, TouchableOpacity, StyleSheet, 
-    Dimensions, ActivityIndicator, Platform, Animated 
+import {
+    View, Text, ScrollView, TouchableOpacity, StyleSheet,
+    Dimensions, ActivityIndicator, Platform, Animated
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -156,7 +156,7 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
     const purpose = isSinhala ? (activity.purpose_sinhala || activity.purpose) : activity.purpose;
     const age = isSinhala ? (activity.age_stage_sinhala || activity.age_stage) : activity.age_stage;
     const safety = isSinhala ? (activity.safety_notes_sinhala || activity.safety_notes) : activity.safety_notes;
-    const instructions = isSinhala 
+    const instructions = isSinhala
         ? (activity.instructions_sinhala && activity.instructions_sinhala.length > 0 ? activity.instructions_sinhala : activity.instructions_english)
         : activity.instructions_english;
 

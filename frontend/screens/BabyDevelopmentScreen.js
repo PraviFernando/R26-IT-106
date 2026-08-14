@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
     View, Text, TouchableOpacity, StyleSheet, 
-    TextInput, FlatList, Image, Dimensions, ActivityIndicator, Animated
+    TextInput, FlatList, Image, Dimensions, ActivityIndicator, Animated, ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -38,7 +38,7 @@ const SHADOW_PINK = {
 
 // Local categories list
 const CATEGORIES = [
-    { key: 'tummy_time', name: 'Tummy Time', nameSi: 'Tummy Time', icon: '👶', desc: 'Simple supervised activities while awake.', descSi: 'බිළිඳා අවදිව සිටින විට සිදුකරන සරල ක්‍රියාකාරකම්.', color: ['#FFE4F0', '#FFF0F7'] },
+    { key: 'tummy_time', name: 'Tummy Time', nameSi: 'ටමි ටයිම්', icon: '👶', desc: 'Simple supervised activities while awake.', descSi: 'බිළිඳා අවදිව සිටින විට සිදුකරන සරල ක්‍රියාකාරකම්.', color: ['#FFE4F0', '#FFF0F7'] },
     { key: 'leg_movement', name: 'Leg & Movement', nameSi: 'කකුල් සහ ශරීර සෙලවීම්', icon: '🦵', desc: 'Gentle activities encouraging leg movement.', descSi: 'කකුල් සහ ශරීරය සෙලවීමට දිරිමත් කරන සරල ක්‍රියාකාරකම්.', color: ['#E0F2FE', '#F0F9FF'] },
     { key: 'reaching_grasping', name: 'Reaching & Grasping', nameSi: 'අත දිගු කිරීම් සහ ඇල්ලීම්', icon: '✋', desc: 'Encouraging reaching and hand movement.', descSi: 'අත දිගු කර සෙල්ලම් බඩු ඇල්ලීම දිරිමත් කිරීම.', color: ['#FEF9C3', '#FEFCE8'] },
     { key: 'rolling_positioning', name: 'Rolling & Positioning', nameSi: 'පෙරළීම සහ පිහිටීම', icon: '🔄', desc: 'Encouraging rolling and body awareness.', descSi: 'පෙරළීම සහ ශරීරය පිළිබඳ දැනුවත්භාවය දිරිමත් කිරීම.', color: ['#ECFDF5', '#F0FDF4'] },
@@ -61,13 +61,11 @@ const SkeletonCard = () => {
         <Animated.View style={{ height: h, width: w, borderRadius: r, backgroundColor: '#FECDD3', opacity: anim, marginBottom: m }} />
     );
     return (
-        <View style={[styles.activityCard, { marginHorizontal: 20, marginVertical: 8 }]}>
-            <Skel h={110} w={100} r={18} m={0} />
-            <View style={{ flex: 1, marginLeft: 14, justifyContent: 'space-between' }}>
-                <Skel h={18} w="80%" r={8} m={8} />
-                <Skel h={14} r={6} m={6} />
-                <Skel h={14} w="60%" r={6} m={12} />
-                <Skel h={36} r={12} m={0} />
+        <View style={styles.exerciseCard}>
+            <Skel h={110} w="100%" r={12} m={8} />
+            <View style={{ gap: 6 }}>
+                <Skel h={14} w="90%" r={6} m={0} />
+                <Skel h={10} w="60%" r={4} m={0} />
             </View>
         </View>
     );
@@ -151,44 +149,42 @@ export default function BabyDevelopmentScreen({ navigation }) {
         const age = isSinhala ? (item.age_stage_sinhala || item.age_stage) : item.age_stage;
         
         const videoId = getYoutubeId(item.video_url);
-        const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : null;
+        const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
 
         return (
             <TouchableOpacity 
-                style={styles.activityCard}
+                activeOpacity={0.9}
                 onPress={() => navigation.navigate('BabyActivityDetail', { activityId: item._id })}
-                activeOpacity={0.82}
             >
-                {thumbnailUrl && (
-                    <View style={styles.thumbnailWrapper}>
-                        <Image source={{ uri: thumbnailUrl }} style={styles.thumbnail} />
-                        <LinearGradient
-                            colors={['transparent', 'rgba(236,72,153,0.18)']}
-                            style={styles.thumbnailOverlay}
-                        />
-                        <View style={styles.playChip}>
-                            <Text style={styles.playChipText}>▶</Text>
+                <View style={styles.exerciseCard}>
+                    <View style={styles.thumbnailContainer}>
+                        {thumbnailUrl ? (
+                            <Image source={{ uri: thumbnailUrl }} style={styles.cardThumbnail} resizeMode="cover" />
+                        ) : (
+                            <View style={styles.thumbnailPlaceholder}>
+                                <Text style={{ fontSize: 44 }}>▶️</Text>
+                            </View>
+                        )}
+                        <View style={styles.durationBadge}>
+                            <Text style={styles.durationBadgeText}>
+                                {item.duration || '10:00'}
+                            </Text>
                         </View>
                     </View>
-                )}
-                <View style={styles.cardInfo}>
-                    <Text style={styles.cardTitle} numberOfLines={2}>{title}</Text>
-                    <Text style={styles.cardDesc} numberOfLines={2}>{desc}</Text>
-                    <View style={styles.badgeRow}>
-                        <View style={styles.ageBadge}>
-                            <Text style={styles.ageBadgeText}>👶 {age}</Text>
+
+                    <View style={styles.cardDetailsRow}>
+                        <View style={styles.cardTextContainer}>
+                            <Text style={styles.videoTitle} numberOfLines={2}>
+                                {title}
+                            </Text>
+                            <Text style={styles.videoStats}>
+                                {isSinhala ? 'ළදරු සංවර්ධනය' : 'Baby Development'} • {age}
+                            </Text>
                         </View>
-                        <Text style={styles.durationText}>⏱️ {item.duration}</Text>
+                        <View style={styles.menuContainer}>
+                            <Text style={styles.menuIcon}>⋮</Text>
+                        </View>
                     </View>
-                    <TouchableOpacity 
-                        style={styles.watchBtn}
-                        onPress={() => navigation.navigate('BabyActivityDetail', { activityId: item._id })}
-                        activeOpacity={0.8}
-                    >
-                        <Text style={styles.watchBtnText}>
-                            {isSinhala ? 'නරඹන්න ▶' : 'Watch ▶'}
-                        </Text>
-                    </TouchableOpacity>
                 </View>
             </TouchableOpacity>
         );
@@ -207,115 +203,73 @@ export default function BabyDevelopmentScreen({ navigation }) {
                     <View style={styles.headerCenter}>
                         <Text style={styles.headerEmoji}>👶</Text>
                         <Text style={styles.headerTitle}>
-                            {isSinhala ? 'ළදරු සංවර්ධනය සහ චලනය' : 'Baby Development & Movement'}
+                            ළදරු සංවර්ධනය සහ චලනය
                         </Text>
                     </View>
                     <View style={styles.backBtnPlaceholder} />
                 </View>
 
-                <FlatList
-                    data={loading ? [] : activities}
-                    keyExtractor={(item) => item._id}
-                    renderItem={renderActivityCard}
-                    ListHeaderComponent={() => (
-                        <View style={styles.listHeader}>
-                            {/* Subtitle */}
-                            <Text style={styles.subtitle}>
-                                {isSinhala 
-                                    ? 'ඔබේ බිළිඳාගේ මුල් චලනයන් සහ සංවර්ධනය සඳහා මෘදු ක්‍රියාකාරකම්.' 
-                                    : "Gentle activities to support your baby's early movement and development."}
+                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+                    <View style={styles.listHeader}>
+                        {/* Subtitle */}
+                        <Text style={styles.subtitle}>
+                            ඔබේ බිළිඳාගේ මුල් චලනයන් සහ සංවර්ධනය සඳහා මෘදු ක්‍රියාකාරකම්.
+                        </Text>
+
+                        {/* Safety Disclaimer */}
+                        <View style={styles.safetyBox}>
+                            <View style={styles.safetyTitleRow}>
+                                <Text style={styles.safetyEmoji}>⚠️</Text>
+                                <Text style={styles.safetyTitle}>ආරක්ෂිත දැනුම්දීම</Text>
+                            </View>
+                            <Text style={styles.safetyText}>
+                                මෙම ක්‍රියාකාරකම් සාමාන්‍ය අධ්‍යාපනික අරමුණු සඳහා වේ. සැමවිටම ඔබේ බිළිඳා දෙස බලා සිටින්න. බිළිඳා අපහසුවෙන් හෝ අසනීපයෙන් සිටී නම් නතර කරන්න.
                             </Text>
+                        </View>
 
-                            {/* Safety Disclaimer */}
-                            <View style={styles.safetyBox}>
-                                <View style={styles.safetyTitleRow}>
-                                    <Text style={styles.safetyEmoji}>⚠️</Text>
-                                    <Text style={styles.safetyTitle}>{isSinhala ? 'ආරක්ෂිත දැනුම්දීම' : 'Safety Notice'}</Text>
-                                </View>
-                                <Text style={styles.safetyText}>
-                                    {isSinhala 
-                                        ? 'මෙම ක්‍රියාකාරකම් සාමාන්‍ය අධ්‍යාපනික අරමුණු සඳහා වේ. සැමවිටම ඔබේ බිළිඳා දෙස බලා සිටින්න. බිළිඳා අපහසුවෙන් හෝ අසනීපයෙන් සිටී නම් නතර කරන්න.'
-                                        : 'These activities are for general educational purposes. Always supervise your baby during activities. Stop if your baby appears uncomfortable, distressed, or unwell.'}
-                                </Text>
-                            </View>
+                        {/* Search */}
+                        <View style={styles.searchBox}>
+                            <Text style={styles.searchIcon}>🔍</Text>
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder="ළදරු ක්‍රියාකාරකම් සොයන්න..."
+                                value={search}
+                                onChangeText={setSearch}
+                                placeholderTextColor={COLORS.textLight}
+                            />
+                        </View>
 
-                            {/* Search */}
-                            <View style={styles.searchBox}>
-                                <Text style={styles.searchIcon}>🔍</Text>
-                                <TextInput
-                                    style={styles.searchInput}
-                                    placeholder={isSinhala ? 'ළදරු ක්‍රියාකාරකම් සොයන්න...' : 'Search baby activities...'}
-                                    value={search}
-                                    onChangeText={setSearch}
-                                    placeholderTextColor={COLORS.textLight}
-                                />
-                            </View>
-
-                            {/* Categories */}
-                            <Text style={styles.sectionLabel}>{isSinhala ? 'කාණ්ඩ' : 'Categories'}</Text>
-                            <View style={styles.categoriesGrid}>
-                                {CATEGORIES.map((cat) => {
-                                    const active = selectedCategory === cat.key;
-                                    return (
-                                        <TouchableOpacity 
-                                            key={cat.key}
-                                            style={[styles.categoryTile, active && styles.categoryTileActive]}
-                                            onPress={() => navigation.navigate('BabyCategory', { 
-                                                categoryKey: cat.key, 
-                                                categoryName: cat.name, 
-                                                categoryNameSi: cat.nameSi 
-                                            })}
-                                            activeOpacity={0.8}
+                        {/* Categories */}
+                        <Text style={styles.sectionLabel}>කාණ්ඩ</Text>
+                        <View style={styles.categoriesGrid}>
+                            {CATEGORIES.map((cat) => {
+                                const active = selectedCategory === cat.key;
+                                return (
+                                    <TouchableOpacity 
+                                        key={cat.key}
+                                        style={[styles.categoryTile, active && styles.categoryTileActive]}
+                                        onPress={() => navigation.navigate('BabyCategory', { 
+                                            categoryKey: cat.key, 
+                                            categoryName: cat.name, 
+                                            categoryNameSi: cat.nameSi 
+                                        })}
+                                        activeOpacity={0.8}
+                                    >
+                                        <LinearGradient
+                                            colors={active ? [COLORS.primary, COLORS.primaryDark] : cat.color}
+                                            style={styles.categoryTileGradient}
                                         >
-                                            <LinearGradient
-                                                colors={active ? [COLORS.primary, COLORS.primaryDark] : cat.color}
-                                                style={styles.categoryTileGradient}
-                                            >
-                                                <Text style={styles.categoryIcon}>{cat.icon}</Text>
-                                                <Text style={[styles.categoryName, active && styles.categoryNameActive]}>
-                                                    {isSinhala ? cat.nameSi : cat.name}
-                                                </Text>
-                                                <Text style={[styles.categoryDesc, active && styles.categoryDescActive]} numberOfLines={2}>
-                                                    {isSinhala ? cat.descSi : cat.desc}
-                                                </Text>
-                                            </LinearGradient>
-                                        </TouchableOpacity>
-                                    );
-                                })}
-                            </View>
-
-                            <Text style={[styles.sectionLabel, { marginTop: 24 }]}>
-                                {isSinhala ? 'ක්‍රියාකාරකම්' : 'Activities'}
-                            </Text>
+                                            <Text style={styles.categoryIcon}>{cat.icon}</Text>
+                                            <Text style={[styles.categoryName, active && styles.categoryNameActive]}>
+                                                {cat.nameSi}
+                                            </Text>
+                                        </LinearGradient>
+                                    </TouchableOpacity>
+                                );
+                            })}
                         </View>
-                    )}
-                    ListEmptyComponent={() => (
-                        <View style={styles.emptyBox}>
-                            {loading ? (
-                                <>
-                                    <SkeletonCard />
-                                    <SkeletonCard />
-                                </>
-                            ) : (
-                                <View style={styles.emptyInner}>
-                                    <Text style={styles.emptyEmoji}>🌸</Text>
-                                    <Text style={styles.emptyText}>
-                                        {isSinhala 
-                                            ? 'ගැළපෙන ක්‍රියාකාරකම් කිසිවක් හමු නොවීය.' 
-                                            : 'No activities found.'}
-                                    </Text>
-                                    <Text style={styles.emptySub}>
-                                        {isSinhala
-                                            ? 'Tummy time, ශරීර සෙලවීම්, පෙරළීම්, හෝ අත දිගු කිරීම් වැනි වචන සොයා බලන්න.'
-                                            : 'Try searching for tummy time, movement, reaching, rolling, or stretching.'}
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
-                    )}
-                    contentContainerStyle={{ paddingBottom: 40 }}
-                    showsVerticalScrollIndicator={false}
-                />
+                    </View>
+                </ScrollView>
             </LinearGradient>
         </SafeAreaView>
     );
@@ -374,9 +328,14 @@ const styles = StyleSheet.create({
     sectionLabel: { fontSize: 15, fontWeight: '800', color: COLORS.text, marginBottom: 12 },
 
     // Categories grid
-    categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    categoriesGrid: { 
+        flexDirection: 'row', 
+        flexWrap: 'wrap', 
+        justifyContent: 'space-between',
+        rowGap: 12,
+    },
     categoryTile: {
-        width: (width - 50) / 2,
+        width: '48%',
         borderRadius: 24,
         overflow: 'hidden',
         elevation: 3,
@@ -389,54 +348,91 @@ const styles = StyleSheet.create({
         elevation: 5,
         shadowOpacity: 0.14,
     },
-    categoryTileGradient: { padding: 18, borderRadius: 24, minHeight: 130 },
-    categoryIcon: { fontSize: 34, marginBottom: 10 },
-    categoryName: { fontSize: 14, fontWeight: '900', color: COLORS.text, marginBottom: 6 },
+    categoryTileGradient: { 
+        paddingVertical: 14, 
+        paddingHorizontal: 14, 
+        borderRadius: 24, 
+        minHeight: 110,
+    },
+    categoryIcon: { fontSize: 26, marginBottom: 6 },
+    categoryName: { fontSize: 13, fontWeight: '900', color: COLORS.text, marginBottom: 4 },
     categoryNameActive: { color: '#FFF' },
-    categoryDesc: { fontSize: 11, color: COLORS.textMid, lineHeight: 16 },
+    categoryDesc: { fontSize: 10, color: COLORS.textMid, lineHeight: 14 },
     categoryDescActive: { color: 'rgba(255,255,255,0.85)' },
 
-    // Activity cards
-    activityCard: {
-        flexDirection: 'row',
-        backgroundColor: COLORS.surface,
-        borderRadius: 24,
-        padding: 14,
-        marginHorizontal: 20,
-        marginVertical: 8,
-        borderWidth: 1,
-        borderColor: 'rgba(236,72,153,0.05)',
+    // Exercise styled cards
+    exerciseCard: {
+        backgroundColor: 'transparent',
+        width: (width - 60) / 2.3,
+        maxWidth: 400,
+        marginRight: 14,
+        marginBottom: 10,
+    },
+    thumbnailContainer: {
+        width: '100%',
+        aspectRatio: 16 / 9,
+        borderRadius: 20,
+        overflow: 'hidden',
+        position: 'relative',
+        backgroundColor: '#000',
+        marginBottom: 8,
         ...SHADOW_PINK,
     },
-    thumbnailWrapper: {
-        width: 100, height: 112, borderRadius: 18,
-        overflow: 'hidden', marginRight: 14, backgroundColor: '#F1F5F9',
+    cardThumbnail: { width: '100%', height: '100%' },
+    thumbnailPlaceholder: {
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#FFF0F3',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    thumbnail: { width: '100%', height: '100%' },
-    thumbnailOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-    playChip: {
-        position: 'absolute', bottom: 8, right: 8,
-        width: 28, height: 28, borderRadius: 14,
-        backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center',
-        elevation: 2,
+    durationBadge: {
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        backgroundColor: 'rgba(15,23,42,0.85)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
     },
-    playChipText: { color: '#FFF', fontSize: 11, fontWeight: '900' },
-    cardInfo: { flex: 1, justifyContent: 'space-between' },
-    cardTitle: { fontSize: 15, fontWeight: '900', color: COLORS.text, marginBottom: 4, lineHeight: 20 },
-    cardDesc: { fontSize: 12, color: COLORS.textMid, marginBottom: 8, lineHeight: 17 },
-    badgeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
-    ageBadge: {
-        backgroundColor: COLORS.primaryLight, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10,
+    durationBadgeText: {
+        color: '#FFF',
+        fontSize: 11,
+        fontWeight: 'bold',
     },
-    ageBadgeText: { fontSize: 10, color: COLORS.primary, fontWeight: '700' },
-    durationText: { fontSize: 11, color: COLORS.textLight, fontWeight: '600' },
-    watchBtn: {
-        backgroundColor: COLORS.primary, paddingVertical: 9, borderRadius: 14,
-        alignItems: 'center', elevation: 2,
-        shadowColor: COLORS.primary, shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2, shadowRadius: 6,
+    cardDetailsRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginTop: 2,
     },
-    watchBtnText: { color: '#FFF', fontWeight: '800', fontSize: 12 },
+    cardTextContainer: {
+        flex: 1,
+    },
+    videoTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: COLORS.text,
+        lineHeight: 18,
+        marginBottom: 2,
+    },
+    videoStats: {
+        fontSize: 11,
+        color: COLORS.textMid,
+    },
+    menuContainer: {
+        paddingHorizontal: 2,
+        paddingVertical: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    menuIcon: {
+        fontSize: 16,
+        color: COLORS.textLight,
+    },
+    horizontalScrollContent: {
+        paddingLeft: 20,
+        paddingRight: 20,
+    },
 
     // Empty / loading
     emptyBox: { paddingTop: 8 },
@@ -444,14 +440,4 @@ const styles = StyleSheet.create({
     emptyEmoji: { fontSize: 52, marginBottom: 16 },
     emptyText: { fontSize: 16, fontWeight: '800', color: COLORS.text, marginBottom: 8, textAlign: 'center' },
     emptySub: { fontSize: 13, color: COLORS.textLight, textAlign: 'center', lineHeight: 20 },
-
-    // Shared
-    filterRow: { gap: 8, paddingBottom: 8 },
-    filterChip: {
-        paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16,
-        backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E7EB',
-    },
-    filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-    filterChipText: { fontSize: 13, color: '#4B5563', fontWeight: '600' },
-    filterChipTextActive: { color: '#FFF', fontWeight: '800' },
 });

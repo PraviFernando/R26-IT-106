@@ -27,7 +27,7 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
     const { t } = useTranslation();
     const [error, setError] = useState(false);
     const webViewRef = useRef(null);
-    
+
     const parseDurationToSeconds = (durationStr) => {
         if (!durationStr) return 600; // default 10 mins
         const str = String(durationStr);
@@ -45,11 +45,11 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
     const getEmbedUrl = (videoUrl) => {
         if (!videoUrl) return '';
         let videoId = '';
-        
+
         if (videoUrl.includes('youtube.com/embed/')) {
             return videoUrl;
         }
-        
+
         if (videoUrl.includes('youtu.be/')) {
             videoId = videoUrl.split('youtu.be/')[1]?.split('?')[0];
         } else if (videoUrl.includes('youtube.com/watch')) {
@@ -60,14 +60,14 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
                 console.log('Error parsing URL:', e);
             }
         }
-        
+
         if (videoId) {
             return `https://www.youtube.com/embed/${videoId}?playsinline=1&controls=1&rel=0&modestbranding=1`;
         }
-        
+
         return videoUrl;
     };
-    
+
     const embedUrl = getEmbedUrl(url);
     const videoId = embedUrl.split('youtube.com/embed/')[1]?.split('?')[0];
 
@@ -177,7 +177,7 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
             console.log('Error parsing player message:', e);
         }
     };
-    
+
     return (
         <View style={[styles.videoPlayer, { overflow: 'hidden' }]}>
             {error && (
@@ -185,7 +185,7 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
                     <Text style={styles.webViewErrorText}>
                         {t('Failed to load video')}
                     </Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.webViewRetryBtn}
                         onPress={() => {
                             setError(false);
@@ -235,11 +235,11 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
 // Health Data Input Component
 const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
     const { t } = useTranslation();
-    
+
     const [deliveryDate, setDeliveryDate] = useState(user?.deliveryDate || '');
     const [weeks, setWeeks] = useState(initialData?.weeksAfterDelivery || '');
     const [deliveryType, setDeliveryType] = useState(initialData?.deliveryType || 'normal');
-    
+
     useEffect(() => {
         if (deliveryDate && deliveryDate.length === 10) {
             try {
@@ -265,7 +265,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
     const [mobility, setMobility] = useState(initialData?.mobilityLevel || 'normal');
     const [muscleWeakness, setMuscleWeakness] = useState(initialData?.muscleWeakness || false);
     const [willingness, setWillingness] = useState(initialData?.willingnessToExercise || 'medium');
-    
+
     useEffect(() => {
         if (initialData) {
             if (initialData.weeksAfterDelivery !== undefined && initialData.weeksAfterDelivery !== '') setWeeks(String(initialData.weeksAfterDelivery));
@@ -281,7 +281,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
             if (initialData.willingnessToExercise) setWillingness(initialData.willingnessToExercise);
         }
     }, [initialData]);
-    
+
     const handleSubmit = () => {
         if (!weeks) {
             Toast.show({ type: 'error', text1: t('Please enter weeks after delivery') });
@@ -303,7 +303,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
             willingnessToExercise: willingness
         });
     };
-    
+
     return (
         <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
             {/* Form header */}
@@ -311,26 +311,26 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                 <Text style={styles.formHeaderEmoji}>🩺</Text>
                 <View style={{ flex: 1 }}>
                     <Text style={styles.formTitle}>
-                        {t("Today's Health Status")}
+                        අද දින සෞඛ්‍ය තත්ත්වය
                     </Text>
                     <Text style={styles.formSubtitle}>
-                        {t('Help us personalise your exercise plan')}
+                        ඔබට වඩාත් ගැලපෙන ව්‍යායාම සැලසුම් කිරීමට උදවු වන්න
                     </Text>
                 </View>
             </View>
 
             {/* Section: Delivery Info */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>📅 {t('Delivery Info')}</Text>
+                <Text style={styles.formSectionLabel}>📅 දරු ප්‍රසූතිය පිළිබඳ තොරතුරු</Text>
 
                 {(!user?.deliveryDate) && (
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>
-                            {t('Delivery Date')} ({t('YYYY-MM-DD')})
+                            දරු ප්‍රසූත දිනය (YYYY-MM-DD)
                         </Text>
                         <TextInput
                             style={styles.input}
-                            placeholder={t("2024-05-10")}
+                            placeholder="උදා: 2024-05-10"
                             value={deliveryDate}
                             onChangeText={setDeliveryDate}
                             placeholderTextColor="#9CA3AF"
@@ -340,11 +340,11 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>
-                        {t('Weeks After Delivery')}
+                        දරු ප්‍රසූතියෙන් පසු ගතවූ සති ගණන
                     </Text>
                     <TextInput
                         style={[styles.input, deliveryDate ? { backgroundColor: '#F3F4F6', color: '#6B7280' } : {}]}
-                        placeholder={t("e.g., 4")}
+                        placeholder="උදා: 4"
                         keyboardType="numeric"
                         value={String(weeks)}
                         onChangeText={setWeeks}
@@ -354,14 +354,14 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>{t('Delivery Type')}</Text>
+                    <Text style={styles.label}>දරු ප්‍රසූති ක්‍රමය</Text>
                     <View style={styles.rowButtons}>
                         <TouchableOpacity
                             style={[styles.optionBtn, deliveryType === 'normal' && styles.optionBtnActive]}
                             onPress={() => setDeliveryType('normal')}
                         >
                             <Text style={[styles.optionText, deliveryType === 'normal' && styles.optionTextActive]}>
-                                🤱 {t('Normal')}
+                                🤱 සාමාන්‍ය
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -369,7 +369,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                             onPress={() => setDeliveryType('c-section')}
                         >
                             <Text style={[styles.optionText, deliveryType === 'c-section' && styles.optionTextActive]}>
-                                🏥 {t('C-Section')}
+                                🏥 සිසේරියන්
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -378,60 +378,60 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
             {/* Section: Pain Conditions */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>⚡ {t('Pain Conditions')}</Text>
+                <Text style={styles.formSectionLabel}>⚡ වේදනා තත්ත්වයන්</Text>
                 <View style={styles.checkboxGroup}>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setPelvicPain(!pelvicPain)}>
                         <View style={[styles.checkbox, pelvicPain && styles.checkboxChecked]}>
                             {pelvicPain && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>{t('Pelvic Pain')}</Text>
+                        <Text style={styles.checkboxLabel}>ශ්‍රෝණි වේදනාව (Pelvic Pain)</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setBackPain(!backPain)}>
                         <View style={[styles.checkbox, backPain && styles.checkboxChecked]}>
                             {backPain && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>{t('Back Pain')}</Text>
+                        <Text style={styles.checkboxLabel}>කොන්දේ අමාරුව (Back Pain)</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setAbdominalPain(!abdominalPain)}>
                         <View style={[styles.checkbox, abdominalPain && styles.checkboxChecked]}>
                             {abdominalPain && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>{t('Abdominal Pain')}</Text>
+                        <Text style={styles.checkboxLabel}>උදර වේදනාව (Abdominal Pain)</Text>
                     </TouchableOpacity>
                 </View>
             </View>
 
             {/* Section: Other Health Flags */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>🚩 {t('Other Health Flags')}</Text>
+                <Text style={styles.formSectionLabel}>🚩 වෙනත් සෞඛ්‍ය ගැටළු</Text>
                 <View style={styles.checkboxGroup}>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setBleeding(!bleeding)}>
                         <View style={[styles.checkbox, bleeding && styles.checkboxChecked]}>
                             {bleeding && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>{t('Bleeding Complications')}</Text>
+                        <Text style={styles.checkboxLabel}>ලේ ගැලීමේ සංකූලතා</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setDoctorRestrictions(!doctorRestrictions)}>
                         <View style={[styles.checkbox, doctorRestrictions && styles.checkboxChecked]}>
                             {doctorRestrictions && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>{t('Doctor Restrictions')}</Text>
+                        <Text style={styles.checkboxLabel}>වෛද්‍ය සීමාවන්</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setMuscleWeakness(!muscleWeakness)}>
                         <View style={[styles.checkbox, muscleWeakness && styles.checkboxChecked]}>
                             {muscleWeakness && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>{t('Muscle Weakness')}</Text>
+                        <Text style={styles.checkboxLabel}>මාංශ පේෂී දුර්වලතාවය</Text>
                     </TouchableOpacity>
                 </View>
             </View>
 
             {/* Section: Energy & Mobility */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>⚡ {t('Energy & Mobility')}</Text>
+                <Text style={styles.formSectionLabel}>⚡ ශක්තිය සහ චලන හැකියාව</Text>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>{t('Fatigue Level')}</Text>
+                    <Text style={styles.label}>තෙහෙට්ටුව මට්ටම</Text>
                     <View style={styles.rowButtons}>
                         {['low', 'medium', 'high'].map(level => (
                             <TouchableOpacity
@@ -440,7 +440,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                                 onPress={() => setFatigue(level)}
                             >
                                 <Text style={[styles.optionText, fatigue === level && styles.optionTextActive]}>
-                                    {level === 'low' ? '😊' : level === 'medium' ? '😐' : '😩'} {t(level.charAt(0).toUpperCase() + level.slice(1))}
+                                    {level === 'low' ? '😊 අඩුයි' : level === 'medium' ? '😐 මධ්‍යම' : '😩 වැඩියි'}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -448,7 +448,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>{t('Mobility Level')}</Text>
+                    <Text style={styles.label}>චලන හැකියාව</Text>
                     <View style={styles.columnButtons}>
                         {['very_limited', 'limited', 'normal'].map(level => (
                             <TouchableOpacity
@@ -457,8 +457,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                                 onPress={() => setMobility(level)}
                             >
                                 <Text style={[styles.optionText, mobility === level && styles.optionTextActive]}>
-                                    {level === 'very_limited' ? '🦽 ' : level === 'limited' ? '🚶 ' : '🏃 '}
-                                    {level === 'very_limited' ? t('Very Restricted') : level === 'limited' ? t('Restricted') : t('Normal Mobility')}
+                                    {level === 'very_limited' ? '🦽 ඉතා සීමිතයි' : level === 'limited' ? '🚶 සීමිතයි' : '🏃 සාමාන්‍යයි'}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -466,7 +465,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>{t('Willingness to Exercise')}</Text>
+                    <Text style={styles.label}>ව්‍යායාම කිරීමට ඇති කැමැත්ත</Text>
                     <View style={styles.rowButtons}>
                         {['low', 'medium', 'high'].map(level => (
                             <TouchableOpacity
@@ -475,7 +474,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                                 onPress={() => setWillingness(level)}
                             >
                                 <Text style={[styles.optionText, willingness === level && styles.optionTextActive]}>
-                                    {level === 'low' ? '😴' : level === 'medium' ? '🙂' : '💪'} {t(level.charAt(0).toUpperCase() + level.slice(1))}
+                                    {level === 'low' ? '😴 අඩුයි' : level === 'medium' ? '🙂 මධ්‍යම' : '💪 වැඩියි'}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -491,7 +490,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                 activeOpacity={0.85}
             >
                 <LinearGradient
-                    colors={loading ? ['#A78BFA', '#C4B5FD'] : ['#7C3AED', '#6D28D9']}
+                    colors={loading ? ['#F3E8FF', '#E9D5FF'] : ['#F3E8FF', '#E9D5FF']}
                     style={styles.submitBtnGradient}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
@@ -502,7 +501,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                         <>
                             <Text style={styles.submitBtnEmoji}>✨</Text>
                             <Text style={styles.submitBtnText}>
-                                {t('Get Exercise Recommendations')}
+                                ව්‍යායාම නිර්දේශ ලබා ගන්න
                             </Text>
                         </>
                     )}
@@ -516,14 +515,15 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
 // Exercise Recommendation Card Component
 const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProgressUpdate }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isSinhala = i18n.language === 'si';
     const [videoModal, setVideoModal] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [videoPlaying, setVideoPlaying] = useState(false);
     const [watchPercentage, setWatchPercentage] = useState(exercise.watchPercentage || 0);
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-    
+
     // Stopwatch states
     const [stopwatchTime, setStopwatchTime] = useState(0);
     const [isStopwatchRunning, setIsStopwatchRunning] = useState(false);
@@ -540,16 +540,18 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
     const [results, setResults] = useState(null);
 
     const videoRef = useRef(null);
-    
+
     const details = exercise.exerciseDetails || {};
-    
+
     const isYoutubeCard = exercise.type === 'youtube_video' || exercise.type === 'youtube_fallback' || !exercise.exerciseId;
-    
+
     const title = isYoutubeCard ? (exercise.customName || exercise.name) : (details.nameSi || details.name);
     const duration = isYoutubeCard ? (exercise.duration || 10) : (details.duration || exercise.duration);
     const videoUrl = isYoutubeCard ? (exercise.videoUrl) : (details.videoUrl);
-    const channelName = isYoutubeCard ? (exercise.channelTitle || "Pregnancy & Postpartum TV") : "Pregnancy & Postpartum TV";
-    
+    const channelName = isSinhala
+        ? "ප්‍රසූති ව්‍යායාම නාලිකාව"
+        : (isYoutubeCard ? (exercise.channelTitle || "Pregnancy & Postpartum TV") : "Pregnancy & Postpartum TV");
+
     const parseDurationToSeconds = (durationStr) => {
         if (!durationStr) return 600; // default 10 mins
         const str = String(durationStr);
@@ -570,16 +572,16 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
         const match = url.match(regExp);
         return (match && match[2].length === 11) ? match[2] : '';
     };
-    
-    const videoId = getYoutubeId(videoUrl);
-    const thumbnailUrl = isYoutubeCard && videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : null;
 
-    const videoList = isYoutubeCard 
+    const videoId = getYoutubeId(videoUrl);
+    const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : null;
+
+    const videoList = isYoutubeCard
         ? [{ url: videoUrl, title: title, duration: `${duration} ${t('min')}`, source: "YouTube" }]
         : (details.videos || (details.videoUrl ? [{ url: details.videoUrl, title: details.name, titleSi: details.nameSi, duration: `${details.duration} ${t('min')}`, source: "YouTube" }] : []));
-        
+
     const getExerciseIcon = (type) => {
-        switch(type) {
+        switch (type) {
             case 'breathing': return '🌬️';
             case 'pelvic_floor': return '💪';
             case 'stretching': return '🧘';
@@ -587,7 +589,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
             default: return '🏋️';
         }
     };
-    
+
     // Stopwatch control functions
     const startStopwatch = () => {
         if (!isStopwatchRunning) {
@@ -612,7 +614,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
         setIsStopwatchRunning(false);
         setVideoPlaying(false);
         setVideoModal(false);
-        
+
         // Open simple questions modal
         setPainRating(null);
         setDifficultyRating(null);
@@ -630,7 +632,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
         const actualMins = Math.round(stopwatchTime / 60 * 10) / 10;
         const recDurationSecs = parseDurationToSeconds(duration);
         const recMins = Math.round(recDurationSecs / 60);
-        
+
         const score = recMins > 0 ? Math.round((actualMins / recMins) * 100) : 100;
         const cappedScore = Math.min(score, 100);
 
@@ -670,7 +672,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
         pauseStopwatch();
         setVideoModal(false);
     };
-    
+
     const handleCardPress = () => {
         if (videoList.length > 0) {
             setSelectedVideo(videoList[0]);
@@ -682,114 +684,145 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
 
     return (
         <>
-            <TouchableOpacity 
-                activeOpacity={0.85}
+            <TouchableOpacity
+                activeOpacity={0.9}
                 onPress={handleCardPress}
                 disabled={videoList.length === 0}
             >
-                <LinearGradient
-                    colors={isCompleted ? ['#E8F5E9', '#C8E6C9'] : ['#FFFFFF', '#F5F3FF']}
-                    style={[styles.exerciseCard, isCompleted && styles.exerciseCardCompleted]}
-                >
-                    {isYoutubeCard && thumbnailUrl && (
-                        <View style={styles.thumbnailContainer}>
+                <View style={[styles.exerciseCard, isCompleted && styles.exerciseCardCompleted]}>
+                    <View style={styles.thumbnailContainer}>
+                        {thumbnailUrl ? (
                             <Image source={{ uri: thumbnailUrl }} style={styles.cardThumbnail} resizeMode="cover" />
-                            <View style={styles.thumbnailPlayOverlay}>
-                                <Text style={styles.playOverlayIcon}>▶️</Text>
+                        ) : (
+                            <View style={styles.thumbnailPlaceholder}>
+                                <Text style={{ fontSize: 44 }}>▶️</Text>
                             </View>
-                        </View>
-                    )}
-                    
-                    <View style={styles.exerciseHeader}>
-                        {!isYoutubeCard && <Text style={styles.exerciseIcon}>{getExerciseIcon(details.type)}</Text>}
-                        <View style={styles.exerciseInfo}>
-                            <Text style={styles.exerciseName}>
-                                {title}
-                            </Text>
-                            <Text style={styles.exerciseMeta}>
-                                ⏱️ {t('Duration')}: {String(duration).includes(':') ? duration : `${duration} ${t('min')}`}
-                                {!isYoutubeCard && ` • 📊 ${t('Intensity')}: ${details.intensity === 'low' ? t('Low') : details.intensity === 'medium' ? t('Medium') : t('Controlled')}`}
-                                {isYoutubeCard && ` • 🏷️ ${channelName}`}
+                        )}
+                        <View style={styles.durationBadge}>
+                            <Text style={styles.durationBadgeText}>
+                                {String(duration).includes(':') ? duration : `${duration}:00`}
                             </Text>
                         </View>
                         {watchPercentage > 0 && !isCompleted && (
-                            <View style={styles.progressBadge}>
-                                <Text style={styles.progressBadgeText}>{Math.round(watchPercentage)}%</Text>
-                            </View>
-                        )}
-                        {isCompleted && (
-                            <View style={styles.completedBadge}>
-                                <Text style={styles.completedBadgeText}>✓ {t('Done')}</Text>
-                            </View>
+                            <View style={[styles.progressBar, { width: `${watchPercentage}%` }]} />
                         )}
                     </View>
-                    
-                    {!isYoutubeCard && (
-                        <Text style={styles.exerciseDesc}>
-                             {details.descriptionSi || details.description}
-                        </Text>
-                    )}
-                </LinearGradient>
+
+                    <View style={styles.cardDetailsRow}>
+                        <View style={styles.cardTextContainer}>
+                            <Text style={styles.videoTitle} numberOfLines={2}>
+                                {title}
+                            </Text>
+                            <Text style={styles.videoStats}>
+                                {t('Duration')}: {String(duration).includes(':') ? duration : `${duration} ${t('min')}`}
+                                {!isYoutubeCard && details.intensity && ` • ${t('Intensity')}: ${details.intensity === 'low' ? t('Low') : details.intensity === 'medium' ? t('Medium') : t('Controlled')}`}
+                            </Text>
+                        </View>
+                        <View style={styles.menuContainer}>
+                            {isCompleted ? (
+                                <Text style={styles.completedCheck}>✓</Text>
+                            ) : (
+                                <Text style={styles.menuIcon}>⋮</Text>
+                            )}
+                        </View>
+                    </View>
+                </View>
             </TouchableOpacity>
-            
+
             {/* Video Modal with Stopwatch */}
             <Modal visible={videoModal} transparent animationType="slide" onRequestClose={handleCloseVideoModal}>
                 <View style={styles.modalOverlay}>
                     <View style={styles.videoModalContent}>
-                        <Text style={styles.modalTitle}>
-                            {title}
-                        </Text>
-                        
+                        <View style={styles.modalTitleContainer}>
+                            <Text style={styles.modalTitleText}>
+                                {isSinhala 
+                                    ? '✨ වීඩියෝව නරඹන අතරතුර, මෙම කාල ගණකය මඟින් ඔබේ ව්‍යායාම කාලයද පහසුවෙන්ම මැන ගන්න!' 
+                                    : '✨ Don\'t just watch! Track your actual exercise duration simultaneously using the stopwatch!'}
+                            </Text>
+                        </View>
+
                         {selectedVideo && (
-                            <>
-                                {(selectedVideo.url.includes('youtube') || selectedVideo.url.includes('youtu.be')) ? (
-                                    <YouTubePlayer 
-                                        url={selectedVideo.url} 
-                                        duration={duration}
-                                        style={styles.videoPlayer}
-                                        onProgress={(percentage) => {
-                                            setWatchPercentage(percentage);
-                                            if (onProgressUpdate) {
-                                                onProgressUpdate(exercise, percentage);
-                                            }
-                                        }}
-                                    />
-                                ) : (
-                                    <Video
-                                        ref={videoRef}
-                                        source={{ uri: selectedVideo.url }}
-                                        rate={1.0}
-                                        volume={1.0}
-                                        isMuted={false}
-                                        shouldPlay={videoPlaying}
-                                        useNativeControls
-                                        resizeMode={ResizeMode.CONTAIN}
-                                        style={styles.videoPlayer}
-                                    />
-                                )}
-                                
-                                {/* Stopwatch UI */}
-                                <View style={styles.stopwatchContainer}>
-                                    <Text style={styles.stopwatchLabel}>⏱️ Stopwatch</Text>
-                                    <Text style={styles.stopwatchDisplay}>{formatTime(stopwatchTime)}</Text>
-                                    <View style={styles.stopwatchRow}>
-                                        {!isStopwatchRunning ? (
-                                            <TouchableOpacity style={[styles.controlBtn, styles.startBtn]} onPress={startStopwatch}>
-                                                <Text style={styles.controlBtnText}>▶ Start Exercise</Text>
-                                            </TouchableOpacity>
-                                        ) : (
-                                            <TouchableOpacity style={[styles.controlBtn, styles.pauseBtn]} onPress={pauseStopwatch}>
-                                                <Text style={styles.controlBtnText}>⏸ Pause</Text>
-                                            </TouchableOpacity>
-                                        )}
-                                        <TouchableOpacity style={[styles.controlBtn, styles.stopBtn]} onPress={stopStopwatch}>
-                                            <Text style={styles.controlBtnText}>⏹ Stop & Save</Text>
-                                        </TouchableOpacity>
+                            <View style={styles.modalSplitRow}>
+                                <View style={styles.modalLeftColumn}>
+                                    {(selectedVideo.url.includes('youtube') || selectedVideo.url.includes('youtu.be')) ? (
+                                        <YouTubePlayer
+                                            url={selectedVideo.url}
+                                            duration={duration}
+                                            style={styles.videoPlayer}
+                                            onProgress={(percentage) => {
+                                                setWatchPercentage(percentage);
+                                                if (onProgressUpdate) {
+                                                    onProgressUpdate(exercise, percentage);
+                                                }
+                                            }}
+                                        />
+                                    ) : (
+                                        <Video
+                                            ref={videoRef}
+                                            source={{ uri: selectedVideo.url }}
+                                            rate={1.0}
+                                            volume={1.0}
+                                            isMuted={false}
+                                            shouldPlay={videoPlaying}
+                                            useNativeControls
+                                            resizeMode={ResizeMode.CONTAIN}
+                                            style={styles.videoPlayer}
+                                        />
+                                    )}
+                                </View>
+
+                                <View style={styles.modalRightColumn}>
+                                    {/* Stopwatch UI */}
+                                    <View style={styles.stopwatchContainer}>
+                                        <Text style={styles.stopwatchLabel}>{isSinhala ? '⏱️ කාල ගණකය' : '⏱️ Stopwatch'}</Text>
+                                        <Text style={styles.stopwatchDisplay}>{formatTime(stopwatchTime)}</Text>
+                                        <View style={styles.stopwatchRow}>
+                                            <View style={styles.controlBtnWrapper}>
+                                                {!isStopwatchRunning ? (
+                                                    <TouchableOpacity style={[styles.controlCircleBtn, { backgroundColor: '#E8F5E9' }]} onPress={startStopwatch}>
+                                                        <View style={{
+                                                            width: 0,
+                                                            height: 0,
+                                                            backgroundColor: 'transparent',
+                                                            borderStyle: 'solid',
+                                                            borderLeftWidth: 16,
+                                                            borderRightWidth: 0,
+                                                            borderBottomWidth: 10,
+                                                            borderTopWidth: 10,
+                                                            borderLeftColor: '#2E7D32',
+                                                            borderRightColor: 'transparent',
+                                                            borderBottomColor: 'transparent',
+                                                            borderTopColor: 'transparent',
+                                                            marginLeft: 4,
+                                                        }} />
+                                                    </TouchableOpacity>
+                                                ) : (
+                                                    <TouchableOpacity style={[styles.controlCircleBtn, { backgroundColor: '#FFF3E0' }]} onPress={pauseStopwatch}>
+                                                        <View style={{ flexDirection: 'row', gap: 6 }}>
+                                                            <View style={{ width: 6, height: 20, backgroundColor: '#EF6C00', borderRadius: 2 }} />
+                                                            <View style={{ width: 6, height: 20, backgroundColor: '#EF6C00', borderRadius: 2 }} />
+                                                        </View>
+                                                    </TouchableOpacity>
+                                                )}
+                                                <Text style={styles.controlLabelText}>
+                                                    {!isStopwatchRunning ? (isSinhala ? 'ආරම්භ කරන්න' : 'Start') : (isSinhala ? 'නවතන්න' : 'Pause')}
+                                                </Text>
+                                            </View>
+
+                                            <View style={styles.controlBtnWrapper}>
+                                                <TouchableOpacity style={[styles.controlCircleBtn, { backgroundColor: '#FFEBEE' }]} onPress={stopStopwatch}>
+                                                    <View style={{ width: 18, height: 18, backgroundColor: '#C62828', borderRadius: 4 }} />
+                                                </TouchableOpacity>
+                                                <Text style={styles.controlLabelText}>
+                                                    {isSinhala ? 'පිටවෙන්න' : 'Quit'}
+                                                </Text>
+                                            </View>
+                                        </View>
                                     </View>
                                 </View>
-                            </>
+                            </View>
                         )}
-                        
+
                         <TouchableOpacity style={styles.modalCloseBtn} onPress={handleCloseVideoModal}>
                             <Text style={styles.modalCloseText}>{t('Close')}</Text>
                         </TouchableOpacity>
@@ -802,57 +835,63 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                 <View style={styles.modalOverlay}>
                     <View style={styles.questionsModalContent}>
                         <Text style={styles.feedbackEmojiTitle}>🩺</Text>
-                        <Text style={styles.feedbackTitle}>Post-Exercise Survey</Text>
-                        <Text style={styles.feedbackSubtitle}>Please answer these 3 simple questions to evaluate today's session:</Text>
-                        
+                        <Text style={styles.feedbackTitle}>{isSinhala ? 'ව්‍යායාමයෙන් පසු ඇගයීම' : 'Post-Exercise Survey'}</Text>
+                        <Text style={styles.feedbackSubtitle}>{isSinhala ? 'අද දින සැසිය ඇගයීම සඳහා මෙම සරල ප්‍රශ්න 3ට පිළිතුරු දෙන්න:' : "Please answer these 3 simple questions to evaluate today's session:"}</Text>
+
                         {/* Question 1: Pain */}
-                        <Text style={styles.questionText}>1. Did you feel pain during exercise?</Text>
+                        <Text style={styles.questionText}>{isSinhala ? '1. ව්‍යායාම අතරතුර ඔබට වේදනාවක් දැනුණාද?' : '1. Did you feel pain during exercise?'}</Text>
                         <View style={styles.btnRow}>
                             {['Yes', 'No'].map(ans => (
-                                <TouchableOpacity 
-                                    key={ans} 
-                                    style={[styles.surveyBtn, painRating === ans && styles.surveyBtnActive]} 
+                                <TouchableOpacity
+                                    key={ans}
+                                    style={[styles.surveyBtn, painRating === ans && styles.surveyBtnActive]}
                                     onPress={() => setPainRating(ans)}
                                 >
-                                    <Text style={[styles.surveyBtnText, painRating === ans && styles.surveyBtnTextActive]}>{ans}</Text>
+                                    <Text style={[styles.surveyBtnText, painRating === ans && styles.surveyBtnTextActive]}>
+                                        {isSinhala ? (ans === 'Yes' ? 'ඔව්' : 'නැත') : ans}
+                                    </Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
                         {/* Question 2: Difficulty */}
-                        <Text style={styles.questionText}>2. How difficult was the exercise?</Text>
+                        <Text style={styles.questionText}>{isSinhala ? '2. ව්‍යායාමය කෙතරම් අපහසු වීද?' : '2. How difficult was the exercise?'}</Text>
                         <View style={styles.btnRow}>
                             {['Easy', 'Moderate', 'Hard'].map(ans => (
-                                <TouchableOpacity 
-                                    key={ans} 
-                                    style={[styles.surveyBtn, difficultyRating === ans && styles.surveyBtnActive]} 
+                                <TouchableOpacity
+                                    key={ans}
+                                    style={[styles.surveyBtn, difficultyRating === ans && styles.surveyBtnActive]}
                                     onPress={() => setDifficultyRating(ans)}
                                 >
-                                    <Text style={[styles.surveyBtnText, difficultyRating === ans && styles.surveyBtnTextActive]}>{ans}</Text>
+                                    <Text style={[styles.surveyBtnText, difficultyRating === ans && styles.surveyBtnTextActive]}>
+                                        {isSinhala ? (ans === 'Easy' ? 'පහසුයි' : ans === 'Moderate' ? 'මධ්‍යම' : 'අපහසුයි') : ans}
+                                    </Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
                         {/* Question 3: Feeling */}
-                        <Text style={styles.questionText}>3. How do you feel after exercise?</Text>
+                        <Text style={styles.questionText}>{isSinhala ? '3. ව්‍යායාමයෙන් පසු ඔබට දැනෙන්නේ කෙසේද?' : '3. How do you feel after exercise?'}</Text>
                         <View style={styles.btnRow}>
                             {['Better', 'Same', 'Tired'].map(ans => (
-                                <TouchableOpacity 
-                                    key={ans} 
-                                    style={[styles.surveyBtn, feelingRating === ans && styles.surveyBtnActive]} 
+                                <TouchableOpacity
+                                    key={ans}
+                                    style={[styles.surveyBtn, feelingRating === ans && styles.surveyBtnActive]}
                                     onPress={() => setFeelingRating(ans)}
                                 >
-                                    <Text style={[styles.surveyBtnText, feelingRating === ans && styles.surveyBtnTextActive]}>{ans}</Text>
+                                    <Text style={[styles.surveyBtnText, feelingRating === ans && styles.surveyBtnTextActive]}>
+                                        {isSinhala ? (ans === 'Better' ? 'සුවදායකයි' : ans === 'Same' ? 'වෙනසක් නැත' : 'තෙහෙට්ටුයි') : ans}
+                                    </Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
 
-                        <TouchableOpacity 
-                            style={[styles.submitSurveyBtn, (!painRating || !difficultyRating || !feelingRating) && { opacity: 0.5 }]} 
+                        <TouchableOpacity
+                            style={[styles.submitSurveyBtn, (!painRating || !difficultyRating || !feelingRating) && { opacity: 0.5 }]}
                             disabled={!painRating || !difficultyRating || !feelingRating}
                             onPress={submitFeedbackQuestions}
                         >
-                            <Text style={styles.submitSurveyBtnText}>Submit & Get Feedback</Text>
+                            <Text style={styles.submitSurveyBtnText}>{isSinhala ? 'තොරතුරු ඇතුළත් කරන්න' : 'Submit & Get Feedback'}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -863,23 +902,32 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                 <View style={styles.modalOverlay}>
                     <View style={styles.resultsModalContent}>
                         <Text style={styles.feedbackEmojiTitle}>📊</Text>
-                        <Text style={styles.feedbackTitle}>Session Summary</Text>
-                        
+                        <Text style={styles.feedbackTitle}>{isSinhala ? 'ව්‍යායාම සැසියේ සාරාංශය' : 'Session Summary'}</Text>
+
                         {results && (
                             <View style={styles.resultsInfoBlock}>
-                                <Text style={styles.resultsRowText}>⏱️ Recommended Duration: <Text style={{fontWeight: '800'}}>{results.recommendedDuration} mins</Text></Text>
-                                <Text style={styles.resultsRowText}>⏱️ Actual Workout Duration: <Text style={{fontWeight: '800'}}>{results.actualDuration} mins</Text></Text>
-                                <Text style={styles.resultsRowText}>📈 Adherence Score: <Text style={{fontWeight: '800', color: '#7C3AED'}}>{results.adherenceScore}%</Text></Text>
-                                
+                                <Text style={styles.resultsRowText}>
+                                    {isSinhala ? '⏱️ නිර්දේශිත කාලය: ' : '⏱️ Recommended Duration: '}
+                                    <Text style={{ fontWeight: '800' }}>{results.recommendedDuration} {isSinhala ? 'විනාඩි' : 'mins'}</Text>
+                                </Text>
+                                <Text style={styles.resultsRowText}>
+                                    {isSinhala ? '⏱️ සැබෑ ව්‍යායාම කාලය: ' : '⏱️ Actual Workout Duration: '}
+                                    <Text style={{ fontWeight: '800' }}>{results.actualDuration} {isSinhala ? 'විනාඩි' : 'mins'}</Text>
+                                </Text>
+                                <Text style={styles.resultsRowText}>
+                                    {isSinhala ? '📈 අනුකූලතා ලකුණු: ' : '📈 Adherence Score: '}
+                                    <Text style={{ fontWeight: '800', color: '#7C3AED' }}>{results.adherenceScore}%</Text>
+                                </Text>
+
                                 <View style={styles.dividerLine} />
-                                
-                                <Text style={styles.resultsFeedbackTitle}>System Adaptation:</Text>
+
+                                <Text style={styles.resultsFeedbackTitle}>{isSinhala ? 'පද්ධති ස්වයංක්‍රීය ප්‍රතිචාරය:' : 'System Adaptation:'}</Text>
                                 <Text style={styles.resultsFeedbackText}>"{results.intelligentFeedback}"</Text>
                             </View>
                         )}
 
                         <TouchableOpacity style={styles.resultsCloseBtn} onPress={() => setShowResultsModal(false)}>
-                            <Text style={styles.resultsCloseBtnText}>Done</Text>
+                            <Text style={styles.resultsCloseBtnText}>{isSinhala ? 'අවසන්' : 'Done'}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -892,7 +940,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
 const ProgressDashboard = ({ progress, detectedMood }) => {
     const { t } = useTranslation();
     if (!progress) return null;
-    
+
     return (
         <View style={styles.progressContainer}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -910,7 +958,7 @@ const ProgressDashboard = ({ progress, detectedMood }) => {
                     </View>
                 )}
             </View>
-            
+
             <View style={styles.statsGrid}>
                 <LinearGradient colors={['#FF9A9E', '#FECFEF']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                     <Text style={styles.statValue}>{progress.currentStreak}</Text>
@@ -925,7 +973,7 @@ const ProgressDashboard = ({ progress, detectedMood }) => {
                     <Text style={styles.statLabel}>📊 Weekly Rate</Text>
                 </LinearGradient>
             </View>
-            
+
             <View style={[styles.statsGrid, { marginTop: 10 }]}>
                 <LinearGradient colors={['#a1c4fd', '#c2e9fb']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                     <Text style={styles.statValue}>{progress.averageDuration ?? 0}m</Text>
@@ -951,40 +999,38 @@ const ProgressDashboard = ({ progress, detectedMood }) => {
 const SafetyWarning = ({ safetyStatus, safetyMessage, safetyMessageSi }) => {
     const { t } = useTranslation();
     const message = safetyMessageSi || safetyMessage;
-    
+
     if (safetyStatus === 'blocked') {
         return (
-            <View style={styles.safetyBlocked}>
-                <Text style={styles.safetyIcon}>⚠️</Text>
-                <Text style={styles.safetyTitle}>{t('Warning')}</Text>
-                <Text style={styles.safetyMessage}>{message}</Text>
-                <Text style={styles.safetyAdvice}>
-                    {t('Please consult your doctor')}
-                </Text>
+            <View style={[styles.safetyWarningRow, styles.safetyBlocked]}>
+                <Text style={styles.safetyIconRow}>⚠️</Text>
+                <View style={{ flex: 1 }}>
+                    <Text style={styles.safetyTitleRow}>{t('Warning')}</Text>
+                    <Text style={styles.safetyMessageRow}>{message}</Text>
+                </View>
             </View>
         );
     }
-    
+
     if (safetyStatus === 'limited') {
         return (
-            <View style={styles.safetyLimited}>
-                <Text style={styles.safetyIcon}>⚠️</Text>
-                <Text style={styles.safetyTitle}>{t('Limited Exercise')}</Text>
-                <Text style={styles.safetyMessage}>{message}</Text>
-                <Text style={styles.safetySubtext}>
-                    {t('Only gentle exercises are recommended')}
-                </Text>
+            <View style={[styles.safetyWarningRow, styles.safetyLimited]}>
+                <Text style={styles.safetyIconRow}>⚠️</Text>
+                <View style={{ flex: 1 }}>
+                    <Text style={styles.safetyTitleRow}>{t('Limited Exercise')}</Text>
+                    <Text style={styles.safetyMessageRow}>{message}</Text>
+                </View>
             </View>
         );
     }
-    
+
     return (
-        <View style={styles.safetySafe}>
-            <Text style={styles.safetyIcon}>✅</Text>
-            <Text style={styles.safetyTitle}>{t('Safe')}</Text>
-            <Text style={styles.safetyMessage}>
-                {t('Your condition is suitable for exercise')}
-            </Text>
+        <View style={[styles.safetyWarningRow, styles.safetySafe]}>
+            <Text style={styles.safetyIconRow}>✅</Text>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.safetyTitleRow}>{t('Safe')}</Text>
+                <Text style={styles.safetyMessageRow}>{message}</Text>
+            </View>
         </View>
     );
 };
@@ -1009,12 +1055,12 @@ export default function ExerciseScreen({ navigation }) {
     const [progress, setProgress] = useState(null);
     const [showForm, setShowForm] = useState(true);
     const [activeTab, setActiveTab] = useState('todo');
-    
+
     useEffect(() => {
         loadProgress();
         checkTodayData();
     }, []);
-    
+
     const loadProgress = async () => {
         try {
             const data = await exerciseService.getProgress(30);
@@ -1023,7 +1069,7 @@ export default function ExerciseScreen({ navigation }) {
             console.error('Failed to load progress:', err);
         }
     };
-    
+
     const checkTodayData = async () => {
         try {
             const data = await exerciseService.getHealthData(todayStr());
@@ -1032,27 +1078,35 @@ export default function ExerciseScreen({ navigation }) {
             } else if (data.recommendedExercises) {
                 setInitialHealthData(data);
             }
+
+            const userId = user?.id || user?._id || user?.email || 'default';
+            const storageKey = `exercise_prompt_shown_${userId}`;
+            const lastShownDate = await AsyncStorage.getItem(storageKey);
+            const isFirstTimeToday = lastShownDate !== todayStr();
+
             if (data.exists) {
                 setHasData(true);
                 await loadRecommendations();
-                
-                const userId = user?.id || user?._id || user?.email || 'default';
-                const storageKey = `exercise_prompt_shown_${userId}`;
-                const lastShownDate = await AsyncStorage.getItem(storageKey);
-                
-                if (lastShownDate !== todayStr()) {
+
+                if (isFirstTimeToday) {
                     await AsyncStorage.setItem(storageKey, todayStr());
                     setShowHealthPromptModal(true);
                 }
             } else {
                 setHasData(false);
-                setShowForm(true);
+                if (isFirstTimeToday) {
+                    await AsyncStorage.setItem(storageKey, todayStr());
+                    setShowForm(false);
+                    setShowHealthPromptModal(true);
+                } else {
+                    setShowForm(true);
+                }
             }
         } catch (err) {
             console.error('Failed to check data:', err);
         }
     };
-    
+
     const loadRecommendations = async () => {
         try {
             const data = await exerciseService.getRecommendations(todayStr());
@@ -1068,7 +1122,7 @@ export default function ExerciseScreen({ navigation }) {
             console.error('Failed to load recommendations:', err);
         }
     };
-    
+
     const handleSubmitHealthData = async (healthData) => {
         setLoading(true);
         try {
@@ -1079,7 +1133,6 @@ export default function ExerciseScreen({ navigation }) {
                 setSafetyMessage(response.safetyMessage);
                 setSafetyMessageSi(response.safetyMessageSi);
                 setDetectedMood(response.detectedMood || null);
-                
                 // Reset completed tab by forcing completed: false and watchPercentage: 0 for new session
                 const resetRecs = (response.recommendedExercises || []).map(rec => ({
                     ...rec,
@@ -1090,16 +1143,21 @@ export default function ExerciseScreen({ navigation }) {
                 setActiveTab('todo');
                 setHasData(true);
                 setShowForm(false);
-                
+
                 // Scroll to top of the exercise page after submitting health form
                 setTimeout(() => {
                     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                 }, 100);
-                
+
+                // Show safety status in a toast notification for 2 seconds
                 Toast.show({
                     type: response.safetyStatus === 'blocked' ? 'error' : 'success',
-                    text1: `✅ ${t('Information Saved')}`,
-                    position: 'top'
+                    text1: isSinhala
+                        ? (response.safetyStatus === 'blocked' ? 'අවවාදයයි' : 'ආරක්ෂිතයි')
+                        : (response.safetyStatus === 'blocked' ? 'Warning' : 'Safe'),
+                    text2: isSinhala ? response.safetyMessageSi : response.safetyMessage,
+                    position: 'top',
+                    visibilityTime: 2000
                 });
             }
         } catch (err) {
@@ -1113,7 +1171,7 @@ export default function ExerciseScreen({ navigation }) {
             setLoading(false);
         }
     };
-    
+
     const handleCompleteExercise = async (exercise, feedbackData = {}) => {
         try {
             await exerciseService.saveExerciseRecord({
@@ -1125,22 +1183,22 @@ export default function ExerciseScreen({ navigation }) {
                 liked: true,
                 ...feedbackData
             });
-            
+
             setRecommendations(prev =>
                 prev.map(rec => {
-                    const match = exercise.exerciseId 
+                    const match = exercise.exerciseId
                         ? rec.exerciseId === exercise.exerciseId
                         : (rec.customName === exercise.customName || rec.videoUrl === exercise.videoUrl);
                     return match ? { ...rec, completed: true } : rec;
                 })
             );
-            
+
             Toast.show({
                 type: 'success',
                 text1: `🎉 ${t('Exercise Completed!')}`,
                 position: 'top'
             });
-            
+
             loadProgress();
         } catch (err) {
             Toast.show({
@@ -1150,11 +1208,11 @@ export default function ExerciseScreen({ navigation }) {
             });
         }
     };
-    
+
     const handleProgressUpdate = async (exercise, percentage) => {
         setRecommendations(prev =>
             prev.map(rec => {
-                const match = exercise.exerciseId 
+                const match = exercise.exerciseId
                     ? rec.exerciseId === exercise.exerciseId
                     : (rec.customName === exercise.customName || rec.videoUrl === exercise.videoUrl);
                 return match ? { ...rec, watchPercentage: Math.round(percentage) } : rec;
@@ -1163,7 +1221,7 @@ export default function ExerciseScreen({ navigation }) {
 
         // If user watched more than 80% of the video, automatically mark it as completed!
         const isAlreadyCompleted = recommendations.find(rec => {
-            const match = exercise.exerciseId 
+            const match = exercise.exerciseId
                 ? rec.exerciseId === exercise.exerciseId
                 : (rec.customName === exercise.customName || rec.videoUrl === exercise.videoUrl);
             return match && rec.completed;
@@ -1171,11 +1229,11 @@ export default function ExerciseScreen({ navigation }) {
 
         if (percentage >= 80 && !isAlreadyCompleted) {
             console.log(`[Progress Track] Auto-completing exercise: ${exercise.customName || exercise.name} at ${percentage.toFixed(1)}%`);
-            
+
             // Instantly update local state so the card moves to the Completed tab in the exact same millisecond
             setRecommendations(prev =>
                 prev.map(rec => {
-                    const match = exercise.exerciseId 
+                    const match = exercise.exerciseId
                         ? rec.exerciseId === exercise.exerciseId
                         : (rec.customName === exercise.customName || rec.videoUrl === exercise.videoUrl);
                     return match ? { ...rec, completed: true, watchPercentage: 100 } : rec;
@@ -1193,7 +1251,7 @@ export default function ExerciseScreen({ navigation }) {
             handleCompleteExercise(exercise).catch(err => console.error('Failed to complete exercise:', err.message));
         }
     };
-    
+
     const handleUploadVideo = async (exerciseId, videoUri) => {
         try {
             const response = await exerciseService.uploadVideo({
@@ -1206,7 +1264,7 @@ export default function ExerciseScreen({ navigation }) {
             throw err;
         }
     };
-    
+
     return (
         <SafeAreaView style={styles.safe}>
             <LinearGradient colors={['#F7F3FF', '#FDFBFF', '#EBE0FF']} style={styles.gradient}>
@@ -1225,27 +1283,21 @@ export default function ExerciseScreen({ navigation }) {
                     <View style={styles.backBtnPlaceholder} />
                 </View>
                 <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                    <TouchableOpacity 
-                        style={styles.viewProgressBtn}
-                        onPress={() => navigation.navigate('Progress')}
-                    >
-                        <LinearGradient colors={['#7C3AED', '#A78BFA']} style={styles.viewProgressBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                            <Text style={styles.viewProgressBtnEmoji}>📊</Text>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.viewProgressBtnTitle}>ඔබේ ප්‍රගතිය (Your Progress)</Text>
-                                <Text style={styles.viewProgressBtnSub}>View streaks, adherence & recovery trends →</Text>
-                            </View>
-                        </LinearGradient>
-                    </TouchableOpacity>
-                    
-                    {safetyStatus && (
-                        <SafetyWarning
-                            safetyStatus={safetyStatus}
-                            safetyMessage={safetyMessage}
-                            safetyMessageSi={safetyMessageSi}
-                        />
+                    {!(showForm || !hasData) && (
+                        <TouchableOpacity
+                            style={styles.viewProgressBtn}
+                            onPress={() => navigation.navigate('Progress')}
+                        >
+                            <LinearGradient colors={['#FAF5FF', '#F3E8FF']} style={styles.viewProgressBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                                <Text style={styles.viewProgressBtnEmoji}>📊</Text>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.viewProgressBtnTitle}>ඔබේ ප්‍රගතිය</Text>
+                                    <Text style={styles.viewProgressBtnSub}>ක්‍රියාකාරකම්, අනුකූලතාවය සහ සුවය ලැබීමේ ප්‍රවණතා බලන්න →</Text>
+                                </View>
+                            </LinearGradient>
+                        </TouchableOpacity>
                     )}
-                    
+
                     {(showForm || !hasData) && (
                         <HealthDataForm
                             onSubmit={handleSubmitHealthData}
@@ -1254,32 +1306,11 @@ export default function ExerciseScreen({ navigation }) {
                             initialData={initialHealthData}
                         />
                     )}
-                    
+
                     {!showForm && hasData && recommendations.length > 0 && safetyStatus !== 'blocked' && (
                         <View style={styles.recommendationsContainer}>
 
-                            {/* Plan header banner */}
-                            <LinearGradient
-                                colors={['#7C3AED', '#A78BFA']}
-                                style={styles.planBanner}
-                                start={{ x: 0, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                            >
-                                <View>
-                                    <Text style={styles.planBannerTitle}>
-                                        🏋️‍♀️ {t("Today's Exercise Plan")}
-                                    </Text>
-                                    <Text style={styles.planBannerSub}>
-                                        {recommendations.filter(r => r.completed).length}/{Math.min(5, recommendations.length)} {t('completed')}
-                                    </Text>
-                                </View>
-                                <View style={styles.planBannerBadge}>
-                                    <Text style={styles.planBannerBadgeText}>
-                                        {Math.min(5, recommendations.length)}
-                                    </Text>
-                                    <Text style={styles.planBannerBadgeLabel}>{t('exercises')}</Text>
-                                </View>
-                            </LinearGradient>
+
 
                             {/* Tab Switcher */}
                             <View style={styles.tabContainer}>
@@ -1303,16 +1334,18 @@ export default function ExerciseScreen({ navigation }) {
 
                             {activeTab === 'todo' && (
                                 recommendations.filter(rec => !rec.completed).slice(0, 5).length > 0 ? (
-                                    recommendations.filter(rec => !rec.completed).slice(0, 5).map((rec, idx) => (
-                                        <ExerciseCard
-                                            key={idx}
-                                            exercise={rec}
-                                            onComplete={handleCompleteExercise}
-                                            onUploadVideo={handleUploadVideo}
-                                            isCompleted={rec.completed}
-                                            onProgressUpdate={handleProgressUpdate}
-                                        />
-                                    ))
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollContent}>
+                                        {recommendations.filter(rec => !rec.completed).slice(0, 5).map((rec, idx) => (
+                                            <ExerciseCard
+                                                key={idx}
+                                                exercise={rec}
+                                                onComplete={handleCompleteExercise}
+                                                onUploadVideo={handleUploadVideo}
+                                                isCompleted={rec.completed}
+                                                onProgressUpdate={handleProgressUpdate}
+                                            />
+                                        ))}
+                                    </ScrollView>
                                 ) : (
                                     <View style={styles.emptyContainerSmall}>
                                         <Text style={styles.emptyTitleSmall}>🎉 {t('All Done!')}</Text>
@@ -1323,16 +1356,18 @@ export default function ExerciseScreen({ navigation }) {
 
                             {activeTab === 'completed' && (
                                 recommendations.filter(rec => rec.completed).length > 0 ? (
-                                    recommendations.filter(rec => rec.completed).map((rec, idx) => (
-                                        <ExerciseCard
-                                            key={idx}
-                                            exercise={rec}
-                                            onComplete={handleCompleteExercise}
-                                            onUploadVideo={handleUploadVideo}
-                                            isCompleted={rec.completed}
-                                            onProgressUpdate={handleProgressUpdate}
-                                        />
-                                    ))
+                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollContent}>
+                                        {recommendations.filter(rec => rec.completed).map((rec, idx) => (
+                                            <ExerciseCard
+                                                key={idx}
+                                                exercise={rec}
+                                                onComplete={handleCompleteExercise}
+                                                onUploadVideo={handleUploadVideo}
+                                                isCompleted={rec.completed}
+                                                onProgressUpdate={handleProgressUpdate}
+                                            />
+                                        ))}
+                                    </ScrollView>
                                 ) : (
                                     <View style={styles.emptyContainerSmall}>
                                         <Text style={styles.emptyTitleSmall}>🌸 {t('No Videos Completed')}</Text>
@@ -1342,7 +1377,7 @@ export default function ExerciseScreen({ navigation }) {
                             )}
                         </View>
                     )}
-                    
+
                     {!showForm && hasData && recommendations.length === 0 && safetyStatus !== 'blocked' && (
                         <View style={styles.emptyContainer}>
                             <Text style={styles.emptyEmoji}>🌸</Text>
@@ -1354,7 +1389,7 @@ export default function ExerciseScreen({ navigation }) {
                             </Text>
                         </View>
                     )}
-                    
+
                     {safetyStatus === 'blocked' && (
                         <View style={styles.emptyContainer}>
                             <Text style={styles.emptyEmoji}>🩺</Text>
@@ -1366,7 +1401,7 @@ export default function ExerciseScreen({ navigation }) {
                             </Text>
                         </View>
                     )}
-                    
+
                     {!showForm && hasData && (
                         <TouchableOpacity
                             style={styles.addDataBtn}
@@ -1377,7 +1412,7 @@ export default function ExerciseScreen({ navigation }) {
                             </Text>
                         </TouchableOpacity>
                     )}
-                    
+
                     <View style={{ height: 40 }} />
                 </ScrollView>
             </LinearGradient>
@@ -1391,14 +1426,14 @@ export default function ExerciseScreen({ navigation }) {
                             {isSinhala ? 'සෞඛ්‍ය තත්ත්වය වෙනස් කරනවාද?' : 'Change Health Condition?'}
                         </Text>
                         <Text style={styles.promptSubtitle}>
-                            {isSinhala 
-                                ? 'අද දින සඳහා ඔබේ සෞඛ්‍ය තත්ත්වයේ යම් වෙනසක් සිදුවී ඇත්ද?' 
+                            {isSinhala
+                                ? 'අද දින සඳහා ඔබේ සෞඛ්‍ය තත්ත්වයේ යම් වෙනසක් සිදුවී ඇත්ද?'
                                 : 'Would you like to update your health condition for today before viewing exercises?'}
                         </Text>
-                        
+
                         <View style={styles.promptBtnRow}>
-                            <TouchableOpacity 
-                                style={[styles.promptBtn, styles.thumbsUpBtn]} 
+                            <TouchableOpacity
+                                style={[styles.promptBtn, styles.thumbsUpBtn]}
                                 onPress={() => {
                                     setShowForm(true);
                                     setShowHealthPromptModal(false);
@@ -1413,14 +1448,33 @@ export default function ExerciseScreen({ navigation }) {
                                 </Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity 
-                                style={[styles.promptBtn, styles.thumbsDownBtn]} 
-                                onPress={() => {
-                                    setShowForm(false);
+                            <TouchableOpacity
+                                style={[styles.promptBtn, styles.thumbsDownBtn]}
+                                onPress={async () => {
                                     setShowHealthPromptModal(false);
-                                    setTimeout(() => {
-                                        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-                                    }, 100);
+                                    if (!hasData) {
+                                        const hData = initialHealthData || {};
+                                        const payload = {
+                                            date: todayStr(),
+                                            weeksAfterDelivery: hData.weeksAfterDelivery !== undefined ? parseInt(hData.weeksAfterDelivery) : 0,
+                                            deliveryType: hData.deliveryType || 'normal',
+                                            pelvicPain: hData.pelvicPain || false,
+                                            backPain: hData.backPain || false,
+                                            abdominalPain: hData.abdominalPain || false,
+                                            bleedingComplications: hData.bleedingComplications || false,
+                                            doctorRestrictions: hData.doctorRestrictions || false,
+                                            fatigueLevel: hData.fatigueLevel || 'low',
+                                            mobilityLevel: hData.mobilityLevel || 'normal',
+                                            muscleWeakness: hData.muscleWeakness || false,
+                                            willingnessToExercise: hData.willingnessToExercise || 'medium'
+                                        };
+                                        await handleSubmitHealthData(payload);
+                                    } else {
+                                        setShowForm(false);
+                                        setTimeout(() => {
+                                            scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+                                        }, 100);
+                                    }
                                 }}
                             >
                                 <Text style={styles.promptBtnEmoji}>👎</Text>
@@ -1432,7 +1486,6 @@ export default function ExerciseScreen({ navigation }) {
                     </View>
                 </View>
             </Modal>
-
             <Toast />
         </SafeAreaView>
     );
@@ -1478,158 +1531,270 @@ const styles = StyleSheet.create({
     },
     statValue: { fontSize: 24, fontWeight: '900', color: '#FFF' },
     statLabel: { fontSize: 11, color: 'rgba(255,255,255,0.9)', fontWeight: '700', marginTop: 4, textAlign: 'center' },
-    chartContainer: { marginTop: 16 },
-    chartTitle: { fontSize: 13, fontWeight: '700', color: '#1E293B', marginBottom: 12 },
-    barChart: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end', height: 100 },
-    barItem: { alignItems: 'center', width: 35 },
-    bar: { width: 24, backgroundColor: '#7C3AED', borderRadius: 6, marginBottom: 8, minHeight: 4 },
-    barLabel: { fontSize: 9, color: '#64748B' },
 
     // Safety banners
+    safetyWarningRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 12,
+        borderRadius: 16,
+        marginBottom: 16,
+        borderWidth: 1,
+        width: '90%',
+        alignSelf: 'center',
+    },
     safetyBlocked: {
-        backgroundColor: '#FFF1F2', borderRadius: 24, padding: 20, marginBottom: 16,
-        alignItems: 'center', borderWidth: 1.5, borderColor: '#FDA4AF',
-        elevation: 2, shadowColor: '#E11D48', shadowOpacity: 0.05,
-        shadowRadius: 10, shadowOffset: { height: 3, width: 0 },
+        backgroundColor: '#FFF1F2',
+        borderColor: '#FDA4AF',
     },
     safetyLimited: {
-        backgroundColor: '#FFFBEB', borderRadius: 24, padding: 20, marginBottom: 16,
-        borderWidth: 1.5, borderColor: '#FDE68A',
-        elevation: 2, shadowColor: '#D97706', shadowOpacity: 0.05,
-        shadowRadius: 10, shadowOffset: { height: 3, width: 0 },
+        backgroundColor: '#FFFBEB',
+        borderColor: '#FDE68A',
     },
     safetySafe: {
-        backgroundColor: '#ECFDF5', borderRadius: 24, padding: 20, marginBottom: 16,
-        alignItems: 'center', borderWidth: 1.5, borderColor: '#A7F3D0',
-        elevation: 2, shadowColor: '#059669', shadowOpacity: 0.05,
-        shadowRadius: 10, shadowOffset: { height: 3, width: 0 },
+        backgroundColor: '#ECFDF5',
+        borderColor: '#A7F3D0',
     },
-    safetyIcon: { fontSize: 30, marginBottom: 8 },
-    safetyTitle: { fontSize: 15, fontWeight: '900', color: '#1E293B', marginBottom: 6 },
-    safetyMessage: { fontSize: 13, color: '#475569', textAlign: 'center', marginBottom: 8, lineHeight: 19 },
-    safetySubtext: { fontSize: 12, color: '#64748B', textAlign: 'center' },
-    safetyAdvice: { fontSize: 13, fontWeight: '800', color: '#EF4444' },
+    safetyIconRow: {
+        fontSize: 20,
+        marginRight: 12,
+    },
+    safetyTitleRow: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: '#1E293B',
+    },
+    safetyMessageRow: {
+        fontSize: 11,
+        color: '#475569',
+        marginTop: 1,
+        lineHeight: 15,
+    },
 
     // Health form
     formContainer: {
-        backgroundColor: '#FFF', borderRadius: 28, padding: 22, marginBottom: 16,
-        elevation: 3, shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.05, shadowRadius: 16, borderWidth: 1,
-        borderColor: 'rgba(124,58,237,0.05)',
+        backgroundColor: '#FFF',
+        borderRadius: 20,
+        padding: 10,
+        marginBottom: 16,
+        borderWidth: 1,
+        borderColor: '#EDE9FE',
+        width: '70%',
+        alignSelf: 'center',
     },
-    formHeaderRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 20 },
-    formHeaderEmoji: { fontSize: 36, marginTop: 2 },
-    formTitle: { fontSize: 17, fontWeight: '900', color: '#1E293B', marginBottom: 3 },
-    formSubtitle: { fontSize: 12, color: '#94A3B8', fontWeight: '500' },
+    formHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+    formHeaderEmoji: { fontSize: 24 },
+    formTitle: { fontSize: 14, fontWeight: 'bold', color: '#1E293B', marginBottom: 2 },
+    formSubtitle: { fontSize: 10, color: '#94A3B8', fontWeight: '500' },
     formSection: {
-        backgroundColor: '#FAFAF9', borderRadius: 20, padding: 16,
-        marginBottom: 14, borderWidth: 1, borderColor: '#EDE9FE',
+        backgroundColor: '#FAF5FF',
+        borderRadius: 14,
+        padding: 10,
+        marginBottom: 10,
+        borderWidth: 1,
+        borderColor: '#EBE0FF',
     },
-    formSectionLabel: { fontSize: 13, fontWeight: '800', color: '#7C3AED', marginBottom: 14, letterSpacing: 0.3 },
+    formSectionLabel: { fontSize: 11, fontWeight: 'bold', color: '#7C3AED', marginBottom: 8, letterSpacing: 0.2 },
 
-    inputGroup: { marginBottom: 18 },
-    label: { fontSize: 14, fontWeight: '700', color: '#1E293B', marginBottom: 8 },
+    inputGroup: { marginBottom: 10 },
+    label: { fontSize: 11, fontWeight: '700', color: '#334155', marginBottom: 4 },
     input: {
-        borderWidth: 1.5, borderColor: '#EDE9FE', borderRadius: 16,
-        padding: 14, fontSize: 14, backgroundColor: '#FAFAF9', color: '#1E293B',
+        borderWidth: 1.2, borderColor: '#DDD6FE', borderRadius: 12,
+        padding: 8, fontSize: 12, backgroundColor: '#FAFAF9', color: '#1E293B',
     },
-    rowButtons: { flexDirection: 'row', gap: 10 },
-    columnButtons: { gap: 8 },
+    rowButtons: { flexDirection: 'row', gap: 6 },
+    columnButtons: { gap: 4 },
     optionBtn: {
-        flex: 1, paddingVertical: 12, borderRadius: 14,
-        backgroundColor: '#FAFAF9', alignItems: 'center',
-        borderWidth: 1.5, borderColor: '#EDE9FE',
+        flex: 1, paddingVertical: 7, borderRadius: 10,
+        backgroundColor: '#FFF', alignItems: 'center',
+        borderWidth: 1.2, borderColor: '#EDE9FE',
     },
     optionBtnWide: {
-        paddingVertical: 12, borderRadius: 14,
-        backgroundColor: '#FAFAF9', alignItems: 'center',
-        borderWidth: 1.5, borderColor: '#EDE9FE',
+        paddingVertical: 7, borderRadius: 10,
+        backgroundColor: '#FFF', alignItems: 'center',
+        borderWidth: 1.2, borderColor: '#EDE9FE',
     },
-    optionBtnActive: { backgroundColor: '#7C3AED', borderColor: '#7C3AED' },
-    optionText: { fontSize: 14, color: '#475569', fontWeight: '600' },
-    optionTextActive: { color: '#FFF', fontWeight: '800' },
-    checkboxGroup: { marginBottom: 12 },
-    checkboxRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 7 },
+    optionBtnActive: { backgroundColor: '#E9D5FF', borderColor: '#D8B4FE' },
+    optionText: { fontSize: 11, color: '#475569', fontWeight: '600' },
+    optionTextActive: { color: '#5B21B6', fontWeight: '800' },
+    checkboxGroup: { marginBottom: 6 },
+    checkboxRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 4 },
     checkbox: {
-        width: 24, height: 24, borderRadius: 8, borderWidth: 2,
-        borderColor: '#DDD6FE', marginRight: 12, backgroundColor: '#FFF',
+        width: 18, height: 18, borderRadius: 5, borderWidth: 1.5,
+        borderColor: '#DDD6FE', marginRight: 8, backgroundColor: '#FFF',
     },
-    checkboxChecked: { backgroundColor: '#7C3AED', borderColor: '#7C3AED', alignItems: 'center', justifyContent: 'center' },
-    checkboxTick: { color: '#FFF', fontSize: 13, fontWeight: '900' },
-    checkboxLabel: { fontSize: 14, color: '#475569', fontWeight: '600' },
+    checkboxChecked: { backgroundColor: '#E9D5FF', borderColor: '#D8B4FE', alignItems: 'center', justifyContent: 'center' },
+    checkboxTick: { color: '#5B21B6', fontSize: 10, fontWeight: '900' },
+    checkboxLabel: { fontSize: 11, color: '#475569', fontWeight: '600' },
     submitBtn: {
-        backgroundColor: '#7C3AED', padding: 16, borderRadius: 20,
-        alignItems: 'center', marginTop: 10, elevation: 4,
-        shadowColor: '#7C3AED', shadowOpacity: 0.25, shadowRadius: 10,
-        shadowOffset: { height: 4, width: 0 },
+        borderRadius: 14,
+        overflow: 'hidden',
+        marginTop: 4,
     },
     submitBtnDisabled: { opacity: 0.65 },
-    submitBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, padding: 16, borderRadius: 20 },
-    submitBtnEmoji: { fontSize: 18 },
-    submitBtnText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
+    submitBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10, borderRadius: 14 },
+    submitBtnEmoji: { fontSize: 14 },
+    submitBtnText: { color: '#5B21B6', fontWeight: '800', fontSize: 12 },
 
     // Exercise plan banner
     planBanner: {
-        borderRadius: 24, padding: 20, marginBottom: 14,
+        borderRadius: 18, padding: 14, marginBottom: 14,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        elevation: 4, shadowColor: '#7C3AED', shadowOpacity: 0.2,
-        shadowRadius: 12, shadowOffset: { width: 0, height: 6 },
+        borderWidth: 1, borderColor: '#DDD6FE',
+        width: '90%',
+        alignSelf: 'center',
     },
-    planBannerTitle: { fontSize: 16, fontWeight: '900', color: '#FFF', marginBottom: 4 },
-    planBannerSub: { fontSize: 12, color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
+    planBannerTitle: { fontSize: 13, fontWeight: 'bold', color: '#4C1D95', marginBottom: 2 },
+    planBannerSub: { fontSize: 11, color: '#7C3AED', fontWeight: '600' },
     planBannerBadge: {
-        backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 16,
-        paddingHorizontal: 14, paddingVertical: 10, alignItems: 'center',
+        backgroundColor: 'rgba(124, 58, 237, 0.08)', borderRadius: 12,
+        paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center',
     },
-    planBannerBadgeText: { fontSize: 24, fontWeight: '900', color: '#FFF' },
-    planBannerBadgeLabel: { fontSize: 10, color: 'rgba(255,255,255,0.85)', fontWeight: '700', marginTop: 2 },
+    planBannerBadgeText: { fontSize: 18, fontWeight: 'bold', color: '#4C1D95' },
+    planBannerBadgeLabel: { fontSize: 9, color: '#7C3AED', fontWeight: '700', marginTop: 1 },
 
     // Exercise cards
     recommendationsContainer: { marginBottom: 16 },
     recommendationsTitle: { fontSize: 17, fontWeight: '900', color: '#1E293B', marginBottom: 14 },
+    horizontalScrollContent: {
+        paddingRight: 20,
+    },
     exerciseCard: {
-        borderRadius: 28, padding: 18, marginBottom: 14, elevation: 3,
-        shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.06, shadowRadius: 16, borderWidth: 1,
-        borderColor: 'rgba(124,58,237,0.05)',
+        backgroundColor: 'transparent',
+        width: (width - 60) / 2.3,
+        maxWidth: 400,
+        marginRight: 14,
+        marginBottom: 10,
     },
     thumbnailContainer: {
-        width: '100%', height: 168, borderRadius: 20,
-        overflow: 'hidden', marginBottom: 14, position: 'relative',
-        backgroundColor: '#EDE9FE',
+        width: '100%',
+        aspectRatio: 16 / 9,
+        borderRadius: 12,
+        overflow: 'hidden',
+        position: 'relative',
+        backgroundColor: '#000',
+        marginBottom: 8,
     },
     cardThumbnail: { width: '100%', height: '100%' },
-    thumbnailPlayOverlay: {
-        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-        justifyContent: 'center', alignItems: 'center',
-        backgroundColor: 'rgba(109,40,217,0.12)',
+    thumbnailPlaceholder: {
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#EDE9FE',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    playOverlayIcon: { fontSize: 44 },
-    exerciseCardCompleted: { opacity: 0.82 },
-    exerciseHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-    exerciseIcon: { fontSize: 34, marginRight: 14 },
-    exerciseInfo: { flex: 1 },
-    exerciseName: { fontSize: 15, fontWeight: '900', color: '#1E293B', lineHeight: 20 },
-    exerciseMeta: { fontSize: 11, color: '#64748B', marginTop: 4, fontWeight: '600', lineHeight: 16 },
-    completedBadge: {
-        backgroundColor: '#10B981', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 14,
+    durationBadge: {
+        position: 'absolute',
+        bottom: 6,
+        right: 6,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        paddingHorizontal: 4,
+        paddingVertical: 1,
+        borderRadius: 3,
     },
-    completedBadgeText: { fontSize: 12, color: '#FFF', fontWeight: '800' },
-    progressBadge: {
-        backgroundColor: '#EDE9FE', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12,
+    durationBadgeText: {
+        color: '#FFF',
+        fontSize: 9,
+        fontWeight: 'bold',
     },
-    progressBadgeText: { color: '#7C3AED', fontSize: 12, fontWeight: '800' },
-    exerciseDesc: { fontSize: 13, color: '#475569', marginBottom: 12, lineHeight: 20 },
+    progressBar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        height: 3,
+        backgroundColor: '#FF0000',
+    },
+    exerciseCardCompleted: {
+        opacity: 0.6,
+    },
+    cardDetailsRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginTop: 2,
+    },
+    channelAvatar: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: '#F5F3FF',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 8,
+        borderWidth: 1.5,
+        borderColor: '#EDE9FE',
+    },
+    channelAvatarText: {
+        fontSize: 14,
+    },
+    cardTextContainer: {
+        flex: 1,
+    },
+    videoTitle: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#0F172A',
+        lineHeight: 16,
+        marginBottom: 2,
+    },
+    channelMetadata: {
+        fontSize: 10,
+        color: '#64748B',
+        marginBottom: 1,
+    },
+    videoStats: {
+        fontSize: 9,
+        color: '#94A3B8',
+    },
+    menuContainer: {
+        paddingHorizontal: 2,
+        paddingVertical: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    menuIcon: {
+        fontSize: 16,
+        color: '#64748B',
+    },
+    completedCheck: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#10B981',
+    },
 
     // Video modal
     videoModalContent: {
-        backgroundColor: '#FFF', borderRadius: 32, padding: 24,
-        width: width - 40, alignItems: 'center', maxHeight: '90%',
+        backgroundColor: '#FFF', borderRadius: 0, padding: 24,
+        width: '100%', height: '100%', maxHeight: '100%', alignItems: 'center',
+        justifyContent: 'center',
         elevation: 8, shadowColor: '#7C3AED', shadowOpacity: 0.1,
         shadowRadius: 24, shadowOffset: { width: 0, height: 12 },
     },
-    modalTitle: { fontSize: 15, fontWeight: '800', color: '#1E293B', marginBottom: 14, textAlign: 'center' },
-    videoPlayer: { width: '100%', height: 220, borderRadius: 20, marginBottom: 16, backgroundColor: '#000' },
+    modalTitleContainer: {
+        backgroundColor: '#F5F3FF',
+        borderRadius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        marginBottom: 20,
+        borderWidth: 1.5,
+        borderColor: '#DDD6FE',
+        width: '90%',
+        alignSelf: 'center',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#7C3AED',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    modalTitleText: {
+        fontSize: 13,
+        fontWeight: 'bold',
+        color: '#6D28D9',
+        textAlign: 'center',
+        lineHeight: 18,
+    },
+    videoPlayer: { width: '100%', height: width > 768 ? 420 : 250, borderRadius: 20, marginBottom: 16, backgroundColor: '#000' },
     videoPlayerCentered: { justifyContent: 'center', alignItems: 'center' },
     modalCloseBtn: { alignItems: 'center', paddingVertical: 12, paddingHorizontal: 24 },
     modalCloseText: { color: '#64748B', fontSize: 14, fontWeight: '700' },
@@ -1668,11 +1833,17 @@ const styles = StyleSheet.create({
 
     // Add data button
     addDataBtn: {
-        backgroundColor: '#FFF', padding: 16, borderRadius: 20,
-        alignItems: 'center', borderWidth: 1.5, borderColor: '#7C3AED',
-        borderStyle: 'dashed', marginBottom: 16,
+        backgroundColor: '#FAF5FF',
+        padding: 12,
+        borderRadius: 16,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#E9D5FF',
+        marginBottom: 16,
+        width: '100%',
+        alignSelf: 'center',
     },
-    addDataBtnText: { fontSize: 14, color: '#7C3AED', fontWeight: '800' },
+    addDataBtnText: { fontSize: 13, color: '#5B21B6', fontWeight: 'bold' },
 
     // Modals overlay
     modalOverlay: {
@@ -1733,14 +1904,15 @@ const styles = StyleSheet.create({
 
     // View progress banner
     viewProgressBtn: {
-        marginVertical: 14, borderRadius: 24, overflow: 'hidden', elevation: 5,
-        shadowColor: '#7C3AED', shadowOpacity: 0.18, shadowRadius: 12,
-        shadowOffset: { width: 0, height: 5 },
+        marginVertical: 12, borderRadius: 18, overflow: 'hidden',
+        borderWidth: 1, borderColor: '#DDD6FE',
+        width: '100%',
+        alignSelf: 'center',
     },
-    viewProgressBtnGrad: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16 },
-    viewProgressBtnEmoji: { fontSize: 30 },
-    viewProgressBtnTitle: { fontSize: 15, fontWeight: '900', color: '#FFF' },
-    viewProgressBtnSub: { fontSize: 11, color: 'rgba(255,255,255,0.85)', marginTop: 3 },
+    viewProgressBtnGrad: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
+    viewProgressBtnEmoji: { fontSize: 24 },
+    viewProgressBtnTitle: { fontSize: 13, fontWeight: 'bold', color: '#4C1D95' },
+    viewProgressBtnSub: { fontSize: 11, color: '#7C3AED', marginTop: 2 },
 
     // Daily health prompt modal
     promptModalContent: {
@@ -1787,15 +1959,25 @@ const styles = StyleSheet.create({
         fontSize: 36, fontWeight: '900', color: '#1E293B',
         letterSpacing: 3, marginBottom: 16, fontVariant: ['tabular-nums'],
     },
-    stopwatchRow: { flexDirection: 'row', gap: 10, width: '100%' },
-    controlBtn: {
-        flex: 1, paddingVertical: 13, borderRadius: 16,
-        alignItems: 'center', justifyContent: 'center', elevation: 2,
+    stopwatchRow: { flexDirection: 'row', justifyContent: 'center', gap: 40, width: '100%' },
+    controlBtnWrapper: {
+        alignItems: 'center',
     },
-    startBtn: { backgroundColor: '#10B981', shadowColor: '#10B981', shadowOpacity: 0.25, shadowRadius: 6 },
-    pauseBtn: { backgroundColor: '#F59E0B', shadowColor: '#F59E0B', shadowOpacity: 0.25, shadowRadius: 6 },
-    stopBtn: { backgroundColor: '#EF4444', shadowColor: '#EF4444', shadowOpacity: 0.25, shadowRadius: 6 },
-    controlBtnText: { color: '#FFF', fontWeight: '800', fontSize: 13 },
+    controlCircleBtn: {
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        backgroundColor: '#EEEDFC',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    controlLabelText: {
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#6F6F70',
+        textAlign: 'center',
+    },
 
     // Misc
     playIconButton: {
@@ -1805,4 +1987,47 @@ const styles = StyleSheet.create({
         shadowOffset: { height: 2, width: 0 },
     },
     playIconText: { fontSize: 16, color: '#FFF' },
+
+    // Safety Modal Specific Styles
+    safetyModalContent: {
+        backgroundColor: '#FFF',
+        borderRadius: 24,
+        padding: 16,
+        width: width * 0.85,
+        alignItems: 'center',
+        elevation: 8,
+        shadowColor: '#7C3AED',
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 16,
+    },
+    safetyCloseBtn: {
+        backgroundColor: '#7C3AED',
+        paddingVertical: 8,
+        paddingHorizontal: 24,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 12,
+        width: '50%',
+    },
+    safetyCloseBtnText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: 13,
+    },
+    modalSplitRow: {
+        flexDirection: width > 500 ? 'row' : 'column',
+        width: '100%',
+        gap: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    modalLeftColumn: {
+        flex: width > 500 ? 1.2 : 0,
+        width: '100%',
+    },
+    modalRightColumn: {
+        flex: width > 500 ? 0.8 : 0,
+        width: '100%',
+    },
 });
