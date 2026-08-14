@@ -2,7 +2,7 @@
 // DASHBOARD SCREEN — DashboardScreen copy.js  (Sinhala UI with Quick Actions)
 // ================================================================
 
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, Dimensions, Animated, StatusBar,
@@ -37,8 +37,15 @@ const summaryMessages = {
   stressed: 'ඔබ ගොඩ දෙයක් රැගෙන ඉදිමු. සන්සුන් දෙයක් සොයා ගනිමු 🌿',
 };
 
+const supportMessages = {
+  happy: { title: 'ඔබ අද දිලිසෙනවා ✨', body: 'ඔබේ ධනාත්මක ශක්තිය ප්‍රමාද යයි — ඔබ සහ ඔබේ දරුවාට. මෙම සතුටු මොහොත ආදරෙන් ගෙවන්න.' },
+  sad: { title: 'ඔබේ හැඟීම් වලංගුයි 🌧️', body: 'දුකක් දැනෙනවා නම් හරිය. අම්මා වීම ලෝකයේ හැහෑ දෙකක් ඇති කාර්යයකි. දැන් ඔබ වෙනුවෙන් ඉඩ ගනිමු.' },
+  stressed: { title: 'ඔබ තනිව නොමැත 💜', body: 'ආතතිය ආදරය — ශ්‍රේෂ්ඨ ගොඩ බිමකට ළඟා වීමට. දැන් ඔබ සඳහා සන්සුන් සහ සහනය සොයා ගනිමු.' },
+};
+
 const DashboardScreenCopy = ({ navigation }) => {
   const { user, latestAnalysis, moodHistory, preferencesSet, simulateNextDiary, nextDemoPreview } = useApp();
+  const [processing, setProcessing] = useState(false);
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
 
@@ -49,6 +56,11 @@ const DashboardScreenCopy = ({ navigation }) => {
     ]).start();
   }, []);
 
+  const handleSimulate = () => {
+    setProcessing(true);
+    setTimeout(() => { simulateNextDiary(); setProcessing(false); }, 600);
+  };
+
   const affirmation = SI.affirmations[new Date().getDay() % SI.affirmations.length];
   const emotion  = latestAnalysis?.detectedEmotion || 'stressed';
   const risk     = latestAnalysis?.riskLevel || 'low';
@@ -56,6 +68,12 @@ const DashboardScreenCopy = ({ navigation }) => {
   const selectedEmoji = latestAnalysis?.mood || ec.emoji;
   const selectedFeeling = emojiFeelingsSI[selectedEmoji] || ec.label;
   const weekDays = moodHistory.slice(-7);
+
+  const msg = supportMessages[emotion] || supportMessages.stressed;
+  const riskPct = risk === 'medium' ? 65 : 30;
+  const riskColor = risk === 'medium' ? colors.riskMediumDark : colors.riskLowDark;
+  const riskBg = risk === 'medium' ? '#FFFDE7' : '#E8F5E9';
+  const riskDesc = risk === 'medium' ? 'ඔබට දැන් ඉතිරි ආධාරක ශ්‍රේෂ්ඨ 💛' : 'ඔබ ශ්‍රේෂ්ඨව ගෙවනවා. දිගටම! 💚';
 
   // Quick Actions with proper navigation
   const quickActions = [
@@ -95,26 +113,81 @@ const DashboardScreenCopy = ({ navigation }) => {
             </TouchableOpacity>
           )}
 
-          {/* Emotion Card */}
+          {/* Merged Support Screen Contents */}
           <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-            <LinearGradient colors={ec.gradient} start={{x:0,y:0}} end={{x:1,y:1}} style={s.emotionCard}>
-              <View style={s.emotionTop}>
-                <View style={s.emotionLeft}>
-                  <Text style={s.emotionSub}>{SI.todaysFeeling}</Text>
-                  <Text style={[s.emotionTitle, { color: ec.color }]}>{selectedFeeling} {selectedEmoji} {SI.feeling}</Text>
-                  <View style={[s.riskBadge, { backgroundColor: ec.bg }]}>
-                    <Text style={[s.riskLabel, { color: ec.color }]}>
-                      {risk === 'medium' ? SI.mediumRisk : SI.lowRisk}
-                    </Text>
-                  </View>
+            <Text style={s.supportTitle}>{SI.emotionalAnalysis}</Text>
+            <Text style={s.supportSubtitle}>{SI.diaryProcessed}</Text>
+
+            {/* System Note */}
+            <View style={s.systemNote}>
+              <Text style={s.systemNoteText}>{SI.systemNote}</Text>
+            </View>
+
+            {/* Detected Mood Card */}
+            <LinearGradient colors={ec.gradient} style={s.moodCard}>
+              <Text style={s.moodCardLabel}>{SI.detectedMood}</Text>
+              <View style={s.moodRow}>
+                <Text style={s.moodEmojiBig}>{selectedEmoji}</Text>
+                <View>
+                  <Text style={[s.moodName, { color: ec.color }]}>{selectedFeeling}</Text>
+                  <Text style={s.moodSub}>{SI.diaryProcessed}</Text>
                 </View>
-                <Text style={s.emotionEmoji}>{selectedEmoji}</Text>
               </View>
-              <Text style={s.emotionMsg}>{summaryMessages[emotion]}</Text>
-              <TouchableOpacity style={s.viewBtn} onPress={() => navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Support' } })}>
-                <Text style={[s.viewBtnText, { color: ec.color }]}>{SI.viewSupportPlan}</Text>
-              </TouchableOpacity>
             </LinearGradient>
+
+            {/* Risk Level Card */}
+            <View style={[s.riskCard, { backgroundColor: riskBg }]}>
+              <View style={s.riskTop}>
+                <Text style={s.riskCardLabel}>{SI.riskLevel}</Text>
+                <Text style={[s.riskText, { color: riskColor }]}>
+                  {risk === 'medium' ? 'මධ්‍යම' : 'අඩු'}
+                </Text>
+              </View>
+              <View style={s.riskBar}>
+                <View style={[s.riskBarFill, { width: `${riskPct}%`, backgroundColor: riskColor }]} />
+              </View>
+              <Text style={[s.riskDesc, { color: riskColor }]}>{riskDesc}</Text>
+            </View>
+
+            {/* Support Message Card */}
+            <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={s.msgCard}>
+              <Text style={s.msgTitle}>{msg.title}</Text>
+              <Text style={s.msgBody}>{msg.body}</Text>
+            </LinearGradient>
+
+            {/* Urgency Card */}
+            {risk === 'medium' && (
+              <View style={s.urgencyCard}>
+                <Text style={s.urgencyIcon}>💛</Text>
+                <Text style={s.urgencyText}>{SI.mediumRiskMsg}</Text>
+              </View>
+            )}
+
+            {/* Get Recommendations Button (Replaces View Plan) */}
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('Main', {
+                  screen: 'Tabs',
+                  params: {
+                    screen: 'Recommendations',
+                    params: {
+                      riskLevel: latestAnalysis?.riskLevel,
+                      emotion: latestAnalysis?.detectedEmotion,
+                      primaryReason: latestAnalysis?.primaryReason,
+                    }
+                  }
+                })
+              }
+              style={s.recBtn}
+            >
+              <LinearGradient
+                colors={['#8E24AA', '#D81B60']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                style={s.recBtnInner}
+              >
+                <Text style={s.recBtnText}>{SI.getSupport}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </Animated.View>
 
           {/* 7-Day Strip */}
@@ -162,11 +235,11 @@ const DashboardScreenCopy = ({ navigation }) => {
           </LinearGradient>
 
           {/* Demo Simulator */}
-          <View style={s.demoCard}>
-            <Text style={s.demoTitle}>{SI.diaryDemo}</Text>
-            <TouchableOpacity style={s.demoBtn}
-              onPress={() => { simulateNextDiary(); navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Support' } }); }}>
-              <Text style={s.demoBtnText}>{SI.processDiary}</Text>
+          <View style={s.demoSection}>
+            <Text style={s.demoTitle}>{SI.simulateDiary}</Text>
+            <Text style={s.demoPreview}>ඊළඟ: "{nextDemoPreview?.slice(0, 60)}..."</Text>
+            <TouchableOpacity style={s.demoBtn} onPress={handleSimulate} disabled={processing}>
+              <Text style={s.demoBtnText}>{processing ? 'විශ්ලේෂණය කරමින්...' : SI.processNewEntry}</Text>
             </TouchableOpacity>
           </View>
 
@@ -218,11 +291,45 @@ const s = StyleSheet.create({
   affirmCard:     { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
   affirmTitle:    { fontSize: 13, fontWeight: '800', color: colors.lavenderDark, marginBottom: 8 },
   affirmText:     { fontSize: 15, color: colors.textSecondary, lineHeight: 24, fontStyle: 'italic' },
-  demoCard:       { backgroundColor: colors.softGray, borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md },
+  demoSection:    { backgroundColor: colors.softGray, borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md },
   demoTitle:      { fontSize: 14, fontWeight: '800', color: colors.textPrimary, marginBottom: 6 },
   demoPreview:    { fontSize: 12, color: colors.textSecondary, fontStyle: 'italic', marginBottom: 12, lineHeight: 18 },
   demoBtn:        { backgroundColor: colors.white, borderRadius: radius.full, paddingVertical: 10, paddingHorizontal: 20, alignSelf: 'flex-start', ...shadows.soft },
   demoBtnText:    { color: colors.lavenderDark, fontWeight: '700', fontSize: 13 },
+  supportTitle: { fontSize: 26, fontWeight: '900', color: colors.textPrimary, marginBottom: 8 },
+  supportSubtitle: { fontSize: 14, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.md },
+  systemNote: {
+    backgroundColor: '#F3E5F5',
+    borderRadius: radius.full,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#E1BEE7'
+  },
+  systemNoteText: { fontSize: 12, color: '#7B1FA2', fontWeight: '600' },
+  moodCard: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
+  moodCardLabel: { fontSize: 11, fontWeight: '800', color: colors.textMuted, letterSpacing: 1.5, marginBottom: 12 },
+  moodRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  moodEmojiBig: { fontSize: 52 },
+  moodName: { fontSize: 26, fontWeight: '900' },
+  moodSub: { fontSize: 13, color: colors.textSecondary, marginTop: 4 },
+  riskCard: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
+  riskTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  riskCardLabel: { fontSize: 11, fontWeight: '800', color: colors.textMuted, letterSpacing: 1.5 },
+  riskText: { fontSize: 18, fontWeight: '900' },
+  riskBar: { height: 10, backgroundColor: 'rgba(0,0,0,0.08)', borderRadius: 5, overflow: 'hidden', marginBottom: 10 },
+  riskBarFill: { height: 10, borderRadius: 5 },
+  riskDesc: { fontSize: 13, fontWeight: '600' },
+  msgCard: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
+  msgTitle: { fontSize: 19, fontWeight: '800', color: colors.textPrimary, marginBottom: 8 },
+  msgBody: { fontSize: 14, color: colors.textSecondary, lineHeight: 23 },
+  urgencyCard: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: '#FFFDE7', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md, borderWidth: 1, borderColor: '#FFD54F' },
+  urgencyIcon: { fontSize: 20 },
+  urgencyText: { flex: 1, fontSize: 13, color: '#E65100', lineHeight: 20 },
+  recBtn: { borderRadius: radius.full, overflow: 'hidden', marginBottom: spacing.xl, ...shadows.card },
+  recBtnInner: { paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
+  recBtnText: { color: colors.white, fontWeight: '800', fontSize: 16 },
 });
 
 export default DashboardScreenCopy;

@@ -223,14 +223,6 @@ export const ALL_ACTIVITIES = [
     ],
     intro:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
   },
-  {
-    id: 'baby_mood', icon: '👶',
-    label: 'ළදරු හැඟීම', labelEn: 'Baby Cues',
-    desc: 'ඔබේ බබා පෙන්වන විවිධ සංඥා හඳුනාගැනීම', duration: 'විනාඩි 5–10',
-    category: 'ළදරු සාත්තු', color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17',
-    type: 'game',
-    intro: 'ඔබේ බබා පෙන්වන විවිධ සංඥා හඳුනාගැනීමට මෙම ක්‍රියාකාරකම ඔබට උපකාරී වේ.'
-  },
 ];
 
 // ── NEW EMOTIONAL SUPPORT ACTIVITIES ─────────────────────────
@@ -351,76 +343,43 @@ export const isBabyRelatedContent = (text = '') => {
 
   const babyTerms = [
     // English terms & phrases
-    'baby', 'babies', 'babys', 'newborn', 'new born', 'newborns', 'infant', 'infants',
-    'child', 'my child', 'my kid', 'kid', 'young child', 'my little one', 'little one',
-    'my boy', 'baby boy', 'my girl', 'baby girl', 'son', 'my son', 'daughter', 'my daughter',
-    'daughter baby', 'newborn baby', 'newborn boy', 'newborn girl', 'my little baby',
-    'my little boy', 'my little girl', 'breastfeeding', 'caring for my baby', 'care for my baby',
-    'taking care of my baby', 'taking care of my newborn',
-    // FIX 1 — additional English baby-cue signals
-    'she keeps crying', 'he keeps crying', "won't sleep", 'wont sleep', 'waking up', 'wakes up',
-    'hungry', 'fussy', 'restless', 'baby cues', 'baby signals', 'baby needs',
-    "don't know what she wants", "don't know what he wants",
-    'dont know what she wants', 'dont know what he wants',
+    'baby', 'babies', 'babys', 'newborn', 'newborn baby', 'newborns', 'little one', 'my little one',
+    'little girl', 'little boy', 'baby boy', 'baby girl', 'infant', 'infants', 'my child', 'my kid',
+    'caring for my baby', 'care for my baby', 'taking care of my baby', 'taking care of my newborn',
+    'my boy', 'my girl', 'son', 'daughter',
 
-    // Sinhala terms & inflections
-    'බබා', 'මගේ බබා', 'බබාට', 'බබාගේ', 'බබාව', 'බබාලා', 'ළදරුවා', 'ළදරුවාට', 'ළදරුවාගේ',
-    'අලුත උපන් බබා', 'අලුත උපන්', 'දරුවා', 'මගේ දරුවා', 'දරුවාට', 'දරුවාගේ', 'දරුවාව', 'දරුවෝ',
-    'පුතා', 'මගේ පුතා', 'පුතාට', 'පුතාගේ', 'දුව', 'මගේ දුව', 'දුවට', 'දුවගේ', 'පුංචි බබා',
-    'පුංචි එකා', 'පුංචි එකී', 'පුංචි පුතා', 'පුංචි දුව',
-    // FIX 1 — additional Sinhala baby-cue signals
-    'අඬනවා', 'නිදාගන්නෙ නැහැ', 'ඇහැරෙනවා', 'බඩගිනි', 'නොසන්සුන්', 'තේරෙන්නේ නැහැ', 'කරදරයි',
+    // Sinhala terms & phrases
+    'බබා', 'මගේ බබා', 'බබාගේ', 'බබාව', 'බබාට', 'බබෙක්',
+    'දරුවා', 'මගේ දරුවා', 'දරුවාගේ', 'දරුවාව', 'දරුවාට', 'දරුවෝ',
+    'ළදරුවා', 'ළදරුවාගේ', 'ළදරුවාව', 'ළදරුවාට',
+    'පුංචි එකා', 'පුංචි එකී', 'අලුත උපන්', 'අලුත උපන් බබා', 'පුංචි බබා',
+    'පුතා', 'මගේ පුතා', 'පුතාගේ', 'පුතාට', 'දුව', 'මගේ දුව', 'දුවගේ', 'දුවට',
 
-    // Singlish / Transliterated terms
-    'baba', 'mage baba', 'babata', 'babage', 'babaw', 'baba andanawa', 'mage putha',
-    'mage duwa', 'putha', 'duwa', 'daruwa', 'aluth upan baba', 'baba balaganna',
-    'baba ge needs', 'my boy', 'my girl', 'my son', 'my daughter'
+    // Singlish terms & phrases
+    'baba', 'mage baba', 'babage', 'babaw', 'babata', 'daruwa',
+    'putha', 'mage putha', 'puthage', 'puthata',
+    'duwa', 'mage duwa', 'duwage', 'duwata', 'aluth upan baba'
   ];
 
   return babyTerms.some(term => t.includes(term));
 };
 
-export const getNewRecommendations = (emotion, reason, riskLevel, diaryText = '', intents = null) => {
-  const isBaby = intents?.baby_related ?? isBabyRelatedContent(diaryText);
-
-  let ordered = [];
-
-  // Priority 1: Baby Cues if baby_related
-  if (isBaby) {
-    ordered.push('baby_mood');
-  }
-
-  // Priority 2: Specific baby activities matching detected baby intents
-  if (isBaby) {
-    if (intents?.baby_crying || (typeof diaryText === 'string' && (diaryText.includes('cry') || diaryText.includes('අඬනවා') || diaryText.includes('andanawa')))) {
-      ['new_baby_interaction_ideas', 'new_478_breathing'].forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
-    }
-    if (intents?.baby_sleep || (typeof diaryText === 'string' && (diaryText.includes('sleep') || diaryText.includes('නින්ද') || diaryText.includes('ninda')))) {
-      ['new_baby_interaction_ideas', 'new_sleep_reflection'].forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
-    }
-    if (intents?.baby_feeding || (typeof diaryText === 'string' && (diaryText.includes('feed') || diaryText.includes('කිරි') || diaryText.includes('kiri')))) {
-      ['new_baby_interaction_ideas', 'new_drink_water'].forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
-    }
-    if (intents?.baby_needs || (typeof diaryText === 'string' && (diaryText.includes('need') || diaryText.includes('තේරෙන්නේ') || diaryText.includes('therenne') || diaryText.includes('බලාගන්න')))) {
-      ['new_baby_interaction_ideas', 'new_emotion_check_in'].forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
-    }
-    if (!ordered.includes('new_baby_interaction_ideas')) {
-      ordered.push('new_baby_interaction_ideas');
-    }
-  }
-
-  // Priority 3: Other relevant mother support recommendations based on risk / emotion / fatigue / anxiety
+export const getNewRecommendations = (emotion, reason, riskLevel, diaryText = '') => {
   let recommendedIds = [];
+
+  // 1. Risk Level
   if (riskLevel === 'high') {
     recommendedIds = ['new_deep_breathing', 'new_guided_meditation', 'new_worry_box', 'new_relaxing_music'];
   } else if (riskLevel === 'medium') {
-    recommendedIds = ['new_guided_meditation', 'new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'new_sleep_reflection'];
+    recommendedIds = ['new_guided_meditation', 'new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'new_sleep_reflection', 'new_worry_box', 'new_bubble_pop', 'new_memory_card', 'new_self_care_checklist'];
   } else {
-    recommendedIds = ['new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations', 'new_relaxing_music'];
+    // Low risk
+    recommendedIds = ['new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations', 'new_relaxing_music', 'new_drink_water', 'new_smile_challenge', 'new_emotion_check_in', 'new_calm_coloring'];
   }
 
-  const emotNormalized = emotion ? emotion.toLowerCase() : '';
+  // 2. Emotion
   let byEmotion = [];
+  const emotNormalized = emotion ? emotion.toLowerCase() : '';
   if (emotNormalized.includes('sad')) {
     byEmotion = ['new_positive_affirmations', 'new_gratitude_journal', 'new_relaxing_music', 'new_smile_challenge'];
   } else if (emotNormalized.includes('anxi')) {
@@ -429,12 +388,44 @@ export const getNewRecommendations = (emotion, reason, riskLevel, diaryText = ''
     byEmotion = ['new_deep_breathing', 'new_guided_meditation', 'new_bubble_pop', 'new_worry_box'];
   } else if (emotNormalized.includes('fatigue') || emotNormalized.includes('tired')) {
     byEmotion = ['new_drink_water', 'new_sleep_reflection', 'new_gentle_stretch', 'new_relaxing_music'];
+  } else if (emotNormalized.includes('lonel')) {
+    byEmotion = ['new_positive_affirmations', 'new_gratitude_journal', 'new_emotion_check_in', 'new_relaxing_music'];
+  } else if (emotNormalized.includes('overwhelm')) {
+    byEmotion = ['new_box_breathing', 'new_self_care_checklist', 'new_worry_box', 'new_guided_meditation'];
   }
 
-  recommendedIds.forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
-  byEmotion.forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
+  // 3. Reason
+  let byReason = [];
+  const reasonNormalized = reason ? reason.toLowerCase() : '';
+  if (reasonNormalized.includes('sleep problem') || reasonNormalized.includes('sleep')) {
+    byReason = ['new_sleep_reflection', 'new_relaxing_music', 'new_guided_meditation', 'new_deep_breathing'];
+  } else if (reasonNormalized.includes('baby feeding') || reasonNormalized.includes('breastfeeding')) {
+    byReason = ['new_drink_water', 'new_gentle_stretch', 'new_relaxing_music', 'new_positive_affirmations'];
+  } else if (reasonNormalized.includes('baby sleep')) {
+    byReason = ['new_baby_interaction_ideas', 'new_relaxing_music', 'new_sleep_reflection', 'new_deep_breathing'];
+  } else if (reasonNormalized.includes('lack of support') || reasonNormalized.includes('support')) {
+    byReason = ['new_positive_affirmations', 'new_emotion_check_in', 'new_gratitude_journal', 'new_worry_box'];
+  } else if (reasonNormalized.includes('stress')) {
+    byReason = ['new_guided_meditation', 'new_deep_breathing', 'new_bubble_pop', 'new_box_breathing'];
+  } else if (reasonNormalized.includes('anxiety')) {
+    byReason = ['new_478_breathing', 'new_five_senses_grounding', 'new_guided_meditation', 'new_memory_card'];
+  } else if (reasonNormalized.includes('low motivation') || reasonNormalized.includes('motivation')) {
+    byReason = ['new_smile_challenge', 'new_drink_water', 'new_self_care_checklist', 'new_gentle_stretch'];
+  }
+  
+  // Re-prioritize based on Risk -> Reason -> Emotion
+  let ordered = [];
+  const isBaby = isBabyRelatedContent(diaryText) || isBabyRelatedReason(reason);
+  if (isBaby) {
+    ordered.push('baby_mood');
+  }
 
-  // Strict enforcement: Maximum 4 activity recommendations
+  const EXCLUDE_IDS = ['baby_bonding', 'new_baby_interaction_ideas'];
+
+  recommendedIds.filter(id => !EXCLUDE_IDS.includes(id)).forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
+  byReason.filter(id => !EXCLUDE_IDS.includes(id)).forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
+  byEmotion.filter(id => !EXCLUDE_IDS.includes(id)).forEach(id => { if (!ordered.includes(id)) ordered.push(id); });
+
   ordered = ordered.slice(0, 4);
   return ordered.map(id => NEW_ACTIVITIES.find(a => a.id === id) || ALL_ACTIVITIES.find(a => a.id === id)).filter(Boolean);
 };
@@ -563,101 +554,6 @@ export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', m
 // ================================================================
 
 const RULES = {
-  // ── BABY CRYING ──────────────────────────────────────────────
-  // Game: Baby Cues | Music: bonding | Video: baby_crying
-  baby_crying: {
-    low: {
-      activityIds: ['breathing_478', 'journaling', 'grounding_54321', 'affirmation_activity'],
-      gameId:    'baby_mood',
-      musicKey:  'bonding_issues',
-      videoKey:  'bonding_issues',
-      supportMsg:'ඔබේ බබා ඔබ සමඟ සන්නිවේදනය කරන්නට උත්සාහ කරනවා. ඔබ හොඳ අම්මා කෙනෙක් 💜',
-    },
-    medium: {
-      activityIds: ['breathing_478', 'journaling', 'grounding_54321'],
-      gameId:    'baby_mood',
-      musicKey:  'bonding_issues',
-      videoKey:  'bonding_issues',
-      supportMsg:'ඔබේ බබා ඔබ සමඟ සන්නිවේදනය කරන්නට උත්සාහ කරනවා. ඔබ හොඳ අම්මා කෙනෙක් 💜',
-    },
-  },
-
-  // ── BABY FEEDING ─────────────────────────────────────────────
-  // Game: Baby Cues | Music: bonding | Video: bonding_issues
-  baby_feeding: {
-    low: {
-      activityIds: ['breathing_478', 'rest_meditation', 'journaling', 'affirmation_activity'],
-      gameId:    'baby_mood',
-      musicKey:  'bonding_issues',
-      videoKey:  'bonding_issues',
-      supportMsg:'ඔබ ඔබේ බබාට හොඳින් කිරි දෙනවා. ඔබ ශ්‍රේෂ්ඨ අම්මා කෙනෙක් 🌸',
-    },
-    medium: {
-      activityIds: ['breathing_478', 'rest_meditation', 'journaling'],
-      gameId:    'baby_mood',
-      musicKey:  'bonding_issues',
-      videoKey:  'bonding_issues',
-      supportMsg:'ඔබ ඔබේ බබාට හොඳින් කිරි දෙනවා. ඔබ ශ්‍රේෂ්ඨ අම්මා කෙනෙක් 🌸',
-    },
-  },
-
-  // ── BABY SLEEP ───────────────────────────────────────────────
-  // Game: Baby Cues | Music: sleep_problems | Video: sleep_problems
-  baby_sleep: {
-    low: {
-      activityIds: ['night_breathing', 'rest_meditation', 'breathing_478', 'short_breathing'],
-      gameId:    'baby_mood',
-      musicKey:  'sleep_problems',
-      videoKey:  'sleep_problems',
-      supportMsg:'ඔබේ බබාට නිදාගැනීමේ රටාවක් ඇති වේ. ඔබ ඉතා ශ්‍රේෂ්ඨ අම්මා කෙනෙක් 🌙',
-    },
-    medium: {
-      activityIds: ['night_breathing', 'breathing_478', 'rest_meditation'],
-      gameId:    'baby_mood',
-      musicKey:  'sleep_problems',
-      videoKey:  'sleep_problems',
-      supportMsg:'ඔබේ බබාට නිදාගැනීමේ රටාවක් ඇති වේ. ඔබ ඉතා ශ්‍රේෂ්ඨ අම්මා කෙනෙක් 🌙',
-    },
-  },
-
-  // ── BABY HEALTH ──────────────────────────────────────────────
-  // Game: Baby Cues | Music: anxiety | Video: anxiety
-  baby_health: {
-    low: {
-      activityIds: ['breathing_478', 'journaling', 'grounding_54321', 'rest_meditation'],
-      gameId:    'baby_mood',
-      musicKey:  'anxiety',
-      videoKey:  'anxiety',
-      supportMsg:'ඔබේ බබා ඉක්මනින් සුව වේ. ඔබ ඉතා ශ්‍රේෂ්ඨ අම්මා කෙනෙක් 💜',
-    },
-    medium: {
-      activityIds: ['breathing_478', 'journaling', 'grounding_54321'],
-      gameId:    'baby_mood',
-      musicKey:  'anxiety',
-      videoKey:  'anxiety',
-      supportMsg:'ඔබේ බබා ඉක්මනින් සුව වේ. ඔබ ඉතා ශ්‍රේෂ්ඨ අම්මා කෙනෙක් 💜',
-    },
-  },
-
-  // ── CARING FOR BABY ──────────────────────────────────────────
-  // Game: Baby Cues | Music: bonding | Video: bonding_issues
-  caring_for_baby: {
-    low: {
-      activityIds: ['journaling', 'breathing_478', 'affirmation_activity', 'grounding_54321'],
-      gameId:    'baby_mood',
-      musicKey:  'bonding_issues',
-      videoKey:  'bonding_issues',
-      supportMsg:'ඔබේ බබාව හඳුනාගැනීමට ටික කාලයක් ගනී. ඔබ ශ්‍රේෂ්ඨ අම්මා කෙනෙක් 🌸',
-    },
-    medium: {
-      activityIds: ['breathing_478', 'journaling', 'affirmation_activity'],
-      gameId:    'baby_mood',
-      musicKey:  'bonding_issues',
-      videoKey:  'bonding_issues',
-      supportMsg:'ඔබේ බබාව හඳුනාගැනීමට ටික කාලයක් ගනී. ඔබ ශ්‍රේෂ්ඨ අම්මා කෙනෙක් 🌸',
-    },
-  },
-
   // ── LONELINESS ───────────────────────────────────────────────
   // Music: Calm piano | Video: "You are not alone" | Activity: Write 3 positive | Game: Puzzle
   loneliness: {
@@ -984,28 +880,18 @@ export const getRecommendationRule = (reason, riskLevel, preferredActivities = [
   };
 };
 
-export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, preferredActivities = [], preferredGames = [], diaryText = '', intents = null) => {
+export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, preferredActivities = [], preferredGames = [], diaryText = '') => {
   const existingRecommendations = getRecommendationRule(reason, riskLevel, preferredActivities, preferredGames);
-  const newActivities = getNewRecommendations(emotion, reason, riskLevel, diaryText, intents);
+  const newActivities = getNewRecommendations(emotion, reason, riskLevel, diaryText);
 
-  let games = existingRecommendations.games || [];
-  let game = existingRecommendations.game;
-
-  const isBaby = intents?.baby_related ?? isBabyRelatedContent(diaryText);
-  if (isBaby) {
-    const babyMoodGame = ALL_GAMES.find(g => g.id === 'baby_mood');
-    if (babyMoodGame) {
-      game = babyMoodGame;
-      games = [babyMoodGame, ...games.filter(g => g.id !== 'baby_mood')];
-    }
-  }
+  const games = getRecommendedGames({}, diaryText, reason, 4);
+  const game = games[0] || existingRecommendations.game;
 
   return {
     ...existingRecommendations,
     game,
     games,
-    newActivities,
-    activities: newActivities
+    newActivities // Return the 4 personalized new activities
   };
 };
 
@@ -1042,9 +928,23 @@ export const getPersonalizedRecommendations = ({
     const emotLower = (emotion || '').toLowerCase();
     const reasonLower = (reason || '').toLowerCase();
 
+    // Prioritize reason-specific recommendations first
+    if (reasonLower.includes('feeding') || reasonLower.includes('breastfeeding') || reasonLower.includes('baby_feeding')) {
+      candidateIds.push('new_drink_water', 'new_gentle_stretch', 'new_relaxing_music', 'new_positive_affirmations');
+    } else if (reasonLower.includes('sleep') || reasonLower.includes('mother_sleep') || reasonLower.includes('baby_sleep')) {
+      candidateIds.push('new_sleep_reflection', 'new_relaxing_music', 'new_guided_meditation', 'new_deep_breathing');
+    } else if (reasonLower.includes('crying') || reasonLower.includes('baby_crying') || reasonLower.includes('needs') || reasonLower.includes('understanding_baby')) {
+      candidateIds.push('new_deep_breathing', 'new_positive_affirmations', 'new_gratitude_journal', 'new_emotion_check_in');
+    } else if (reasonLower.includes('support') || reasonLower.includes('lack_of_support')) {
+      candidateIds.push('new_positive_affirmations', 'new_emotion_check_in', 'new_gratitude_journal', 'new_worry_box');
+    } else if (reasonLower.includes('stress') || reasonLower.includes('overwhelmed')) {
+      candidateIds.push('new_guided_meditation', 'new_deep_breathing', 'new_bubble_pop', 'new_box_breathing');
+    }
+
+    // Fallback to emotion-specific recommendations
     if (emotLower.includes('anx') || emotLower.includes('කනස්සල්ල')) {
       candidateIds.push('new_478_breathing', 'new_five_senses_grounding', 'new_deep_breathing', 'new_box_breathing');
-    } else if (emotLower.includes('tired') || emotLower.includes('මහන්සියි') || reasonLower.includes('sleep')) {
+    } else if (emotLower.includes('tired') || emotLower.includes('මහන්සියි')) {
       candidateIds.push('new_sleep_reflection', 'new_deep_breathing', 'new_relaxing_music', 'new_guided_meditation');
     } else if (emotLower.includes('sad') || emotLower.includes('දුකින්') || emotLower.includes('crying')) {
       candidateIds.push('new_positive_affirmations', 'new_gratitude_journal', 'new_emotion_check_in', 'new_smile_challenge');
@@ -1073,34 +973,12 @@ export const getPersonalizedRecommendations = ({
     .map(id => NEW_ACTIVITIES.find(a => a.id === id) || ALL_ACTIVITIES.find(a => a.id === id))
     .filter(Boolean);
 
-  // Build games list — always include baby_mood first when baby-related
-  const babyMoodGame = ALL_GAMES.find(g => g.id === 'baby_mood');
-  let gamesList = [];
-  if (isBaby && babyMoodGame) {
-    gamesList = [babyMoodGame];
-  }
-  // Add any user-preferred games that aren't already in the list
-  if (preferredGames.length > 0) {
-    preferredGames.forEach(gId => {
-      const g = ALL_GAMES.find(x => x.id === gId);
-      if (g && !gamesList.some(x => x.id === gId)) gamesList.push(g);
-    });
-  }
-  // If still empty, pick a contextually relevant default game
-  if (gamesList.length === 0) {
-    const defaultGame = ALL_GAMES.find(g => g.id === 'bubble_pop') || ALL_GAMES[0];
-    if (defaultGame) gamesList = [defaultGame];
-  }
-
   return {
     emotion,
     reason,
     riskLevel: normalizedRisk,
     activities: personalizedActivities,
     newActivities: personalizedActivities,
-    games: gamesList,
-    game: gamesList[0] || null,
     isBabyRelated: isBaby,
   };
 };
-

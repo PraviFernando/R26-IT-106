@@ -10,7 +10,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { colors, shadows, radius } from '../theme';
 
 import DashboardScreen from '../screens/DashboardScreen copy';
-import SupportScreen from '../screens/SupportScreen';
 import RecommendationsScreen from '../screens/RecommendationsScreen';
 import ActivityScreen from '../screens/ActivityScreen';
 import ProgressScreen from '../screens/ProgressScreen';
@@ -22,7 +21,6 @@ const Stack = createNativeStackNavigator();
 
 const TABS = [
   { name: 'Home', icon: '🏠', label: 'ගෙදර', screen: DashboardScreen },
-  { name: 'Support', icon: '💭', label: 'ශ්‍රේෂ්ඨ', screen: SupportScreen },
   { name: 'Recommendations', icon: '💜', label: 'ආධාර', screen: RecommendationsScreen },
   { name: 'Activity', icon: '🎮', label: 'ශ්‍රේෂ්ඨ', screen: ActivityScreen },
   { name: 'Progress', icon: '📊', label: 'ශ්‍රේෂ්ඨ', screen: ProgressScreen },

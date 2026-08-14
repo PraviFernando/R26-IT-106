@@ -126,19 +126,27 @@ CONTRACTIONS = {
 }
 
 def preprocess(text: str) -> str:
-
+    if not text:
+        return ""
     text = text.lower().strip()
 
     for c, expanded in CONTRACTIONS.items():
         text = text.replace(c, expanded)
 
     # Normalize Singlish spelling variations
-    text = re.sub(r"\badanawa\b", "andanawa", text)
-    text = re.sub(r"\bandanne\b", "andanawa", text)
-    text = re.sub(r"\bandana\b", "andanawa", text)
-    text = re.sub(r"\btherenne\s*na\b", "therenne naha", text)
-    text = re.sub(r"\btherenne\s*nehe\b", "therenne naha", text)
-    text = re.sub(r"\bnida\s*na\b", "nida ganne naha", text)
+    text = re.sub(r"adanawa", "andanawa", text)
+    text = re.sub(r"andanne", "andanawa", text)
+    text = re.sub(r"andana", "andanawa", text)
+    text = re.sub(r"therenne\s*na\b", "therenne naha", text)
+    text = re.sub(r"therenne\s*nehe", "therenne naha", text)
+    text = re.sub(r"therum\s*ganna\s*ba\b", "therum ganna baha", text)
+    text = re.sub(r"therum\s*ganna\s*nehe", "therum ganna baha", text)
+    text = re.sub(r"nida\s*na\b", "nida ganne naha", text)
+    text = re.sub(r"nida\s*nehe", "nida ganne naha", text)
+    text = re.sub(r"ninda\s*yanne\s*na\b", "ninda yanne naha", text)
+    text = re.sub(r"baya\s*hithenawa", "baya", text)
+    text = re.sub(r"mahansi\b", "mahansiyi", text)
+    text = re.sub(r"['’]", "", text)
 
     # KEEP Sinhala + English
     text = re.sub(r"[^\w\s\u0D80-\u0DFF]", " ", text)
@@ -276,6 +284,38 @@ def get_risk_level(text, reason, emotion):
 # RECOMMENDATION ENGINE
 # ============================================================
 
+GAME_RECOMMENDATION_MAP = {
+    "baby_crying":        ["baby_mood", "sequence_order", "memory_match", "number_seq"],
+    "baby_needs":         ["baby_mood", "word_match", "spot_diff", "memory_match"],
+    "caring_for_baby":    ["baby_mood", "sequence_order", "pattern_repeat", "word_match"],
+    "baby_feeding":       ["baby_mood", "pattern_repeat", "number_seq", "memory_match"],
+    "baby_sleep":         ["baby_mood", "mindful_tap", "sliding_puzzle", "word_match"],
+    "baby_health":        ["baby_mood", "spot_diff", "sequence_order", "memory_match"],
+    "bonding_issues":     ["baby_mood", "memory_match", "pattern_repeat", "word_match"],
+    "fatigue":            ["coin_maze", "sliding_puzzle", "word_match", "colouring"],
+    "sadness":            ["bubble_pop", "memory_match", "pattern_repeat", "word_builder"],
+    "anxiety":            ["bubble_pop", "mindful_tap", "spot_diff", "number_seq"],
+    "loneliness":         ["memory_match", "word_builder", "word_match", "pattern_repeat"],
+    "anger":              ["bubble_pop", "coin_maze", "spot_diff", "sliding_puzzle"],
+    "overwhelmed":        ["bubble_pop", "mindful_tap", "sequence_order", "word_match"],
+    "stress":             ["bubble_pop", "spot_diff", "sliding_puzzle", "mindful_tap"],
+    "loss_of_confidence": ["affirmation_game", "word_builder", "pattern_repeat", "memory_match"],
+    "lack_of_support":    ["word_match", "affirmation_game", "memory_match", "coin_maze"],
+    "sleep_problems":     ["colouring", "mandala", "mindful_tap", "sliding_puzzle"],
+    "physical_discomfort":["mindful_tap", "colouring", "word_match", "sliding_puzzle"],
+    "negative_thoughts":  ["affirmation_game", "word_builder", "spot_diff", "mandala"],
+    "general":            ["memory_match", "pattern_repeat", "word_builder", "spot_diff"]
+}
+
+ACTIVITIES_RECOMMENDATION_MAP = {
+    "baby_crying":        ["baby_mood", "new_deep_breathing", "new_gratitude_journal", "new_positive_affirmations"],
+    "baby_needs":         ["baby_mood", "new_deep_breathing", "new_gratitude_journal", "new_positive_affirmations"],
+    "baby_feeding":       ["baby_mood", "new_drink_water", "new_gentle_stretch", "new_relaxing_music"],
+    "baby_sleep":         ["baby_mood", "new_sleep_reflection", "night_breathing", "rest_meditation"],
+    "baby_health":        ["baby_mood", "new_deep_breathing", "new_positive_affirmations", "grounding_54321"],
+    "caring_for_baby":    ["baby_mood", "new_deep_breathing", "new_gratitude_journal", "new_positive_affirmations"]
+}
+
 def get_recommendations(risk, reason, emotion):
 
     risk = risk.lower()
@@ -285,92 +325,143 @@ def get_recommendations(risk, reason, emotion):
     print(f"[RECOMMENDATION] Looking for: risk='{risk}', reason='{reason}', emotion='{emotion}'")
     print(f"[RECOMMENDATION] Total rows in Excel: {len(RECOMMENDATIONS_DATA)}")
 
-    # If risk is high, fallback to medium for lookup if high not found
+    # Resolve games using distinct pool
+    games = GAME_RECOMMENDATION_MAP.get(reason, GAME_RECOMMENDATION_MAP["general"])
+    is_baby = "baby" in reason or reason in ["bonding_issues", "caring_for_baby", "baby_crying", "baby_feeding", "baby_sleep", "baby_health", "baby_needs"]
+    if is_baby:
+        if "baby_mood" not in games:
+            games = ["baby_mood"] + games
+        else:
+            games = ["baby_mood"] + [g for g in games if g != "baby_mood"]
+    else:
+        games = [g for g in games if g != "baby_mood"]
+    games = list(dict.fromkeys(games))[:4]
+
+    # Resolve activities
+    if reason in ACTIVITIES_RECOMMENDATION_MAP:
+        activities = ACTIVITIES_RECOMMENDATION_MAP[reason]
+    else:
+        # Excel lookup for mother reasons
+        search_risks = [risk]
+        if risk == "high":
+            search_risks.append("medium")
+        elif risk == "medium":
+            search_risks.append("low")
+
+        row_match = None
+        for r in search_risks:
+            for row in RECOMMENDATIONS_DATA:
+                if row["risk_level"] == r and row["reason"] == reason and row["emotion"] == emotion:
+                    row_match = row
+                    break
+            if row_match:
+                break
+
+        if not row_match:
+            for r in search_risks:
+                for row in RECOMMENDATIONS_DATA:
+                    if row["risk_level"] == r and row["reason"] == reason:
+                        row_match = row
+                        break
+                if row_match:
+                    break
+
+        if not row_match:
+            for row in RECOMMENDATIONS_DATA:
+                if row["reason"] == reason:
+                    row_match = row
+                    break
+
+        if not row_match:
+            for r in search_risks:
+                for row in RECOMMENDATIONS_DATA:
+                    if row["risk_level"] == r and row["emotion"] == emotion:
+                        row_match = row
+                        break
+                if row_match:
+                    break
+
+        if row_match:
+            def split_csv(val):
+                if not val or str(val).lower() == "nan":
+                    return []
+                return [x.strip() for x in str(val).split(",") if x.strip()]
+            raw_acts = split_csv(row_match.get("recommended_activities"))
+            activities = []
+            for a in raw_acts:
+                if a in ["baby_bonding", "new_baby_interaction_ideas"]:
+                    if "baby_mood" not in activities:
+                        activities.append("baby_mood")
+                else:
+                    activities.append(a)
+        else:
+            activities = ["deep_breathing", "journaling"]
+
+    if is_baby:
+        if "baby_mood" not in activities:
+            activities = ["baby_mood"] + activities
+        else:
+            activities = ["baby_mood"] + [a for a in activities if a != "baby_mood"]
+    else:
+        activities = [a for a in activities if a != "baby_mood"]
+    activities = list(dict.fromkeys(activities))[:4]
+
+    # Resolve music & videos
+    music = []
+    videos = []
+
+    lookup_reason = reason
+    if reason in ["baby_crying", "baby_needs", "baby_feeding", "caring_for_baby"]:
+        lookup_reason = "bonding_issues"
+    elif reason == "baby_sleep":
+        lookup_reason = "sleep_problems"
+    elif reason == "baby_health":
+        lookup_reason = "anxiety"
+
     search_risks = [risk]
     if risk == "high":
         search_risks.append("medium")
     elif risk == "medium":
         search_risks.append("low")
 
-    def format_data(row):
-        # Helper to split comma-separated strings safely
+    row_match = None
+    for r in search_risks:
+        for row in RECOMMENDATIONS_DATA:
+            if row["risk_level"] == r and row["reason"] == lookup_reason and row["emotion"] == emotion:
+                row_match = row
+                break
+        if row_match:
+            break
+
+    if not row_match:
+        for r in search_risks:
+            for row in RECOMMENDATIONS_DATA:
+                if row["risk_level"] == r and row["reason"] == lookup_reason:
+                    row_match = row
+                    break
+            if row_match:
+                break
+
+    if not row_match:
+        for row in RECOMMENDATIONS_DATA:
+            if row["reason"] == lookup_reason:
+                row_match = row
+                break
+
+    if row_match:
         def split_csv(val):
             if not val or str(val).lower() == "nan":
                 return []
             return [x.strip() for x in str(val).split(",") if x.strip()]
+        music = split_csv(row_match.get("recommended_music"))
+        videos = split_csv(row_match.get("recommended_videos"))
 
-        raw_acts = split_csv(row.get("recommended_activities"))
-        acts = []
-        for a in raw_acts:
-            if a in ["baby_bonding", "new_baby_interaction_ideas"]:
-                if "baby_mood" not in acts:
-                    acts.append("baby_mood")
-            else:
-                acts.append(a)
-
-        raw_games = split_csv(row.get("recommended_games"))
-        games = []
-        for g in raw_games:
-            if g in ["baby_bonding", "new_baby_interaction_ideas"]:
-                if "baby_mood" not in games:
-                    games.append("baby_mood")
-            else:
-                games.append(g)
-
-        if ("baby" in reason or reason in ["bonding_issues", "caring_for_baby", "baby_crying", "baby_feeding", "baby_sleep"]) and "baby_mood" not in acts:
-            acts.insert(0, "baby_mood")
-
-        return {
-            "activities": acts,
-            "games": games,
-            "music": split_csv(row.get("recommended_music")),
-            "videos": split_csv(row.get("recommended_videos")),
-            # Keep videoUrl for backward compatibility (first video in list)
-            "videoUrl": split_csv(row.get("recommended_videos"))[0] if split_csv(row.get("recommended_videos")) else "https://youtu.be/jzGyjLGbAUc"
-        }
-
-    # 1. Exact match (try each risk level in preference order)
-    for r in search_risks:
-        for row in RECOMMENDATIONS_DATA:
-            if (
-                row["risk_level"] == r
-                and row["reason"] == reason
-                and row["emotion"] == emotion
-            ):
-                print(f"[RECOMMENDATION] ✓ Found EXACT match: risk={r}, reason={reason}, emotion={emotion}")
-                return format_data(row)
-
-    # 2. Risk + Reason match (Ignore Emotion)
-    for r in search_risks:
-        for row in RECOMMENDATIONS_DATA:
-            if (
-                row["risk_level"] == r
-                and row["reason"] == reason
-            ):
-                print(f"[RECOMMENDATION] ✓ Found RISK+REASON match: risk={r}, reason={reason}")
-                return format_data(row)
-
-    # 3. Just Reason match
-    for row in RECOMMENDATIONS_DATA:
-        if row["reason"] == reason:
-            print(f"[RECOMMENDATION] ✓ Found REASON ONLY match: reason={reason}")
-            return format_data(row)
-
-    # 4. Emotion + Risk match
-    for r in search_risks:
-        for row in RECOMMENDATIONS_DATA:
-            if (
-                row["risk_level"] == r
-                and row["emotion"] == emotion
-            ):
-                print(f"[RECOMMENDATION] ✓ Found RISK+EMOTION match: risk={r}, emotion={emotion}")
-                return format_data(row)
-
-    print(f"[RECOMMENDATION] ⚠ No match found for '{reason}'. Returning default fallback.")
     return {
-        "activities": ["deep_breathing", "journaling"],
-        "games": ["bubble_pop", "colouring"],
-        "videoUrl": "https://youtu.be/jzGyjLGbAUc"
+        "activities": activities,
+        "games": games,
+        "music": music,
+        "videos": videos,
+        "videoUrl": videos[0] if videos else "https://youtu.be/jzGyjLGbAUc"
     }
 
 # ============================================================
@@ -419,9 +510,8 @@ def analyze():
             "alone": ["alone", "nobody"],
         }
         
-        text_lower = text.lower()
         for e_key, e_kws in emotion_keywords.items():
-            if any(kw in text_lower for kw in e_kws):
+            if any(kw in cleaned for kw in e_kws):
                 emotion = e_key
                 break
         
@@ -452,9 +542,8 @@ def analyze():
                 "negative_thoughts": ["hopeless", "dark", "die", "pointless", "ජීවිතේ එපා වෙලා", "මැරෙන්න හිතෙනවා", "merenna hithenawa"]
             }
 
-            text_lower = text.lower()
             for r, kws in keywords.items():
-                if any(kw in text_lower for kw in kws):
+                if any(kw in cleaned for kw in kws):
                     reason = r
                     break
 

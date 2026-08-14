@@ -22,8 +22,6 @@ import SinhalaKeyboard from '../components/SinhalaKeyboard';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../services/AppContext';
 import { detectBabyTopic } from '../services/babyCareIntentService';
-import { isBabyRelatedContent, ALL_GAMES } from '../services/activitiesLibrary';
-import { analyzeDiary, getRecommendations } from '../services/emotionEngine';
 
 const { width } = Dimensions.get('window');
 
@@ -274,71 +272,18 @@ export default function DiaryScreen({ navigation }) {
         try {
             const res = await api.post('/diary', { date: selectedDate, content: text, isLocked: locked, theme, media: mediaList, mood: m, sentiment: s });
             setSaveStatus('saved');
-
-            // Always run the LOCAL emotion engine on the diary text so that
-            // baby-related content detection (isBabyRelatedContent) is applied
-            // regardless of what the ML backend returns.
-            const localAnalysis = (text && text.trim().length > 5) ? analyzeDiary(text) : null;
-            const localRecs = localAnalysis ? getRecommendations(localAnalysis, [], [], text) : null;
-
-            // Build the analysis object — prefer backend values if available,
-            // but always fall back to local engine so we are never empty.
-            const backendEntry = res.data?.entry || {};
-            const mergedAnalysis = {
-                emotion:       backendEntry.emotion       || localAnalysis?.detectedEmotion || 'stressed',
-                detectedEmotion: backendEntry.emotion     || localAnalysis?.detectedEmotion || 'stressed',
-                primaryReason: backendEntry.reason        || localAnalysis?.primaryReason   || 'overwhelmed',
-                riskLevel:     backendEntry.riskLevel     || localAnalysis?.riskLevel       || 'low',
-                mood:          backendEntry.mood          || m,
-                intents:       localAnalysis?.intents,
-            };
-
-            // Build merged recommendations — start with local (has baby_mood),
-            // then fill any gaps from the backend response.
-            let mergedRecs = localRecs || {};
-
-            // If backend returned activities/games and local produced none, use backend.
-            if (!mergedRecs.newActivities?.length && backendEntry.recommendations?.activities?.length) {
-                mergedRecs = { ...mergedRecs, ...backendEntry.recommendations };
+            
+            // Update global context with backend recommendations
+            if (res.data?.entry) {
+                const { entry } = res.data;
+                const analysis = {
+                    emotion: entry.emotion,
+                    primaryReason: entry.reason,
+                    riskLevel: entry.riskLevel,
+                    mood: entry.mood
+                };
+                setLatestData(analysis, entry.recommendations);
             }
-
-            // ── BABY CUE INJECTION ─────────────────────────────────────────
-            // Guarantee baby_mood is in the games and activities list whenever diary text
-            // contains baby-related content, regardless of any other source.
-            if (text && isBabyRelatedContent(text)) {
-                const babyMoodGame = ALL_GAMES.find(g => g.id === 'baby_mood');
-                if (babyMoodGame) {
-                    const existingGames = (mergedRecs.games || []).filter(g => (g?.id || g) !== 'baby_bonding');
-                    if (!existingGames.some(g => (g?.id || g) === 'baby_mood')) {
-                        mergedRecs = {
-                            ...mergedRecs,
-                            games: [babyMoodGame, ...existingGames],
-                            game:  babyMoodGame,
-                        };
-                    }
-                    // Ensure baby_mood appears as Priority #1 in newActivities/activities
-                    const existingActs = (mergedRecs.newActivities || mergedRecs.activities || []).filter(a => (a?.id || a) !== 'baby_bonding');
-                    const cleanActs = existingActs.filter(a => (a?.id || a) !== 'baby_mood');
-                    mergedRecs = {
-                        ...mergedRecs,
-                        newActivities: [babyMoodGame, ...cleanActs].slice(0, 4),
-                        activities:    [babyMoodGame, ...cleanActs].slice(0, 4),
-                    };
-                }
-            } else {
-                // Non-baby diary entry: remove baby_bonding if present
-                if (mergedRecs.newActivities || mergedRecs.activities) {
-                    const existingActs = mergedRecs.newActivities || mergedRecs.activities;
-                    const cleanActs = existingActs.filter(a => (a?.id || a) !== 'baby_bonding');
-                    mergedRecs = {
-                        ...mergedRecs,
-                        newActivities: cleanActs.slice(0, 4),
-                        activities:    cleanActs.slice(0, 4),
-                    };
-                }
-            }
-
-            setLatestData(mergedAnalysis, mergedRecs);
 
             loadAllDates();
             setTimeout(() => setSaveStatus('idle'), 2500);

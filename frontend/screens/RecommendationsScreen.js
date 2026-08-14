@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
-import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule } from '../services/activitiesLibrary';
+import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames } from '../services/activitiesLibrary';
 import { getPersonalizedRecommendations } from '../services/emotionEngine';
 import { MUSIC_LIBRARY, VIDEO_LIBRARY } from '../services/mediaLibrary';
 import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibrary';
@@ -112,6 +112,17 @@ const openYouTube = async (itemOrUrl, title, titleEn) => {
   }
 };
 
+const getBabyTopicsFromReason = (reason) => {
+  if (!reason) return [];
+  if (reason === 'baby_feeding' || reason === 'breastfeeding_concerns') return ['Baby Feeding'];
+  if (reason === 'baby_crying') return ['Baby Crying'];
+  if (reason === 'baby_sleep') return ['Baby Sleeping'];
+  if (reason === 'baby_health') return ['Baby Health'];
+  if (reason === 'caring_for_baby') return ['Mother Care'];
+  if (reason === 'understanding_baby') return ['Baby Development'];
+  return [];
+};
+
 const RecommendationsScreen = ({ navigation, route }) => {
   const { latestRecommendations, latestAnalysis, userPreferredActivities, userPreferredGames, detectedBabyTopic, detectedBabyTopics, detectedBabyAge } = useApp();
 
@@ -126,7 +137,10 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const [localRuleRecs, setLocalRuleRecs] = useState(null);
 
   // Screen UI State
-  const hasBabyCareTopic = Boolean(detectedBabyTopic || (detectedBabyTopics && detectedBabyTopics.length > 0));
+  const initialBabyTopics = (detectedBabyTopics && detectedBabyTopics.length > 0)
+    ? detectedBabyTopics
+    : (detectedBabyTopic ? [detectedBabyTopic] : getBabyTopicsFromReason(latestAnalysis?.primaryReason || selReason));
+  const hasBabyCareTopic = initialBabyTopics.length > 0;
   const initialTab = route?.params?.tab || (hasBabyCareTopic ? 'videos' : 'activities');
   const [tab, setTab] = useState(initialTab);
   const [videoTab, setVideoTab] = useState(hasBabyCareTopic ? 'නිර්දේශිත වීඩියෝ' : 'Motivation');
@@ -162,6 +176,16 @@ const RecommendationsScreen = ({ navigation, route }) => {
     setLocalRuleRecs(recs);
     setShowAssessment(false);
     setIsSkipped(false);
+
+    // Dynamically update active tabs based on the selected reason
+    const topics = getBabyTopicsFromReason(selReason);
+    if (topics.length > 0) {
+      setVideoTab('නිර්දේශිත වීඩියෝ');
+      setTab('videos');
+    } else {
+      setVideoTab('Motivation');
+      setTab('activities');
+    }
   };
 
   const handleAssessmentSkip = () => {
@@ -194,23 +218,11 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const rawActivities = (hasAnalysis ? (latestRecommendations?.newActivities || latestRecommendations?.activities) : localRuleRecs?.activities) || [];
   const rawGames = (hasAnalysis ? latestRecommendations?.games : localRuleRecs?.games) || [];
 
-  // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
-  const finalActivities = isSkipped ? ALL_ACTIVITIES.slice(0, 4) : rawActivities.slice(0, 4);
-
-  // ── Baby Cue detection: check both activity list and intent flags ──────────
-  const isBabyFromIntents = Boolean(latestAnalysis?.intents?.baby_related);
-  const isBabyFromActivities = rawActivities.some(a => (typeof a === 'string' ? a : a?.id) === 'baby_mood');
-  const isBabyFromGames = rawGames.some(g => (typeof g === 'string' ? g : g?.id) === 'baby_mood');
-  const isBabyContext = isBabyFromIntents || isBabyFromActivities || isBabyFromGames;
-
-  const recommendedGameIds = rawGames.map(g => (typeof g === 'string' ? g : g?.id)).filter(Boolean);
-  let filteredGames = ALL_GAMES.filter(g => recommendedGameIds.includes(g.id));
-
-  // Guarantee baby_mood is in the games tab whenever any baby signal is detected
-  if (isBabyContext && !filteredGames.some(g => g.id === 'baby_mood')) {
-    const babyMoodGame = ALL_GAMES.find(g => g.id === 'baby_mood');
-    if (babyMoodGame) {
-      filteredGames = [babyMoodGame, ...filteredGames];
+  // Map and clean rawActivities
+  const resolvedActivities = rawActivities.map(a => {
+    const id = typeof a === 'string' ? a : a?.id;
+    if (id === 'baby_bonding' || id === 'new_baby_interaction_ideas') {
+      return NEW_ACTIVITIES.find(item => item.id === 'baby_mood') || 'baby_mood';
     }
     if (typeof a === 'object' && a !== null) return a;
     return NEW_ACTIVITIES.find(item => item.id === id) || ALL_ACTIVITIES.find(item => item.id === id) || a;
@@ -247,14 +259,13 @@ const RecommendationsScreen = ({ navigation, route }) => {
     ? ALL_GAMES.filter(g => g.id !== 'baby_mood').slice(0, 4)
     : dynamicRecommendedGames;
 
-
   const primaryReason = activeAnalysis?.primaryReason || selReason || 'loneliness';
   const libraryMusic = MUSIC_LIBRARY[primaryReason] || (isBabyActive ? MUSIC_LIBRARY.bonding_issues : MUSIC_LIBRARY.loneliness);
   const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
 
   const activeBabyTopics = (detectedBabyTopics && detectedBabyTopics.length > 0)
     ? detectedBabyTopics
-    : (detectedBabyTopic ? [detectedBabyTopic] : []);
+    : (detectedBabyTopic ? [detectedBabyTopic] : getBabyTopicsFromReason(activeAnalysis?.primaryReason || selReason));
 
   const libraryVideos = VIDEO_LIBRARY[primaryReason] || (isBabyActive ? VIDEO_LIBRARY.bonding_issues : VIDEO_LIBRARY.loneliness);
   const VIDEO_SUB_TABS = activeBabyTopics.length > 0
@@ -304,37 +315,12 @@ const RecommendationsScreen = ({ navigation, route }) => {
     return list.slice(0, 5);
   };
 
-  const SEARCH_SYNONYMS = {
-    'බබා': ['baby', 'child', 'newborn', 'ළදරුවා', 'දරුවා'],
-    'දරුවා': ['baby', 'child', 'newborn', 'ළදරුවා'],
-    'ළදරුවා': ['baby', 'child', 'newborn'],
-    'කිරි': ['feeding', 'milk', 'breastfeeding'],
-    'නින්ද': ['sleep', 'sleeping', 'rest'],
-    'උණ': ['fever', 'health', 'sick'],
-    'අඬනවා': ['crying', 'cry', 'restless'],
-    'මහන්සියි': ['fatigue', 'tired', 'rest'],
-    'තනිකම': ['loneliness', 'alone'],
-    'බයයි': ['anxiety', 'worried', 'calming'],
-  };
-
   // Search Logic with Prioritization (Topics -> Videos -> Articles -> Activities -> Music -> Podcasts)
   const getSearchResults = () => {
     if (!searchQuery.trim()) return null;
     const q = searchQuery.toLowerCase().trim();
 
-    let searchTerms = [q];
-    Object.entries(SEARCH_SYNONYMS).forEach(([key, synonyms]) => {
-      if (q.includes(key) || synonyms.some(s => q.includes(s))) {
-        searchTerms.push(key);
-        searchTerms = searchTerms.concat(synonyms);
-      }
-    });
-
-    const matchesQuery = (str) => {
-      if (!str || typeof str !== 'string') return false;
-      const s = str.toLowerCase();
-      return searchTerms.some(term => s.includes(term));
-    };
+    const matchesQuery = (str) => str && str.toLowerCase().includes(q);
 
     // 1. Knowledge & Baby Care Articles
     const kbMatches = KNOWLEDGE_RESOURCES.filter(r => matchesQuery(r.title) || matchesQuery(r.description) || matchesQuery(r.subCategory) || r.tags?.some(matchesQuery));
@@ -483,14 +469,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   <View>
                     <Text style={s.tabIntro}>ඔබ වෙනුවෙන් තෝරාගත් ක්‍රියාකාරකම් 🧘 (උපරිම 4)</Text>
                     {finalActivities.map((act, idx) => {
-                      const rawId = typeof act === 'string' ? act : act?.id;
-                      const actId = (rawId === 'baby_bonding' || rawId === 'baby_mood') ? 'baby_mood' : rawId;
-                      const actObj = (typeof act === 'object' && act?.label && act?.id !== 'baby_bonding')
-                        ? act
-                        : (NEW_ACTIVITIES.find(a => a.id === actId) ||
-                           ALL_ACTIVITIES.find(a => a.id === actId) ||
-                           ALL_GAMES.find(g => g.id === actId) ||
-                           { id: actId, icon: '👶', label: 'ළදරු හැඟීම', desc: 'ඔබේ බබා පෙන්වන විවිධ සංඥා හඳුනාගැනීම', color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17' });
+                      const actId = typeof act === 'string' ? act : act?.id;
                       return (
                         <TouchableOpacity
                           key={actId || idx}
@@ -503,11 +482,11 @@ const RecommendationsScreen = ({ navigation, route }) => {
                           }}
                           style={s.actCard}
                         >
-                          <LinearGradient colors={actObj.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
-                            <Text style={s.actIcon}>{actObj.icon || '🌸'}</Text>
+                          <LinearGradient colors={act.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
+                            <Text style={s.actIcon}>{act.icon || '🌸'}</Text>
                             <View style={s.actInfo}>
-                              <Text style={[s.actTitle, { color: actObj.accent || '#7E57C2' }]}>{actObj.label || actId}</Text>
-                              <Text style={s.actDesc}>{actObj.purpose || actObj.desc || 'සන්සුන් ක්‍රියාකාරකමක්'}</Text>
+                              <Text style={[s.actTitle, { color: act.accent || '#7E57C2' }]}>{act.label || act}</Text>
+                              <Text style={s.actDesc}>{act.purpose || act.desc || 'සන්සුන් ක්‍රියාකාරකමක්'}</Text>
                             </View>
                           </LinearGradient>
                         </TouchableOpacity>

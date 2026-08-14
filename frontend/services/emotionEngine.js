@@ -1,16 +1,5 @@
 // ================================================================
-// EMOTION ENGINE — emotionEngine.js
-// ================================================================
-// EXACT LOGIC:
-//   diary text → detectEmotion + detectReason → riskLevel
-//   reason + riskLevel → getRecommendationRule()
-//   → specific music, video, activities, game
-//
-// EXAMPLES:
-//   Reason=Anxiety,  Mood=Stressed, Risk=Medium → breathing_478, guided_meditation + bubble_pop
-//   Reason=Bonding,  Mood=Sad,      Risk=Medium → baby_mood + baby_interaction
-//   Reason=Sleep,    Mood=Stressed, Risk=Medium → night_breathing, rest_meditation + colouring
-//   Reason=LackSupp, Mood=Sad,      Risk=Low    → gratitude_writing + affirmation_game
+// EMOTION ENGINE — emotionEngine.js (Multilingual: EN + SI + Singlish)
 // ================================================================
 
 import { getEnhancedRecommendationRule, getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent } from './activitiesLibrary.js';
@@ -20,64 +9,108 @@ export { getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedConte
 
 export const RISK = { LOW: 'low', MEDIUM: 'medium', HIGH: 'high' };
 
-// ── KEYWORD MAPS (Sinhala, English & Singlish) ─────────────
+// ── MULTILINGUAL TEXT NORMALIZATION ─────────────────────────
+export const normalizeMultilingualText = (text = '') => {
+  if (!text || typeof text !== 'string') return '';
+  let cleaned = text.toLowerCase().trim();
+
+  // Normalize common Singlish spelling variations to standard forms
+  cleaned = cleaned
+    .replace(/adanawa/g, 'andanawa')
+    .replace(/andanne/g, 'andanawa')
+    .replace(/andana/g, 'andanawa')
+    .replace(/therenne\s*na\b/g, 'therenne naha')
+    .replace(/therenne\s*nehe/g, 'therenne naha')
+    .replace(/therum\s*ganna\s*ba\b/g, 'therum ganna baha')
+    .replace(/therum\s*ganna\s*nehe/g, 'therum ganna baha')
+    .replace(/nida\s*na\b/g, 'nida ganne naha')
+    .replace(/nida\s*nehe/g, 'nida ganne naha')
+    .replace(/ninda\s*yanne\s*na\b/g, 'ninda yanne naha')
+    .replace(/nidaganne\s*na\b/g, 'nida ganne naha')
+    .replace(/nidaganne\s*naha/g, 'nida ganne naha')
+    .replace(/bonne\s*na\b/g, 'bonna naha')
+    .replace(/bonne\s*naha/g, 'bonna naha')
+    .replace(/baya\s*hithenawa/g, 'baya')
+    .replace(/mahansi\b/g, 'mahansiyi')
+    .replace(/['’]/g, '');
+
+  // Keep alphanumeric, spaces, and Sinhala Unicode range (\u0D80-\u0DFF)
+  cleaned = cleaned.replace(/[^\w\s\u0D80-\u0DFF]/g, ' ');
+  return cleaned.replace(/\s+/g, ' ').trim();
+};
+
+// ── KEYWORD MAPS (EN + SI + SINGLISH) ─────────────────────────
 const REASON_KW = {
-  baby_crying:          ['crying', 'cries', 'cry all night', 'crying all night', 'keeps crying', 'restless', 'she keeps crying', 'he keeps crying',
-                         'අඬනවා', 'ගොඩක් අඬනවා', 'නවත්තන්න බැහැ', 'අඬන බබා', 'බබා අඬනවා', 'දරුවා අඬනවා', 'අඬලා', 'අඬන', 'නොසන්සුන්', 'කරදරයි',
-                         'andanawa', 'andana', 'andala'],
-  baby_feeding:         ['feeding', 'breastfeeding', 'nursing', 'bottle', 'milk', 'not feeding', 'hungry',
-                         'කිරි', 'කිරි දෙනවා', 'කිරි බොන්නේ නැහැ', 'කිරි දීම', 'මව්කිරි', 'බෝතලයෙන් කිරි', 'බබා කිරි බොන්නේ නැහැ', 'බබාට කිරි දෙන්න', 'බබාට බඩගිනියි', 'කිරි දෙන්න', 'බඩගිනි',
-                         'kiri', 'kiri denawa', 'kiri bonne naha'],
-  baby_sleep:           ['baby sleep', 'newborn sleep', 'won\'t sleep', 'wont sleep', 'not sleeping', 'awake all night', 'waking up', 'wakes up',
-                         'නින්ද', 'නිදාගන්නේ නැහැ', 'නිදාගන්නෙ නැහැ', 'රෑට නිදාගන්නේ නැහැ', 'බබා නිදාගන්නේ නැහැ', 'බබාට නින්ද යන්නේ නැහැ', 'නින්ද නැහැ', 'නිදාගන්න', 'නින්දක්වත් නැහැ', 'ඇහැරෙනවා',
-                         'ninda', 'nidaganne naha', 'ninda yanne naha'],
-  baby_health:          ['fever', 'cough', 'sick', 'vomiting', 'temperature', 'baby health', 'baby fever',
-                         'උණ', 'උණ තියෙනවා', 'කැස්ස', 'සෙම්ප්‍රතිශ්‍යාව', 'සෙම්ප්රතිශ්යාව', 'අසනීප', 'වමනය', 'ශරීර උෂ්ණත්වය', 'බබාට උණ', 'දරුවා අසනීපයි',
-                         'una', 'asaneepa', 'kassa'],
-  caring_for_baby:      ['understanding baby', 'caring for baby', 'baby needs', 'don\'t know what baby needs', 'how to care', 'don\'t know what she wants', 'don\'t know what he wants', 'dont know what she wants', 'dont know what he wants', 'baby cues', 'baby signals',
-                         'understand', 'cannot understand', 'i don\'t know', 'i dont know', 'confused about',
-                         'බලාගන්න අමාරුයි', 'බබාව බලාගන්න', 'දරුවා බලාගන්න', 'මොනවා කරන්නද දන්නේ නැහැ', 'තේරෙන්නේ නැහැ', 'බබාගේ අවශ්‍යතා', 'දරුවාගේ අවශ්‍යතා', 'අවශ්‍යතා', 'දන්නේ නැහැ',
-                         'balaganna amarui', 'therenne naha'],
-  loneliness:           ['alone', 'lonely', 'isolated', 'nobody', 'no one', 'miss', 'empty', 'no friends', 'left out',
-                         'තනිකම', 'තනියි', 'මට කතා කරන්න කෙනෙක් නැහැ', 'කවුරුත් නැහැ', 'තනියම', 'හිතට සහාය නැහැ', 'කෙනෙකු නැහැ',
-                         'thanikama', 'thaniyi'],
-  fatigue:              ['tired', 'exhausted', 'drained', 'no energy', 'worn out', 'sleepy', 'burnt out', 'sluggish',
-                         'මහන්සියි', 'ගොඩක් මහන්සියි', 'අමාරුයි', 'හරිම මහන්සියි', 'මහන්සි', 'වෙහෙසෙනවා', 'ශක්තිය නැහැ', 'ඉවසන්න බැහැ',
-                         'mahansiyi', 'mahansi', 'hari mahansiy'],
-  anxiety:              ['anxious', 'worried', 'panic', 'scared', 'nervous', 'overthinking', 'heart racing', 'restless', 'fussy',
-                         'බයයි', 'කනස්සල්ල', 'කලබලයි', 'හිතට බයයි', 'හිත කරදරයි', 'ගොඩක් කනස්සල්ලෙන්', 'මට බය හිතෙනවා', 'බය', 'කනස්සල්ලෙන්', 'හිතේ සැරදෙනවා',
-                         'bayayi', 'kanassalla', 'kalabalai', 'baya'],
-  bonding_issues:       ['bond', 'bonding', 'feel nothing', 'not attached', 'distant from baby', 'no connection', 'indifferent',
-                         'සම්බන්ධයක් නැහැ', 'ළදරුවා සමඟ සම්බන්ධ නොවෙනවා', 'හැඟීමක් නැහැ', 'ළදරුවාට ආදරයක් නැහැ', 'බබාව ආදරය කරන්න බැහැ'],
-  lack_of_support:      ['husband', 'partner', 'no help', 'unsupported', 'nobody helps', 'no family', 'doing it alone',
-                         'සහාය නැහැ', 'කෙනෙකු උදව් කරන්නේ නැහැ', 'ස්වාමිපුරුෂයා', 'පවුල නැහැ', 'තනියම කරන්නේ', 'උදව් නැහැ', 'හාමිගෙ සහාය නැහැ'],
-  sleep_problems:       ['sleep', 'insomnia', 'awake all night', 'sleep deprived', 'cant sleep', 'no sleep', 'exhausted',
-                         'නිදාගන්නේ නැහැ', 'නින්ද නොයාම', 'නිදාගන්න බැහැ', 'රෑ නිදාගන්නේ නැහැ', 'නින්දක්වත් නැහැ'],
-  loss_of_confidence:   ['confidence', 'self-doubt', 'failure', 'bad mother', 'useless', 'not capable', 'worthless',
-                         'විශ්වාසය නැහැ', 'අසාර්ථකයි', 'නරක අම්මා', 'කරගන්න බැහැ', 'කිසිවක් දන්නේ නැහැ', 'ලොකු වරදක්', 'ආත්ම විශ්වාසය නැහැ'],
-  overwhelmed:          ['overwhelmed', 'too much', 'drowning', 'breaking down', 'cant cope', 'too hard', 'falling apart',
-                         'දරාගන්න අමාරුයි', 'හරිම බරයි', 'හැමදේම වැඩියි', 'කිසි දෙයක් කරගන්න බැහැ', 'වැඩියි', 'හිත ගෙවෙනවා', 'ඉවසන්න බැහැ', 'ගොඩ ගන්නේ නැහැ',
-                         'daraganna amarui'],
-  physical_discomfort:  ['pain', 'hurt', 'sore', 'c-section', 'recovery', 'stitches', 'body aches', 'discomfort',
-                         'වේදනාව', 'රිදෙනවා', 'ශරීරේ රිදෙනවා', 'සීසේරියන්', 'සුව වෙනවා', 'ශරීරය', 'දරුව ලැබුණාට පස්සේ', 'රිදීම'],
-  negative_thoughts:    ['hopeless', 'hate myself', 'dark', 'disappear', 'dark thoughts', 'no point', 'worthless',
-                         'බලාපොරොත්තු නැහැ', 'මා ගැනම වෛරයි', 'අඳුරු හිතුවිලි', 'නැතිව යන්නත් හිතෙනවා', 'ජීවිතේ නිෂ්ඵලයි', 'ඉවරයි'],
+  loneliness: [
+    'alone', 'lonely', 'isolated', 'nobody', 'no one', 'miss', 'empty', 'no friends', 'left out',
+    'තනිවෙලා', 'පාළුයි', 'පාළුවක්', 'කවුරුත් නෑ', 'කවුරුත් නැහැ', 'තනියම', 'පාළු',
+    'paluyi', 'taniyen', 'taniwela', 'kugewat na', 'kawuruth naha', 'palu'
+  ],
+  fatigue: [
+    'tired', 'exhausted', 'drained', 'no energy', 'worn out', 'sleepy', 'burnt out', 'sluggish',
+    'මහන්සියි', 'වෙහෙසයි', 'වෙහෙස', 'නින්ද මදි', 'ශක්තියක් නෑ', 'අමාරුයි',
+    'mahansiyi', 'wehesayi', 'mahansi', 'shakthiyak naha', 'hondata mahansiyi'
+  ],
+  anxiety: [
+    'anxious', 'worried', 'panic', 'scared', 'nervous', 'overthinking', 'heart racing', 'restless',
+    'බයයි', 'කාංසාව', 'ලොකු බයක්', 'කනස්සල්ල', 'බියක්', 'බය හිතෙනවා',
+    'baye', 'baya', 'baya hithenawa', 'bayaයි', 'kansawa'
+  ],
+  bonding_issues: [
+    'bond', 'bonding', 'feel nothing', 'not attached', 'distant from baby', 'no connection', 'indifferent',
+    'බැඳීමක් නෑ', 'ආදරයක් දැනෙන්නේ නෑ', 'සම්බන්ධයක් නෑ', 'කිසිම හැඟීමක් නෑ',
+    'bandimak naha', 'daranne naha', 'connection ekak naha'
+  ],
+  lack_of_support: [
+    'husband', 'partner', 'no help', 'unsupported', 'nobody helps', 'no family', 'doing it alone',
+    'සැමියා උදව් කරන්නේ නැහැ', 'සැමියා උදව් කරන්නේ නෑ', 'උදව්වක් නෑ', 'කාගෙවත් සහයක් නෑ', 'උදව් නෑ',
+    'husband udaw naha', 'udawwak naha', 'kagegenwat support naha'
+  ],
+  sleep_problems: [
+    'sleep', 'insomnia', 'awake all night', 'sleep deprived', 'cant sleep', 'no sleep',
+    'නින්ද', 'නිදාගන්නේ නැහැ', 'නිදාගන්නෙ නෑ', 'නින්දක් නෑ', 'නින්ද යන්නෙ නෑ', 'රාත්‍රියට නිදි නෑ',
+    'ninda', 'nida ganne naha', 'nida na', 'ninda yanne naha', 'nidaganna baha'
+  ],
+  loss_of_confidence: [
+    'confidence', 'self-doubt', 'failure', 'bad mother', 'useless', 'not capable', 'worthless',
+    'විශ්වාසයක් නෑ', 'නරක අම්මා කෙනෙක්', 'මට බැහැ', 'අසාර්ථකයි',
+    'naraka amma', 'mata baha', 'confidence naha'
+  ],
+  overwhelmed: [
+    'overwhelmed', 'too much', 'drowning', 'breaking down', 'cant cope', 'too hard', 'falling apart',
+    'දරාගන්න බැහැ', 'දරාගන්න බෑ', 'ඔළුව රිදෙනවා', 'ඔක්කොම වැඩ', 'අමාරුයි',
+    'daraganna baha', 'daraganna ba', 'amaruwi', 'godak wada'
+  ],
+  physical_discomfort: [
+    'pain', 'hurt', 'sore', 'c-section', 'recovery', 'stitches', 'body aches', 'discomfort',
+    'කැක්කුමයි', 'රිදෙනවා', 'තුවාලය', 'සිරුරේ කැක්කුම',
+    'kakkumai', 'ridenawa', 'thuwala', 'kakul ridenawa'
+  ],
+  negative_thoughts: [
+    'hopeless', 'hate myself', 'dark', 'disappear', 'dark thoughts', 'no point', 'worthless',
+    'ජීවිතේ එපා වෙලා', 'මැරෙන්න හිතෙනවා', 'කිසිම තේරුමක් නෑ', 'අඳුරු සිතුවිලි',
+    'jeewithe epa wela', 'merenna hithenawa', 'therumak naha'
+  ],
 };
 
 const EMOTION_KW = {
-  happy:    ['happy', 'joy', 'smile', 'grateful', 'wonderful', 'positive', 'hopeful', 'great', 'good day',
-             'සතුටුයි', 'සතුටින්', 'ලස්සන දවසක්', 'සන්තෝෂයි', 'හොඳ දවසක්', 'ප්‍රීතිමත්',
-             'satutuyi'],
-  sad:      ['sad', 'cry', 'unhappy', 'depressed', 'hopeless', 'hurt', 'empty', 'down', 'devastated',
-             'දුකයි', 'දුකින්', 'හිත දුකයි', 'අඬන්න හිතෙනවා', 'අසරණයි', 'ශෝකයෙන්', 'හිත හිරිවෙලා',
-             'dukai', 'dukin'],
-  stressed: ['stress', 'overwhelmed', 'tense', 'frustrated', 'on edge', 'pressure', 'anxious', 'irritated',
-             'කේන්තියි', 'කෝපයි', 'තරහයි', 'හරිම තරහයි', 'ආතතිය', 'කලබලෙන්', 'නොසන්සුන්', 'බරයි', 'කරදරයි', 'ගොඩ ගන්නේ නැහැ',
-             'kenthayi', 'tarahai'],
+  happy: [
+    'happy', 'joy', 'smile', 'grateful', 'wonderful', 'positive', 'hopeful', 'great', 'good day',
+    'සතුටුයි', 'සතුටක්', 'ආසයි', 'සන්තෝෂයි', 'සුන්දරයි',
+    'sathutuyi', 'sathuta', 'gasp', 'good day'
+  ],
+  sad: [
+    'sad', 'cry', 'unhappy', 'depressed', 'hopeless', 'hurt', 'empty', 'down', 'devastated',
+    'දුකයි', 'කඳුළු', 'අඬනවා', 'කනගාටුයි', 'වේදනාව',
+    'dukai', 'dukayi', 'andana', 'kandulu'
+  ],
+  stressed: [
+    'stress', 'overwhelmed', 'tense', 'frustrated', 'on edge', 'pressure', 'anxious', 'irritated',
+    'ආතතිය', 'මහන්සියි', 'බයයි', 'කලබලයි', 'පීඩනය',
+    'stress', 'athathiya', 'baya', 'mahansi'
+  ],
 };
 
-
-// These reasons + sad mood = medium risk automatically
 const HIGH_RISK_REASONS = new Set([
   'negative_thoughts', 'bonding_issues', 'loss_of_confidence', 'lack_of_support',
 ]);
@@ -152,71 +185,6 @@ export const detectBabyIntents = (text = '') => {
   };
 };
 
-// ── MULTI-INTENT DETECTION ─────────────────────────────────────
-export const detectIntents = (text = '') => {
-  if (!text || typeof text !== 'string') {
-    return {
-      baby_related: false, baby_crying: false, baby_feeding: false,
-      baby_sleep: false, baby_health: false, baby_needs: false,
-      mother_fatigue: false, mother_overwhelm: false, loneliness: false, anxiety: false
-    };
-  }
-  const t = text.toLowerCase();
-
-  const baby_related = isBabyRelatedContent(text);
-
-  const baby_crying = baby_related && (
-    t.includes('cry') || t.includes('crying') || t.includes('cries') || t.includes('restless') ||
-    t.includes('අඬනවා') || t.includes('අඬනව') || t.includes('අඬන') || t.includes('අඬලා') ||
-    t.includes('andanawa') || t.includes('andana') || t.includes('andala')
-  );
-
-  const baby_feeding = baby_related && (
-    t.includes('feed') || t.includes('feeding') || t.includes('breastfeeding') || t.includes('nursing') || t.includes('milk') || t.includes('bottle') ||
-    t.includes('කිරි') || t.includes('මව්කිරි') || t.includes('බඩගිනියි') ||
-    t.includes('kiri') || t.includes('kiri denawa') || t.includes('kiri bonne naha')
-  );
-
-  const baby_sleep = baby_related && (
-    t.includes('sleep') || t.includes('sleeping') || t.includes('restless') || t.includes('awake') ||
-    t.includes('නින්ද') || t.includes('නිදාගන්නේ') || t.includes('නිදාගන්නෙ') ||
-    t.includes('ninda') || t.includes('nidaganne')
-  );
-
-  const baby_health = baby_related && (
-    t.includes('fever') || t.includes('sick') || t.includes('cough') || t.includes('vomit') || t.includes('temperature') ||
-    t.includes('උණ') || t.includes('කැස්ස') || t.includes('අසනීප') || t.includes('වමනය') ||
-    t.includes('una') || t.includes('asaneepa')
-  );
-
-  const baby_needs = baby_related && (
-    t.includes('need') || t.includes('needs') || t.includes('want') || t.includes('wants') || t.includes('understand') || t.includes('don\'t know') || t.includes('dont know') || t.includes('care') || t.includes('caring') || t.includes('difficult') || t.includes('hard') ||
-    t.includes('තේරෙන්නේ නැහැ') || t.includes('තේරෙන්නෙ නැහැ') || t.includes('අවශ්‍යතා') || t.includes('අවශ්යතා') || t.includes('බලාගන්න') || t.includes('දන්නේ නැහැ') || t.includes('අමාරුයි') ||
-    t.includes('therenne naha') || t.includes('balaganna') || t.includes('needs')
-  );
-
-  const mother_fatigue = t.includes('tired') || t.includes('exhausted') || t.includes('drained') || t.includes('මහන්සියි') || t.includes('මහන්සි') || t.includes('mahansiy') || t.includes('mahansi');
-
-  const mother_overwhelm = t.includes('overwhelmed') || t.includes('too much') || t.includes('cant cope') || t.includes('දරාගන්න අමාරුයි') || t.includes('හැමදේම වැඩියි') || t.includes('daraganna amarui');
-
-  const loneliness = t.includes('lonely') || t.includes('alone') || t.includes('isolated') || t.includes('තනිකම') || t.includes('තනියි') || t.includes('thanikama');
-
-  const anxiety = t.includes('anxious') || t.includes('worried') || t.includes('panic') || t.includes('scared') || t.includes('බයයි') || t.includes('කනස්සල්ල') || t.includes('bayayi') || t.includes('kanassalla');
-
-  return {
-    baby_related,
-    baby_crying,
-    baby_feeding,
-    baby_sleep,
-    baby_health,
-    baby_needs,
-    mother_fatigue,
-    mother_overwhelm,
-    loneliness,
-    anxiety
-  };
-};
-
 // ── ANALYZE DIARY ─────────────────────────────────────────────
 export const analyzeDiary = (text) => {
   const norm = normalizeMultilingualText(text);
@@ -242,20 +210,39 @@ export const analyzeDiary = (text) => {
 
   const babyIntents = detectBabyIntents(text);
 
-  // Step 3: Determine primary reason priority
+  // Step 3: Determine primary reason priority (Earliest occurrence priority)
   let primaryReason = motherReason;
-  if (babyIntents.baby_crying) {
-    primaryReason = 'baby_crying';
-  } else if (babyIntents.baby_needs) {
-    primaryReason = 'baby_needs';
-  } else if (babyIntents.baby_health) {
-    primaryReason = 'baby_health';
-  } else if (babyIntents.baby_feeding) {
-    primaryReason = 'baby_feeding';
-  } else if (babyIntents.baby_sleep) {
-    primaryReason = 'baby_sleep';
-  } else if (babyIntents.baby_related) {
-    primaryReason = 'caring_for_baby';
+  if (babyIntents.baby_related) {
+    const intentsList = [
+      { id: 'baby_crying', kws: ['crying', 'cries', 'cry', 'andana', 'andanawa', 'adanawa', 'අඬනවා', 'අඬන', 'ඇඬීම', 'කෑගහනවා'] },
+      { id: 'baby_needs', kws: ['needs', 'want', 'wants', 'understand', 'therenne naha', 'therenne na', 'therum ganna baha', 'one kiyala', 'mokakda one', 'monawada one', 'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා'] },
+      { id: 'baby_sleep', kws: ['sleep', 'sleeping', 'ninda', 'nida ganne', 'නින්ද', 'නිදා', 'නිදාගන්නේ'] },
+      { id: 'baby_feeding', kws: ['feeding', 'feed', 'breastfeeding', 'milk', 'kiri', 'කිරි', 'කිරි දෙන්න', 'කිරි බොන්නේ'] },
+      { id: 'baby_health', kws: ['fever', 'sick', 'health', 'unwell', 'baya', 'බයයි', 'ලෙඩ', 'උණ', 'අසනීප', 'asanipa', 'una', 'leda'] }
+    ];
+
+    let earliestIntent = null;
+    let earliestPos = -1;
+
+    intentsList.forEach(item => {
+      if (babyIntents[item.id]) {
+        item.kws.forEach(kw => {
+          const pos = norm.indexOf(kw);
+          if (pos !== -1) {
+            if (earliestPos === -1 || pos < earliestPos) {
+              earliestPos = pos;
+              earliestIntent = item.id;
+            }
+          }
+        });
+      }
+    });
+
+    if (earliestIntent) {
+      primaryReason = earliestIntent;
+    } else {
+      primaryReason = 'caring_for_baby';
+    }
   }
 
   // Step 4: Determine risk level
@@ -271,14 +258,15 @@ export const analyzeDiary = (text) => {
     riskLevel = RISK.MEDIUM;
   }
 
-  const intents = detectIntents(text);
+  const isSinhala = /[\u0D80-\u0DFF]/.test(text);
+  const isSinglish = !isSinhala && /(baba|andanawa|ninda|kiri|daruwa|putha|duwa|mahansi|baya|duk)/i.test(text);
 
   return {
     detectedEmotion,
     primaryReason,
     secondaryReason: secondaryReason !== primaryReason ? secondaryReason : null,
     riskLevel,
-    intents,
+    babyIntents,
     scores: { eScores, rScores },
     _debug: {
       originalText: text,
@@ -297,11 +285,9 @@ export const analyzeDiary = (text) => {
 
 // ── GET RECOMMENDATIONS ───────────────────────────────────────
 export const getRecommendations = (analysisResult, preferredActivities = [], preferredGames = [], diaryText = '') => {
-  const { detectedEmotion, primaryReason, riskLevel, intents } = analysisResult;
-  const activeIntents = intents || detectIntents(diaryText);
+  const { detectedEmotion, primaryReason, riskLevel } = analysisResult;
 
-  // Get the rule for this exact reason + risk combination
-  const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames, diaryText, activeIntents);
+  const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames, diaryText);
 
   const musicKey = rule.musicKey || (primaryReason.includes('baby') ? 'bonding_issues' : primaryReason);
   const videoKey = rule.videoKey || (primaryReason.includes('baby') ? 'bonding_issues' : primaryReason);

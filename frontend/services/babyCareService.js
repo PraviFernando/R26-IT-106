@@ -150,6 +150,35 @@ const HIGH_RISK_HEALTH_KEYWORDS = [
   'unresponsive', 'dehydrated', 'severe bleeding', 'severe pain', 'emergency'
 ];
 
+const normalizeText = (text = '') => {
+  if (!text || typeof text !== 'string') return '';
+  let cleaned = text.toLowerCase().trim();
+
+  // Normalize common Singlish spelling variations to standard forms
+  cleaned = cleaned
+    .replace(/adanawa/g, 'andanawa')
+    .replace(/andanne/g, 'andanawa')
+    .replace(/andana/g, 'andanawa')
+    .replace(/therenne\s*na\b/g, 'therenne naha')
+    .replace(/therenne\s*nehe/g, 'therenne naha')
+    .replace(/therum\s*ganna\s*ba\b/g, 'therum ganna baha')
+    .replace(/therum\s*ganna\s*nehe/g, 'therum ganna baha')
+    .replace(/nida\s*na\b/g, 'nida ganne naha')
+    .replace(/nida\s*nehe/g, 'nida ganne naha')
+    .replace(/ninda\s*yanne\s*na\b/g, 'ninda yanne naha')
+    .replace(/nidaganne\s*na\b/g, 'nida ganne naha')
+    .replace(/nidaganne\s*naha/g, 'nida ganne naha')
+    .replace(/bonne\s*na\b/g, 'bonna naha')
+    .replace(/bonne\s*naha/g, 'bonna naha')
+    .replace(/baya\s*hithenawa/g, 'baya')
+    .replace(/mahansi\b/g, 'mahansiyi')
+    .replace(/['’]/g, '');
+
+  // Keep alphanumeric, spaces, and Sinhala Unicode range (\u0D80-\u0DFF)
+  cleaned = cleaned.replace(/[^\w\s\u0D80-\u0DFF]/g, ' ');
+  return cleaned.replace(/\s+/g, ' ').trim();
+};
+
 /**
  * Detects multiple baby care topics and intents from diary text.
  * @param {string} text - Input diary entry
@@ -161,7 +190,7 @@ export const detectBabyTopics = (text = '') => {
   }
 
   // Normalize text
-  const cleanText = text.toLowerCase();
+  const cleanText = normalizeText(text);
 
   // Check emergency health signs
   const isEmergency = HIGH_RISK_HEALTH_KEYWORDS.some(kw => cleanText.includes(kw));
@@ -171,12 +200,17 @@ export const detectBabyTopics = (text = '') => {
 
   Object.entries(CATEGORY_RULES).forEach(([category, rule]) => {
     let score = 0;
+    let earliestPos = -1;
 
     // Phrase matches (higher weight)
     rule.phrases.forEach(phrase => {
       const normPhrase = phrase.replace(/['’]/g, '');
-      if (cleanText.includes(normPhrase)) {
+      const pos = cleanText.indexOf(normPhrase);
+      if (pos !== -1) {
         score += 3;
+        if (earliestPos === -1 || pos < earliestPos) {
+          earliestPos = pos;
+        }
       }
     });
 
@@ -184,18 +218,28 @@ export const detectBabyTopics = (text = '') => {
     rule.keywords.forEach(kw => {
       const normKw = kw.replace(/['’]/g, '');
       const regex = new RegExp(`\\b${normKw}\\b`, 'i');
-      if (regex.test(cleanText)) {
+      const match = cleanText.match(regex);
+      if (match) {
         score += 1;
+        const pos = match.index;
+        if (earliestPos === -1 || pos < earliestPos) {
+          earliestPos = pos;
+        }
       }
     });
 
     if (score > 0) {
-      categoryScores.push({ category, score });
+      categoryScores.push({ category, score, earliestPos });
     }
   });
 
-  // Sort descending by match score
-  categoryScores.sort((a, b) => b.score - a.score);
+  // Sort descending by match score, and if equal, by earliestPos ascending
+  categoryScores.sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    return a.earliestPos - b.earliestPos;
+  });
 
   // Return top matching topics (up to top 3 matching categories)
   const detectedTopics = categoryScores.slice(0, 3).map(item => item.category);

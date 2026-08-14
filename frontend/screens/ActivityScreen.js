@@ -2921,7 +2921,6 @@ const MoodBoard = ({ onGoBack }) => {
 };
 
 
-
 // GAMES LIST & MAIN SCREEN
 const ALL_GAMES_LIST = [
   { id: 'word_search', label: 'වචන සෙවීම', labelEn: 'Find hidden words', icon: '🔤', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
@@ -2954,27 +2953,24 @@ const ActivityScreen = ({ navigation, route }) => {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    const rawActId = route?.params?.activityId;
-    const rawGameId = route?.params?.gameId;
-
-    const actId = (rawActId === 'baby_bonding' || rawActId === 'baby_mood') ? 'baby_mood' : rawActId;
-    const gameId = (rawGameId === 'baby_bonding' || rawGameId === 'baby_mood') ? 'baby_mood' : rawGameId;
-
-    if (actId) {
-      const a = [...ALL_ACTIVITIES, ...NEW_ACTIVITIES].find((x) => x.id === actId);
+    if (route?.params?.activityId === 'baby_mood' || route?.params?.gameId === 'baby_mood') {
+      const found = ALL_GAMES_LIST.find((x) => x.id === 'baby_mood');
+      if (found) {
+        setSelGame(found);
+        setView('game');
+        return;
+      }
+    }
+    if (route?.params?.activityId) {
+      const a = [...ALL_ACTIVITIES, ...NEW_ACTIVITIES].find((x) => x.id === route.params.activityId);
       if (a) {
         setSelAct(a);
         setView('activity');
         setDone(false);
-      } else {
-        const foundGame = ALL_GAMES_LIST.find((x) => x.id === actId);
-        if (foundGame) {
-          setSelGame(foundGame);
-          setView('game');
-        }
       }
-    } else if (gameId) {
-      const found = ALL_GAMES_LIST.find((x) => x.id === gameId);
+    }
+    if (route?.params?.gameId) {
+      const found = ALL_GAMES_LIST.find((x) => x.id === route.params.gameId);
       if (found) {
         setSelGame(found);
         setView('game');
