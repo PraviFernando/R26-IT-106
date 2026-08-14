@@ -494,7 +494,7 @@ const loadMMUnlocked = async () => {
 const saveMMUnlocked = async (lvl) => {
   try {
     await AsyncStorage.setItem(MM_STORAGE_KEY, JSON.stringify(lvl));
-  } catch (_) {}
+  } catch (_) { }
 };
 
 const makeMMCards = (level) => {
@@ -915,7 +915,7 @@ const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
 const BabyMoodGuess = ({ onGoBack }) => {
   const session = useGameSession({ gameId: 'baby_mood', gameName: 'ළදරු හැඟීම', icon: '👶', onGoBack });
-  
+
   const [screen, setScreen] = useState('intro'); // 'intro' | 'play' | 'complete'
   const [order, setOrder] = useState([]);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -1135,7 +1135,7 @@ const SC_TASKS = [
   { id: 4, icon: '🌸', label: 'ශ්වාස 3', pts: 10 },
   { id: 5, icon: '🚶', label: 'ඇවිදීම', pts: 15 },
   { id: 6, icon: '💜', label: 'ආදර වදන', pts: 20 },
-  { id: 7, icon: '<ctrl42>', label: 'ස්නාන', pts: 15 },
+  { id: 7, icon: '🛁', label: 'ස්නාන', pts: 15 },
   { id: 8, icon: '📞', label: 'ඇමතීම', pts: 10 },
 ];
 const SC_BADGES = [
@@ -1728,7 +1728,7 @@ const WordBuilder = ({ onGoBack }) => {
 // PATTERN REPEAT
 const PAT_PADS = [
   { colors: ['#F472B6', '#EC4899'], name: 'රෝස', icon: '🌸' },
-  { colors: ['#A855F7', '#8B5CF6'], name: 'ජම්', icon: '💜' },
+  { colors: ['#A855F7', '#8B5CF6'], name: 'දම්', icon: '💜' },
   { colors: ['#34D399', '#10B981'], name: 'කොළ', icon: '🌿' },
   { colors: ['#60A5FA', '#3B82F6'], name: 'නිල්', icon: '💙' },
   { colors: ['#FBBF24', '#F59E0B'], name: 'රන්', icon: '⭐' },
@@ -1848,10 +1848,10 @@ const PatternRepeat = ({ onGoBack }) => {
               {phase === 'showing'
                 ? '👁 බලන්න…'
                 : phase === 'input'
-                ? `🎯 ඔබේ වාරය! (${userSeq.length}/${seq.length})`
-                : phase === 'correct'
-                ? '✅ නිවැරදි!'
-                : '❌ වැරදිලා!'}
+                  ? `🎯 ඔබේ වාරය! (${userSeq.length}/${seq.length})`
+                  : phase === 'correct'
+                    ? '✅ නිවැරදි!'
+                    : '❌ වැරදිලා!'}
             </Text>
           </View>
         )}
@@ -2581,20 +2581,20 @@ const NewActivityDetail = ({ activity, onComplete }) => {
 };
 
 const moodCards = [
-  { id: 'sad',       emoji: '😔', label: 'දුකයි',         color: ['#E3F2FD', '#BBDEFB'], reflection: 'ඔබේ හැඟීම් ස්වාභාවිකයි 💙' },
-  { id: 'angry',     emoji: '😡', label: 'තරහයි',         color: ['#FFEBEE', '#FFCDD2'], reflection: 'කෝපය පාලනය කර සන්සුන් වන්න 🌿' },
-  { id: 'calm',      emoji: '😴', label: 'ශාන්තයි',       color: ['#F3E5F5', '#E1BEE7'], reflection: 'මනස සන්සුන්ව තබාගන්න 🌙' },
-  { id: 'anxiety',   emoji: '😟', label: 'කාංසාව',         color: ['#FFF9C4', '#FFF3A0'], reflection: 'ගැඹුරු ශ්වාසයක් ගන්න. ඔබ සුරක්ෂිතයි ⭐' },
-  { id: 'happy',     emoji: '😊', label: 'සතුටුයි',       color: ['#E8F5E9', '#C8E6C9'], reflection: 'ඔබේ සතුට ආශිර්වාදයකි! 🌸' },
-  { id: 'grateful',  emoji: '🥺', label: 'කෘතඥයි',       color: ['#FCE4EC', '#F8BBD9'], reflection: 'කෘතඥභාවය සිතට සුවයක් ලබාදෙයි 💜' },
-  { id: 'uncertain', emoji: '😳', label: 'නොදනිමි',       color: ['#EEEEEE', '#F5F5F5'], reflection: 'හැඟීම් වෙනස් වීම ස්වාභාවිකයි 🌙' },
-  { id: 'strong',    emoji: '💪', label: 'ශක්තිමත්',     color: ['#E8F5E9', '#A5D6A7'], reflection: 'ඔබ ඉතා ශක්තිමත් අම්මා කෙනෙකි! 🏆' },
-  { id: 'empty',     emoji: '🫥', label: 'හිස් හැඟීමක්', color: ['#E0F7FA', '#B2EBF2'], reflection: 'කෙටි විවේකයක් ගෙන මනසට සහනය දෙන්න 🌸' },
-  { id: 'stress',    emoji: '😫', label: 'මානසික පීඩනය', color: ['#FFE0B2', '#FFCC80'], reflection: 'ඔබට විවේකයක් අවශ්‍යයි. සෙමෙන් හුස්ම ගන්න 🌿' },
-  { id: 'feared',    emoji: '😨', label: 'බියගැන්වුණු',   color: ['#FFF8E1', '#FFE082'], reflection: 'ඔබ තනිවී නැත, කනස්සල්ල දුරලන්න 💜' },
-  { id: 'loved',     emoji: '🥰', label: 'ආදරණීයයි',     color: ['#F8BBD9', '#F48FB1'], reflection: 'ආදරය සහ උණුසුම සැමවිටම විඳින්න 🌸' },
-  { id: 'tired',     emoji: '🥱', label: 'මහන්සියි',       color: ['#D1C4E9', '#B39DDB'], reflection: 'ප්‍රමාණවත් විවේකයක් ලබාගන්න 🌙' },
-  { id: 'lonely',    emoji: '🧍', label: 'තනිවෙලා',       color: ['#E1BEE7', '#CE93D8'], reflection: 'ඔබ තනිවී නැත, අප සැමවිටම ඔබ සමඟයි 💜' }
+  { id: 'sad', emoji: '😔', label: 'දුකයි', color: ['#E3F2FD', '#BBDEFB'], reflection: 'ඔබේ හැඟීම් ස්වාභාවිකයි 💙' },
+  { id: 'angry', emoji: '😡', label: 'තරහයි', color: ['#FFEBEE', '#FFCDD2'], reflection: 'කෝපය පාලනය කර සන්සුන් වන්න 🌿' },
+  { id: 'calm', emoji: '😴', label: 'ශාන්තයි', color: ['#F3E5F5', '#E1BEE7'], reflection: 'මනස සන්සුන්ව තබාගන්න 🌙' },
+  { id: 'anxiety', emoji: '😟', label: 'කාංසාව', color: ['#FFF9C4', '#FFF3A0'], reflection: 'ගැඹුරු ශ්වාසයක් ගන්න. ඔබ සුරක්ෂිතයි ⭐' },
+  { id: 'happy', emoji: '😊', label: 'සතුටුයි', color: ['#E8F5E9', '#C8E6C9'], reflection: 'ඔබේ සතුට ආශිර්වාදයකි! 🌸' },
+  { id: 'grateful', emoji: '🥺', label: 'කෘතඥයි', color: ['#FCE4EC', '#F8BBD9'], reflection: 'කෘතඥභාවය සිතට සුවයක් ලබාදෙයි 💜' },
+  { id: 'uncertain', emoji: '😳', label: 'නොදනිමි', color: ['#EEEEEE', '#F5F5F5'], reflection: 'හැඟීම් වෙනස් වීම ස්වාභාවිකයි 🌙' },
+  { id: 'strong', emoji: '💪', label: 'ශක්තිමත්', color: ['#E8F5E9', '#A5D6A7'], reflection: 'ඔබ ඉතා ශක්තිමත් අම්මා කෙනෙකි! 🏆' },
+  { id: 'empty', emoji: '🫥', label: 'හිස් හැඟීමක්', color: ['#E0F7FA', '#B2EBF2'], reflection: 'කෙටි විවේකයක් ගෙන මනසට සහනය දෙන්න 🌸' },
+  { id: 'stress', emoji: '😫', label: 'මානසික පීඩනය', color: ['#FFE0B2', '#FFCC80'], reflection: 'ඔබට විවේකයක් අවශ්‍යයි. සෙමෙන් හුස්ම ගන්න 🌿' },
+  { id: 'feared', emoji: '😨', label: 'බියගැන්වුණු', color: ['#FFF8E1', '#FFE082'], reflection: 'ඔබ තනිවී නැත, කනස්සල්ල දුරලන්න 💜' },
+  { id: 'loved', emoji: '🥰', label: 'ආදරණීයයි', color: ['#F8BBD9', '#F48FB1'], reflection: 'ආදරය සහ උණුසුම සැමවිටම විඳින්න 🌸' },
+  { id: 'tired', emoji: '🥱', label: 'මහන්සියි', color: ['#D1C4E9', '#B39DDB'], reflection: 'ප්‍රමාණවත් විවේකයක් ලබාගන්න 🌙' },
+  { id: 'lonely', emoji: '🧍', label: 'තනිවෙලා', color: ['#E1BEE7', '#CE93D8'], reflection: 'ඔබ තනිවී නැත, අප සැමවිටම ඔබ සමඟයි 💜' }
 ];
 
 const EmotionJournal = ({ onGoBack }) => {
@@ -2692,13 +2692,11 @@ const EmotionJournal = ({ onGoBack }) => {
 
 // MINDFUL TAP
 const MT_PATTERNS = [
-  { name: 'ශ්වාස රිද්මය', cues: ['ශ්වාස…', 'රඳවා…', 'හළ…', 'රඳවා…'], durations: [4, 2, 4, 2], color: '#7E57C2' },
-  { name: 'සිත', cues: ['ස්ථාවර…', 'සිතනවා…', 'නිදහස්…', 'සිතනවා…'], durations: [3, 3, 3, 3], color: '#E91E8C' },
-  { name: 'සාමය', cues: ['සාමය…', 'ස්නේහය…', 'කෘතඥ…', 'ළදරු…'], durations: [4, 4, 4, 4], color: '#2E7D32' },
+  { name: 'ශ්වාස රිද්මය', cues: ['ශ්වාස… (ආශ්වාස)', 'රඳවා තබන්න…', 'පිට කරන්න… (ප්‍රශ්වාස)', 'රඳවා තබන්න…'], durations: [4, 2, 4, 2], color: '#7E57C2' },
 ];
+
 const MindfulTap = ({ onGoBack }) => {
   const session = useGameSession({ gameId: 'mindful_tap', gameName: 'සිහිකල්පනාව', icon: '🌿', onGoBack });
-  const [patIdx, setPatIdx] = useState(0);
   const [running, setRunning] = useState(false);
   const [cueIdx, setCueIdx] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -2706,7 +2704,7 @@ const MindfulTap = ({ onGoBack }) => {
   const [round, setRound] = useState(1);
   const [done, setDone] = useState(false);
 
-  const pat = MT_PATTERNS[patIdx];
+  const pat = MT_PATTERNS[0];
   const pulse = useRef(new Animated.Value(1)).current;
   const loopRef = useRef(null);
 
@@ -2716,8 +2714,8 @@ const MindfulTap = ({ onGoBack }) => {
     setTimeLeft(dur);
     loopRef.current = Animated.loop(
       Animated.sequence([
-        Animated.timing(pulse, { toValue: 1.3, duration: dur * 500, useNativeDriver: true }),
-        Animated.timing(pulse, { toValue: 1.0, duration: dur * 500, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1.25, duration: (dur * 1000) / 2, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1.0, duration: (dur * 1000) / 2, useNativeDriver: true }),
       ])
     );
     loopRef.current.start();
@@ -2743,7 +2741,7 @@ const MindfulTap = ({ onGoBack }) => {
       clearTimeout(a);
       loopRef.current?.stop();
     };
-  }, [running, cueIdx, round, pat.durations, pat.cues.length, session, taps]);
+  }, [running, cueIdx, round]);
 
   const start = () => {
     setCueIdx(0);
@@ -2777,23 +2775,8 @@ const MindfulTap = ({ onGoBack }) => {
         <Text style={mt.title}>🌿 සිහිකල්පනාව</Text>
         <Text style={mt.score}>⭐{taps}</Text>
       </View>
-      <Text style={mt.hint}>ශ්වාස රිද්මය — කවය ස්පර්ශ 🌸</Text>
-      <View style={mt.patRow}>
-        {MT_PATTERNS.map((p, i) => (
-          <TouchableOpacity
-            key={i}
-            style={[mt.patBtn, patIdx === i && { borderColor: p.color, borderWidth: 2 }]}
-            onPress={() => {
-              setPatIdx(i);
-              setRunning(false);
-              setDone(false);
-            }}
-          >
-            <Text style={[mt.patBtnT, patIdx === i && { color: p.color, fontWeight: '800' }]}>{p.name}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 14 }}>
+      <Text style={mt.hint}>ශ්වාස රිද්මය — කවය ස්පර්ශ කරන්න 🌸</Text>
+      <View style={{ alignItems: 'center', justifyContent: 'center', marginVertical: 20 }}>
         <Animated.View style={{ transform: [{ scale: pulse }] }}>
           <TouchableOpacity
             onPress={() => {
@@ -2812,7 +2795,7 @@ const MindfulTap = ({ onGoBack }) => {
               ) : done ? (
                 <Text style={mt.circleT}>🌸 සම්පූර්ණ!</Text>
               ) : (
-                <Text style={mt.circleT}>▶ ස්පර්ශ</Text>
+                <Text style={mt.circleT}>▶ ආරම්භ</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>
@@ -2820,7 +2803,7 @@ const MindfulTap = ({ onGoBack }) => {
       </View>
       {done && (
         <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={mt.doneCard}>
-          <Text style={mt.doneT}>🌸 {taps} වාරයක්! 💜</Text>
+          <Text style={mt.doneT}>🌸 සම්පූර්ණයි! ස්පර්ශ {taps} වාරයක්! 💜</Text>
         </LinearGradient>
       )}
     </View>
@@ -3042,18 +3025,22 @@ const ActivityScreen = ({ navigation, route }) => {
   };
 
   const goBack = () => {
-    if (route?.params?.gameId || route?.params?.activityId || route?.params?.fromRecommendations) {
+    if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
+      navigation.navigate('Recommendations');
+      return;
+    }
+    if (route?.params?.gameId || route?.params?.activityId) {
       if (navigation.canGoBack()) {
         navigation.goBack();
       } else {
-        navigation.navigate('Recommendations');
+        navigation.navigate('Home');
       }
-    } else {
-      setView('list');
-      setSelAct(null);
-      setSelGame(null);
-      setDone(false);
+      return;
     }
+    setView('list');
+    setSelAct(null);
+    setSelGame(null);
+    setDone(false);
   };
 
   const renderGame = (id) => {

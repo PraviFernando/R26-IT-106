@@ -2,8 +2,8 @@
 // APP CONTEXT — AppContext.js  (Bloom Complete)
 // ================================================================
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { analyzeDiary, getRecommendations } from './emotionEngine';
-import { detectBabyTopic } from './babyCareService';
+import { analyzeDiary, getRecommendations } from './emotionEngine.js';
+import { detectBabyTopic } from './babyCareService.js';
 
 const AppContext = createContext();
 

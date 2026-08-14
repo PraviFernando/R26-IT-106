@@ -16,7 +16,7 @@
 import { getEnhancedRecommendationRule, getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent } from './activitiesLibrary.js';
 import { MUSIC_LIBRARY, VIDEO_LIBRARY } from './mediaLibrary.js';
 
-export { getPersonalizedRecommendations, isBabyRelatedReason };
+export { getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent };
 
 export const RISK = { LOW: 'low', MEDIUM: 'medium', HIGH: 'high' };
 
@@ -82,20 +82,19 @@ const HIGH_RISK_REASONS = new Set([
   'negative_thoughts', 'bonding_issues', 'loss_of_confidence', 'lack_of_support',
 ]);
 
-// High crisis keywords → high risk
 const HIGH_CRISIS_KW = [
   'hopeless', 'want to die', 'end it all', 'cannot control my emotions',
   'cant control my emotions', 'panic very easily', 'failing as a mother',
-  'disappear', 'hate myself', 'dark thoughts', 'panic'
+  'disappear', 'hate myself', 'dark thoughts', 'panic',
+  'මැරෙන්න හිතෙනවා', 'ජීවිතේ එපා වෙලා', 'merenna hithenawa'
 ];
 
-// Medium crisis keywords → medium risk
 const MEDIUM_CRISIS_KW = [
   'exhausted', 'overwhelmed', 'lonely', 'isolated', 'scared', 'worried',
-  'barely sleep', 'cries every', 'not feeding well', 'fever', 'stress'
+  'barely sleep', 'cries every', 'not feeding well', 'fever', 'stress',
+  'මහන්සියි', 'බයයි', 'ආතතිය', 'උණ', 'අසනීප'
 ];
 
-// ── SUPPORT MESSAGES (no reason label shown to user) ─────────
 const SUPPORT_MESSAGES = {
   loneliness:          ['ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
   fatigue:             ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌙', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
@@ -107,6 +106,50 @@ const SUPPORT_MESSAGES = {
   overwhelmed:         ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
   physical_discomfort: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
   negative_thoughts:   ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
+  baby_crying:         ['ඔබේ බබාගේ ඇඬීම ස්වාභාවිකය. ඔබ හොඳින් සැලකිලිමත් වෙනවා 💜', 'බබා සමඟ සන්සුන්ව සිටින්න 🌸'],
+  baby_needs:          ['බබාගේ සංඥා තේරුම් ගැනීමට කාලය දෙන්න 💜', 'ඔබ ඔබේ බබා වෙනුවෙන් ඉගෙන ගනිමින් සිටිනවා 🌸'],
+  baby_feeding:        ['කිරි දීම කාලය සමඟ පහසු වෙයි 💜', 'ඔබේ මෘදු බව බබාට සහනයකි 🌸'],
+  baby_sleep:          ['බබාගේ නින්ද රටාව වර්ධනය වෙමින් පවතී 🌙', 'කෙටි විවේක පවා ඔබට උපකාරී වෙයි 💜'],
+  baby_health:         ['සෞඛ්‍යය කෙරෙහි සැලකිලිමත් වීම අගනේය 💜', 'වෛද්‍ය උපදෙස් ලබා ගැනීම සැමවිටම සුදුසුයි 🌸'],
+  caring_for_baby:     ['දරුවා රැකබලා ගැනීම උතුම් කාර්යයකි 💜', 'ඔබ අද්භූත මවකි 🌸'],
+};
+
+export const detectBabyIntents = (text = '') => {
+  if (!text || typeof text !== 'string') {
+    return { baby_related: false, baby_crying: false, baby_needs: false, baby_sleep: false, baby_feeding: false, baby_health: false };
+  }
+  const norm = normalizeMultilingualText(text);
+  const isBabyRelated = isBabyRelatedContent(text);
+
+  const cryingKW = [
+    'crying', 'cries', 'cry', 'andana', 'andanawa', 'adanawa',
+    'අඬනවා', 'අඬන', 'අඬන බබා', 'ඇඬීම', 'කෑගහනවා', 'නවත්තන්න බැරි තරම් අඬනවා'
+  ];
+  const needsKW = [
+    'needs', 'want', 'wants', 'understand', 'dont know what', 'dont understand',
+    'therenne naha', 'therenne na', 'therum ganna baha', 'one kiyala', 'mokakda one', 'monawada one',
+    'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා', 'අවශ්යතා', 'තේරුම් ගන්න', 'මොනවා කරන්නද', 'දන්නේ නැහැ', 'දන්නෙ නෑ'
+  ];
+  const sleepKW = [
+    'sleep', 'sleeping', 'ninda', 'ninda yanne', 'nida', 'nida ganne',
+    'නින්ද', 'නිදා', 'නිදාගන්නේ', 'නිදාගන්නෙ නෑ'
+  ];
+  const feedingKW = [
+    'feeding', 'feed', 'breastfeeding', 'milk', 'kiri', 'kiri denna',
+    'කිරි', 'කිරි දෙන්න', 'කිරි බොන්නේ', 'කිරි දීම'
+  ];
+  const healthKW = [
+    'fever', 'sick', 'health', 'unwell', 'baya', 'bayaයි', 'බයයි', 'ලෙඩ', 'උණ', 'අසනීප', 'asanipa', 'una', 'leda'
+  ];
+
+  return {
+    baby_related: isBabyRelated,
+    baby_crying: isBabyRelated && cryingKW.some(k => norm.includes(k)),
+    baby_needs: isBabyRelated && needsKW.some(k => norm.includes(k)),
+    baby_sleep: isBabyRelated && sleepKW.some(k => norm.includes(k)),
+    baby_feeding: isBabyRelated && feedingKW.some(k => norm.includes(k)),
+    baby_health: isBabyRelated && healthKW.some(k => norm.includes(k)),
+  };
 };
 
 // ── MULTI-INTENT DETECTION ─────────────────────────────────────
@@ -176,37 +219,55 @@ export const detectIntents = (text = '') => {
 
 // ── ANALYZE DIARY ─────────────────────────────────────────────
 export const analyzeDiary = (text) => {
-  const t = text.toLowerCase();
+  const norm = normalizeMultilingualText(text);
 
   // Step 1: Score emotions
   let eScores = {};
   Object.entries(EMOTION_KW).forEach(([e, kws]) => {
-    eScores[e] = kws.filter(k => t.includes(k)).length;
+    eScores[e] = kws.filter(k => norm.includes(k)).length;
   });
-  const total = Object.values(eScores).reduce((a, b) => a + b, 0);
-  const detectedEmotion = total > 0
+  const totalE = Object.values(eScores).reduce((a, b) => a + b, 0);
+  const detectedEmotion = totalE > 0
     ? Object.entries(eScores).sort((a, b) => b[1] - a[1])[0][0]
     : 'stressed';
 
   // Step 2: Score reasons
   let rScores = {};
   Object.entries(REASON_KW).forEach(([r, kws]) => {
-    rScores[r] = kws.filter(k => t.includes(k)).length;
+    rScores[r] = kws.filter(k => norm.includes(k)).length;
   });
   const sortedReasons = Object.entries(rScores).sort((a, b) => b[1] - a[1]);
-  const primaryReason    = sortedReasons[0][0];
-  const secondaryReason  = sortedReasons[1]?.[1] > 0 ? sortedReasons[1][0] : null;
+  const motherReason = sortedReasons[0][1] > 0 ? sortedReasons[0][0] : 'fatigue';
+  const secondaryReason = sortedReasons[1]?.[1] > 0 ? sortedReasons[1][0] : null;
 
-  // Step 3: Determine risk level
-  const hasHighCrisis   = HIGH_CRISIS_KW.some(k => t.includes(k));
-  const hasMediumCrisis = MEDIUM_CRISIS_KW.some(k => t.includes(k));
-  const isHighReason    = HIGH_RISK_REASONS.has(primaryReason);
-  const isSad           = detectedEmotion === 'sad';
+  const babyIntents = detectBabyIntents(text);
+
+  // Step 3: Determine primary reason priority
+  let primaryReason = motherReason;
+  if (babyIntents.baby_crying) {
+    primaryReason = 'baby_crying';
+  } else if (babyIntents.baby_needs) {
+    primaryReason = 'baby_needs';
+  } else if (babyIntents.baby_health) {
+    primaryReason = 'baby_health';
+  } else if (babyIntents.baby_feeding) {
+    primaryReason = 'baby_feeding';
+  } else if (babyIntents.baby_sleep) {
+    primaryReason = 'baby_sleep';
+  } else if (babyIntents.baby_related) {
+    primaryReason = 'caring_for_baby';
+  }
+
+  // Step 4: Determine risk level
+  const hasHighCrisis = HIGH_CRISIS_KW.some(k => norm.includes(k));
+  const hasMediumCrisis = MEDIUM_CRISIS_KW.some(k => norm.includes(k));
+  const isHighReason = HIGH_RISK_REASONS.has(primaryReason) || HIGH_RISK_REASONS.has(motherReason);
+  const isSad = detectedEmotion === 'sad';
 
   let riskLevel = RISK.LOW;
   if (hasHighCrisis) {
     riskLevel = RISK.HIGH;
-  } else if (hasMediumCrisis || (isHighReason && isSad)) {
+  } else if (hasMediumCrisis || (isHighReason && isSad) || babyIntents.baby_health) {
     riskLevel = RISK.MEDIUM;
   }
 
@@ -215,15 +276,26 @@ export const analyzeDiary = (text) => {
   return {
     detectedEmotion,
     primaryReason,
-    secondaryReason,
+    secondaryReason: secondaryReason !== primaryReason ? secondaryReason : null,
     riskLevel,
     intents,
     scores: { eScores, rScores },
+    _debug: {
+      originalText: text,
+      normalizedText: norm,
+      detectedLanguageSignals: isSinhala ? ['sinhala'] : isSinglish ? ['singlish'] : ['english'],
+      keywordMatches: babyIntents,
+      finalClassification: {
+        emotion: detectedEmotion,
+        primaryReason,
+        secondaryReason,
+        riskLevel
+      }
+    }
   };
 };
 
 // ── GET RECOMMENDATIONS ───────────────────────────────────────
-// Uses exact IF-THEN rules: reason + riskLevel → specific content
 export const getRecommendations = (analysisResult, preferredActivities = [], preferredGames = [], diaryText = '') => {
   const { detectedEmotion, primaryReason, riskLevel, intents } = analysisResult;
   const activeIntents = intents || detectIntents(diaryText);
@@ -231,16 +303,13 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
   // Get the rule for this exact reason + risk combination
   const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames, diaryText, activeIntents);
 
-  // Music: 10 tracks specific to this reason
-  const music  = MUSIC_LIBRARY[rule.musicKey]  || MUSIC_LIBRARY.loneliness;
+  const musicKey = rule.musicKey || (primaryReason.includes('baby') ? 'bonding_issues' : primaryReason);
+  const videoKey = rule.videoKey || (primaryReason.includes('baby') ? 'bonding_issues' : primaryReason);
 
-  // Videos: 10 videos specific to this reason
-  const videos = VIDEO_LIBRARY[rule.videoKey]  || VIDEO_LIBRARY.loneliness;
-
-  // Support messages (no reason label shown to user)
+  const music = MUSIC_LIBRARY[musicKey] || MUSIC_LIBRARY.loneliness;
+  const videos = VIDEO_LIBRARY[videoKey] || VIDEO_LIBRARY.loneliness;
   const messages = SUPPORT_MESSAGES[primaryReason] || SUPPORT_MESSAGES.overwhelmed;
 
-  // Urgency message for medium risk
   const urgencyMessage = riskLevel === RISK.MEDIUM
     ? 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'
     : null;
@@ -250,13 +319,14 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
     riskLevel,
     music,
     videos,
-    activities:    rule.activities,   // filtered activities for this reason+risk
-    newActivities: rule.newActivities, // newly added activities
-    games:         rule.games,         // single recommended game as array
-    game:          rule.game,          // single recommended game object
+    activities: rule.activities,
+    newActivities: rule.newActivities,
+    games: rule.games,
+    game: rule.game,
     messages,
     urgencyMessage,
-    supportMsg:    rule.supportMsg,
-    _internal:     { primaryReason }, // never shown to user as label
+    supportMsg: rule.supportMsg,
+    _internal: { primaryReason },
   };
 };
+

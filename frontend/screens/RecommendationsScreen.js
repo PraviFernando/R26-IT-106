@@ -212,19 +212,51 @@ const RecommendationsScreen = ({ navigation, route }) => {
     if (babyMoodGame) {
       filteredGames = [babyMoodGame, ...filteredGames];
     }
+    if (typeof a === 'object' && a !== null) return a;
+    return NEW_ACTIVITIES.find(item => item.id === id) || ALL_ACTIVITIES.find(item => item.id === id) || a;
+  }).filter(Boolean);
+
+  const isBabyActive = (activeAnalysis?.primaryReason && isBabyRelatedReason(activeAnalysis.primaryReason)) || (activeAnalysis?.diaryText && isBabyRelatedContent(activeAnalysis.diaryText)) || (latestRecommendations?.isBabyRelated) || (localRuleRecs?.isBabyRelated) || (detectedBabyTopic || (detectedBabyTopics && detectedBabyTopics.length > 0));
+
+  let finalActList = [...resolvedActivities];
+  if (isBabyActive) {
+    const babyMoodObj = NEW_ACTIVITIES.find(a => a.id === 'baby_mood') || ALL_ACTIVITIES.find(a => a.id === 'baby_mood') || { id: 'baby_mood', icon: '👶', label: 'ළදරු හැඟීම', labelEn: 'Baby Cues', purpose: 'ඔබේ බබා පෙන්වන විවිධ සංඥා හඳුනාගැනීමට මෙම ක්‍රියාකාරකම ඔබට උපකාරී වේ.' };
+    
+    // Remove any existing baby_mood from list
+    finalActList = finalActList.filter(a => (typeof a === 'string' ? a : a?.id) !== 'baby_mood');
+    // Insert baby_mood at position 0
+    finalActList = [babyMoodObj, ...finalActList];
   }
-  const finalGames = isSkipped ? ALL_GAMES.slice(0, 3) : (filteredGames.length > 0 ? filteredGames.slice(0, 3) : ALL_GAMES.slice(0, 3));
+
+  // Remove any remaining legacy bonding items
+  finalActList = finalActList.filter(a => {
+    const id = typeof a === 'string' ? a : a?.id;
+    return id !== 'baby_bonding' && id !== 'new_baby_interaction_ideas';
+  });
+
+  // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
+  const finalActivities = isSkipped ? ALL_ACTIVITIES.slice(0, 4) : finalActList.slice(0, 4);
+  
+  const activeIntents = activeAnalysis?.babyIntents || {};
+  const activeDiaryText = activeAnalysis?.diaryText || latestAnalysis?.diaryText || '';
+  const activeReason = activeAnalysis?.primaryReason || selReason || '';
+
+  const dynamicRecommendedGames = getRecommendedGames(activeIntents, activeDiaryText, activeReason, 4);
+
+  const finalGames = isSkipped
+    ? ALL_GAMES.filter(g => g.id !== 'baby_mood').slice(0, 4)
+    : dynamicRecommendedGames;
 
 
   const primaryReason = activeAnalysis?.primaryReason || selReason || 'loneliness';
-  const libraryMusic = MUSIC_LIBRARY[primaryReason] || MUSIC_LIBRARY.loneliness;
+  const libraryMusic = MUSIC_LIBRARY[primaryReason] || (isBabyActive ? MUSIC_LIBRARY.bonding_issues : MUSIC_LIBRARY.loneliness);
   const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
 
   const activeBabyTopics = (detectedBabyTopics && detectedBabyTopics.length > 0)
     ? detectedBabyTopics
     : (detectedBabyTopic ? [detectedBabyTopic] : []);
 
-  const libraryVideos = VIDEO_LIBRARY[primaryReason] || VIDEO_LIBRARY.loneliness;
+  const libraryVideos = VIDEO_LIBRARY[primaryReason] || (isBabyActive ? VIDEO_LIBRARY.bonding_issues : VIDEO_LIBRARY.loneliness);
   const VIDEO_SUB_TABS = activeBabyTopics.length > 0
     ? ['නිර්දේශිත වීඩියෝ', 'Motivation', 'Baby Feeding', 'Baby Bathing', 'Baby Diapering', 'Baby Sleeping', 'Baby Crying', 'Baby Health', 'Baby Development', 'Vaccination', 'Baby Safety', 'Mother Care']
     : ['Motivation'];
@@ -464,9 +496,9 @@ const RecommendationsScreen = ({ navigation, route }) => {
                           key={actId || idx}
                           onPress={() => {
                             if (actId === 'baby_mood') {
-                              navigation.navigate('Activity', { gameId: 'baby_mood', fromRecommendations: true });
+                              navigation.navigate('Activity', { gameId: 'baby_mood', fromRecommendations: true, returnTo: 'Recommendations' });
                             } else {
-                              navigation.navigate('Activity', { activityId: actId, fromRecommendations: true });
+                              navigation.navigate('Activity', { activityId: actId, fromRecommendations: true, returnTo: 'Recommendations' });
                             }
                           }}
                           style={s.actCard}
@@ -493,7 +525,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       return (
                         <TouchableOpacity
                           key={gId || idx}
-                          onPress={() => navigation.navigate(gId === 'mandala' || gId === 'colouring' ? 'Art' : 'Activity', { gameId: gId, fromRecommendations: true })}
+                          onPress={() => navigation.navigate(gId === 'mandala' || gId === 'colouring' ? 'Art' : 'Activity', { gameId: gId, fromRecommendations: true, returnTo: 'Recommendations' })}
                         >
                           <LinearGradient colors={game.color || ['#EDE7F6', '#D1C4E9']} style={s.primaryGameCard}>
                             <Text style={s.primaryGameIcon}>{game.icon || '🎮'}</Text>

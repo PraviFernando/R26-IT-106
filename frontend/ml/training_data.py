@@ -53,6 +53,21 @@ LONELINESS_TEXTS = [
     "I just want someone to sit with me and talk",
     "The silence in this house makes me feel so alone",
     "I have never felt this lonely in my entire life",
+    "මගේ ගෙදර කිසිම කෙනෙක් නෑ මට හරිම පාළුයි",
+    "කවුරුත් මාව බලන්න එන්නේ නෑ මට තනිවෙලා වගේ දැනෙනවා",
+    "මගේ සැමියා වැඩට ගියාම මම මුළු දවසම තනියම",
+    "මගේ යාළුවෝ කවුරුත් දැන් මාත් එක්ක කතා කරන්නේ නෑ",
+    "මට කතා කරන්න කෙනෙක් නෑ මගේ සිත හිස් වෙලා",
+    "මම දවස පුරාම ගෙදර තනියම මට හරිම පාළුයි",
+    "කිසිම කෙනෙක් මගේ දුක අහන්නේ නෑ",
+    "මම තනිවෙලා ඉන්නවා වගේ දැනෙනවා",
+    "mata harima paluyi kauruth naha",
+    "mage husband wadata giyama mata harima taniyen",
+    "mata katha karanna kauruth naha",
+    "kudawath mawa balanna enne naha",
+    "mama dawasa purama gedara taniyen paluyi",
+    "mage yaluwo kauruth dan naha",
+    "mata taniyen inna baha",
 ]
 LONELINESS_REASONS = ["loneliness"] * len(LONELINESS_TEXTS)
 LONELINESS_EMOTIONS = ["sad"] * len(LONELINESS_TEXTS)
@@ -91,6 +106,21 @@ FATIGUE_TEXTS = [
     "I cannot remember the last time I felt rested",
     "I feel hollow and empty from the lack of sleep",
     "This level of tiredness feels unbearable and never-ending",
+    "මට අද හරිම මහන්සියි කිසිම ශක්තියක් නෑ",
+    "මගේ ඇඟට කිසිම පණක් නෑ මට ගොඩක් වෙහෙසයි",
+    "මම දවස පුරාම මහන්සියෙන් ඉන්නේ",
+    "මට නින්ද මදි නිසා හරිම අමාරුයි",
+    "මගේ මුළු ඇඟම රිදෙනවා මහන්සිය වැඩියි",
+    "මම ගොඩක් වෙහෙස වෙලා ඉන්නේ",
+    "මට පොඩි විවේකයක්වත් නෑ",
+    "මහන්සිය වැඩි කම නිසා මට මුකුත් කරන්න බෑ",
+    "mata ada harima mahansiyi kisima shakthiyak naha",
+    "mage angata kisima panak naha mata godak wehesayi",
+    "mama dawasa purama mahansiyen inne",
+    "mata ninda madi nisa harima amaruwi",
+    "mage mulu angama ridenawa",
+    "mata podi wiwekayakwat naha",
+    "mahansiya wadi kama nisa mukuth karanna baha",
 ]
 FATIGUE_REASONS = ["fatigue"] * len(FATIGUE_TEXTS)
 FATIGUE_EMOTIONS = ["stressed"] * len(FATIGUE_TEXTS)
@@ -129,6 +159,21 @@ ANXIETY_TEXTS = [
     "I feel anxious in social situations and avoid going out",
     "The anxiety feels like a storm in my chest and head",
     "I feel like I am always bracing for disaster",
+    "මට ලොකු බයක් දැනෙනවා මොනවා වෙයිද කියලා",
+    "මගේ හෘද ස්පන්දනය වැඩි වෙලා මට කාංසාවයි",
+    "මම හැමදේම ගැන ඕනවට වඩා හිතනවා",
+    "මට බයයි බබාට යම් දෙයක් වෙයි කියලා",
+    "මගේ සිතට කිසිම සහනයක් නෑ බය හිතෙනවා",
+    "මට ලොකු කනස්සල්ලක් දැනෙනවා",
+    "මගේ මනස කලබල වෙලා",
+    "මට හැමවෙලේම ලොකු බයක් තියෙනවා",
+    "mata loku baya hithenawa monawa weida kiyala",
+    "mage hadawatha ikmanin gahanawa mata kansawai",
+    "mama hamadema gana onawata wada hithanawa",
+    "mata bayai babata yam deyak wei kiyala",
+    "mage sithata kisima sahanayak naha baya hithenawa",
+    "mata loku kanasallak danenawa",
+    "mage manasa kalabala wela",
 ]
 ANXIETY_REASONS = ["anxiety"] * len(ANXIETY_TEXTS)
 ANXIETY_EMOTIONS = ["anxious"] * len(ANXIETY_TEXTS)
@@ -167,6 +212,20 @@ BONDING_TEXTS = [
     "My heart feels closed off from my own baby",
     "I feel grief over the bond I thought I would have",
     "I am desperate to feel connected but it just will not come",
+    "මගේ බබා අද ගොඩක් අඬනවා ඇයි කියලා මට තේරෙන්නේ නැහැ",
+    "මගේ බබා නිතරම අඬනවා මට තේරෙන්නේ නෑ මොනවා කරන්නද කියලා",
+    "මට බබා එක්ක ලොකු ආදරයක් දැනෙන්නේ නෑ",
+    "මගේ බබාට මම ලං වෙලා නෑ වගේ දැනෙනවා",
+    "මට කිසිම ආදර හැඟීමක් එන්නේ නැහැ",
+    "මම බබා දිහා බැලුවාම හිස් බවක් දැනෙනවා",
+    "මගේ බබා ගොඩක් අඬනවා එයාට මොනවද ඕන කියලා මට තේරෙන්නේ නැහැ",
+    "mage baba godak andanawa eyata monawada one kiyala mata therenne naha",
+    "mage baba nitharama andanawa ai kiyala mata therenne naha",
+    "mage baba godak adanawa mata therum ganna baha",
+    "mata baba ekka loku adarayak danenne naha",
+    "mage babata mama lan wela naha wage danenawa",
+    "mata kisima adara hangimak enne naha",
+    "mama baba diha baluwama his bawak danenawa",
 ]
 BONDING_REASONS = ["bonding_issues"] * len(BONDING_TEXTS)
 BONDING_EMOTIONS = ["sad"] * len(BONDING_TEXTS)
@@ -205,6 +264,20 @@ SUPPORT_TEXTS = [
     "Nobody steps in unless I explicitly beg for it",
     "I feel used and unsupported by the people around me",
     "I am running on empty because no one shares the load",
+    "මගේ සැමියා මට කිසිම උදව්වක් කරන්නේ නැහැ",
+    "මට උදව් කරන්න ගෙදර කවුරුත් නෑ",
+    "මම හැමදේම තනියම කරන්න ඕනේ",
+    "මගේ පවුලේ අය මට සහය දක්වන්නේ නෑ",
+    "මට කාගෙන්වත් උදව්වක් නැතුව අමාරුයි",
+    "මට උදව් ඉල්ලුවත් කවුරුත් අහන්නේ නෑ",
+    "මට තනියම මේ ඔක්කොම බර දරන්න බෑ",
+    "කිසිම කෙනෙක් මට සහයක් දෙන්නේ නෑ",
+    "mage husband mata kisima udawwak karanne naha",
+    "mata udaw karanna gedara kauruth naha",
+    "mama hamadema taniyen karanna one",
+    "mage pawule aya mata support karanne naha",
+    "mata kagegenwat udawwak nathuwa amaruwi",
+    "mata taniyen me okkoma bara daranna baha",
 ]
 SUPPORT_REASONS = ["lack_of_support"] * len(SUPPORT_TEXTS)
 SUPPORT_EMOTIONS = ["sad"] * len(SUPPORT_TEXTS)
@@ -243,6 +316,20 @@ SLEEP_TEXTS = [
     "I am so tired I could cry but I still cannot sleep",
     "Sleep feels like a luxury I am no longer allowed to have",
     "The night feeds are destroying me mentally and physically",
+    "මගේ පුතා රෑට නිදාගන්නේ නැහැ",
+    "මට රෑට පොඩ්ඩක්වත් නිදාගන්න බැහැ",
+    "මගේ නින්ද නිතරම කැඩෙනවා",
+    "බබා නිදාගත්තත් මට නින්ද යන්නේ නැහැ",
+    "මම නිදි නැතුව මුළු රෑම ඉන්නවා",
+    "මට නින්දක් නැතුව ඔළුව රිදෙනවා",
+    "මට නිදාගන්න හරිම අමාරුයි",
+    "mage putha rata nida ganne naha",
+    "mata rata poddakwat nidaganna baha",
+    "mage ninda nitharama kadenawa",
+    "baba nidagattat mata ninda yanne naha",
+    "mama nidi nathuwa mulu rama innawa",
+    "mata nindak nathuwa oluwa ridenawa",
+    "mata nidaganna harima amaruwi",
 ]
 SLEEP_REASONS = ["sleep_problems"] * len(SLEEP_TEXTS)
 SLEEP_EMOTIONS = ["stressed"] * len(SLEEP_TEXTS)
@@ -281,6 +368,18 @@ CONFIDENCE_TEXTS = [
     "I am ashamed of how much I struggle every day",
     "I feel defeated and have given up on believing in myself",
     "I feel like everyone can see how bad of a mother I am",
+    "මම නරක අම්මා කෙනෙක් මට කිසිම දෙයක් බැහැ",
+    "මට මං ගැන කිසිම විශ්වාසයක් නැහැ",
+    "මම කරන්නේ හැමදේම වරදිනවා",
+    "අනිත් අම්මලා වගේ මට හොඳට කරන්න බෑ",
+    "මට කිසිම ආත්ම විශ්වාසයක් නෑ",
+    "මම අසාර්ථක අම්මා කෙනෙක්",
+    "mama naraka amma kenek mata kisima deyak baha",
+    "mata man gana kisima wishwasayak naha",
+    "mama karanne hamadema waradinawa",
+    "anith ammala wage mata hodata karanna baha",
+    "mata kisima self confidence naha",
+    "mama asarthaka amma kenek",
 ]
 CONFIDENCE_REASONS = ["loss_of_confidence"] * len(CONFIDENCE_TEXTS)
 CONFIDENCE_EMOTIONS = ["sad"] * len(CONFIDENCE_TEXTS)
@@ -319,6 +418,16 @@ OVERWHELMED_TEXTS = [
     "The chaos of my life feels unmanageable and endless",
     "I feel overwhelmed by even the smallest tasks now",
     "I cannot see a way through this mountain of responsibilities",
+    "මට මේ ඔක්කොම වැඩ දරාගන්න බැහැ",
+    "මට පීඩනය වැඩියි මට මුකුත් කරගන්න බෑ",
+    "හැමදේම මගේ පිටට ඇවිත් මට අමාරුයි",
+    "මට ඔළුව විකාර වෙනවා වැඩ වැඩියි",
+    "මම නිතරම කලබල වෙනවා දරාගන්න බෑ",
+    "mata me okkoma wada daraganna baha",
+    "mata pressure wadiyi mata mukuth karaganna baha",
+    "hamadema mage pitata awith mata amaruwi",
+    "mata oluwa wikara wenawa wada wadiyi",
+    "mama nitharama kalabala wenawa daraganna ba",
 ]
 OVERWHELMED_REASONS = ["overwhelmed"] * len(OVERWHELMED_TEXTS)
 OVERWHELMED_EMOTIONS = ["stressed"] * len(OVERWHELMED_TEXTS)
@@ -357,6 +466,16 @@ PHYSICAL_TEXTS = [
     "I feel like I am trapped in a body that is constantly hurting",
     "My physical symptoms are being dismissed by my doctor",
     "I feel broken physically and I do not know when it will end",
+    "මගේ සැත්කම කළ තැන ගොඩක් රිදෙනවා",
+    "මගේ මුළු ඇඟම කැක්කුමයි අමාරුයි",
+    "මට තුවාලය නිසා ඇවිදින්නත් බෑ",
+    "මගේ කොන්ද ගොඩක් රිදෙනවා",
+    "මට ශාරීරිකව ගොඩක් වේදනායි",
+    "mage c section thuwala ridenawa",
+    "mage mulu angama kakkumai amaruwi",
+    "mata thuwalaya nisa awidinnath baha",
+    "mage konda godak ridenawa",
+    "mata sharirikawa godak wedanayi",
 ]
 PHYSICAL_REASONS = ["physical_discomfort"] * len(PHYSICAL_TEXTS)
 PHYSICAL_EMOTIONS = ["stressed"] * len(PHYSICAL_TEXTS)
@@ -395,6 +514,16 @@ NEGATIVE_TEXTS = [
     "I feel like my brain is working against me",
     "I feel trapped in negative thoughts with no way out",
     "I feel devastated and broken in ways I cannot explain",
+    "මට ජීවිතේ එපා වෙලා මැරෙන්න හිතෙනවා",
+    "මට අඳුරු සිතුවිලි එනවා මට බයයි",
+    "මම නැති වුණොත් ඔක්කොම හොඳ වෙයි",
+    "මට කිසිම බලාපොරොත්තුවක් නෑ",
+    "මට ජීවත් වෙන්න හිතෙන්නේ නෑ",
+    "mata jeewithe epa wela merenna hithenawa",
+    "mata anduru sithuwili enawa mata bayai",
+    "mama nathiwunot okkoma hoda wei",
+    "mata kisima balaporoththuwak naha",
+    "mata jeewath wenna hithenne naha",
 ]
 NEGATIVE_REASONS = ["negative_thoughts"] * len(NEGATIVE_TEXTS)
 NEGATIVE_EMOTIONS = ["sad"] * len(NEGATIVE_TEXTS)
@@ -433,6 +562,16 @@ HAPPY_TEXTS = [
     "I feel so much love it fills me completely",
     "Today I smiled and laughed and it felt so good",
     "I am proud of myself for getting through another day well",
+    "අද මගේ බබා හිනා වුණා මට හරිම සතුටුයි",
+    "මගේ හිතට ලොකු සතුටක් දැනෙනවා",
+    "අද හරිම ලස්සන දවසක් මම සන්තෝෂෙන් ඉන්නේ",
+    "මට බබා එක්ක හරිම ආසයි",
+    "අද මගේ සිතට ලොකු සහනයක් තියෙනවා",
+    "ada mage baba hina wuna mata harima sathutuyi",
+    "mage hithata loku sathutak danenawa",
+    "ada harima lassana dawasak mama sathoshen inne",
+    "mata baba ekka harima aasayi",
+    "ada mage sithata loku sahanayak thiyenawa",
 ]
 HAPPY_REASONS = ["loneliness"] * len(HAPPY_TEXTS)   # fallback reason for happy
 HAPPY_EMOTIONS = ["happy"] * len(HAPPY_TEXTS)

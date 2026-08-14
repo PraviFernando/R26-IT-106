@@ -23,12 +23,16 @@ const CATEGORY_RULES = {
       'cannot latch', 'cant latch', 'feeding difficulty', 'feed my baby', 'breast feeding',
       'formula milk', 'bottle feeding', 'not drinking milk', 'refuses to feed', 'won\'t feed',
       'wont feed', 'drinking milk', 'don\'t drink milk', 'dont drink milk', 'isnt drinking milk',
-      'isn\'t drinking milk'
+      'isn\'t drinking milk', 'how to feed', 'how to feed him',
+      'කිරි දෙන්නේ කොහොමද', 'කිරි දෙන්න මම දන්නේ නැහැ', 'කිරි දෙන්නේ කොහොමද කියලා',
+      'කිරි බොන්නේ නැහැ', 'කිරි දෙන්න අමාරුයි', 'කිරි දෙන්න බෑ', 'කිරි දෙන්න',
+      'kiri bonna naha', 'kiri denna baha', 'kiri bonna ba', 'kiri denna amaruwi', 'kiri denne kohomada'
     ],
     keywords: [
       'feed', 'feeding', 'milk', 'breastfeed', 'breastfeeding', 'formula', 'bottle',
       'hungry', 'latch', 'latching', 'burp', 'burping', 'nursing', 'pump', 'pumping',
-      'spit up', 'reflux'
+      'spit up', 'reflux',
+      'kiri', 'කිරි', 'කිරිදීම'
     ]
   },
 
@@ -37,11 +41,12 @@ const CATEGORY_RULES = {
       'wash my baby', 'clean my baby', 'first bath', 'newborn bath', 'don\'t know how to bath',
       'dont know how to bath', 'how can i bath', 'how to bath', 'bath my newborn',
       'bath my baby', 'bathing baby', 'sponge bath', 'umbilical cord', 'baby bath',
-      'bathe my baby', 'bath my newborn baby', 'bathe my newborn baby', 'wash baby', 'clean baby'
+      'bathe my baby', 'bath my newborn baby', 'bathe my newborn baby', 'wash baby', 'clean baby',
+      'නාන්න', 'නාගන්න', 'නාවන්න', 'බබාව නාවන්න', 'nawanna', 'baba nawanna'
     ],
     keywords: [
       'bath', 'bathe', 'bathing', 'wash', 'clean', 'soap', 'shampoo', 'water',
-      'sponge', 'umbilical'
+      'sponge', 'umbilical', 'නාවන්න', 'නෑම', 'nawanna'
     ]
   },
 
@@ -50,10 +55,12 @@ const CATEGORY_RULES = {
       'dress diaper', 'wear diaper', 'change nappy', 'change diaper', 'changing diaper',
       'put diaper', 'remove diaper', 'put on diaper', 'diaper to my child', 'diaper rash',
       'dirty diaper', 'wet diaper', 'change napkin', 'dress diaper to my child',
-      'diaper to my baby', 'wearing a diaper'
+      'diaper to my baby', 'wearing a diaper',
+      'ඩයපර්', 'ඩයපර් මාරු', 'නැප්කින්', 'diaper maru'
     ],
     keywords: [
-      'diaper', 'diapers', 'nappy', 'napkin', 'rash', 'poop', 'stool', 'wipes', 'pee'
+      'diaper', 'diapers', 'nappy', 'napkin', 'rash', 'poop', 'stool', 'wipes', 'pee',
+      'ඩයපර්', 'diaper'
     ]
   },
 
@@ -61,40 +68,51 @@ const CATEGORY_RULES = {
     phrases: [
       'cry at night', 'cries at night', 'won\'t sleep', 'wont sleep', 'sleep through night',
       'can\'t sleep', 'cant sleep', 'sleep schedule', 'nap time', 'stay awake',
-      'cry every night', 'cries every night'
+      'cry every night', 'cries every night', 'not sleep at night', 'is not sleep',
+      'රාත්රියේ නිදාගන්නේ නැතුව', 'රාත්‍රියේ නිදාගන්නේ නැතුව', 'නිදාගන්නේ නැතුව',
+      'නිදාගන්නේ නැහැ', 'නිදාගන්නෙ නෑ', 'රෑට නිදාගන්නේ නැහැ', 'නින්දක් නෑ',
+      'nida ganne naha', 'nida na', 'rata nida ganne naha', 'ninda naha'
     ],
     keywords: [
       'sleep', 'sleeping', 'night', 'nap', 'napping', 'awake', 'wake', 'restless',
-      'bedtime', 'routine', 'insomnia'
+      'bedtime', 'routine', 'insomnia',
+      'ninda', 'නින්ද', 'නිදා', 'නිදාගන්න', 'නිදාගන්නේ', 'රාත්රියේ', 'රාත්‍රියේ'
     ]
   },
 
   'Baby Crying': {
     phrases: [
       'won\'t stop crying', 'wont stop crying', 'cries every night', 'cries all time',
-      'crying baby', 'stop crying', 'calm crying baby', 'soothe baby', 'cry every night'
+      'crying baby', 'stop crying', 'calm crying baby', 'soothe baby', 'cry every night',
+      'නැතුව අඬනවා', 'ගොඩක් අඬනවා', 'නිතරම අඬනවා', 'නවත්තන්න බැරි තරම් අඬනවා', 'ඇයි කියලා මට තේරෙන්නේ නැහැ',
+      'godak andanawa', 'nitharama andanawa', 'baba godak andanawa', 'adanawa'
     ],
     keywords: [
       'cry', 'crying', 'cries', 'fussy', 'fussing', 'colic', 'soothe', 'soothing',
-      'screaming', 'unsettled'
+      'screaming', 'unsettled',
+      'andanawa', 'andana', 'adanawa', 'අඬනවා', 'අඬන', 'ඇඬීම', 'කෑගහනවා'
     ]
   },
 
   'Baby Health': {
     phrases: [
       'has fever', 'high temperature', 'baby is sick', 'vomiting milk', 'turned yellow',
-      'medical help', 'diaper rash', 'has a fever'
+      'medical help', 'diaper rash', 'has a fever',
+      'උණ තියෙනවා', 'අසනීප වෙලා', 'ලෙඩ වෙලා', 'ලෙඩයි',
+      'una thiyenawa', 'asanipa wela', 'leda wela', 'leda'
     ],
     keywords: [
       'fever', 'temperature', 'sick', 'ill', 'cold', 'cough', 'vomit', 'vomiting',
-      'diarrhea', 'infection', 'medicine', 'doctor', 'hospital', 'jaundice', 'yellow', 'rash'
+      'diarrhea', 'infection', 'medicine', 'doctor', 'hospital', 'jaundice', 'yellow', 'rash',
+      'una', 'උණ', 'අසනීප', 'ලෙඩ', 'asanipa', 'leda'
     ]
   },
 
   'Baby Development': {
     phrases: [
       'tummy time', 'weight gain', 'developmental milestones', 'learning to sit',
-      'learning to crawl', 'first smile'
+      'learning to crawl', 'first smile',
+      'වර්ධනය', 'බර වැඩිවීම', 'ඉඳගන්න', 'ඇවිදින්න'
     ],
     keywords: [
       'growth', 'weight', 'gain', 'milestone', 'milestones', 'crawling', 'crawl',
@@ -104,34 +122,26 @@ const CATEGORY_RULES = {
 
   'Vaccination': {
     phrases: [
-      'baby vaccination', 'clinic visit', 'baby shots', 'immunization schedule'
+      'baby vaccine', 'vaccine schedule', 'immunization', 'fever after vaccine',
+      'එන්නත්', 'වැක්සින්'
     ],
-    keywords: [
-      'vaccine', 'vaccines', 'vaccination', 'immunization', 'shot', 'shots',
-      'injection', 'clinic', 'needle'
-    ]
+    keywords: ['vaccine', 'vaccination', 'immunization', 'injection', 'එන්නත', 'එන්නත්']
   },
 
   'Baby Safety': {
     phrases: [
-      'bathe safely', 'safe sleep', 'sleep position', 'prevent choking', 'head bump',
-      'bathe my baby safely'
+      'baby safe', 'safe sleeping position', 'car seat', 'baby proofing',
+      'ආරක්ෂාව', 'පරිස්සම්'
     ],
-    keywords: [
-      'safe', 'safety', 'fall', 'choking', 'car seat', 'blanket', 'emergency',
-      'danger', 'accident'
-    ]
+    keywords: ['safety', 'safe', 'choking', 'carseat', 'proof', 'ආරක්ෂාව']
   },
 
   'Mother Care': {
     phrases: [
-      'breast pain', 'c-section recovery', 'postpartum recovery', 'perineal pain',
-      'postpartum pain'
+      'mother recovery', 'postpartum care', 'mom health', 'mother diet',
+      'අම්මාගේ සෞඛ්‍යය', 'පශ්චාත් ප්‍රසව'
     ],
-    keywords: [
-      'recovery', 'c-section', 'cesarean', 'stitch', 'stitches', 'bleeding',
-      'postpartum', 'tired', 'soreness', 'pelvic', 'breast'
-    ]
+    keywords: ['mother', 'mom', 'mama', 'postpartum', 'recovery', 'diet', 'අම්මා']
   }
 };
 
@@ -150,11 +160,8 @@ export const detectBabyTopics = (text = '') => {
     return { topics: [], topic: null, isEmergency: false, age: null };
   }
 
-  // Normalize text: lowercase and strip special characters except spaces
-  const cleanText = text
-    .toLowerCase()
-    .replace(/['’]/g, '')
-    .replace(/[^\w\s]/g, ' ');
+  // Normalize text
+  const cleanText = text.toLowerCase();
 
   // Check emergency health signs
   const isEmergency = HIGH_RISK_HEALTH_KEYWORDS.some(kw => cleanText.includes(kw));

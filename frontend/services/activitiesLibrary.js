@@ -286,9 +286,9 @@ export const NEW_ACTIVITIES = [
     benefits: ['සාන්ද්‍රණය වැඩි කරයි', 'අවධානය යොමු කරයි', 'මෘදු මානසික ව්‍යායාමයකි'], isNewFormat: true
   },
   {
-    id: 'new_baby_interaction_ideas', icon: '👶', label: 'ළදරුවා සමඟ බැඳීම', purpose: 'නිරෝගී බැඳීමක් දිරිමත් කරයි.', duration: 'විනාඩි 10',
-    instructions: ['යෙදුම අහඹු ලෙස ක්‍රියාකාරකම් යෝජනා කරයි:', 'ඔබේ දරුවාට සිනාසෙන්න.', 'දරුවා සමඟ කතා කරන්න.', 'නැළවිලි ගීතයක් ගායනා කරන්න.', 'කෙටි කතාවක් කියවන්න.', 'දරුවා තුරුලු කරගන්න.', 'කිරි දෙන අතරතුර ඇස් දෙස බලන්න.', 'අවසන් වූ පසු සම්පූර්ණ කළා යන්න ස්පර්ශ කරන්න.'],
-    benefits: ['නිරෝගී බැඳීමක් ඇති කරයි', 'දරුවාගේ මනෝභාවය යහපත් කරයි', 'ආදරය වැඩි කරයි'], isNewFormat: true
+    id: 'new_baby_interaction_ideas', icon: '👶', label: 'ළදරු හැඟීම', labelEn: 'Baby Cues', purpose: 'ඔබේ බබා පෙන්වන විවිධ සංඥා හඳුනාගැනීමට මෙම ක්‍රියාකාරකම ඔබට උපකාරී වේ.', duration: 'විනාඩි 5–10',
+    instructions: ['පින්තූරය දෙස බලන්න.', 'බබාගේ හැඟීම හෝ අවශ්‍යතාවය තෝරන්න.', 'පොදු ළදරු සංඥා හඳුනාගැනීමට ඉගෙන ගන්න.'],
+    benefits: ['ළදරු සංඥා හඳුනාගැනීම', 'සන්නිවේදනය වැඩි දියුණු කිරීම', 'විශ්වාසය ඇතිකිරීම'], isNewFormat: true
   },
   {
     id: 'new_relaxing_music', icon: '🎵', label: 'සන්සුන් සංගීතය', purpose: 'මානසික විවේකය ලබා දෙයි.', duration: 'විනාඩි 10–20',
@@ -440,14 +440,112 @@ export const getNewRecommendations = (emotion, reason, riskLevel, diaryText = ''
 };
 
 export const ALL_GAMES = [
-  { id:'bubble_pop',       icon:'🫧', label:'බුබුළු ෆොන් ෆොන්',      labelEn:'Bubble Pop',           color:['#E3F2FD','#BBDEFB'], accent:'#1565C0' },
-  { id:'word_match',       icon:'💬', label:'වචන ගළපීම',              labelEn:'Word Match',            color:['#EDE7F6','#D1C4E9'], accent:'#7E57C2' },
-  { id:'puzzle',           icon:'🧩', label:'ප්‍රහේලිකාව',            labelEn:'Simple Puzzle',         color:['#FFF9C4','#FFF3A0'], accent:'#F57F17' },
-  { id:'affirmation_game', icon:'💜', label:'ධනාත්මක ප්‍රකාශ',       labelEn:'Positive Affirmations', color:['#FCE4EC','#F8BBD9'], accent:'#C2185B' },
-  { id:'baby_mood',        icon:'😊', label:'ළදරු හැඟීම',            labelEn:'Baby Cues',             color:['#FFF9C4','#FFF3A0'], accent:'#F57F17' },
-  { id:'mandala',          icon:'🔮', label:'මණ්ඩල කලා',              labelEn:'Mandala Art',           color:['#EDE7F6','#D1C4E9'], accent:'#7E57C2' },
-  { id:'colouring',        icon:'🎨', label:'රූප පාටකිරීම',          labelEn:'Colouring Pages',       color:['#E8F5E9','#C8E6C9'], accent:'#2E7D32' },
+  { id: 'baby_mood',        icon: '😊', label: 'ළදරු හැඟීම',            labelEn: 'Baby Cues',             color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17' },
+  { id: 'bubble_pop',       icon: '🫧', label: 'බුබුළු ෆොන් ෆොන්',      labelEn: 'Bubble Pop',           color: ['#E3F2FD', '#BBDEFB'], accent: '#1565C0' },
+  { id: 'memory_match',     icon: '🃏', label: 'මතක ගැළපීම',            labelEn: 'Memory Match',          color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
+  { id: 'word_match',       icon: '💬', label: 'වචන ගැළපීම',            labelEn: 'Word Match',            color: ['#F3E5F5', '#E1BEE7'], accent: '#7E57C2' },
+  { id: 'word_builder',     icon: '🔠', label: 'වචන ගොඩනැගීම',          labelEn: 'Word Builder',          color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
+  { id: 'pattern_repeat',   icon: '🧠', label: 'රටාව නැවත',            labelEn: 'Pattern Repeat',        color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
+  { id: 'spot_diff',        icon: '🔍', label: 'වෙනස සොයන්න',            labelEn: 'Spot Difference',       color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
+  { id: 'sequence_order',   icon: '🧩', label: 'අනුපිළිවෙල',            labelEn: 'Sequence Order',        color: ['#F3E5F5', '#E1BEE7'], accent: '#8E24AA' },
+  { id: 'number_seq',       icon: '🔢', label: 'අංක',                  labelEn: 'Number Sequence',       color: ['#E8F5E9', '#A5D6A7'], accent: '#2E7D32' },
+  { id: 'coin_maze',        icon: '🪙', label: 'කාසි මාලිම',            labelEn: 'Coin Maze',             color: ['#FFF9C4', '#FFF3E0'], accent: '#F57F17' },
+  { id: 'sliding_puzzle',   icon: '🧩', label: 'ස්ලයිඩ්',                labelEn: 'Sliding Puzzle',        color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
+  { id: 'mindful_tap',      icon: '🌿', label: 'සිහිකල්පනාව',            labelEn: 'Mindful Tap',           color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
+  { id: 'puzzle',           icon: '🧩', label: 'ප්‍රහේලිකාව',            labelEn: 'Simple Puzzle',         color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17' },
+  { id: 'affirmation_game', icon: '💜', label: 'ධනාත්මක ප්‍රකාශ',       labelEn: 'Positive Affirmations', color: ['#FCE4EC', '#F8BBD9'], accent: '#C2185B' },
+  { id: 'mandala',          icon: '🔮', label: 'මණ්ඩල කලා',              labelEn: 'Mandala Art',           color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
+  { id: 'colouring',        icon: '🎨', label: 'රූප පාටකිරීම',          labelEn: 'Colouring Pages',       color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
 ];
+
+export const GAME_RECOMMENDATION_MAP = {
+  // Baby-related reasons (baby_mood forced as #1)
+  baby_crying:        ['baby_mood', 'sequence_order', 'memory_match', 'number_seq'],
+  baby_needs:         ['baby_mood', 'word_match', 'spot_diff', 'memory_match'],
+  caring_for_baby:    ['baby_mood', 'sequence_order', 'pattern_repeat', 'word_match'],
+  baby_feeding:       ['baby_mood', 'pattern_repeat', 'number_seq', 'memory_match'],
+  baby_sleep:         ['baby_mood', 'mindful_tap', 'sliding_puzzle', 'word_match'],
+  baby_health:        ['baby_mood', 'spot_diff', 'sequence_order', 'memory_match'],
+  bonding_issues:     ['baby_mood', 'memory_match', 'pattern_repeat', 'word_match'],
+
+  // Mother emotional reasons (distinct pools, no baby_mood)
+  fatigue:            ['coin_maze', 'sliding_puzzle', 'word_match', 'colouring'],
+  sadness:            ['bubble_pop', 'memory_match', 'pattern_repeat', 'word_builder'],
+  anxiety:            ['bubble_pop', 'mindful_tap', 'spot_diff', 'number_seq'],
+  loneliness:         ['memory_match', 'word_builder', 'word_match', 'pattern_repeat'],
+  anger:              ['bubble_pop', 'coin_maze', 'spot_diff', 'sliding_puzzle'],
+  overwhelmed:        ['bubble_pop', 'mindful_tap', 'sequence_order', 'word_match'],
+  stress:             ['bubble_pop', 'spot_diff', 'sliding_puzzle', 'mindful_tap'],
+  loss_of_confidence: ['affirmation_game', 'word_builder', 'pattern_repeat', 'memory_match'],
+  lack_of_support:    ['word_match', 'affirmation_game', 'memory_match', 'coin_maze'],
+  sleep_problems:     ['colouring', 'mandala', 'mindful_tap', 'sliding_puzzle'],
+  physical_discomfort:['mindful_tap', 'colouring', 'word_match', 'sliding_puzzle'],
+  negative_thoughts:  ['affirmation_game', 'word_builder', 'spot_diff', 'mandala'],
+
+  // Neutral / General fallback
+  general:            ['memory_match', 'pattern_repeat', 'word_builder', 'spot_diff']
+};
+
+export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', maxGames = 4) => {
+  const isBaby = (intents && (intents.baby_related || intents.baby_crying || intents.baby_needs || intents.baby_feeding || intents.baby_sleep || intents.baby_health))
+    || isBabyRelatedContent(diaryText)
+    || isBabyRelatedReason(reason);
+
+  const activeKeys = [];
+
+  if (intents.baby_crying) activeKeys.push('baby_crying');
+  if (intents.baby_needs) activeKeys.push('baby_needs');
+  if (intents.baby_feeding) activeKeys.push('baby_feeding');
+  if (intents.baby_sleep) activeKeys.push('baby_sleep');
+  if (intents.baby_health) activeKeys.push('baby_health');
+  if (isBaby && activeKeys.length === 0) activeKeys.push('caring_for_baby');
+
+  if (reason && GAME_RECOMMENDATION_MAP[reason] && !activeKeys.includes(reason)) {
+    activeKeys.push(reason);
+  }
+
+  const collected = [];
+  let maxLen = 0;
+  activeKeys.forEach(k => {
+    const list = GAME_RECOMMENDATION_MAP[k] || [];
+    if (list.length > maxLen) maxLen = list.length;
+  });
+
+  for (let i = 0; i < maxLen; i++) {
+    activeKeys.forEach(k => {
+      const list = GAME_RECOMMENDATION_MAP[k] || [];
+      if (list[i] && !collected.includes(list[i])) {
+        collected.push(list[i]);
+      }
+    });
+  }
+
+  // Filter out baby_mood if NOT baby context
+  let filtered = collected.filter(gId => {
+    if (gId === 'baby_mood' && !isBaby) return false;
+    return true;
+  });
+
+  // If baby context is active, force baby_mood to index 0
+  if (isBaby) {
+    filtered = ['baby_mood', ...filtered.filter(gId => gId !== 'baby_mood')];
+  }
+
+  // If we still need more games up to maxGames (4), fill from general fallback list
+  if (filtered.length < maxGames) {
+    const fallbacks = GAME_RECOMMENDATION_MAP.general.filter(gId => {
+      if (gId === 'baby_mood' && !isBaby) return false;
+      return !filtered.includes(gId);
+    });
+    filtered = [...filtered, ...fallbacks];
+  }
+
+  // Ensure unique and capped at maxGames
+  const uniqueIds = [...new Set(filtered)].slice(0, maxGames);
+
+  // Return full Game Objects from ALL_GAMES
+  return uniqueIds.map(gId => ALL_GAMES.find(g => g.id === gId) || { id: gId }).filter(Boolean);
+};
 
 // ================================================================
 // EXACT IF-THEN RECOMMENDATION RULES
@@ -749,6 +847,104 @@ const RULES = {
       supportMsg:'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸',
     },
   },
+
+  // ── BABY INTENTS RULES ───────────────────────────────────────
+  baby_crying: {
+    low: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'බබාගේ අඬන සංඥා තේරුම් ගැනීමට සහ සන්සුන් වීමට ඔබට උපකාරී වෙයි 💜',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'new_deep_breathing'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'බබාගේ අඬන සංඥා තේරුම් ගැනීමට සෙමෙන් හුස්ම ගන්න 🌸',
+    },
+  },
+  baby_needs: {
+    low: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'බබාගේ අවශ්‍යතා හඳුනා ගැනීමට සහ සන්සුන් වීමට උපදෙස් 💜',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'new_deep_breathing'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'බබාගේ අවශ්‍යතා තේරුම් ගැනීමට සන්සුන් වන්න 🌸',
+    },
+  },
+  baby_feeding: {
+    low: {
+      activityIds: ['baby_mood', 'new_drink_water', 'new_gentle_stretch', 'new_relaxing_music'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'පෝෂණය කිරීමේදී ඔබේ සුවපහසුවද ඉතා වැදගත්ය 💜',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'new_drink_water'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'පෝෂණය කිරීමේදී සෙමෙන් හුස්ම ගන්න 🌸',
+    },
+  },
+  baby_sleep: {
+    low: {
+      activityIds: ['baby_mood', 'new_sleep_reflection', 'night_breathing', 'rest_meditation'],
+      gameId:    'baby_mood',
+      musicKey:  'sleep_problems',
+      videoKey:  'sleep_problems',
+      supportMsg:'බබාගේ නින්ද රටාව වර්ධනය වෙමින් පවතී 🌙',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'night_breathing'],
+      gameId:    'baby_mood',
+      musicKey:  'sleep_problems',
+      videoKey:  'sleep_problems',
+      supportMsg:'කෙටි විවේක පවා ඔබට උපකාරී වෙයි 💜',
+    },
+  },
+  baby_health: {
+    low: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_positive_affirmations', 'grounding_54321'],
+      gameId:    'baby_mood',
+      musicKey:  'anxiety',
+      videoKey:  'anxiety',
+      supportMsg:'සෞඛ්‍ය තත්ත්වයන් හමුවේ සන්සුන්ව සිටීමට උපදෙස් 🌸',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'new_deep_breathing'],
+      gameId:    'baby_mood',
+      musicKey:  'anxiety',
+      videoKey:  'anxiety',
+      supportMsg:'අවශ්‍ය නම් වහාම සෞඛ්‍ය උපදෙස් ලබාගන්න 🆘',
+    },
+  },
+  caring_for_baby: {
+    low: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'ළදරු සාත්තු කිරීමේදී ඔබට සහාය වන උපදෙස් 💜',
+    },
+    medium: {
+      activityIds: ['baby_mood', 'new_deep_breathing'],
+      gameId:    'baby_mood',
+      musicKey:  'bonding_issues',
+      videoKey:  'bonding_issues',
+      supportMsg:'ළදරු සාත්තු කිරීමේදී සන්සුන් වන්න 🌸',
+    },
+  },
 };
 
 // ── PUBLIC API ────────────────────────────────────────────────
@@ -819,7 +1015,7 @@ export const isBabyRelatedReason = (reason = '') => {
   const babyKeys = [
     'baby', 'crying', 'feeding', 'breastfeeding', 'understanding_baby',
     'caring_for_baby', 'baby_crying', 'baby_feeding', 'baby_sleep',
-    'baby_needs', 'baby_health', 'baby_behaviour', 'ළදරු', 'බබා', 'දරුවා'
+    'baby_needs', 'baby_health', 'baby_behaviour', 'bonding_issues', 'ළදරු', 'බබා', 'දරුවා'
   ];
   return babyKeys.some(k => r.includes(k));
 };
@@ -857,12 +1053,14 @@ export const getPersonalizedRecommendations = ({
     }
   }
 
+  const EXCLUDE_IDS = ['baby_bonding', 'new_baby_interaction_ideas'];
+
   let orderedIds = [];
   if (isBaby) {
     orderedIds.push('baby_mood');
   }
 
-  candidateIds.forEach(id => {
+  candidateIds.filter(id => !EXCLUDE_IDS.includes(id)).forEach(id => {
     if (!orderedIds.includes(id)) {
       orderedIds.push(id);
     }
