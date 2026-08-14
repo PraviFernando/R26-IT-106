@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { analyzeDiary, getRecommendations } from './emotionEngine.js';
 import { detectBabyTopic } from './babyCareService.js';
+import api from './api.js';
 
 const AppContext = createContext();
 
@@ -41,6 +42,76 @@ export const AppProvider = ({ children }) => {
   const [detectedBabyAge, setDetectedBabyAge] = useState(null);
   const [demoDiaryIdx, setDemoDiaryIdx] = useState(0);
   const [moodHistory, setMoodHistory] = useState(INITIAL_MOOD_HISTORY);
+  const [completedActivities, setCompletedActivities] = useState([]);
+  const [progressDiaries, setProgressDiaries] = useState([]);
+  const [progressActivities, setProgressActivities] = useState([]);
+  const [loadingProgress, setLoadingProgress] = useState(true);
+  const [errorProgress, setErrorProgress] = useState(null);
+
+  const fetchProgressData = async () => {
+    try {
+      setLoadingProgress(true);
+      setErrorProgress(null);
+
+      console.log('[DEBUG Progress] Starting fetchProgressData...');
+      console.log('[DEBUG Progress] Axios baseURL:', api.defaults.baseURL);
+
+      // 1. Fetch Diary History
+      console.log('[DEBUG Progress] Requesting GET /diary ...');
+      const diaryRes = await api.get('/diary');
+      console.log('[DEBUG Progress] GET /diary SUCCESS:', diaryRes.status, 'entries count:', diaryRes.data?.entries?.length);
+      const diaries = diaryRes.data?.entries || [];
+
+      // 2. Fetch Activity Completion History (All Time)
+      console.log('[DEBUG Progress] Requesting GET /plan/activity/history ...');
+      const activityRes = await api.get('/plan/activity/history');
+      console.log('[DEBUG Progress] GET /plan/activity/history SUCCESS:', activityRes.status, 'activities count:', activityRes.data?.length);
+      const activities = activityRes.data || [];
+
+      setProgressDiaries(diaries);
+      setProgressActivities(activities);
+      setLoadingProgress(false);
+    } catch (err) {
+      console.error('[DEBUG Progress ERROR] Failed in fetchProgressData:');
+      if (err.response) {
+        console.error('  - Status:', err.response.status);
+        console.error('  - URL:', err.config?.url);
+        console.error('  - Headers:', JSON.stringify(err.config?.headers));
+        console.error('  - Response Data:', JSON.stringify(err.response.data));
+      } else {
+        console.error('  - Error Message:', err.message);
+        console.error('  - Config:', JSON.stringify(err.config));
+      }
+      setErrorProgress('ප්‍රගති දත්ත ලබාගැනීමට අපොහොසත් විය. නැවත උත්සාහ කරන්න.');
+      setLoadingProgress(false);
+    }
+  };
+
+  const fetchCompletedActivities = async () => {
+    try {
+      const d = new Date();
+      const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const res = await api.get(`/plan/activity/date/${todayStr}`);
+      if (res.data) {
+        const completed = res.data
+          .filter(item => item.completed)
+          .map(item => {
+            const rawId = item.activityId;
+            return rawId.replace(/_\d+$/, '');
+          });
+        setCompletedActivities(completed);
+        return completed;
+      }
+    } catch (err) {
+      console.log('Error fetching completed activities for ranking:', err.message);
+    }
+    return [];
+  };
+
+  useEffect(() => {
+    fetchCompletedActivities();
+    fetchProgressData();
+  }, []);
 
   const updateMoodHistory = (analysis) => {
     if (!analysis) return;
@@ -79,6 +150,9 @@ export const AppProvider = ({ children }) => {
 
   const processDiary = (diaryText) => {
     try {
+      // Trigger background updates
+      fetchCompletedActivities();
+      fetchProgressData();
       const analysis = analyzeDiary(diaryText);
       const defaultEmotionEmojis = {
         happy: '😊',
@@ -100,7 +174,7 @@ export const AppProvider = ({ children }) => {
         setDetectedBabyTopic(null);
       }
 
-      const recommendations = getRecommendations(analysis, userPreferredActivities, userPreferredGames, diaryText);
+      const recommendations = getRecommendations(analysis, userPreferredActivities, userPreferredGames, diaryText, completedActivities);
       setLatestAnalysis(analysis);
       setLatestRecommendations(recommendations);
       updateMoodHistory(analysis);
@@ -134,6 +208,8 @@ export const AppProvider = ({ children }) => {
     if (analysis) {
       updateMoodHistory(analysis);
     }
+    fetchCompletedActivities();
+    fetchProgressData();
   };
 
   return (
@@ -146,6 +222,8 @@ export const AppProvider = ({ children }) => {
       detectedBabyAge, setDetectedBabyAge,
       moodHistory, processDiary, simulateNextDiary, nextDemoPreview, demoDiaryIdx,
       setLatestData,
+      completedActivities, fetchCompletedActivities,
+      progressDiaries, progressActivities, loadingProgress, errorProgress, fetchProgressData
     }}>
       {children}
     </AppContext.Provider>

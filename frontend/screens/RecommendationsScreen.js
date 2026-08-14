@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
-import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames } from '../services/activitiesLibrary';
+import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames, getRankedActivities } from '../services/activitiesLibrary';
 import { getPersonalizedRecommendations } from '../services/emotionEngine';
 import { MUSIC_LIBRARY, VIDEO_LIBRARY } from '../services/mediaLibrary';
 import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibrary';
@@ -124,7 +124,7 @@ const getBabyTopicsFromReason = (reason) => {
 };
 
 const RecommendationsScreen = ({ navigation, route }) => {
-  const { latestRecommendations, latestAnalysis, userPreferredActivities, userPreferredGames, detectedBabyTopic, detectedBabyTopics, detectedBabyAge } = useApp();
+  const { latestRecommendations, latestAnalysis, userPreferredActivities, userPreferredGames, detectedBabyTopic, detectedBabyTopics, detectedBabyAge, completedActivities, fetchCompletedActivities } = useApp();
 
   // Quick Assessment State
   const hasAnalysis = Boolean(latestAnalysis);
@@ -153,6 +153,15 @@ const RecommendationsScreen = ({ navigation, route }) => {
       setTab(route.params.tab);
     }
   }, [route?.params?.tab]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      if (fetchCompletedActivities) {
+        fetchCompletedActivities();
+      }
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const activeAnalysis = isSkipped
     ? null
@@ -247,10 +256,20 @@ const RecommendationsScreen = ({ navigation, route }) => {
   });
 
   // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
-  const finalActivities = isSkipped ? ALL_ACTIVITIES.slice(0, 4) : finalActList.slice(0, 4);
+  // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
+  const activeDiaryText = activeAnalysis?.diaryText || latestAnalysis?.diaryText || '';
+  const finalActivities = isSkipped
+    ? ALL_ACTIVITIES.slice(0, 4)
+    : getRankedActivities(
+        emotion,
+        activeAnalysis?.primaryReason || selReason || 'overwhelmed',
+        risk || 'low',
+        activeDiaryText,
+        userPreferredActivities,
+        completedActivities
+      );
   
   const activeIntents = activeAnalysis?.babyIntents || {};
-  const activeDiaryText = activeAnalysis?.diaryText || latestAnalysis?.diaryText || '';
   const activeReason = activeAnalysis?.primaryReason || selReason || '';
 
   const dynamicRecommendedGames = getRecommendedGames(activeIntents, activeDiaryText, activeReason, 4);

@@ -86,7 +86,18 @@ const listDiaryDates = async (req, res, next) => {
             }
         });
 
-        res.status(200).json({ entries: entries.map(e => ({ date: e.date, updatedAt: e.updatedAt, mood: e.mood, content: e.content })), stats: { totalJournals, totalWords } });
+        res.status(200).json({ 
+            entries: entries.map(e => ({ 
+                date: e.date, 
+                mood: e.mood, 
+                emotion: e.emotion, 
+                reason: e.reason, 
+                riskLevel: e.riskLevel, 
+                createdAt: e.createdAt, 
+                updatedAt: e.updatedAt 
+            })), 
+            stats: { totalJournals, totalWords } 
+        });
     } catch (err) {
         next(err);
     }

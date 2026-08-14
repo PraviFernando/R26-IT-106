@@ -880,9 +880,9 @@ export const getRecommendationRule = (reason, riskLevel, preferredActivities = [
   };
 };
 
-export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, preferredActivities = [], preferredGames = [], diaryText = '') => {
+export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, preferredActivities = [], preferredGames = [], diaryText = '', completedActivities = []) => {
   const existingRecommendations = getRecommendationRule(reason, riskLevel, preferredActivities, preferredGames);
-  const newActivities = getNewRecommendations(emotion, reason, riskLevel, diaryText);
+  const newActivities = getRankedActivities(emotion, reason, riskLevel, diaryText, preferredActivities, completedActivities);
 
   const games = getRecommendedGames({}, diaryText, reason, 4);
   const game = games[0] || existingRecommendations.game;
@@ -891,7 +891,7 @@ export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, prefer
     ...existingRecommendations,
     game,
     games,
-    newActivities // Return the 4 personalized new activities
+    newActivities // Return the 4 ranked personalized activities
   };
 };
 
@@ -913,72 +913,184 @@ export const getPersonalizedRecommendations = ({
   riskLevel = null,
   preferredActivities = [],
   preferredGames = [],
+  completedActivities = [],
 }) => {
   const isBaby = isBabyRelatedReason(reason);
   const normalizedRisk = riskLevel ? String(riskLevel).toLowerCase() : null;
 
-  let candidateIds = [];
-
-  if (normalizedRisk === 'high') {
-    candidateIds = ['new_deep_breathing', 'new_guided_meditation', 'new_worry_box', 'new_relaxing_music'];
-  } else if (normalizedRisk === 'medium') {
-    candidateIds = ['new_guided_meditation', 'new_478_breathing', 'new_five_senses_grounding', 'new_box_breathing', 'new_sleep_reflection', 'new_emotion_check_in'];
-  } else {
-    // Low risk or null risk
-    const emotLower = (emotion || '').toLowerCase();
-    const reasonLower = (reason || '').toLowerCase();
-
-    // Prioritize reason-specific recommendations first
-    if (reasonLower.includes('feeding') || reasonLower.includes('breastfeeding') || reasonLower.includes('baby_feeding')) {
-      candidateIds.push('new_drink_water', 'new_gentle_stretch', 'new_relaxing_music', 'new_positive_affirmations');
-    } else if (reasonLower.includes('sleep') || reasonLower.includes('mother_sleep') || reasonLower.includes('baby_sleep')) {
-      candidateIds.push('new_sleep_reflection', 'new_relaxing_music', 'new_guided_meditation', 'new_deep_breathing');
-    } else if (reasonLower.includes('crying') || reasonLower.includes('baby_crying') || reasonLower.includes('needs') || reasonLower.includes('understanding_baby')) {
-      candidateIds.push('new_deep_breathing', 'new_positive_affirmations', 'new_gratitude_journal', 'new_emotion_check_in');
-    } else if (reasonLower.includes('support') || reasonLower.includes('lack_of_support')) {
-      candidateIds.push('new_positive_affirmations', 'new_emotion_check_in', 'new_gratitude_journal', 'new_worry_box');
-    } else if (reasonLower.includes('stress') || reasonLower.includes('overwhelmed')) {
-      candidateIds.push('new_guided_meditation', 'new_deep_breathing', 'new_bubble_pop', 'new_box_breathing');
-    }
-
-    // Fallback to emotion-specific recommendations
-    if (emotLower.includes('anx') || emotLower.includes('කනස්සල්ල')) {
-      candidateIds.push('new_478_breathing', 'new_five_senses_grounding', 'new_deep_breathing', 'new_box_breathing');
-    } else if (emotLower.includes('tired') || emotLower.includes('මහන්සියි')) {
-      candidateIds.push('new_sleep_reflection', 'new_deep_breathing', 'new_relaxing_music', 'new_guided_meditation');
-    } else if (emotLower.includes('sad') || emotLower.includes('දුකින්') || emotLower.includes('crying')) {
-      candidateIds.push('new_positive_affirmations', 'new_gratitude_journal', 'new_emotion_check_in', 'new_smile_challenge');
-    } else {
-      candidateIds.push('new_deep_breathing', 'new_emotion_check_in', 'new_gratitude_journal', 'new_five_senses_grounding');
-    }
-  }
-
-  const EXCLUDE_IDS = ['baby_bonding', 'new_baby_interaction_ideas'];
-
-  let orderedIds = [];
-  if (isBaby) {
-    orderedIds.push('baby_mood');
-  }
-
-  candidateIds.filter(id => !EXCLUDE_IDS.includes(id)).forEach(id => {
-    if (!orderedIds.includes(id)) {
-      orderedIds.push(id);
-    }
-  });
-
-  // Strict enforcement: Maximum 4 activity recommendations
-  orderedIds = orderedIds.slice(0, 4);
-
-  const personalizedActivities = orderedIds
-    .map(id => NEW_ACTIVITIES.find(a => a.id === id) || ALL_ACTIVITIES.find(a => a.id === id))
-    .filter(Boolean);
+  const rankedActivities = getRankedActivities(
+    emotion,
+    reason,
+    normalizedRisk || 'low',
+    '',
+    preferredActivities,
+    completedActivities
+  );
 
   return {
     emotion,
     reason,
     riskLevel: normalizedRisk,
-    activities: personalizedActivities,
-    newActivities: personalizedActivities,
+    activities: rankedActivities,
+    newActivities: rankedActivities,
     isBabyRelated: isBaby,
   };
+};
+
+// ── ACTIVITY SCORING & RANKING SYSTEM ─────────────────────────
+
+const REASON_ACTIVITY_MAP = {
+  loneliness: ['new_positive_affirmations', 'new_gratitude_journal', 'new_emotion_check_in', 'new_relaxing_music', 'write_positive', 'journaling'],
+  fatigue: ['new_drink_water', 'new_sleep_reflection', 'new_gentle_stretch', 'new_relaxing_music', 'short_breathing', 'rest_meditation'],
+  anxiety: ['new_478_breathing', 'new_box_breathing', 'new_guided_meditation', 'new_five_senses_grounding', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321'],
+  bonding_issues: ['baby_mood', 'new_baby_interaction_ideas', 'new_positive_affirmations', 'new_relaxing_music', 'affirmation_activity'],
+  lack_of_support: ['new_positive_affirmations', 'new_emotion_check_in', 'new_gratitude_journal', 'new_worry_box', 'gratitude_writing', 'journaling'],
+  sleep_problems: ['new_sleep_reflection', 'new_relaxing_music', 'new_guided_meditation', 'new_deep_breathing', 'rest_meditation', 'night_breathing'],
+  loss_of_confidence: ['new_positive_affirmations', 'new_gratitude_journal', 'new_self_care_checklist', 'new_smile_challenge', 'affirmation_activity', 'write_positive'],
+  overwhelmed: ['new_box_breathing', 'new_self_care_checklist', 'new_worry_box', 'new_guided_meditation', 'box_breathing', 'guided_meditation', 'short_breathing'],
+  physical_discomfort: ['new_gentle_stretch', 'new_drink_water', 'new_relaxing_music', 'gentle_stretch'],
+  negative_thoughts: ['new_deep_breathing', 'new_guided_meditation', 'new_worry_box', 'new_relaxing_music', 'deep_breathing', 'guided_meditation'],
+  
+  // Baby-focused entries
+  baby_crying: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
+  baby_needs: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
+  baby_feeding: ['baby_mood', 'new_drink_water', 'new_gentle_stretch', 'new_relaxing_music', 'gentle_stretch'],
+  baby_sleep: ['baby_mood', 'new_sleep_reflection', 'night_breathing', 'rest_meditation'],
+  baby_health: ['baby_mood', 'new_deep_breathing', 'new_positive_affirmations', 'grounding_54321'],
+  caring_for_baby: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations']
+};
+
+const EMOTION_ACTIVITY_MAP = {
+  sad: ['new_positive_affirmations', 'new_gratitude_journal', 'new_relaxing_music', 'new_smile_challenge', 'write_positive', 'journaling'],
+  anxious: ['new_478_breathing', 'new_box_breathing', 'new_guided_meditation', 'new_five_senses_grounding', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321'],
+  stressed: ['new_deep_breathing', 'new_guided_meditation', 'new_bubble_pop', 'new_worry_box', 'deep_breathing', 'guided_meditation', 'short_breathing'],
+  happy: ['new_gratitude_journal', 'new_smile_challenge', 'new_drink_water', 'new_self_care_checklist', 'write_positive']
+};
+
+const normalizeReasonKey = (reason) => {
+  if (!reason) return 'overwhelmed';
+  const r = reason.toLowerCase().replace(/ /g, '_');
+  if (r === 'understanding_baby') return 'baby_needs';
+  if (r === 'feeling_lonely') return 'loneliness';
+  if (r === 'feeling_overwhelmed') return 'overwhelmed';
+  if (r === 'physical_recovery') return 'physical_discomfort';
+  if (r === 'breastfeeding_concerns') return 'baby_feeding';
+  if (r === 'mother_sleep') return 'sleep_problems';
+  if (r === 'family_problems') return 'lack_of_support';
+  if (r === 'financial_worries') return 'anxiety';
+  if (r === 'daily_responsibilities') return 'overwhelmed';
+  if (r === 'other_concern') return 'overwhelmed';
+  return r;
+};
+
+const normalizeEmotionKey = (emotion) => {
+  if (!emotion) return 'stressed';
+  const e = emotion.toLowerCase();
+  if (e === 'crying') return 'sad';
+  if (e === 'tired') return 'fatigue';
+  if (e === 'angry' || e === 'frustrated') return 'stressed';
+  if (e === 'sleepy') return 'fatigue';
+  if (e === 'calm') return 'happy';
+  return e;
+};
+
+const getCandidatesPool = () => {
+  const pool = [];
+  const seen = new Set();
+  [...NEW_ACTIVITIES, ...ALL_ACTIVITIES].forEach(act => {
+    if (act && act.id && !seen.has(act.id)) {
+      seen.add(act.id);
+      pool.push(act);
+    }
+  });
+  return pool;
+};
+
+export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', preferredActivities = [], completedActivities = []) => {
+  const normReason = normalizeReasonKey(reason);
+  const normEmotion = normalizeEmotionKey(emotion);
+  const normRisk = (riskLevel || 'low').toLowerCase();
+
+  const isBabyActive = isBabyRelatedReason(reason) || isBabyRelatedContent(diaryText);
+  const pool = getCandidatesPool();
+
+  const ranked = pool.map(act => {
+    let reasonScore = 0;
+    let emotionScore = 0;
+    let riskScore = 0;
+    let babyScore = 0;
+    let preferenceScore = 0;
+    let historyPenalty = 0;
+
+    // 1. Reason Match (Weight: 5)
+    const reasonList = REASON_ACTIVITY_MAP[normReason] || REASON_ACTIVITY_MAP.overwhelmed;
+    if (reasonList.includes(act.id)) {
+      reasonScore = 5;
+    }
+
+    // 2. Emotion Match (Weight: 3)
+    const emotionList = EMOTION_ACTIVITY_MAP[normEmotion] || EMOTION_ACTIVITY_MAP.stressed;
+    if (emotionList.includes(act.id)) {
+      emotionScore = 3;
+    }
+
+    // 3. Risk Level Suitability (Weight: 4 for high, 3 for others)
+    if (normRisk === 'high') {
+      const highRiskList = ['new_deep_breathing', 'new_guided_meditation', 'new_worry_box', 'new_relaxing_music', 'deep_breathing', 'guided_meditation'];
+      if (highRiskList.includes(act.id)) {
+        riskScore = 4;
+      }
+    } else if (normRisk === 'medium') {
+      const medRiskList = ['new_guided_meditation', 'new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'new_sleep_reflection', 'new_worry_box', 'new_bubble_pop', 'new_memory_card', 'new_self_care_checklist', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321'];
+      if (medRiskList.includes(act.id)) {
+        riskScore = 3;
+      }
+    } else { // low
+      const lowRiskList = ['new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations', 'new_relaxing_music', 'new_drink_water', 'new_smile_challenge', 'new_emotion_check_in', 'new_calm_coloring', 'write_positive', 'journaling', 'gentle_stretch'];
+      if (lowRiskList.includes(act.id)) {
+        riskScore = 3;
+      } else {
+        riskScore = 1;
+      }
+    }
+
+    // 4. Baby Intent Match (Weight: 6)
+    if (isBabyActive) {
+      const babyList = ['baby_mood', 'new_baby_interaction_ideas'];
+      if (babyList.includes(act.id)) {
+        babyScore = 6;
+      }
+    }
+
+    // 5. User Preferences Match (Weight: 4)
+    if (preferredActivities && preferredActivities.includes(act.id)) {
+      preferenceScore = 4;
+    }
+
+    // 6. Previous Activity History (Repetition Penalty: -5)
+    if (completedActivities && completedActivities.includes(act.id)) {
+      historyPenalty = -5;
+    }
+
+    const score = reasonScore + emotionScore + riskScore + babyScore + preferenceScore + historyPenalty;
+
+    return {
+      ...act,
+      score,
+      scoreBreakdown: {
+        reason: reasonScore,
+        emotion: emotionScore,
+        risk: riskScore,
+        babyIntent: babyScore,
+        preference: preferenceScore,
+        historyPenalty
+      }
+    };
+  });
+
+  // Sort by score descending
+  ranked.sort((a, b) => b.score - a.score);
+
+  // Return top 4
+  return ranked.slice(0, 4);
 };
