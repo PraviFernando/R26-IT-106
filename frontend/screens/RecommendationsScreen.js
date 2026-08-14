@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
-import { ALL_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule } from '../services/activitiesLibrary';
+import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule } from '../services/activitiesLibrary';
 import { getPersonalizedRecommendations } from '../services/emotionEngine';
 import { MUSIC_LIBRARY, VIDEO_LIBRARY } from '../services/mediaLibrary';
 import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibrary';
@@ -196,16 +196,25 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
   // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
   const finalActivities = isSkipped ? ALL_ACTIVITIES.slice(0, 4) : rawActivities.slice(0, 4);
-  
+
+  // ── Baby Cue detection: check both activity list and intent flags ──────────
+  const isBabyFromIntents = Boolean(latestAnalysis?.intents?.baby_related);
+  const isBabyFromActivities = rawActivities.some(a => (typeof a === 'string' ? a : a?.id) === 'baby_mood');
+  const isBabyFromGames = rawGames.some(g => (typeof g === 'string' ? g : g?.id) === 'baby_mood');
+  const isBabyContext = isBabyFromIntents || isBabyFromActivities || isBabyFromGames;
+
   const recommendedGameIds = rawGames.map(g => (typeof g === 'string' ? g : g?.id)).filter(Boolean);
   let filteredGames = ALL_GAMES.filter(g => recommendedGameIds.includes(g.id));
-  if (rawActivities.some(a => (typeof a === 'string' ? a : a?.id) === 'baby_mood') && !filteredGames.some(g => g.id === 'baby_mood')) {
+
+  // Guarantee baby_mood is in the games tab whenever any baby signal is detected
+  if (isBabyContext && !filteredGames.some(g => g.id === 'baby_mood')) {
     const babyMoodGame = ALL_GAMES.find(g => g.id === 'baby_mood');
     if (babyMoodGame) {
       filteredGames = [babyMoodGame, ...filteredGames];
     }
   }
   const finalGames = isSkipped ? ALL_GAMES.slice(0, 3) : (filteredGames.length > 0 ? filteredGames.slice(0, 3) : ALL_GAMES.slice(0, 3));
+
 
   const primaryReason = activeAnalysis?.primaryReason || selReason || 'loneliness';
   const libraryMusic = MUSIC_LIBRARY[primaryReason] || MUSIC_LIBRARY.loneliness;
@@ -263,12 +272,37 @@ const RecommendationsScreen = ({ navigation, route }) => {
     return list.slice(0, 5);
   };
 
+  const SEARCH_SYNONYMS = {
+    'බබා': ['baby', 'child', 'newborn', 'ළදරුවා', 'දරුවා'],
+    'දරුවා': ['baby', 'child', 'newborn', 'ළදරුවා'],
+    'ළදරුවා': ['baby', 'child', 'newborn'],
+    'කිරි': ['feeding', 'milk', 'breastfeeding'],
+    'නින්ද': ['sleep', 'sleeping', 'rest'],
+    'උණ': ['fever', 'health', 'sick'],
+    'අඬනවා': ['crying', 'cry', 'restless'],
+    'මහන්සියි': ['fatigue', 'tired', 'rest'],
+    'තනිකම': ['loneliness', 'alone'],
+    'බයයි': ['anxiety', 'worried', 'calming'],
+  };
+
   // Search Logic with Prioritization (Topics -> Videos -> Articles -> Activities -> Music -> Podcasts)
   const getSearchResults = () => {
     if (!searchQuery.trim()) return null;
     const q = searchQuery.toLowerCase().trim();
 
-    const matchesQuery = (str) => str && str.toLowerCase().includes(q);
+    let searchTerms = [q];
+    Object.entries(SEARCH_SYNONYMS).forEach(([key, synonyms]) => {
+      if (q.includes(key) || synonyms.some(s => q.includes(s))) {
+        searchTerms.push(key);
+        searchTerms = searchTerms.concat(synonyms);
+      }
+    });
+
+    const matchesQuery = (str) => {
+      if (!str || typeof str !== 'string') return false;
+      const s = str.toLowerCase();
+      return searchTerms.some(term => s.includes(term));
+    };
 
     // 1. Knowledge & Baby Care Articles
     const kbMatches = KNOWLEDGE_RESOURCES.filter(r => matchesQuery(r.title) || matchesQuery(r.description) || matchesQuery(r.subCategory) || r.tags?.some(matchesQuery));
@@ -417,7 +451,14 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   <View>
                     <Text style={s.tabIntro}>ඔබ වෙනුවෙන් තෝරාගත් ක්‍රියාකාරකම් 🧘 (උපරිම 4)</Text>
                     {finalActivities.map((act, idx) => {
-                      const actId = typeof act === 'string' ? act : act?.id;
+                      const rawId = typeof act === 'string' ? act : act?.id;
+                      const actId = (rawId === 'baby_bonding' || rawId === 'baby_mood') ? 'baby_mood' : rawId;
+                      const actObj = (typeof act === 'object' && act?.label && act?.id !== 'baby_bonding')
+                        ? act
+                        : (NEW_ACTIVITIES.find(a => a.id === actId) ||
+                           ALL_ACTIVITIES.find(a => a.id === actId) ||
+                           ALL_GAMES.find(g => g.id === actId) ||
+                           { id: actId, icon: '👶', label: 'ළදරු හැඟීම', desc: 'ඔබේ බබා පෙන්වන විවිධ සංඥා හඳුනාගැනීම', color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17' });
                       return (
                         <TouchableOpacity
                           key={actId || idx}
@@ -430,11 +471,11 @@ const RecommendationsScreen = ({ navigation, route }) => {
                           }}
                           style={s.actCard}
                         >
-                          <LinearGradient colors={act.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
-                            <Text style={s.actIcon}>{act.icon || '🌸'}</Text>
+                          <LinearGradient colors={actObj.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
+                            <Text style={s.actIcon}>{actObj.icon || '🌸'}</Text>
                             <View style={s.actInfo}>
-                              <Text style={[s.actTitle, { color: act.accent || '#7E57C2' }]}>{act.label || act}</Text>
-                              <Text style={s.actDesc}>{act.purpose || act.desc || 'සන්සුන් ක්‍රියාකාරකමක්'}</Text>
+                              <Text style={[s.actTitle, { color: actObj.accent || '#7E57C2' }]}>{actObj.label || actId}</Text>
+                              <Text style={s.actDesc}>{actObj.purpose || actObj.desc || 'සන්සුන් ක්‍රියාකාරකමක්'}</Text>
                             </View>
                           </LinearGradient>
                         </TouchableOpacity>
