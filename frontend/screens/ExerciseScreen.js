@@ -740,99 +740,105 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
             <Modal visible={videoModal} transparent animationType="slide" onRequestClose={handleCloseVideoModal}>
                 <View style={styles.modalOverlay}>
                     <View style={styles.videoModalContent}>
-                        <View style={styles.modalTitleContainer}>
-                            <Text style={styles.modalTitleText}>
-                                {isSinhala
-                                    ? '✨ වීඩියෝව නරඹන අතරතුර, මෙම කාල ගණකය මඟින් ඔබේ ව්‍යායාම කාලයද පහසුවෙන්ම මැන ගන්න!'
-                                    : '✨ Don\'t just watch! Track your actual exercise duration simultaneously using the stopwatch!'}
-                            </Text>
-                        </View>
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={styles.modalScrollContent}
+                            style={{ width: '100%' }}
+                        >
+                            <View style={styles.modalTitleContainer}>
+                                <Text style={styles.modalTitleText}>
+                                    {isSinhala
+                                        ? '✨ වීඩියෝව නරඹන අතරතුර, මෙම කාල ගණකය මඟින් ඔබේ ව්‍යායාම කාලයද පහසුවෙන්ම මැන ගන්න!'
+                                        : '✨ Don\'t just watch! Track your actual exercise duration simultaneously using the stopwatch!'}
+                                </Text>
+                            </View>
 
-                        {selectedVideo && (
-                            <View style={styles.modalSplitRow}>
-                                <View style={styles.modalLeftColumn}>
-                                    {(selectedVideo.url.includes('youtube') || selectedVideo.url.includes('youtu.be')) ? (
-                                        <YouTubePlayer
-                                            url={selectedVideo.url}
-                                            duration={duration}
-                                            style={styles.videoPlayer}
-                                            onProgress={(percentage) => {
-                                                setWatchPercentage(percentage);
-                                                if (onProgressUpdate) {
-                                                    onProgressUpdate(exercise, percentage);
-                                                }
-                                            }}
-                                        />
-                                    ) : (
-                                        <Video
-                                            ref={videoRef}
-                                            source={{ uri: selectedVideo.url }}
-                                            rate={1.0}
-                                            volume={1.0}
-                                            isMuted={false}
-                                            shouldPlay={videoPlaying}
-                                            useNativeControls
-                                            resizeMode={ResizeMode.CONTAIN}
-                                            style={styles.videoPlayer}
-                                        />
-                                    )}
-                                </View>
+                            {selectedVideo && (
+                                <View style={styles.modalSplitRow}>
+                                    <View style={styles.modalLeftColumn}>
+                                        {(selectedVideo.url.includes('youtube') || selectedVideo.url.includes('youtu.be')) ? (
+                                            <YouTubePlayer
+                                                url={selectedVideo.url}
+                                                duration={duration}
+                                                style={styles.videoPlayer}
+                                                onProgress={(percentage) => {
+                                                    setWatchPercentage(percentage);
+                                                    if (onProgressUpdate) {
+                                                        onProgressUpdate(exercise, percentage);
+                                                    }
+                                                }}
+                                            />
+                                        ) : (
+                                            <Video
+                                                ref={videoRef}
+                                                source={{ uri: selectedVideo.url }}
+                                                rate={1.0}
+                                                volume={1.0}
+                                                isMuted={false}
+                                                shouldPlay={videoPlaying}
+                                                useNativeControls
+                                                resizeMode={ResizeMode.CONTAIN}
+                                                style={styles.videoPlayer}
+                                            />
+                                        )}
+                                    </View>
 
-                                <View style={styles.modalRightColumn}>
-                                    {/* Stopwatch UI */}
-                                    <View style={styles.stopwatchContainer}>
-                                        <Text style={styles.stopwatchLabel}>{isSinhala ? '⏱️ කාල ගණකය' : '⏱️ Stopwatch'}</Text>
-                                        <Text style={styles.stopwatchDisplay}>{formatTime(stopwatchTime)}</Text>
-                                        <View style={styles.stopwatchRow}>
-                                            <View style={styles.controlBtnWrapper}>
-                                                {!isStopwatchRunning ? (
-                                                    <TouchableOpacity style={[styles.controlCircleBtn, { backgroundColor: '#E8F5E9' }]} onPress={startStopwatch}>
-                                                        <View style={{
-                                                            width: 0,
-                                                            height: 0,
-                                                            backgroundColor: 'transparent',
-                                                            borderStyle: 'solid',
-                                                            borderLeftWidth: 16,
-                                                            borderRightWidth: 0,
-                                                            borderBottomWidth: 10,
-                                                            borderTopWidth: 10,
-                                                            borderLeftColor: '#2E7D32',
-                                                            borderRightColor: 'transparent',
-                                                            borderBottomColor: 'transparent',
-                                                            borderTopColor: 'transparent',
-                                                            marginLeft: 4,
-                                                        }} />
+                                    <View style={styles.modalRightColumn}>
+                                        {/* Stopwatch UI */}
+                                        <View style={styles.stopwatchContainer}>
+                                            <Text style={styles.stopwatchLabel}>{isSinhala ? '⏱️ කාල ගණකය' : '⏱️ Stopwatch'}</Text>
+                                            <Text style={styles.stopwatchDisplay}>{formatTime(stopwatchTime)}</Text>
+                                            <View style={styles.stopwatchRow}>
+                                                <View style={styles.controlBtnWrapper}>
+                                                    {!isStopwatchRunning ? (
+                                                        <TouchableOpacity style={[styles.controlCircleBtn, { backgroundColor: '#E8F5E9' }]} onPress={startStopwatch}>
+                                                            <View style={{
+                                                                width: 0,
+                                                                height: 0,
+                                                                backgroundColor: 'transparent',
+                                                                borderStyle: 'solid',
+                                                                borderLeftWidth: 16,
+                                                                borderRightWidth: 0,
+                                                                borderBottomWidth: 10,
+                                                                borderTopWidth: 10,
+                                                                borderLeftColor: '#2E7D32',
+                                                                borderRightColor: 'transparent',
+                                                                borderBottomColor: 'transparent',
+                                                                borderTopColor: 'transparent',
+                                                                marginLeft: 4,
+                                                            }} />
+                                                        </TouchableOpacity>
+                                                    ) : (
+                                                        <TouchableOpacity style={[styles.controlCircleBtn, { backgroundColor: '#FFF3E0' }]} onPress={pauseStopwatch}>
+                                                            <View style={{ flexDirection: 'row', gap: 6 }}>
+                                                                <View style={{ width: 6, height: 20, backgroundColor: '#EF6C00', borderRadius: 2 }} />
+                                                                <View style={{ width: 6, height: 20, backgroundColor: '#EF6C00', borderRadius: 2 }} />
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    )}
+                                                    <Text style={styles.controlLabelText}>
+                                                        {!isStopwatchRunning ? (isSinhala ? 'ආරම්භ කරන්න' : 'Start') : (isSinhala ? 'නවතන්න' : 'Pause')}
+                                                    </Text>
+                                                </View>
+
+                                                <View style={styles.controlBtnWrapper}>
+                                                    <TouchableOpacity style={[styles.controlCircleBtn, { backgroundColor: '#FFEBEE' }]} onPress={stopStopwatch}>
+                                                        <View style={{ width: 18, height: 18, backgroundColor: '#C62828', borderRadius: 4 }} />
                                                     </TouchableOpacity>
-                                                ) : (
-                                                    <TouchableOpacity style={[styles.controlCircleBtn, { backgroundColor: '#FFF3E0' }]} onPress={pauseStopwatch}>
-                                                        <View style={{ flexDirection: 'row', gap: 6 }}>
-                                                            <View style={{ width: 6, height: 20, backgroundColor: '#EF6C00', borderRadius: 2 }} />
-                                                            <View style={{ width: 6, height: 20, backgroundColor: '#EF6C00', borderRadius: 2 }} />
-                                                        </View>
-                                                    </TouchableOpacity>
-                                                )}
-                                                <Text style={styles.controlLabelText}>
-                                                    {!isStopwatchRunning ? (isSinhala ? 'ආරම්භ කරන්න' : 'Start') : (isSinhala ? 'නවතන්න' : 'Pause')}
-                                                </Text>
-                                            </View>
-
-                                            <View style={styles.controlBtnWrapper}>
-                                                <TouchableOpacity style={[styles.controlCircleBtn, { backgroundColor: '#FFEBEE' }]} onPress={stopStopwatch}>
-                                                    <View style={{ width: 18, height: 18, backgroundColor: '#C62828', borderRadius: 4 }} />
-                                                </TouchableOpacity>
-                                                <Text style={styles.controlLabelText}>
-                                                    {isSinhala ? 'පිටවෙන්න' : 'Quit'}
-                                                </Text>
+                                                    <Text style={styles.controlLabelText}>
+                                                        {isSinhala ? 'පිටවෙන්න' : 'Quit'}
+                                                    </Text>
+                                                </View>
                                             </View>
                                         </View>
                                     </View>
                                 </View>
-                            </View>
-                        )}
+                            )}
 
-                        <TouchableOpacity style={styles.modalCloseBtn} onPress={handleCloseVideoModal}>
-                            <Text style={styles.modalCloseText}>{t('Close')}</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity style={styles.modalCloseBtn} onPress={handleCloseVideoModal}>
+                                <Text style={styles.modalCloseText}>{t('Close')}</Text>
+                            </TouchableOpacity>
+                        </ScrollView>
                     </View>
                 </View>
             </Modal>
@@ -1774,11 +1780,16 @@ const styles = StyleSheet.create({
 
     // Video modal
     videoModalContent: {
-        backgroundColor: '#FFF', borderRadius: 0, padding: 24,
-        width: '100%', height: '100%', maxHeight: '100%', alignItems: 'center',
-        justifyContent: 'center',
+        backgroundColor: '#FFF', borderRadius: 0,
+        width: '100%', height: '100%', maxHeight: '100%',
         elevation: 8, shadowColor: '#7C3AED', shadowOpacity: 0.1,
         shadowRadius: 24, shadowOffset: { width: 0, height: 12 },
+    },
+    modalScrollContent: {
+        padding: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexGrow: 1,
     },
     modalTitleContainer: {
         backgroundColor: '#F5F3FF',
