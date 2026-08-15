@@ -203,7 +203,7 @@ export default function BabyDevelopmentScreen({ navigation }) {
                     <View style={styles.headerCenter}>
                         <Text style={styles.headerEmoji}>👶</Text>
                         <Text style={styles.headerTitle}>
-                            ළදරු සංවර්ධනය සහ චලනය
+                            {isSinhala ? 'ළදරු සංවර්ධනය සහ චලනය' : 'Baby Development & Movement'}
                         </Text>
                     </View>
                     <View style={styles.backBtnPlaceholder} />
@@ -213,34 +213,30 @@ export default function BabyDevelopmentScreen({ navigation }) {
                     <View style={styles.listHeader}>
                         {/* Subtitle */}
                         <Text style={styles.subtitle}>
-                            ඔබේ බිළිඳාගේ මුල් චලනයන් සහ සංවර්ධනය සඳහා මෘදු ක්‍රියාකාරකම්.
+                            {isSinhala 
+                                ? 'ඔබේ බිළිඳාගේ මුල් චලනයන් සහ සංවර්ධනය සඳහා මෘදු ක්‍රියාකාරකම්.' 
+                                : 'Gentle activities for your baby\'s early movements and development.'}
                         </Text>
 
                         {/* Safety Disclaimer */}
                         <View style={styles.safetyBox}>
                             <View style={styles.safetyTitleRow}>
                                 <Text style={styles.safetyEmoji}>⚠️</Text>
-                                <Text style={styles.safetyTitle}>ආරක්ෂිත දැනුම්දීම</Text>
+                                <Text style={styles.safetyTitle}>
+                                    {isSinhala ? 'ආරක්ෂිත දැනුම්දීම' : 'Safety Notice'}
+                                </Text>
                             </View>
                             <Text style={styles.safetyText}>
-                                මෙම ක්‍රියාකාරකම් සාමාන්‍ය අධ්‍යාපනික අරමුණු සඳහා වේ. සැමවිටම ඔබේ බිළිඳා දෙස බලා සිටින්න. බිළිඳා අපහසුවෙන් හෝ අසනීපයෙන් සිටී නම් නතර කරන්න.
+                                {isSinhala 
+                                    ? 'මෙම ක්‍රියාකාරකම් සාමාන්‍ය අධ්‍යාපනික අරමුණු සඳහා වේ. සැමවිටම ඔබේ බිළිඳා දෙස බලා සිටින්න. බිළිඳා අපහසුවෙන් හෝ අසනීපයෙන් සිටී නම් නතර කරන්න.' 
+                                    : 'These activities are for general educational purposes only. Always supervise your baby. Stop if baby is fussy or unwell.'}
                             </Text>
                         </View>
 
-                        {/* Search */}
-                        <View style={styles.searchBox}>
-                            <Text style={styles.searchIcon}>🔍</Text>
-                            <TextInput
-                                style={styles.searchInput}
-                                placeholder="ළදරු ක්‍රියාකාරකම් සොයන්න..."
-                                value={search}
-                                onChangeText={setSearch}
-                                placeholderTextColor={COLORS.textLight}
-                            />
-                        </View>
+
 
                         {/* Categories */}
-                        <Text style={styles.sectionLabel}>කාණ්ඩ</Text>
+                        <Text style={styles.sectionLabel}>{isSinhala ? 'කාණ්ඩ' : 'Categories'}</Text>
                         <View style={styles.categoriesGrid}>
                             {CATEGORIES.map((cat) => {
                                 const active = selectedCategory === cat.key;
@@ -261,12 +257,28 @@ export default function BabyDevelopmentScreen({ navigation }) {
                                         >
                                             <Text style={styles.categoryIcon}>{cat.icon}</Text>
                                             <Text style={[styles.categoryName, active && styles.categoryNameActive]}>
-                                                {cat.nameSi}
+                                                {isSinhala ? cat.nameSi : cat.name}
                                             </Text>
                                         </LinearGradient>
                                     </TouchableOpacity>
                                 );
                             })}
+                        </View>
+
+                        {/* Sweet Developmental Quote below categories */}
+                        <View style={{ marginTop: 24 }}>
+                            <LinearGradient
+                                colors={['#FFF0F3', '#FFF5F7']}
+                                style={styles.quoteCard}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                            >
+                                <Text style={styles.quoteText}>
+                                    {isSinhala 
+                                        ? "සෑම සන්ධිස්ථානයක්ම ආදරයෙන් වැළඳගන්න, දිනෙන් දින ප්‍රීතිමත්ව වැඩෙන්න! 🌱💕" 
+                                        : "Cherishing every milestone, growing stronger and happier day by day! 🌱💕"}
+                                </Text>
+                            </LinearGradient>
                         </View>
                     </View>
                 </ScrollView>
@@ -440,4 +452,21 @@ const styles = StyleSheet.create({
     emptyEmoji: { fontSize: 52, marginBottom: 16 },
     emptyText: { fontSize: 16, fontWeight: '800', color: COLORS.text, marginBottom: 8, textAlign: 'center' },
     emptySub: { fontSize: 13, color: COLORS.textLight, textAlign: 'center', lineHeight: 20 },
+    quoteCard: {
+        backgroundColor: '#FFF0F3',
+        padding: 14,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: 'rgba(236,72,153,0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    quoteText: {
+        fontSize: 12.5,
+        color: '#EC4899',
+        fontStyle: 'italic',
+        textAlign: 'center',
+        lineHeight: 18,
+        fontWeight: '700',
+    },
 });

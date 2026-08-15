@@ -17,9 +17,8 @@ i18n
     .use(initReactI18next)        // Pass i18n instance to react-i18next
     .init({
         resources,
-        lng: 'si',                // Force Sinhala
-        fallbackLng: 'si',        // Default language if detection fails
-        supportedLngs: ['si'],    // Restrict to Sinhala only
+        fallbackLng: 'en',        // Default language if detection fails
+        supportedLngs: ['en', 'si'],    // Restrict to English and Sinhala
 
         interpolation: {
             escapeValue: false,   // React already escapes by default

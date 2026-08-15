@@ -90,6 +90,73 @@ export default function BabyCategoryScreen({ route, navigation }) {
 
     const displayName = isSinhala ? (categoryNameSi || categoryName) : categoryName;
 
+    const getCategoryQuote = (key) => {
+        const quotes = {
+            'tummy_time': {
+                en: "Every minute of tummy time builds the strength to reach for the stars! 🌟",
+                si: "පොඩ්ඩගේ සෑම ටමි ටයිම් විනාඩියක්ම, හෙට ලෝකය ජය ගන්නට ශක්තියක් වේ! 🌟"
+            },
+            'leg_movement': {
+                en: "Kick, wiggle, and play—small steps lead to great adventures! 🦵💕",
+                si: "කකුල් සලමින් කරන පුංචි සෙල්ලම්, හෙට දිනේ ලොකු ගමනකට පාර කියයි! 🦵💕"
+            },
+            'reaching_grasping': {
+                en: "Reaching out is your baby's way of saying: 'I am ready to hold the world!' ✋🌸",
+                si: "පුංචි අත දිගු කිරීම්, හෙට ලෝකය අල්ලන්නට කරන සුන්දර පෙරහුරුවකි! ✋🌸"
+            },
+            'rolling_positioning': {
+                en: "Roll over, little explorer! A brand new perspective awaits you. 🔄✨",
+                si: "පෙරළී බලන්න පුංචි පැටියෝ, අලුත් අපූරු ලෝකයක් ඔබට මග බලා සිටී. 🔄✨"
+            },
+            'gentle_arm': {
+                en: "Waving hands and soft movements—growing and learning day by day. 🤲🌱",
+                si: "පුංචි දෑත් සලමින් කරන චලන, දිනෙන් දින පොඩ්ඩගේ වැඩීමට උපකාරී වේ. 🤲🌱"
+            }
+        };
+
+        const q = quotes[key] || {
+            en: "Cherishing every milestone, growing stronger and happier day by day! 🌱💕",
+            si: "සෑම සන්ධිස්ථානයක්ම ආදරයෙන් වැළඳගන්න, දිනෙන් දින ප්‍රීතිමත්ව වැඩෙන්න! 🌱💕"
+        };
+        return isSinhala ? q.si : q.en;
+    };
+
+    const getCategoryQuoteTheme = (key) => {
+        const themes = {
+            'tummy_time': {
+                bg: ['#FFE4F0', '#FFF0F7'],
+                text: '#DB2777',
+                border: 'rgba(219,39,119,0.15)'
+            },
+            'leg_movement': {
+                bg: ['#E0F2FE', '#F0F9FF'],
+                text: '#0369A1',
+                border: 'rgba(3,105,161,0.15)'
+            },
+            'reaching_grasping': {
+                bg: ['#FEF9C3', '#FEFCE8'],
+                text: '#A16207',
+                border: 'rgba(161,98,7,0.15)'
+            },
+            'rolling_positioning': {
+                bg: ['#ECFDF5', '#F0FDF4'],
+                text: '#047857',
+                border: 'rgba(4,120,87,0.15)'
+            },
+            'gentle_arm': {
+                bg: ['#F5F3FF', '#FAF5FF'],
+                text: '#6D28D9',
+                border: 'rgba(109,40,217,0.15)'
+            }
+        };
+
+        return themes[key] || {
+            bg: ['#FFF0F3', '#FFF5F7'],
+            text: '#EC4899',
+            border: 'rgba(236,72,153,0.15)'
+        };
+    };
+
     const [search, setSearch] = useState('');
     const [ageFilter, setAgeFilter] = useState(() => getInitialAgeFilter(user?.deliveryDate));
     const [babyAgeFilter, setBabyAgeFilter] = useState(null);
@@ -160,9 +227,7 @@ export default function BabyCategoryScreen({ route, navigation }) {
 
                     <View style={styles.cardDetailsRow}>
                         <View style={styles.cardTextContainer}>
-                            <Text style={styles.videoTitle} numberOfLines={2}>
-                                {title}
-                            </Text>
+
                             <Text style={styles.videoStats}>
                                 {isSinhala ? 'ළදරු සංවර්ධනය' : 'Baby Development'} • {age}
                             </Text>
@@ -202,46 +267,20 @@ export default function BabyCategoryScreen({ route, navigation }) {
 
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
                     <View style={styles.listHeader}>
-                        {/* Search */}
-                        <View style={styles.searchBox}>
-                            <Text style={styles.searchIcon}>🔍</Text>
-                            <TextInput
-                                style={styles.searchInput}
-                                placeholder={isSinhala ? 'ක්‍රියාකාරකම් සොයන්න...' : 'Search activities...'}
-                                value={search}
-                                onChangeText={setSearch}
-                                placeholderTextColor={COLORS.textLight}
-                            />
-                            {search !== '' && (
-                                <TouchableOpacity onPress={() => setSearch('')} style={styles.clearBtn}>
-                                    <Text style={styles.clearIcon}>✖</Text>
-                                </TouchableOpacity>
-                            )}
+                        {/* Safety Disclaimer */}
+                        <View style={styles.safetyBox}>
+                            <View style={styles.safetyTitleRow}>
+                                <Text style={styles.safetyEmoji}>⚠️</Text>
+                                <Text style={styles.safetyTitle}>
+                                    {isSinhala ? 'ආරක්ෂිත දැනුම්දීම' : 'Safety Notice'}
+                                </Text>
+                            </View>
+                            <Text style={styles.safetyText}>
+                                {isSinhala
+                                    ? 'මෙම ක්‍රියාකාරකම් සාමාන්‍ය අධ්‍යාපනික අරමුණු සඳහා වේ. සැමවිටම ඔබේ බිළිඳා දෙස බලා සිටින්න. බිළිඳා අපහසුවෙන් හෝ අසනීපයෙන් සිටී නම් නතර කරන්න.'
+                                    : 'These activities are for general educational purposes only. Always supervise your baby. Stop if baby is fussy or unwell.'}
+                            </Text>
                         </View>
-
-                        {/* Horizontally scrollable Category Chips */}
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            style={styles.chipsContainer}
-                            contentContainerStyle={styles.chipsScrollContent}
-                        >
-                            {AGE_STAGES.map((stage) => {
-                                const active = ageFilter === stage.key;
-                                return (
-                                    <TouchableOpacity
-                                        key={stage.key}
-                                        style={[styles.chip, active && styles.chipActive]}
-                                        onPress={() => setAgeFilter(stage.key)}
-                                        activeOpacity={0.8}
-                                    >
-                                        <Text style={[styles.chipText, active && styles.chipTextActive]}>
-                                            {isSinhala ? stage.labelSi : stage.labelEn}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </ScrollView>
 
                         <Text style={styles.sectionLabel}>
                             {isSinhala ? 'වීඩියෝ සහ ක්‍රියාකාරකම්' : 'Videos & Activities'}
@@ -273,6 +312,23 @@ export default function BabyCategoryScreen({ route, navigation }) {
                             </Text>
                         </View>
                     )}
+
+                    {/* Sweet Developmental Quote below videos */}
+                    <View style={{ paddingHorizontal: 16, marginTop: 16 }}>
+                        <LinearGradient
+                            colors={getCategoryQuoteTheme(categoryKey).bg}
+                            style={[
+                                styles.quoteCard,
+                                { borderColor: getCategoryQuoteTheme(categoryKey).border }
+                            ]}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 1 }}
+                        >
+                            <Text style={[styles.quoteText, { color: getCategoryQuoteTheme(categoryKey).text }]}>
+                                {getCategoryQuote(categoryKey)}
+                            </Text>
+                        </LinearGradient>
+                    </View>
                 </ScrollView>
             </LinearGradient>
         </SafeAreaView>
@@ -424,4 +480,35 @@ const styles = StyleSheet.create({
     emptyEmoji: { fontSize: 52, marginBottom: 16 },
     emptyText: { fontSize: 16, fontWeight: '800', color: COLORS.text, marginBottom: 8, textAlign: 'center' },
     emptySub: { fontSize: 13, color: COLORS.textLight, textAlign: 'center', lineHeight: 20 },
+    quoteCard: {
+        backgroundColor: '#FFF0F3',
+        padding: 14,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: 'rgba(236,72,153,0.1)',
+        marginBottom: 16,
+        marginTop: 6,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    quoteText: {
+        fontSize: 12.5,
+        color: '#EC4899',
+        fontStyle: 'italic',
+        textAlign: 'center',
+        lineHeight: 18,
+        fontWeight: '700',
+    },
+    safetyBox: {
+        backgroundColor: '#FFF1F2',
+        borderRadius: 20,
+        padding: 18,
+        borderWidth: 1.5,
+        borderColor: '#FFE4E6',
+        marginBottom: 20,
+    },
+    safetyTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+    safetyEmoji: { fontSize: 16 },
+    safetyTitle: { fontSize: 14, fontWeight: '800', color: '#E11D48' },
+    safetyText: { fontSize: 12, color: '#9F1239', lineHeight: 19 },
 });

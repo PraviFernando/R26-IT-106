@@ -604,30 +604,30 @@ export default function DashboardScreen({ navigation }) {
                 {/* ── Consistency & Recovery Trends ── */}
                 {progressStats && (
                     <View style={styles.card}>
-                        <Text style={styles.cardTitle}>🏃‍♀️ Consistency & Recovery Trends</Text>
+                        <Text style={styles.cardTitle}>🏃‍♀️ {t('Consistency & Recovery Trends')}</Text>
                         <View style={[styles.statsGrid, { marginVertical: 8 }]}>
                             <View style={[styles.dashboardMetricBox, { borderLeftColor: '#FF9A9E' }]}>
-                                <Text style={styles.dashboardMetricVal}>{progressStats.currentStreak} Days</Text>
-                                <Text style={styles.dashboardMetricLabel}>🔥 Current Streak</Text>
+                                <Text style={styles.dashboardMetricVal}>{progressStats.currentStreak} {t('Days')}</Text>
+                                <Text style={styles.dashboardMetricLabel}>🔥 {t('Current Streak')}</Text>
                             </View>
                             <View style={[styles.dashboardMetricBox, { borderLeftColor: '#F59E0B' }]}>
                                 <Text style={styles.dashboardMetricVal}>{progressStats.missedSessions ?? 0}</Text>
-                                <Text style={styles.dashboardMetricLabel}>⚠️ Missed Sessions</Text>
+                                <Text style={styles.dashboardMetricLabel}>⚠️ {t('Missed Sessions')}</Text>
                             </View>
                             <View style={[styles.dashboardMetricBox, { borderLeftColor: '#10B981' }]}>
                                 <Text style={styles.dashboardMetricVal}>{progressStats.weeklyCompletionRate ?? 0}%</Text>
-                                <Text style={styles.dashboardMetricLabel}>📊 Weekly Rate</Text>
+                                <Text style={styles.dashboardMetricLabel}>📊 {t('Weekly Rate')}</Text>
                             </View>
                             <View style={[styles.dashboardMetricBox, { borderLeftColor: '#7C3AED' }]}>
                                 <Text style={styles.dashboardMetricVal}>{progressStats.averageDuration ?? 0}m</Text>
-                                <Text style={styles.dashboardMetricLabel}>⏱️ Avg Duration</Text>
+                                <Text style={styles.dashboardMetricLabel}>⏱️ {t('Avg Duration')}</Text>
                             </View>
                         </View>
                         
                         {progressStats.recoveryTrend && (
                             <View style={styles.trendContainer}>
-                                <Text style={styles.trendTitle}>🩺 Recovery Trend Analysis</Text>
-                                <Text style={styles.trendText}>{progressStats.recoveryTrend}</Text>
+                                <Text style={styles.trendTitle}>🩺 {t('Recovery Trend Analysis')}</Text>
+                                <Text style={styles.trendText}>{t(progressStats.recoveryTrend)}</Text>
                             </View>
                         )}
                     </View>

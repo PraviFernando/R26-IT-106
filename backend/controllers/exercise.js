@@ -560,13 +560,13 @@ const getProgress = async (req, res, next) => {
         }
 
         // Weekly participation percentage
-        const weeklyCompleted = completedRecords.filter(r => {
+        const weeklyCompletedDays = new Set(completedRecords.filter(r => {
             const rDate = new Date(r.date);
             const diffTime = Math.abs(today - rDate);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return diffDays <= 7;
-        }).length;
-        const weeklyCompletionRate = Math.round((weeklyCompleted / 7) * 100);
+        }).map(r => r.date)).size;
+        const weeklyCompletionRate = Math.min(100, Math.round((weeklyCompletedDays / 7) * 100));
 
         // Average exercise duration
         const totalDuration = completedRecords.reduce((sum, r) => sum + (r.actualDuration || r.durationCompleted || 0), 0);
@@ -583,7 +583,7 @@ const getProgress = async (req, res, next) => {
         }).sort({ date: 1 });
 
         let recoveryTrend = "No data yet to detect recovery trend. Keep logging daily health inputs.";
-        if (healthRecords.length >= 3) {
+        if (completedRecords.length > 0 && healthRecords.length >= 3) {
             const firstThird = healthRecords.slice(0, Math.ceil(healthRecords.length / 3));
             const lastThird = healthRecords.slice(-Math.ceil(healthRecords.length / 3));
 
@@ -607,10 +607,33 @@ const getProgress = async (req, res, next) => {
             }
         }
 
-        const progressData = completedRecords.map(r => ({
-            date: r.date,
-            avgAccuracy: r.accuracy || 80
-        }));
+        const progressData = completedRecords.map(r => {
+            // Dynamic progress score based on accuracy (if video was analyzed), stopwatch time (adherence), and feedback
+            let score = r.accuracy;
+            
+            if (!score) {
+                // If no video accuracy, use the stopwatch adherence score
+                score = r.adherenceScore || 0;
+                // If adherence is still 0 but exercise is completed, default to 100
+                if (score === 0) score = 100;
+            }
+            
+            // Adjust based on feedback (pain, difficulty, feeling after)
+            if (r.pain === 'Yes') {
+                score = Math.max(20, score - 15); // pain penalty
+            }
+            if (r.difficulty === 'Hard') {
+                score = Math.max(20, score - 10); // difficulty adjustment
+            }
+            if (r.feelingAfter === 'Good' || r.feelingAfter === 'Excellent') {
+                score = Math.min(100, score + 5); // feeling after bonus
+            }
+            
+            return {
+                date: r.date,
+                avgAccuracy: Math.min(100, Math.max(0, Math.round(score)))
+            };
+        });
 
         res.json({
             progressData,

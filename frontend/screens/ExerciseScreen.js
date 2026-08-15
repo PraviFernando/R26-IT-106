@@ -22,6 +22,19 @@ const todayStr = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+const getTranslatedFeedback = (feedback, isSinhala) => {
+    if (!feedback) return '';
+    if (!isSinhala) return feedback;
+
+    const translations = {
+        "You felt pain during exercise. Please rest. Tomorrow's exercises will be adjusted to lower intensity.": "ව්‍යායාම අතරතුර ඔබට වේදනාවක් දැනුණි. කරුණාකර විවේක ගන්න. හෙට දින ව්‍යායාම අඩු තීව්‍රතාවයකට සකස් කරනු ඇත.",
+        "You may be experiencing fatigue. Tomorrow’s exercises will be adjusted to lower intensity.": "ඔබට තෙහෙට්ටුවක් දැනෙන්නට පුළුවන. හෙට දින ව්‍යායාම අඩු තීව්‍රතාවයකට සකස් කරනු ඇත.",
+        "Excellent progress. You may continue with the current exercise plan.": "විශිෂ්ට ප්‍රගතියක්. ඔබට වත්මන් ව්‍යායාම සැලැස්ම සමඟ දිගටම කටයුතු කළ හැකිය."
+    };
+
+    return translations[feedback.trim()] || feedback;
+};
+
 // YouTube Player Component
 const YouTubePlayer = ({ url, duration, style, onProgress }) => {
     const { t } = useTranslation();
@@ -234,7 +247,8 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
 
 // Health Data Input Component
 const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isSinhala = i18n.language === 'si';
 
     const [deliveryDate, setDeliveryDate] = useState(user?.deliveryDate || '');
     const [weeks, setWeeks] = useState(initialData?.weeksAfterDelivery || '');
@@ -284,7 +298,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
     const handleSubmit = () => {
         if (!weeks) {
-            Toast.show({ type: 'error', text1: t('Please enter weeks after delivery') });
+            Toast.show({ type: 'error', text1: isSinhala ? 'කරුණාකර ප්‍රසූතියෙන් පසු ගතවූ සති ගණන ඇතුළත් කරන්න' : 'Please enter weeks after delivery' });
             return;
         }
         onSubmit({
@@ -311,26 +325,26 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                 <Text style={styles.formHeaderEmoji}>🩺</Text>
                 <View style={{ flex: 1 }}>
                     <Text style={styles.formTitle}>
-                        අද දින සෞඛ්‍ය තත්ත්වය
+                        {isSinhala ? 'අද දින සෞඛ්‍ය තත්ත්වය' : "Today's Health Status"}
                     </Text>
                     <Text style={styles.formSubtitle}>
-                        ඔබට වඩාත් ගැලපෙන ව්‍යායාම සැලසුම් කිරීමට උදවු වන්න
+                        {isSinhala ? 'ඔබට වඩාත් ගැලපෙන ව්‍යායාම සැලසුම් කිරීමට උදවු වන්න' : 'Help us plan the exercises that suit you best'}
                     </Text>
                 </View>
             </View>
 
             {/* Section: Delivery Info */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>📅 දරු ප්‍රසූතිය පිළිබඳ තොරතුරු</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? '📅 දරු ප්‍රසූතිය පිළිබඳ තොරතුරු' : '📅 Delivery Information'}</Text>
 
                 {(!user?.deliveryDate) && (
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>
-                            දරු ප්‍රසූත දිනය (YYYY-MM-DD)
+                            {isSinhala ? 'දරු ප්‍රසූත දිනය (YYYY-MM-DD)' : 'Delivery Date (YYYY-MM-DD)'}
                         </Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="උදා: 2024-05-10"
+                            placeholder={isSinhala ? 'උදා: 2024-05-10' : 'e.g. 2024-05-10'}
                             value={deliveryDate}
                             onChangeText={setDeliveryDate}
                             placeholderTextColor="#9CA3AF"
@@ -340,11 +354,11 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>
-                        දරු ප්‍රසූතියෙන් පසු ගතවූ සති ගණන
+                        {isSinhala ? 'දරු ප්‍රසූතියෙන් පසු ගතවූ සති ගණන' : 'Weeks After Delivery'}
                     </Text>
                     <TextInput
                         style={[styles.input, deliveryDate ? { backgroundColor: '#F3F4F6', color: '#6B7280' } : {}]}
-                        placeholder="උදා: 4"
+                        placeholder={isSinhala ? 'උදා: 4' : 'e.g. 4'}
                         keyboardType="numeric"
                         value={String(weeks)}
                         onChangeText={setWeeks}
@@ -354,14 +368,14 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>දරු ප්‍රසූති ක්‍රමය</Text>
+                    <Text style={styles.label}>{isSinhala ? 'දරු ප්‍රසූති ක්‍රමය' : 'Delivery Method'}</Text>
                     <View style={styles.rowButtons}>
                         <TouchableOpacity
                             style={[styles.optionBtn, deliveryType === 'normal' && styles.optionBtnActive]}
                             onPress={() => setDeliveryType('normal')}
                         >
                             <Text style={[styles.optionText, deliveryType === 'normal' && styles.optionTextActive]}>
-                                🤱 සාමාන්‍ය
+                                {isSinhala ? '🤱 සාමාන්‍ය' : '🤱 Normal'}
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -369,7 +383,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                             onPress={() => setDeliveryType('c-section')}
                         >
                             <Text style={[styles.optionText, deliveryType === 'c-section' && styles.optionTextActive]}>
-                                🏥 සිසේරියන්
+                                {isSinhala ? '🏥 සිසේරියන්' : '🏥 C-Section'}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -378,60 +392,60 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
             {/* Section: Pain Conditions */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>⚡ වේදනා තත්ත්වයන්</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? '⚡ වේදනා තත්ත්වයන්' : '⚡ Pain Conditions'}</Text>
                 <View style={styles.checkboxGroup}>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setPelvicPain(!pelvicPain)}>
                         <View style={[styles.checkbox, pelvicPain && styles.checkboxChecked]}>
                             {pelvicPain && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>ශ්‍රෝණි වේදනාව (Pelvic Pain)</Text>
+                        <Text style={styles.checkboxLabel}>{isSinhala ? 'ශ්‍රෝණි වේදනාව (Pelvic Pain)' : 'Pelvic Pain'}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setBackPain(!backPain)}>
                         <View style={[styles.checkbox, backPain && styles.checkboxChecked]}>
                             {backPain && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>කොන්දේ අමාරුව (Back Pain)</Text>
+                        <Text style={styles.checkboxLabel}>{isSinhala ? 'කොන්දේ අමාරුව (Back Pain)' : 'Back Pain'}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setAbdominalPain(!abdominalPain)}>
                         <View style={[styles.checkbox, abdominalPain && styles.checkboxChecked]}>
                             {abdominalPain && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>උදර වේදනාව (Abdominal Pain)</Text>
+                        <Text style={styles.checkboxLabel}>{isSinhala ? 'උදර වේදනාව (Abdominal Pain)' : 'Abdominal Pain'}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
 
             {/* Section: Other Health Flags */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>🚩 වෙනත් සෞඛ්‍ය ගැටළු</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? '🚩 වෙනත් සෞඛ්‍ය ගැටළු' : '🚩 Other Health Conditions'}</Text>
                 <View style={styles.checkboxGroup}>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setBleeding(!bleeding)}>
                         <View style={[styles.checkbox, bleeding && styles.checkboxChecked]}>
                             {bleeding && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>ලේ ගැලීමේ සංකූලතා</Text>
+                        <Text style={styles.checkboxLabel}>{isSinhala ? 'ලේ ගැලීමේ සංකූලතා' : 'Bleeding Complications'}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setDoctorRestrictions(!doctorRestrictions)}>
                         <View style={[styles.checkbox, doctorRestrictions && styles.checkboxChecked]}>
                             {doctorRestrictions && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>වෛද්‍ය සීමාවන්</Text>
+                        <Text style={styles.checkboxLabel}>{isSinhala ? 'වෛද්‍ය සීමාවන්' : 'Medical Restrictions'}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.checkboxRow} onPress={() => setMuscleWeakness(!muscleWeakness)}>
                         <View style={[styles.checkbox, muscleWeakness && styles.checkboxChecked]}>
                             {muscleWeakness && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
-                        <Text style={styles.checkboxLabel}>මාංශ පේෂී දුර්වලතාවය</Text>
+                        <Text style={styles.checkboxLabel}>{isSinhala ? 'මාංශ පේෂී දුර්වලතාවය' : 'Muscle Weakness'}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
 
             {/* Section: Energy & Mobility */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>⚡ ශක්තිය සහ චලන හැකියාව</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? '⚡ ශක්තිය සහ චලන හැකියාව' : '⚡ Energy & Mobility'}</Text>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>තෙහෙට්ටුව මට්ටම</Text>
+                    <Text style={styles.label}>{isSinhala ? 'තෙහෙට්ටුව මට්ටම' : 'Fatigue Level'}</Text>
                     <View style={styles.rowButtons}>
                         {['low', 'medium', 'high'].map(level => (
                             <TouchableOpacity
@@ -440,7 +454,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                                 onPress={() => setFatigue(level)}
                             >
                                 <Text style={[styles.optionText, fatigue === level && styles.optionTextActive]}>
-                                    {level === 'low' ? '😊 අඩුයි' : level === 'medium' ? '😐 මධ්‍යම' : '😩 වැඩියි'}
+                                    {level === 'low' ? (isSinhala ? '😊 අඩුයි' : '😊 Low') : level === 'medium' ? (isSinhala ? '😐 මධ්‍යම' : '😐 Medium') : (isSinhala ? '😩 වැඩියි' : '😩 High')}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -448,7 +462,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>චලන හැකියාව</Text>
+                    <Text style={styles.label}>{isSinhala ? 'චලන හැකියාව' : 'Mobility Level'}</Text>
                     <View style={styles.columnButtons}>
                         {['very_limited', 'limited', 'normal'].map(level => (
                             <TouchableOpacity
@@ -457,7 +471,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                                 onPress={() => setMobility(level)}
                             >
                                 <Text style={[styles.optionText, mobility === level && styles.optionTextActive]}>
-                                    {level === 'very_limited' ? '🦽 ඉතා සීමිතයි' : level === 'limited' ? '🚶 සීමිතයි' : '🏃 සාමාන්‍යයි'}
+                                    {level === 'very_limited' ? (isSinhala ? '🦽 ඉතා සීමිතයි' : '🦽 Very Limited') : level === 'limited' ? (isSinhala ? '🚶 සීමිතයි' : '🚶 Limited') : (isSinhala ? '🏃 සාමාන්‍යයි' : '🏃 Normal')}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -465,7 +479,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                 </View>
 
                 <View style={styles.inputGroup}>
-                    <Text style={styles.label}>ව්‍යායාම කිරීමට ඇති කැමැත්ත</Text>
+                    <Text style={styles.label}>{isSinhala ? 'ව්‍යායාම කිරීමට ඇති කැමැත්ත' : 'Willingness to Exercise'}</Text>
                     <View style={styles.rowButtons}>
                         {['low', 'medium', 'high'].map(level => (
                             <TouchableOpacity
@@ -474,7 +488,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                                 onPress={() => setWillingness(level)}
                             >
                                 <Text style={[styles.optionText, willingness === level && styles.optionTextActive]}>
-                                    {level === 'low' ? '😴 අඩුයි' : level === 'medium' ? '🙂 මධ්‍යම' : '💪 වැඩියි'}
+                                    {level === 'low' ? (isSinhala ? '😴 අඩුයි' : '😴 Low') : level === 'medium' ? (isSinhala ? '🙂 මධ්‍යම' : '🙂 Medium') : (isSinhala ? '💪 වැඩියි' : '💪 High')}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -501,7 +515,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                         <>
                             <Text style={styles.submitBtnEmoji}>✨</Text>
                             <Text style={styles.submitBtnText}>
-                                ව්‍යායාම නිර්දේශ ලබා ගන්න
+                                {isSinhala ? 'ව්‍යායාම නිර්දේශ ලබා ගන්න' : 'Get Exercise Recommendations'}
                             </Text>
                         </>
                     )}
@@ -710,13 +724,6 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
 
                     <View style={styles.cardDetailsRow}>
                         <View style={styles.cardTextContainer}>
-                            <Text style={styles.videoTitle} numberOfLines={2}>
-                                {title}
-                            </Text>
-                            <Text style={styles.videoStats}>
-                                {t('Duration')}: {String(duration).includes(':') ? duration : `${duration} ${t('min')}`}
-                                {!isYoutubeCard && details.intensity && ` • ${t('Intensity')}: ${details.intensity === 'low' ? t('Low') : details.intensity === 'medium' ? t('Medium') : t('Controlled')}`}
-                            </Text>
                         </View>
                         <View style={styles.menuContainer}>
                             {isCompleted ? (
@@ -735,8 +742,8 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                     <View style={styles.videoModalContent}>
                         <View style={styles.modalTitleContainer}>
                             <Text style={styles.modalTitleText}>
-                                {isSinhala 
-                                    ? '✨ වීඩියෝව නරඹන අතරතුර, මෙම කාල ගණකය මඟින් ඔබේ ව්‍යායාම කාලයද පහසුවෙන්ම මැන ගන්න!' 
+                                {isSinhala
+                                    ? '✨ වීඩියෝව නරඹන අතරතුර, මෙම කාල ගණකය මඟින් ඔබේ ව්‍යායාම කාලයද පහසුවෙන්ම මැන ගන්න!'
                                     : '✨ Don\'t just watch! Track your actual exercise duration simultaneously using the stopwatch!'}
                             </Text>
                         </View>
@@ -922,7 +929,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                 <View style={styles.dividerLine} />
 
                                 <Text style={styles.resultsFeedbackTitle}>{isSinhala ? 'පද්ධති ස්වයංක්‍රීය ප්‍රතිචාරය:' : 'System Adaptation:'}</Text>
-                                <Text style={styles.resultsFeedbackText}>"{results.intelligentFeedback}"</Text>
+                                <Text style={styles.resultsFeedbackText}>"{getTranslatedFeedback(results.intelligentFeedback, isSinhala)}"</Text>
                             </View>
                         )}
 
@@ -962,33 +969,33 @@ const ProgressDashboard = ({ progress, detectedMood }) => {
             <View style={styles.statsGrid}>
                 <LinearGradient colors={['#FF9A9E', '#FECFEF']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                     <Text style={styles.statValue}>{progress.currentStreak}</Text>
-                    <Text style={styles.statLabel}>🔥 Current Streak</Text>
+                    <Text style={styles.statLabel}>🔥 {t('Current Streak')}</Text>
                 </LinearGradient>
                 <LinearGradient colors={['#fbc2eb', '#a6c1ee']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                     <Text style={styles.statValue}>{progress.missedSessions ?? 0}</Text>
-                    <Text style={styles.statLabel}>⚠️ Missed (7d)</Text>
+                    <Text style={styles.statLabel}>⚠️ {t('Missed (7d)')}</Text>
                 </LinearGradient>
                 <LinearGradient colors={['#84fab0', '#8fd3f4']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                     <Text style={styles.statValue}>{progress.weeklyCompletionRate ?? 0}%</Text>
-                    <Text style={styles.statLabel}>📊 Weekly Rate</Text>
+                    <Text style={styles.statLabel}>📊 {t('Weekly Rate')}</Text>
                 </LinearGradient>
             </View>
 
             <View style={[styles.statsGrid, { marginTop: 10 }]}>
                 <LinearGradient colors={['#a1c4fd', '#c2e9fb']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                     <Text style={styles.statValue}>{progress.averageDuration ?? 0}m</Text>
-                    <Text style={styles.statLabel}>⏱️ Avg Duration</Text>
+                    <Text style={styles.statLabel}>⏱️ {t('Avg Duration')}</Text>
                 </LinearGradient>
                 <LinearGradient colors={['#f6d365', '#fda085']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                     <Text style={styles.statValue}>{progress.totalExercises}</Text>
-                    <Text style={styles.statLabel}>🏋️ Total Completed</Text>
+                    <Text style={styles.statLabel}>🏋️ {t('Total Completed')}</Text>
                 </LinearGradient>
             </View>
 
             {progress.recoveryTrend && (
                 <View style={{ marginTop: 14, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 18, borderLeftWidth: 4, borderLeftColor: '#7C3AED' }}>
-                    <Text style={{ fontSize: 13, fontWeight: '800', color: '#1E293B', marginBottom: 2 }}>🩺 Recovery Trend Analysis</Text>
-                    <Text style={{ fontSize: 12, color: '#475569', lineHeight: 16 }}>{progress.recoveryTrend}</Text>
+                    <Text style={{ fontSize: 13, fontWeight: '800', color: '#1E293B', marginBottom: 2 }}>🩺 {t('Recovery Trend Analysis')}</Text>
+                    <Text style={{ fontSize: 12, color: '#475569', lineHeight: 16 }}>{t(progress.recoveryTrend)}</Text>
                 </View>
             )}
         </View>
@@ -1291,8 +1298,12 @@ export default function ExerciseScreen({ navigation }) {
                             <LinearGradient colors={['#FAF5FF', '#F3E8FF']} style={styles.viewProgressBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                                 <Text style={styles.viewProgressBtnEmoji}>📊</Text>
                                 <View style={{ flex: 1 }}>
-                                    <Text style={styles.viewProgressBtnTitle}>ඔබේ ප්‍රගතිය</Text>
-                                    <Text style={styles.viewProgressBtnSub}>ක්‍රියාකාරකම්, අනුකූලතාවය සහ සුවය ලැබීමේ ප්‍රවණතා බලන්න →</Text>
+                                    <Text style={styles.viewProgressBtnTitle}>{isSinhala ? 'ඔබේ ප්‍රගතිය' : 'Your Progress'}</Text>
+                                    <Text style={styles.viewProgressBtnSub}>
+                                        {isSinhala 
+                                            ? 'ක්‍රියාකාරකම්, අනුකූලතාවය සහ සුවය ලැබීමේ ප්‍රවණතා බලන්න →' 
+                                            : 'View activities, consistency and recovery trends →'}
+                                    </Text>
                                 </View>
                             </LinearGradient>
                         </TouchableOpacity>

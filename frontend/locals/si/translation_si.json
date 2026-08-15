@@ -518,5 +518,20 @@
   "tired": "මහන්සියි",
   "stressed": "ආතතියෙන්",
   "angry": "තරහයි",
-  "neutral": "සාමාන්‍යයි"
+  "neutral": "සාමාන්‍යයි",
+  "Consistency & Recovery Trends": "ක්‍රියාකාරකම් සහ සුවවීමේ ප්‍රවණතා",
+  "Current Streak": "වත්මන් දින දාමය",
+  "Missed Sessions": "මඟ හැරුණු සැසි",
+  "Weekly Rate": "සතිපතා ප්‍රතිශතය",
+  "Avg Duration": "සාමාන්‍ය කාලය",
+  "Days": "දින",
+  "Recovery Trend Analysis": "සුවවීමේ ප්‍රවණතා විශ්ලේෂණය",
+  "No data yet to detect recovery trend. Keep logging daily health inputs.": "සුවවීමේ ප්‍රවණතාව හඳුනා ගැනීමට තවමත් දත්ත ප්‍රමාණවත් නැත. දිනපතා සෞඛ්‍ය දත්ත ඇතුළත් කරන්න.",
+  "Fantastic recovery trend detected! Over the past few weeks, your fatigue has decreased and your mobility has improved.": "විශිෂ්ට සුවවීමේ ප්‍රවණතාවක් හඳුනාගෙන ඇත! පසුගිය සති කිහිපය තුළ ඔබේ තෙහෙට්ටුව අඩු වී ඇති අතර චලන හැකියාව වර්ධනය වී ඇත.",
+  "Positive trend: Your fatigue level has been decreasing over the last 3 weeks.": "යහපත් ප්‍රවණතාවක්: පසුගිය සති 3 තුළ ඔබේ තෙහෙට්ටුව මට්ටම ක්‍රමයෙන් අඩු වෙමින් පවතී.",
+  "Positive trend: Your mobility is improving over the last 3 weeks.": "යහපත් ප්‍රවණතාවක්: පසුගිය සති 3 තුළ ඔබේ චලන හැකියාව වර්ධනය වෙමින් පවතී.",
+  "Stable recovery pattern. Rest and follow recommendations daily.": "ස්ථාවර සුවවීමේ රටාවක් පවතී. දිනපතා විවේකය ලබාගෙන උපදෙස් අනුගමනය කරන්න.",
+  "Baby Dev": "ළදරු වර්ධනය",
+  "Missed (7d)": "මඟ හැරුණු (දින 7)",
+  "Total Completed": "සම්පූර්ණ කළ ගණන"
 }

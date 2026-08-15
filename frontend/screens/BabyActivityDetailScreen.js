@@ -178,98 +178,103 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                    {/* Video Player */}
-                    <View style={styles.playerContainer}>
-                        {videoId ? (
-                            Platform.OS === 'web' ? (
-                                <iframe
-                                    src={embedUrl}
-                                    style={{ width: '100%', height: 220, border: 'none', borderRadius: 24 }}
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                />
-                            ) : (
-                                <WebView
-                                    source={{ uri: embedUrl }}
-                                    style={styles.webView}
-                                    allowsFullscreenVideo={true}
-                                    allowsInlineMediaPlayback={true}
-                                    javaScriptEnabled={true}
-                                    domStorageEnabled={true}
-                                    startInLoadingState={true}
-                                    renderLoading={() => (
-                                        <View style={styles.videoLoading}>
-                                            <ActivityIndicator size="large" color={COLORS.primary} />
-                                            <Text style={styles.videoLoadingText}>Loading video...</Text>
-                                        </View>
-                                    )}
-                                />
-                            )
-                        ) : (
-                            <Video
-                                source={{ uri: activity.video_url }}
-                                useNativeControls
-                                resizeMode={ResizeMode.CONTAIN}
-                                style={styles.video}
-                            />
-                        )}
-                    </View>
+                    <View style={styles.splitRow}>
+                        <View style={styles.leftColumn}>
+                            {/* Video Player */}
+                            <View style={styles.playerContainer}>
+                                {videoId ? (
+                                    Platform.OS === 'web' ? (
+                                        <iframe
+                                            src={embedUrl}
+                                            style={{ width: '100%', height: '100%', border: 'none', borderRadius: 24 }}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    ) : (
+                                        <WebView
+                                            source={{ uri: embedUrl }}
+                                            style={styles.webView}
+                                            allowsFullscreenVideo={true}
+                                            allowsInlineMediaPlayback={true}
+                                            javaScriptEnabled={true}
+                                            domStorageEnabled={true}
+                                            startInLoadingState={true}
+                                            renderLoading={() => (
+                                                <View style={styles.videoLoading}>
+                                                    <ActivityIndicator size="large" color={COLORS.primary} />
+                                                    <Text style={styles.videoLoadingText}>Loading video...</Text>
+                                                </View>
+                                            )}
+                                        />
+                                    )
+                                ) : (
+                                    <Video
+                                        source={{ uri: activity.video_url }}
+                                        useNativeControls
+                                        resizeMode={ResizeMode.CONTAIN}
+                                        style={styles.video}
+                                    />
+                                )}
+                            </View>
+                        </View>
 
-                    {/* Metadata Card */}
-                    <View style={styles.metaContainer}>
-                        <Text style={styles.activityName}>{title}</Text>
-                        <Text style={styles.activityDesc}>{desc}</Text>
-                        <View style={styles.badgeRow}>
-                            <View style={styles.ageBadge}>
-                                <Text style={styles.ageBadgeText}>👶  {age}</Text>
+                        <View style={styles.rightColumn}>
+                            {/* Metadata Card */}
+                            <View style={styles.metaContainer}>
+                                <Text style={styles.activityName}>{title}</Text>
+                                <Text style={styles.activityDesc}>{desc}</Text>
+                                <View style={styles.badgeRow}>
+                                    <View style={styles.ageBadge}>
+                                        <Text style={styles.ageBadgeText}>👶  {age}</Text>
+                                    </View>
+                                    <View style={styles.durationBadge}>
+                                        <Text style={styles.durationBadgeText}>⏱️  {activity.duration}</Text>
+                                    </View>
+                                </View>
                             </View>
-                            <View style={styles.durationBadge}>
-                                <Text style={styles.durationBadgeText}>⏱️  {activity.duration}</Text>
+
+                            {/* Purpose Section */}
+                            {purpose && (
+                                <View style={styles.section}>
+                                    <View style={styles.sectionTitleRow}>
+                                        <Text style={styles.sectionEmoji}>🎯</Text>
+                                        <Text style={styles.sectionTitle}>{isSinhala ? 'අරමුණ' : 'Purpose'}</Text>
+                                    </View>
+                                    <Text style={styles.sectionText}>{purpose}</Text>
+                                </View>
+                            )}
+
+                            {/* How to Do It Section */}
+                            <View style={styles.section}>
+                                <View style={styles.sectionTitleRow}>
+                                    <Text style={styles.sectionEmoji}>📋</Text>
+                                    <Text style={styles.sectionTitle}>{isSinhala ? 'සිදුකරන ආකාරය' : 'How to do it'}</Text>
+                                </View>
+                                {instructions.map((inst, index) => (
+                                    <View key={index} style={styles.instructionStep}>
+                                        <LinearGradient
+                                            colors={['#FFF0F3', '#FDF4FF']}
+                                            style={styles.stepNumberContainer}
+                                        >
+                                            <Text style={styles.stepNumber}>{index + 1}</Text>
+                                        </LinearGradient>
+                                        <Text style={styles.instructionText}>{inst}</Text>
+                                    </View>
+                                ))}
                             </View>
+
+                            {/* Safety Notes Section */}
+                            {safety && (
+                                <View style={styles.safetySection}>
+                                    <View style={styles.sectionTitleRow}>
+                                        <Text style={styles.sectionEmoji}>⚠️</Text>
+                                        <Text style={styles.safetyTitle}>{isSinhala ? 'ආරක්ෂිත උපදෙස්' : 'Safety Notes'}</Text>
+                                    </View>
+                                    <Text style={styles.safetyText}>{safety}</Text>
+                                </View>
+                            )}
                         </View>
                     </View>
-
-                    {/* Purpose Section */}
-                    {purpose && (
-                        <View style={styles.section}>
-                            <View style={styles.sectionTitleRow}>
-                                <Text style={styles.sectionEmoji}>🎯</Text>
-                                <Text style={styles.sectionTitle}>{isSinhala ? 'අරමුණ' : 'Purpose'}</Text>
-                            </View>
-                            <Text style={styles.sectionText}>{purpose}</Text>
-                        </View>
-                    )}
-
-                    {/* How to Do It Section */}
-                    <View style={styles.section}>
-                        <View style={styles.sectionTitleRow}>
-                            <Text style={styles.sectionEmoji}>📋</Text>
-                            <Text style={styles.sectionTitle}>{isSinhala ? 'සිදුකරන ආකාරය' : 'How to do it'}</Text>
-                        </View>
-                        {instructions.map((inst, index) => (
-                            <View key={index} style={styles.instructionStep}>
-                                <LinearGradient
-                                    colors={['#FFF0F3', '#FDF4FF']}
-                                    style={styles.stepNumberContainer}
-                                >
-                                    <Text style={styles.stepNumber}>{index + 1}</Text>
-                                </LinearGradient>
-                                <Text style={styles.instructionText}>{inst}</Text>
-                            </View>
-                        ))}
-                    </View>
-
-                    {/* Safety Notes Section */}
-                    {safety && (
-                        <View style={styles.safetySection}>
-                            <View style={styles.sectionTitleRow}>
-                                <Text style={styles.sectionEmoji}>⚠️</Text>
-                                <Text style={styles.safetyTitle}>{isSinhala ? 'ආරක්ෂිත උපදෙස්' : 'Safety Notes'}</Text>
-                            </View>
-                            <Text style={styles.safetyText}>{safety}</Text>
-                        </View>
-                    )}
-
                     <View style={{ height: 40 }} />
                 </ScrollView>
             </LinearGradient>
@@ -321,12 +326,26 @@ const styles = StyleSheet.create({
     // Video player
     playerContainer: {
         width: '100%',
-        height: 230,
+        height: width > 500 ? 380 : 230,
         borderRadius: RADIUS.card,
         overflow: 'hidden',
         backgroundColor: '#000',
         marginBottom: 20,
         ...SHADOW_PINK,
+    },
+    splitRow: {
+        flexDirection: width > 500 ? 'row' : 'column',
+        width: '100%',
+        gap: 20,
+        alignItems: 'flex-start',
+    },
+    leftColumn: {
+        flex: width > 500 ? 1.2 : 0,
+        width: '100%',
+    },
+    rightColumn: {
+        flex: width > 500 ? 0.8 : 0,
+        width: '100%',
     },
     webView: { flex: 1 },
     video: { flex: 1 },
