@@ -1,0 +1,12 @@
+# Dependency directories
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*
+backend/.env
+frontend/.env
+
+# ML training models
+ml_training/*.pkl
