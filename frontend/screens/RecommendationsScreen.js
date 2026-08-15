@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, Dimensions, Linking, Alert, Modal, TextInput,
+  Image, ActivityIndicator
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,9 +15,10 @@ import { colors, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
 import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames, getRankedActivities } from '../services/activitiesLibrary';
 import { getPersonalizedRecommendations } from '../services/emotionEngine';
-import { MUSIC_LIBRARY, VIDEO_LIBRARY } from '../services/mediaLibrary';
+import { MUSIC_LIBRARY } from '../services/mediaLibrary';
 import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibrary';
 import { KNOWLEDGE_CATEGORIES, KNOWLEDGE_RESOURCES } from '../services/knowledgeLibrary';
+import api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -123,6 +125,105 @@ const getBabyTopicsFromReason = (reason) => {
   return [];
 };
 
+const HARDCODED_VIDEO_MAP = {
+  loneliness: {
+    id: '2OEL4P1Rz04',
+    title: 'තනිකම සහ හුදකලා බව මඟහරවා ගැනීම (Overcoming Loneliness in Motherhood)',
+    description: 'මවක් වූ පසු දැනෙන තනිකම සහ ඒ සඳහා කළ හැකි දේ පිළිබඳ මඟ පෙන්වීම.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/2OEL4P1Rz04',
+    thumbnail: 'https://img.youtube.com/vi/2OEL4P1Rz04/0.jpg',
+  },
+  fatigue: {
+    id: 'ZToicYcHIOU',
+    title: 'ප්‍රසව තෙහෙට්ටුවෙන් මිදෙමු (Postpartum Fatigue Recovery Tips)',
+    description: 'අධික මහන්සියෙන් පෙළෙන මව්වරුන් සඳහා ශක්තිය ලබාගැනීමේ ක්‍රමවේද.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/ZToicYcHIOU',
+    thumbnail: 'https://img.youtube.com/vi/ZToicYcHIOU/0.jpg',
+  },
+  anxiety: {
+    id: 'hrozJ-EbdGI',
+    title: 'ප්‍රසව කාංසාව සහ බිය පාලනය කිරීම (Relieving Postpartum Anxiety)',
+    description: 'බිය සහ කාංසාව පාලනය කිරීමට උපකාරී වන මෘදු හුස්ම ගැනීමේ අභ්‍යාස.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/hrozJ-EbdGI',
+    thumbnail: 'https://img.youtube.com/vi/hrozJ-EbdGI/0.jpg',
+  },
+  overwhelmed: {
+    id: '1n46HPsYsHM',
+    title: 'දරාගත නොහැකි පීඩනය කළමනාකරණය (Coping with Overwhelm)',
+    description: 'වැඩ අධික වීම නිසා ඇතිවන පීඩනය පාලනය කිරීමට නව මව්වරුන් සඳහා උපදෙස්.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/1n46HPsYsHM',
+    thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg',
+  },
+  lack_of_support: {
+    id: 'sF80I-TQiW0',
+    title: 'සහයෝගය නොමැති විට කළ හැකි දේ (Coping with Lack of Support)',
+    description: 'පවුලෙන් හෝ සැමියාගෙන් සහයෝගය නොලැබෙන විට මනස සන්සුන්ව තබාගැනීම.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/sF80I-TQiW0',
+    thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg',
+  },
+  negative_thoughts: {
+    id: '9Q634rbsypE',
+    title: 'අඳුරු සිතුවිලි සහ ජීවිතය ජය ගැනීම (Overcoming Negative Thoughts)',
+    description: 'ප්‍රසූතියෙන් පසු සිතට එන අශුභවාදී සිතුවිලි දුරු කර සුවය ලබාගන්නා ආකාරය.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/9Q634rbsypE',
+    thumbnail: 'https://img.youtube.com/vi/9Q634rbsypE/0.jpg',
+  },
+  bonding_issues: {
+    id: 'jzGyjLGbAUc',
+    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
+    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/jzGyjLGbAUc',
+    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+  },
+  baby_crying: {
+    id: 'jzGyjLGbAUc',
+    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
+    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/jzGyjLGbAUc',
+    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+  },
+  baby_needs: {
+    id: 'jzGyjLGbAUc',
+    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
+    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/jzGyjLGbAUc',
+    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+  },
+  baby_feeding: {
+    id: 'jzGyjLGbAUc',
+    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
+    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/jzGyjLGbAUc',
+    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+  },
+  baby_sleep: {
+    id: 'jzGyjLGbAUc',
+    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
+    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/jzGyjLGbAUc',
+    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+  },
+  baby_health: {
+    id: 'jzGyjLGbAUc',
+    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
+    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
+    channelTitle: 'Bloom Supportive Care',
+    url: 'https://youtu.be/jzGyjLGbAUc',
+    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+  },
+};
+
 const RecommendationsScreen = ({ navigation, route }) => {
   const { latestRecommendations, latestAnalysis, userPreferredActivities, userPreferredGames, detectedBabyTopic, detectedBabyTopics, detectedBabyAge, completedActivities, fetchCompletedActivities } = useApp();
 
@@ -147,6 +248,17 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const [kbCategory, setKbCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [feedbackSaved, setFeedbackSaved] = useState(false);
+
+  // Dynamic YouTube Videos State
+  const [dynamicVideos, setDynamicVideos] = useState([]);
+  const [loadingVideos, setLoadingVideos] = useState(false);
+  const [videoError, setVideoError] = useState(null);
+
+  useEffect(() => {
+    if (latestAnalysis) {
+      setShowAssessment(false);
+    }
+  }, [latestAnalysis]);
 
   useEffect(() => {
     if (route?.params?.tab) {
@@ -286,44 +398,79 @@ const RecommendationsScreen = ({ navigation, route }) => {
     ? detectedBabyTopics
     : (detectedBabyTopic ? [detectedBabyTopic] : getBabyTopicsFromReason(activeAnalysis?.primaryReason || selReason));
 
-  const libraryVideos = VIDEO_LIBRARY[primaryReason] || (isBabyActive ? VIDEO_LIBRARY.bonding_issues : VIDEO_LIBRARY.loneliness);
-  const VIDEO_SUB_TABS = activeBabyTopics.length > 0
-    ? ['නිර්දේශිත වීඩියෝ', 'Motivation', 'Baby Feeding', 'Baby Bathing', 'Baby Diapering', 'Baby Sleeping', 'Baby Crying', 'Baby Health', 'Baby Development', 'Vaccination', 'Baby Safety', 'Mother Care']
-    : ['Motivation'];
+  // Resolve featured hardcoded video based on reason
+  const featuredVideo = (() => {
+    // 1. Check if backend returned video recommendations
+    if (latestRecommendations?.videos && latestRecommendations.videos.length > 0) {
+      const rawVideo = latestRecommendations.videos[0];
+      
+      // If rawVideo is an object (local engine result)
+      if (rawVideo && typeof rawVideo === 'object') {
+        const url = rawVideo.url || '';
+        const match = Object.values(HARDCODED_VIDEO_MAP).find(v => v.url === url);
+        if (match) return match;
+        
+        const vId = url.includes('v=') ? url.split('v=')[1] : url.split('/').pop();
+        return {
+          id: vId || rawVideo.id,
+          title: rawVideo.title || 'විශේෂිත සහන වීඩියෝව (Featured Video)',
+          description: rawVideo.description || 'ඔබේ හැඟීම්වලට අදාළ විශේෂිත සහන වීඩියෝව.',
+          channelTitle: 'Bloom Supportive Care',
+          url: url,
+          thumbnail: `https://img.youtube.com/vi/${vId}/0.jpg`,
+        };
+      }
+      
+      // If rawVideo is a string (backend endpoint result)
+      if (rawVideo && typeof rawVideo === 'string') {
+        const url = rawVideo;
+        const match = Object.values(HARDCODED_VIDEO_MAP).find(v => v.url === url);
+        if (match) return match;
+        
+        const vId = url.includes('v=') ? url.split('v=')[1] : url.split('/').pop();
+        return {
+          id: vId,
+          title: 'විශේෂිත සහන වීඩියෝව (Featured Video)',
+          description: 'ඔබේ හැඟීම්වලට අදාළ විශේෂිත සහන වීඩියෝව.',
+          channelTitle: 'Bloom Supportive Care',
+          url: url,
+          thumbnail: `https://img.youtube.com/vi/${vId}/0.jpg`,
+        };
+      }
+    }
+    // 2. Fallback to local map based on primaryReason
+    return HARDCODED_VIDEO_MAP[primaryReason] || null;
+  })();
 
-  const getBabyCareVideos = () => {
-    if (activeBabyTopics.length === 0) return [];
-    const topicVideosMap = activeBabyTopics.map(t => BABY_VIDEO_LIBRARY[t] || []);
-    let mixed = [];
-    const maxLen = Math.max(...topicVideosMap.map(arr => arr.length), 0);
-    for (let i = 0; i < maxLen; i++) {
-      topicVideosMap.forEach(arr => {
-        if (arr[i]) mixed.push(arr[i]);
+  const fetchDynamicVideos = async () => {
+    try {
+      setLoadingVideos(true);
+      setVideoError(null);
+      const response = await api.get('/api/recommendations/videos', {
+        params: {
+          reason: primaryReason,
+          emotion: emotion,
+          riskLevel: risk || 'low',
+          babyIntent: isBabyActive
+        }
       });
+      if (response.data && Array.isArray(response.data)) {
+        setDynamicVideos(response.data);
+      } else {
+        setDynamicVideos([]);
+      }
+    } catch (err) {
+      console.error('Error fetching dynamic YouTube videos:', err.message);
+      setVideoError(err.message || 'Failed to fetch videos');
+      setDynamicVideos([]);
+    } finally {
+      setLoadingVideos(false);
     }
-    return mixed;
   };
 
-  const getVideosForTab = () => {
-    if (isSkipped) {
-      let all = [];
-      Object.values(BABY_VIDEO_LIBRARY).forEach(arr => { all = all.concat(arr); });
-      return all;
-    }
-    if (videoTab === 'Motivation') return libraryVideos;
-    if (videoTab === 'නිර්දේශිත වීඩියෝ' || videoTab === 'DetectedTopics') {
-      const babyVids = getBabyCareVideos();
-      return babyVids.length > 0 ? babyVids : libraryVideos;
-    }
-    if (videoTab === 'All') {
-      let all = [...libraryVideos];
-      Object.values(BABY_VIDEO_LIBRARY).forEach(arr => { all = all.concat(arr); });
-      return all;
-    }
-    return BABY_VIDEO_LIBRARY[videoTab] || libraryVideos;
-  };
-
-  const displayedVideos = getVideosForTab();
+  useEffect(() => {
+    fetchDynamicVideos();
+  }, [emotion, primaryReason, risk, isBabyActive]);
 
   // Knowledge Hub Filtered Resources (Limit 5)
   const getKnowledgeResources = () => {
@@ -572,34 +719,61 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       </View>
                     )}
 
-                    {VIDEO_SUB_TABS.length > 1 && (
-                      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.videoTabsScroll}>
-                        {VIDEO_SUB_TABS.map(vTab => (
-                          <TouchableOpacity
-                            key={vTab}
-                            onPress={() => setVideoTab(vTab)}
-                            style={[s.videoSubTab, videoTab === vTab && s.videoSubTabActive]}
-                          >
-                            <Text style={[s.videoSubTabLabel, videoTab === vTab && s.videoSubTabLabelActive]}>
-                              {vTab}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
+                    {/* Featured/Hardcoded Video */}
+                    {featuredVideo && (
+                      <View style={s.featuredVideoCont}>
+                        <Text style={s.featuredVideoHeader}>⭐ විශේෂිත නිර්දේශය (Featured Relief Video)</Text>
+                        <TouchableOpacity style={s.featuredCard} onPress={() => openYouTube(featuredVideo)}>
+                          {featuredVideo.thumbnail ? (
+                            <Image source={{ uri: featuredVideo.thumbnail }} style={s.featuredVideoThumb} />
+                          ) : (
+                            <View style={[s.mediaIcon, { backgroundColor: colors.lavenderLight, marginRight: 12 }]}>
+                              <Text style={s.mediaEmoji}>🎬</Text>
+                            </View>
+                          )}
+                          <View style={s.featuredVideoInfo}>
+                            <Text style={s.featuredVideoTitle} numberOfLines={2}>{featuredVideo.title}</Text>
+                            <Text style={s.featuredVideoDesc} numberOfLines={2}>{featuredVideo.description}</Text>
+                            <Text style={s.mediaSub}>{featuredVideo.channelTitle}</Text>
+                          </View>
+                        </TouchableOpacity>
+                      </View>
                     )}
 
-                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬</Text>
-                    {displayedVideos.map((video, idx) => (
-                      <TouchableOpacity key={video.id || idx} style={s.mediaCard} onPress={() => openYouTube(video)}>
-                        <View style={[s.mediaIcon, { backgroundColor: colors.roseLight }]}>
-                          <Text style={s.mediaEmoji}>{video.emoji || '🎬'}</Text>
-                        </View>
-                        <View style={s.mediaInfo}>
-                          <Text style={s.mediaTitle}>{video.title}</Text>
-                          <Text style={s.mediaSub}>{video.category || 'නිර්දේශිත වීඩියෝව'}</Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
+                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (ප්‍රතිඵල 4)</Text>
+                    {loadingVideos ? (
+                      <ActivityIndicator size="large" color={colors.lavenderDark} style={{ marginVertical: 20 }} />
+                    ) : videoError ? (
+                      <View style={s.emptyBox}>
+                        <Text style={s.emptyEmoji}>⚠️</Text>
+                        <Text style={s.emptyText}>වීඩියෝ ලබාගැනීමට අපොහොසත් විය. (Failed to load videos)</Text>
+                        <TouchableOpacity onPress={fetchDynamicVideos} style={s.retryBtn}>
+                          <Text style={s.retryBtnText}>නැවත උත්සාහ කරන්න (Retry)</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : dynamicVideos.length === 0 ? (
+                      <View style={s.emptyBox}>
+                        <Text style={s.emptyEmoji}>🎬</Text>
+                        <Text style={s.emptyText}>දැනට නිර්දේශිත වීඩියෝ නොමැත.</Text>
+                      </View>
+                    ) : (
+                      dynamicVideos.map((video, idx) => (
+                        <TouchableOpacity key={video.id || idx} style={s.mediaCard} onPress={() => openYouTube(video.url)}>
+                          {video.thumbnail ? (
+                            <Image source={{ uri: video.thumbnail }} style={s.videoThumb} />
+                          ) : (
+                            <View style={[s.mediaIcon, { backgroundColor: colors.roseLight }]}>
+                              <Text style={s.mediaEmoji}>🎬</Text>
+                            </View>
+                          )}
+                          <View style={s.mediaInfo}>
+                            <Text style={s.mediaTitle} numberOfLines={2}>{video.title}</Text>
+                            <Text style={s.mediaSub} numberOfLines={1}>{video.channelTitle || 'YouTube'}</Text>
+                            <Text style={s.videoDesc} numberOfLines={2}>{video.description}</Text>
+                          </View>
+                        </TouchableOpacity>
+                      ))
+                    )}
                   </View>
                 )}
 
@@ -824,6 +998,29 @@ const s = StyleSheet.create({
   primaryGameInfo: { flex: 1 },
   primaryGameName: { fontSize: 14, fontWeight: '900' },
   primaryGameSub: { fontSize: 11, color: colors.textSecondary, marginTop: 2 },
+  videoThumb: {
+    width: 80,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  videoDesc: {
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 4,
+  },
+  retryBtn: {
+    marginTop: 10,
+    backgroundColor: colors.lavenderDark,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: radius.full,
+  },
+  retryBtnText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: '700',
+  },
   videoTabsScroll: { marginBottom: spacing.md },
   videoSubTab: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: radius.full, backgroundColor: colors.offWhite, borderWidth: 1, borderColor: colors.lavenderLight, marginRight: 6 },
   videoSubTabActive: { backgroundColor: colors.roseLight, borderColor: colors.roseLight },
@@ -869,6 +1066,48 @@ const s = StyleSheet.create({
   stepIndicatorText: { fontSize: 11, fontWeight: '800', color: colors.lavenderDark, backgroundColor: colors.lavenderLight, paddingVertical: 3, paddingHorizontal: 10, borderRadius: radius.full },
   closeModalText: { fontSize: 16, color: colors.textMuted, paddingHorizontal: 6, fontWeight: '800' },
   supportiveNotice: { fontSize: 12, color: colors.lavenderDark, fontWeight: '700', backgroundColor: '#F3E8FF', padding: 10, borderRadius: radius.md, marginBottom: 12, textAlign: 'center' },
+  featuredVideoCont: {
+    backgroundColor: '#F3E5F5',
+    borderRadius: radius.xl,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1.5,
+    borderColor: '#E1BEE7',
+    ...shadows.soft,
+  },
+  featuredVideoHeader: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#7B1FA2',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  featuredCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  featuredVideoThumb: {
+    width: 90,
+    height: 68,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  featuredVideoInfo: {
+    flex: 1,
+  },
+  featuredVideoTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    lineHeight: 18,
+  },
+  featuredVideoDesc: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 3,
+    lineHeight: 15,
+  },
 });
 
 export default RecommendationsScreen;
