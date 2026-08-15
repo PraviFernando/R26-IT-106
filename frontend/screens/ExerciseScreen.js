@@ -1293,7 +1293,7 @@ export default function ExerciseScreen({ navigation }) {
                     {!(showForm || !hasData) && (
                         <TouchableOpacity
                             style={styles.viewProgressBtn}
-                            onPress={() => navigation.navigate('Progress')}
+                            onPress={() => navigation.navigate('ExerciseProgress')}
                         >
                             <LinearGradient colors={['#FAF5FF', '#F3E8FF']} style={styles.viewProgressBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                                 <Text style={styles.viewProgressBtnEmoji}>📊</Text>

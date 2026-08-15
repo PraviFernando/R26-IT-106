@@ -878,6 +878,24 @@ export default function DashboardScreen({ navigation }) {
                             {t('Postpartum Exercise')}
                         </Text>
                     </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[
+                            styles.quickActionBtn,
+                            { backgroundColor: '#F59E0B' },
+                        ]}
+                        onPress={() =>
+                            navigation.navigate('DashboardCopy')
+                        }
+                    >
+                        <Text style={styles.quickActionIcon}>
+                            ✨
+                        </Text>
+
+                        <Text style={styles.quickActionText}>
+                            {t('Recommend')}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
 
                 <View style={{ height: 20 }} />
