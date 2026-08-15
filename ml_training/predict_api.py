@@ -6,10 +6,13 @@ import numpy as np
 app = Flask(__name__)
 CORS(app)
 
+import os
+
 # Load model and scaler
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 try:
-    model = joblib.load('exercise_model.pkl')
-    scaler = joblib.load('scaler.pkl')
+    model = joblib.load(os.path.join(BASE_DIR, 'exercise_model.pkl'))
+    scaler = joblib.load(os.path.join(BASE_DIR, 'scaler.pkl'))
     print("Successfully loaded model and scaler.")
 except Exception as e:
     print(f"Error loading model artifacts: {e}")
