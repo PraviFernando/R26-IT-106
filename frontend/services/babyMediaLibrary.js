@@ -304,3 +304,8 @@ export const BABY_VIDEO_LIBRARY = {
     },
   ],
 };
+
+export const getAllBabyVideos = () => {
+  return Object.values(BABY_VIDEO_LIBRARY).flat();
+};
+
