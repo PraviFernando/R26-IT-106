@@ -41,6 +41,18 @@ const exerciseService = {
     updateRecommendationProgress: async (data) => {
         const response = await api.post('/exercise/recommendations/progress', data);
         return response.data;
+    },
+
+    // Save movement session
+    saveMovementSession: async (data) => {
+        const response = await api.post('/exercise/movement-session', data);
+        return response.data;
+    },
+
+    // Get movement sessions
+    getMovementSessions: async () => {
+        const response = await api.get('/exercise/movement-sessions');
+        return response.data;
     }
 };
 

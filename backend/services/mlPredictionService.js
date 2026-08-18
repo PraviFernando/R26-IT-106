@@ -73,19 +73,25 @@ class MLPredictionService {
         // High risk checks
         if (healthData.doctorRestrictions || 
             healthData.bleedingComplications || 
-            (healthData.deliveryType === 'c-section' && healthData.weeksAfterDelivery < 6)) {
+            (healthData.deliveryType === 'c-section' && healthData.weeksAfterDelivery < 6) ||
+            symptomsCount >= 3) {
             riskScore = 2; // High risk (2)
             exerciseCategory = 1; // Bedrest (1)
         }
-        // Medium risk checks
-        else if (symptomsCount >= 2 || healthData.fatigueLevel === 'high' || healthData.mobilityLevel === 'limited') {
+        // Medium risk / Early postpartum checks (Weeks 1-2)
+        else if (healthData.weeksAfterDelivery <= 2 || symptomsCount === 2 || healthData.fatigueLevel === 'high' || healthData.mobilityLevel === 'limited' || healthData.mobilityLevel === 'very_limited') {
             riskScore = 1; // Medium risk (1)
             exerciseCategory = 2; // Gentle Mobility (2)
         }
-        // Healthy / low risk
+        // Healthy / low risk / Fully recovered checks (Weeks >= 8)
         else if (healthData.weeksAfterDelivery >= 8 && healthData.mobilityLevel === 'normal' && healthData.fatigueLevel === 'low') {
             riskScore = 0; // Low risk (0)
             exerciseCategory = 4; // Full Functional (4)
+        }
+        // Healthy / intermediate checks (Weeks 3-7)
+        else {
+            riskScore = 0; // Low risk (0)
+            exerciseCategory = 3; // Strength & Core (3)
         }
 
         const descriptions = {

@@ -10,7 +10,9 @@ const {
     getProgress,
     seedExercises,
     submitFeedback,
-    updateRecommendationProgress
+    updateRecommendationProgress,
+    saveMovementSession,
+    getMovementSessions
 } = require('../controllers/exercise');
 
 // All exercise routes require authentication
@@ -26,6 +28,10 @@ router.post('/recommendations/progress', updateRecommendationProgress);
 
 // Exercise records
 router.post('/record', saveExerciseRecord);
+
+// Movement sessions
+router.post('/movement-session', saveMovementSession);
+router.get('/movement-sessions', getMovementSessions);
 
 // Feedback submissions
 router.post('/feedback', submitFeedback);

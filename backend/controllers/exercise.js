@@ -3,6 +3,7 @@ const ExerciseRecord = require('../models/ExerciseRecord');
 const User = require('../models/User');
 const Diary = require('../models/Diary');
 const Feedback = require('../models/Feedback');
+const ExerciseMovementSession = require('../models/ExerciseMovementSession');
 const MLPredictionService = require('../services/mlPredictionService');
 const axios = require('axios');
 
@@ -82,6 +83,17 @@ const parseISO8601Duration = (durationStr) => {
     result += `${hours > 0 ? String(minutes).padStart(2, '0') : minutes}:`;
     result += String(seconds).padStart(2, '0');
     return result;
+};
+
+const parseDurationStr = (dStr) => {
+    if (!dStr) return 600;
+    const str = String(dStr);
+    if (str.includes(':')) {
+        const parts = str.split(':');
+        if (parts.length === 2) return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+        if (parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+    }
+    return parseInt(str) * 60 || 600;
 };
 
 // Clinical Safety evaluation function
@@ -171,7 +183,8 @@ const submitHealthData = async (req, res, next) => {
             }
         }
 
-        if (finalDeliveryDate) {
+        // Only calculate weeks from deliveryDate if weeksAfterDelivery was not explicitly provided by the user
+        if (finalDeliveryDate && !weeksAfterDelivery) {
             const birthDate = new Date(finalDeliveryDate);
             const today = new Date();
             const diffTime = Math.abs(today - birthDate);
@@ -236,6 +249,21 @@ const submitHealthData = async (req, res, next) => {
             console.log(`[AI Adaptation] Adjusted next session intensity down to Category ${exerciseCategory} due to previous pain/difficulty/incomplete session.`);
         }
 
+        // Clinical Safety Override for severe symptoms / limited mobility
+        const symptomsCount = 
+            (healthData.pelvicPain ? 1 : 0) +
+            (healthData.backPain ? 1 : 0) +
+            (healthData.abdominalPain ? 1 : 0) +
+            (healthData.muscleWeakness ? 1 : 0);
+
+        if (symptomsCount >= 3) {
+            exerciseCategory = 1; // Cap at Category 1 (Bedrest/Breathing)
+            isOverridden = true;
+        } else if (healthData.mobilityLevel === 'very_limited' || healthData.fatigueLevel === 'high' || symptomsCount === 2) {
+            exerciseCategory = Math.min(exerciseCategory, 2); // Cap at Category 2 (Gentle Mobility)
+            isOverridden = true;
+        }
+
         // Evaluate dynamic safety status using clinical safety evaluation function
         const safetyEval = evaluateSafetyStatus(
             healthData.weeksAfterDelivery,
@@ -247,6 +275,13 @@ const submitHealthData = async (req, res, next) => {
         healthData.safetyMessage = safetyEval.safetyMessage;
         healthData.safetyMessageSi = safetyEval.safetyMessageSi;
 
+        // If category was adjusted due to symptoms, update safety status to 'limited'
+        if (isOverridden && healthData.safetyStatus === 'safe') {
+            healthData.safetyStatus = 'limited';
+            healthData.safetyMessage = 'Exercise category adjusted to Gentle Mobility due to fatigue, pain, or mobility limitations.';
+            healthData.safetyMessageSi = 'තෙහෙට්ටුව, වේදනාව හෝ චලන සීමාවන් හේතුවෙන් ව්‍යායාම මට්ටම මෘදු ව්‍යායාම දක්වා සකස් කර ඇත.';
+        }
+
         // 3. YouTube API integration to fetch matching videos
         let recommendedExercises = [];
         const searchQuery = QUERY_MAP[exerciseCategory];
@@ -257,7 +292,7 @@ const submitHealthData = async (req, res, next) => {
                 const ytResponse = await axios.get('https://www.googleapis.com/youtube/v3/search', {
                     params: {
                         part: 'snippet',
-                        maxResults: 10,
+                        maxResults: 25,
                         q: searchQuery,
                         type: 'video',
                         key: youtubeApiKey
@@ -284,13 +319,19 @@ const submitHealthData = async (req, res, next) => {
                         });
                     }
 
-                    recommendedExercises = ytResponse.data.items.map(item => ({
+                    const mappedVideos = ytResponse.data.items.map(item => ({
                         customName: item.snippet.title,
                         videoUrl: `https://www.youtube.com/embed/${item.id.videoId}`,
                         type: 'youtube_video',
                         duration: durationMap[item.id.videoId] || '10:00',
-                        channelTitle: item.snippet.channelTitle
+                        channelTitle: item.snippet.channelTitle,
+                        category: exerciseCategory
                     }));
+
+                    // Filter out YouTube Shorts (videos <= 60 seconds) and limit to 10 recommendations
+                    recommendedExercises = mappedVideos
+                        .filter(video => parseDurationStr(video.duration) > 60)
+                        .slice(0, 10);
                 }
             } catch (ytErr) {
                 console.error('YouTube Data API search failed, loading static list:', ytErr.message);
@@ -304,18 +345,56 @@ const submitHealthData = async (req, res, next) => {
                 videoUrl: vid.videoUrl,
                 type: 'youtube_fallback',
                 duration: vid.duration || "10:00",
-                channelTitle: "Pregnancy & Postpartum TV"
+                channelTitle: "Pregnancy & Postpartum TV",
+                category: exerciseCategory
             }));
+        }
+
+        // Sort and apply personalization adjustment based on movement score
+        const recentMovementSessions = await ExerciseMovementSession.find({ userId, completed: true })
+            .sort({ timestamp: -1 })
+            .limit(3);
+
+        let personalizationAdjustment = null;
+        let personalizationMessage = '';
+        let personalizationMessageSi = '';
+
+        if (recentMovementSessions.length === 3 && recentMovementSessions.every(s => s.movementScore >= 90 && (s.averageAccuracy || 0) >= 90 && s.difficulty === 'Easy')) {
+            personalizationAdjustment = 'longer';
+            personalizationMessage = "Great form! Based on your high scores and ease in recent sessions, we've prioritized longer exercise videos for you today.";
+            personalizationMessageSi = "විශිෂ්ට ශාරීරික හැඩය! මෑත සැසිවල ඉහළ ලකුණු සහ පහසුව මත පදනම්ව, අපි අද ඔබට දිගු ව්‍යායාම වීඩියෝ නිර්දේශ කර ඇත්තෙමු.";
+        } else if (recentMovementSessions.length > 0) {
+            const lastSession = recentMovementSessions[0];
+            if (lastSession.movementScore < 70 || (lastSession.averageAccuracy || 0) < 70 || lastSession.pain === true || lastSession.difficulty === 'Hard') {
+                personalizationAdjustment = 'easier';
+                personalizationMessage = "We noticed some difficulty or pain in your last session. We've prioritized shorter/gentler exercise videos today to support your recovery.";
+                personalizationMessageSi = "පසුගිය සැසියේ යම් අපහසුතාවක් හෝ වේදනාවක් අපි දුටුවෙමු. සුවය ලැබීමට සහාය වීම සඳහා අද කෙටි/මෘදු ව්‍යායාම වීඩියෝ නිර්දේශ කර ඇත.";
+            }
+        }
+
+
+        if (personalizationAdjustment === 'longer') {
+            recommendedExercises.sort((a, b) => parseDurationStr(b.duration) - parseDurationStr(a.duration));
+            if (healthData.safetyStatus !== 'blocked') {
+                healthData.safetyMessage = (healthData.safetyMessage ? healthData.safetyMessage + ' ' : '') + personalizationMessage;
+                healthData.safetyMessageSi = (healthData.safetyMessageSi ? healthData.safetyMessageSi + ' ' : '') + personalizationMessageSi;
+            }
+        } else if (personalizationAdjustment === 'easier') {
+            recommendedExercises.sort((a, b) => parseDurationStr(a.duration) - parseDurationStr(b.duration));
+            if (healthData.safetyStatus !== 'blocked') {
+                healthData.safetyMessage = (healthData.safetyMessage ? healthData.safetyMessage + ' ' : '') + personalizationMessage;
+                healthData.safetyMessageSi = (healthData.safetyMessageSi ? healthData.safetyMessageSi + ' ' : '') + personalizationMessageSi;
+            }
         }
 
         healthData.recommendedExercises = recommendedExercises;
 
+        // Delete any existing health data record for today to ensure new recommendations are clean and not cached/merged
+        await PostpartumHealthData.deleteOne({ userId, date });
+
         // Save health data record to MongoDB
-        const savedData = await PostpartumHealthData.findOneAndUpdate(
-            { userId, date },
-            healthData,
-            { upsert: true, new: true }
-        );
+        const savedData = new PostpartumHealthData(healthData);
+        await savedData.save();
 
         res.json({
             success: true,
@@ -521,6 +600,11 @@ const getProgress = async (req, res, next) => {
             date: { $gte: startDateStr }
         }).sort({ date: 1 });
 
+        const movementSessions = await ExerciseMovementSession.find({
+            userId,
+            createdAt: { $gte: startDate }
+        }).sort({ createdAt: 1 });
+
         const completedRecords = records.filter(r => r.status === 'completed');
 
         // Calculate streak
@@ -635,6 +719,57 @@ const getProgress = async (req, res, next) => {
             };
         });
 
+        // Compute movement tracking statistics
+        const completedMovementSessions = movementSessions.filter(s => s.completed);
+        const averageMovementScore = completedMovementSessions.length > 0
+            ? Math.round(completedMovementSessions.reduce((sum, s) => sum + s.movementScore, 0) / completedMovementSessions.length)
+            : 0;
+        const bestMovementScore = completedMovementSessions.length > 0
+            ? Math.max(...completedMovementSessions.map(s => s.movementScore))
+            : 0;
+        const totalMovementRepetitions = movementSessions.reduce((sum, s) => sum + (s.repetitions || 0), 0);
+
+        // Compute movement accuracy stats
+        const averageMovementAccuracy = completedMovementSessions.length > 0
+            ? Math.round(completedMovementSessions.reduce((sum, s) => sum + (s.averageAccuracy || 0), 0) / completedMovementSessions.length)
+            : 0;
+        const bestMovementAccuracy = completedMovementSessions.length > 0
+            ? Math.max(...completedMovementSessions.map(s => s.averageAccuracy || 0))
+            : 0;
+        const totalCorrectRepetitions = movementSessions.reduce((sum, s) => sum + (s.correctRepetitions || 0), 0);
+
+        // Group movement sessions by date to calculate average score per day for Weekly Movement Trend
+        const movementProgressMap = {};
+        completedMovementSessions.forEach(s => {
+            const dateStr = s.timestamp ? s.timestamp.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+            if (!movementProgressMap[dateStr]) {
+                movementProgressMap[dateStr] = { sum: 0, count: 0 };
+            }
+            movementProgressMap[dateStr].sum += s.movementScore;
+            movementProgressMap[dateStr].count += 1;
+        });
+
+        const movementTrendData = Object.keys(movementProgressMap).map(date => ({
+            date,
+            avgScore: Math.round(movementProgressMap[date].sum / movementProgressMap[date].count)
+        })).sort((a, b) => a.date.localeCompare(b.date));
+
+        // Group movement sessions by date to calculate average accuracy per day for Weekly Accuracy Trend
+        const accuracyProgressMap = {};
+        completedMovementSessions.forEach(s => {
+            const dateStr = s.timestamp ? s.timestamp.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+            if (!accuracyProgressMap[dateStr]) {
+                accuracyProgressMap[dateStr] = { sum: 0, count: 0 };
+            }
+            accuracyProgressMap[dateStr].sum += (s.averageAccuracy || 0);
+            accuracyProgressMap[dateStr].count += 1;
+        });
+
+        const weeklyAccuracyTrendData = Object.keys(accuracyProgressMap).map(date => ({
+            date,
+            avgAccuracy: Math.round(accuracyProgressMap[date].sum / accuracyProgressMap[date].count)
+        })).sort((a, b) => a.date.localeCompare(b.date));
+
         res.json({
             progressData,
             totalExercises: completedRecords.length,
@@ -645,7 +780,18 @@ const getProgress = async (req, res, next) => {
             missedSessions,
             weeklyCompletionRate,
             averageDuration,
-            recoveryTrend
+            recoveryTrend,
+            // Movement tracked stats
+            averageMovementScore,
+            bestMovementScore,
+            totalMovementRepetitions,
+            completedMovementSessionsCount: completedMovementSessions.length,
+            movementTrendData,
+            // Accuracy stats
+            averageMovementAccuracy,
+            bestMovementAccuracy,
+            totalCorrectRepetitions,
+            weeklyAccuracyTrendData
         });
     } catch (err) {
         next(err);
@@ -711,6 +857,64 @@ const updateRecommendationProgress = async (req, res, next) => {
 const seedExercises = async (req, res) => res.json({ success: true, message: 'Seeding mock skipped (using dynamic YouTube search API).' });
 const debugGetExercises = async (req, res) => res.json({ success: true, all: [] });
 
+/**
+ * POST /exercise/movement-session - Save movement tracking session
+ */
+const saveMovementSession = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const {
+            sessionId, exerciseId, exerciseName, movementScore,
+            repetitions, activeDuration, pauseCount, completed,
+            pain, difficulty, postWorkoutFeeling,
+            averageAccuracy, correctRepetitions, incorrectRepetitions,
+            averageRangeOfMotion, averageJointAccuracy
+        } = req.body;
+
+        const session = await ExerciseMovementSession.findOneAndUpdate(
+            { sessionId },
+            {
+                sessionId,
+                userId,
+                exerciseId,
+                exerciseName,
+                movementScore,
+                repetitions,
+                activeDuration,
+                pauseCount,
+                completed,
+                pain: pain === true || pain === 'true' || pain === 'Yes',
+                difficulty,
+                postWorkoutFeeling,
+                averageAccuracy: averageAccuracy || 0,
+                correctRepetitions: correctRepetitions || 0,
+                incorrectRepetitions: incorrectRepetitions || 0,
+                averageRangeOfMotion: averageRangeOfMotion || 0,
+                averageJointAccuracy: averageJointAccuracy || 0,
+                timestamp: new Date()
+            },
+            { upsert: true, new: true }
+        );
+
+        res.json({ success: true, session });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * GET /exercise/movement-sessions - Get user movement sessions
+ */
+const getMovementSessions = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const sessions = await ExerciseMovementSession.find({ userId }).sort({ timestamp: -1 });
+        res.json({ success: true, sessions });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     submitHealthData,
     getHealthData,
@@ -721,5 +925,7 @@ module.exports = {
     seedExercises,
     debugGetExercises,
     submitFeedback,
-    updateRecommendationProgress
+    updateRecommendationProgress,
+    saveMovementSession,
+    getMovementSessions
 };

@@ -166,6 +166,173 @@ export default function ExerciseProgressScreen({ navigation }) {
         );
     };
 
+    const renderMovementPerformance = () => {
+        if (!progress) return null;
+
+        const avgScore = progress.averageMovementScore ?? 0;
+        const bestScore = progress.bestMovementScore ?? 0;
+        const totalReps = progress.totalMovementRepetitions ?? 0;
+        const completedSessions = progress.completedMovementSessionsCount ?? 0;
+
+        const avgAccuracy = progress.averageMovementAccuracy ?? 0;
+        const bestAccuracy = progress.bestMovementAccuracy ?? 0;
+        const correctReps = progress.totalCorrectRepetitions ?? 0;
+
+        const trendData = (progress.movementTrendData && progress.movementTrendData.length > 0)
+            ? progress.movementTrendData.slice(-7)
+            : [];
+
+        const accuracyTrendData = (progress.weeklyAccuracyTrendData && progress.weeklyAccuracyTrendData.length > 0)
+            ? progress.weeklyAccuracyTrendData.slice(-7)
+            : [];
+
+        return (
+            <View style={styles.movementSection}>
+                <Text style={styles.movementTitle}>🤖 {isSinhala ? 'AI චලන කාර්ය සාධනය' : 'AI Movement Performance'}</Text>
+                
+                {/* Accuracy Stats */}
+                <View style={styles.statsGrid}>
+                    <LinearGradient colors={['#F0FDF4', '#DCFCE7']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                        <Text style={styles.statValue}>{avgAccuracy}%</Text>
+                        <Text style={styles.statLabel}>📊 {isSinhala ? 'සාමාන්‍ය නිරවද්‍යතාවය' : 'Avg Accuracy'}</Text>
+                    </LinearGradient>
+                    <LinearGradient colors={['#ECFDF5', '#D1FAE5']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                        <Text style={styles.statValue}>{bestAccuracy}%</Text>
+                        <Text style={styles.statLabel}>🏆 {isSinhala ? 'හොඳම නිරවද්‍යතාවය' : 'Best Accuracy'}</Text>
+                    </LinearGradient>
+                </View>
+
+                {/* Repetitions Stats */}
+                <View style={[styles.statsGrid, { marginTop: 12 }]}>
+                    <LinearGradient colors={['#EFF6FF', '#DBEAFE']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                        <Text style={styles.statValue}>{correctReps}</Text>
+                        <Text style={styles.statLabel}>🎯 {isSinhala ? 'නිවැරදි වාර' : 'Correct Reps'}</Text>
+                    </LinearGradient>
+                    <LinearGradient colors={['#FFF0F5', '#FFE4E1']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                        <Text style={styles.statValue}>{totalReps}</Text>
+                        <Text style={styles.statLabel}>🔄 {isSinhala ? 'මුළු වාර ගණන' : 'Total Reps'}</Text>
+                    </LinearGradient>
+                </View>
+
+                {/* Overall Score Stats */}
+                <View style={[styles.statsGrid, { marginTop: 12 }]}>
+                    <LinearGradient colors={['#F5F3FF', '#EDE9FE']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                        <Text style={styles.statValue}>{avgScore}%</Text>
+                        <Text style={styles.statLabel}>📈 {isSinhala ? 'සාමාන්‍ය ලකුණ' : 'Avg Score'}</Text>
+                    </LinearGradient>
+                    <LinearGradient colors={['#FAF5FF', '#F3E8FF']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                        <Text style={styles.statValue}>{bestScore}%</Text>
+                        <Text style={styles.statLabel}>🥇 {isSinhala ? 'හොඳම ලකුණ' : 'Best Score'}</Text>
+                    </LinearGradient>
+                </View>
+
+                {/* Weekly Accuracy Trend Graph */}
+                <View style={[styles.trendlineCard, { marginTop: 16 }]}>
+                    <Text style={styles.trendlineTitle}>{isSinhala ? 'සතිපතා නිරවද්‍යතා ප්‍රවණතාවය' : 'Weekly Accuracy Trend'}</Text>
+                    {accuracyTrendData.length > 0 ? (
+                        <LineChart
+                            data={{
+                                labels: accuracyTrendData.map(d => {
+                                    const dateParts = d.date.split('-');
+                                    return dateParts.length >= 3 ? `${dateParts[1]}/${dateParts[2]}` : d.date;
+                                }),
+                                datasets: [
+                                    {
+                                        data: accuracyTrendData.map(d => d.avgAccuracy),
+                                        color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
+                                        strokeWidth: 3
+                                    }
+                                ]
+                            }}
+                            width={width > 500 ? width - 120 : width - 90}
+                            height={180}
+                            fromZero={true}
+                            chartConfig={{
+                                backgroundColor: '#FFF',
+                                backgroundGradientFrom: '#FFF',
+                                backgroundGradientTo: '#FFF',
+                                decimalPlaces: 0,
+                                color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
+                                labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
+                                style: {
+                                    borderRadius: 16
+                                },
+                                propsForDots: {
+                                    r: "5",
+                                    strokeWidth: "2",
+                                    stroke: "#10B981"
+                                }
+                            }}
+                            bezier
+                            style={{
+                                marginVertical: 8,
+                                borderRadius: 16
+                            }}
+                        />
+                    ) : (
+                        <View style={styles.trendlinePlaceholder}>
+                            <Text style={styles.trendlinePlaceholderText}>
+                                {isSinhala ? 'නිරවද්‍යතා ප්‍රවණතාවය පෙන්වීමට ප්‍රමාණවත් දත්ත නොමැත.' : 'Complete tracking exercises to view your accuracy trend!'}
+                            </Text>
+                        </View>
+                    )}
+                </View>
+
+                {/* Weekly Movement Score Trend Graph */}
+                <View style={[styles.trendlineCard, { marginTop: 16 }]}>
+                    <Text style={styles.trendlineTitle}>{isSinhala ? 'සතිපතා චලන ප්‍රවණතාවය' : 'Weekly Movement Trend'}</Text>
+                    {trendData.length > 0 ? (
+                        <LineChart
+                            data={{
+                                labels: trendData.map(d => {
+                                    const dateParts = d.date.split('-');
+                                    return dateParts.length >= 3 ? `${dateParts[1]}/${dateParts[2]}` : d.date;
+                                }),
+                                datasets: [
+                                    {
+                                        data: trendData.map(d => d.avgScore),
+                                        color: (opacity = 1) => `rgba(124, 58, 237, ${opacity})`,
+                                        strokeWidth: 3
+                                    }
+                                ]
+                            }}
+                            width={width > 500 ? width - 120 : width - 90}
+                            height={180}
+                            fromZero={true}
+                            chartConfig={{
+                                backgroundColor: '#FFF',
+                                backgroundGradientFrom: '#FFF',
+                                backgroundGradientTo: '#FFF',
+                                decimalPlaces: 0,
+                                color: (opacity = 1) => `rgba(124, 58, 237, ${opacity})`,
+                                labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
+                                style: {
+                                    borderRadius: 16
+                                },
+                                propsForDots: {
+                                    r: "5",
+                                    strokeWidth: "2",
+                                    stroke: "#7C3AED"
+                                }
+                            }}
+                            bezier
+                            style={{
+                                marginVertical: 8,
+                                borderRadius: 16
+                            }}
+                        />
+                    ) : (
+                        <View style={styles.trendlinePlaceholder}>
+                            <Text style={styles.trendlinePlaceholderText}>
+                                {isSinhala ? 'චලන ප්‍රවණතාවය පෙන්වීමට ප්‍රමාණවත් දත්ත නොමැත.' : 'Complete tracking exercises to view your movement trend!'}
+                            </Text>
+                        </View>
+                    )}
+                </View>
+            </View>
+        );
+    };
+
     return (
         <SafeAreaView style={styles.safe}>
             <LinearGradient colors={['#EEF2FF', '#FFFFFF', '#F1F5F9']} style={styles.gradient}>
@@ -245,6 +412,9 @@ export default function ExerciseProgressScreen({ navigation }) {
 
                             {/* Accuracy Trendline Chart */}
                             {renderTrendline()}
+
+                            {/* Movement Performance Section */}
+                            {renderMovementPerformance()}
 
                             {/* Recovery Trend Section */}
                             {progress.recoveryTrend && (
@@ -355,4 +525,16 @@ const styles = StyleSheet.create({
     trendlineTitle: { fontSize: 13, fontWeight: '800', color: '#475569', alignSelf: 'flex-start', marginBottom: 10 },
     trendlinePlaceholder: { height: 120, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
     trendlinePlaceholderText: { fontSize: 12, color: '#64748B', textAlign: 'center', lineHeight: 18 },
+    movementSection: {
+        marginTop: 24,
+        paddingTop: 20,
+        borderTopWidth: 1,
+        borderTopColor: '#F1F5F9'
+    },
+    movementTitle: {
+        fontSize: 16,
+        fontWeight: '900',
+        color: '#1E293B',
+        marginBottom: 16
+    },
 });
