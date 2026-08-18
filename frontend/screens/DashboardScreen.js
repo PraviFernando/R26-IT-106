@@ -71,6 +71,7 @@ const navItems = [
     { key: 'plan', label: 'My Plans', icon: '📅' },
     { key: 'profile', label: 'Profile', icon: '👤' },
     { key: 'settings', label: 'Settings', icon: '⚙️' },
+    { key: 'settings', label: 'Settings', icon: '⚙️' },
 ];
 
 // ─────────────────────────────────────────────
