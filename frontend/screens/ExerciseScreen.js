@@ -4,6 +4,7 @@ import {
     ActivityIndicator, Alert, Modal, TextInput, Switch,
     Dimensions, Image, FlatList, Platform, Linking
 } from 'react-native';
+import { Camera } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
@@ -528,7 +529,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 };
 
 // Exercise Recommendation Card Component
-const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProgressUpdate }) => {
+const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProgressUpdate, navigation }) => {
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
     const [videoModal, setVideoModal] = useState(false);
@@ -537,6 +538,44 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
     const [videoPlaying, setVideoPlaying] = useState(false);
     const [watchPercentage, setWatchPercentage] = useState(exercise.watchPercentage || 0);
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+
+    const isSupportedForTracking = (nameStr) => {
+        if (!nameStr) return false;
+        const lower = nameStr.toLowerCase();
+        if (lower.includes('breath') || lower.includes('breathing') || lower.includes('diaphragmatic')) {
+            return false;
+        }
+        return true;
+    };
+
+    const getTrackingExerciseName = (nameStr) => {
+        if (!nameStr) return 'Postpartum Exercise';
+        const lower = nameStr.toLowerCase();
+        if (lower.includes('cat')) return 'Cat-Cow';
+        if (lower.includes('bird')) return 'Bird Dog';
+        if (lower.includes('bridge')) return 'Glute Bridge';
+        if (lower.includes('squat')) return 'Modified Squats';
+        return nameStr;
+    };
+
+    const handleStartTracking = async () => {
+        setVideoModal(false);
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        if (status === 'granted') {
+            navigation.navigate('MovementTracking', {
+                exerciseId: exercise.exerciseId || 'EX_MOCK',
+                exerciseName: getTrackingExerciseName(title),
+                videoUrl: videoUrl
+            });
+        } else {
+            Alert.alert(
+                isSinhala ? "කැමරා අවසරය අවශ්‍යයි" : "Camera Permission Required",
+                isSinhala
+                    ? "ව්‍යායාම අතරතුර ශරීරයේ චලනයන් හඳුනා ගැනීමට කැමරාව භාවිතා කරනු ලැබේ."
+                    : "The camera is used only to detect body movement during exercise."
+            );
+        }
+    };
 
     // Stopwatch states
     const [stopwatchTime, setStopwatchTime] = useState(0);
@@ -831,6 +870,16 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                                 </View>
                                             </View>
                                         </View>
+                                        {isSupportedForTracking(title) && (
+                                            <TouchableOpacity
+                                                style={styles.aiTrackingBtn}
+                                                onPress={handleStartTracking}
+                                            >
+                                                <Text style={styles.aiTrackingBtnText}>
+                                                    {isSinhala ? '🤖 AI චලන ලුහුබැඳීම ආරම්භ කරන්න' : '🤖 Start AI Movement Tracking'}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                 </View>
                             )}
@@ -1306,8 +1355,8 @@ export default function ExerciseScreen({ navigation }) {
                                 <View style={{ flex: 1 }}>
                                     <Text style={styles.viewProgressBtnTitle}>{isSinhala ? 'ඔබේ ප්‍රගතිය' : 'Your Progress'}</Text>
                                     <Text style={styles.viewProgressBtnSub}>
-                                        {isSinhala 
-                                            ? 'ක්‍රියාකාරකම්, අනුකූලතාවය සහ සුවය ලැබීමේ ප්‍රවණතා බලන්න →' 
+                                        {isSinhala
+                                            ? 'ක්‍රියාකාරකම්, අනුකූලතාවය සහ සුවය ලැබීමේ ප්‍රවණතා බලන්න →'
                                             : 'View activities, consistency and recovery trends →'}
                                     </Text>
                                 </View>
@@ -1360,6 +1409,7 @@ export default function ExerciseScreen({ navigation }) {
                                                 onUploadVideo={handleUploadVideo}
                                                 isCompleted={rec.completed}
                                                 onProgressUpdate={handleProgressUpdate}
+                                                navigation={navigation}
                                             />
                                         ))}
                                     </ScrollView>
@@ -1382,6 +1432,7 @@ export default function ExerciseScreen({ navigation }) {
                                                 onUploadVideo={handleUploadVideo}
                                                 isCompleted={rec.completed}
                                                 onProgressUpdate={handleProgressUpdate}
+                                                navigation={navigation}
                                             />
                                         ))}
                                     </ScrollView>
@@ -2051,5 +2102,25 @@ const styles = StyleSheet.create({
     modalRightColumn: {
         flex: width > 500 ? 0.8 : 0,
         width: '100%',
+    },
+    aiTrackingBtn: {
+        backgroundColor: '#7C3AED',
+        borderRadius: 20,
+        paddingVertical: 14,
+        paddingHorizontal: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 14,
+        elevation: 3,
+        shadowColor: '#7C3AED',
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 3 }
+    },
+    aiTrackingBtnText: {
+        color: '#FFF',
+        fontWeight: '800',
+        fontSize: 14,
+        textAlign: 'center'
     },
 });

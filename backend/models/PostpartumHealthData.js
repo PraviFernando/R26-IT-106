@@ -48,6 +48,7 @@ const postpartumHealthDataSchema = new mongoose.Schema({
         thumbnailUrl: String,
         type: { type: String },
         duration: String,
+        category: Number,
         completed: { type: Boolean, default: false },
         watchPercentage: { type: Number, default: 0 }
     }]
