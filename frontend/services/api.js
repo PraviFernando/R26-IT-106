@@ -4,10 +4,10 @@ import { Platform } from 'react-native';
 const PORT = '8073';
 
 const getBaseUrl = () => {
-    if (Platform.OS === 'android') {
-        return `http://10.0.2.2:${PORT}`;
+    if (Platform.OS === 'web') {
+        return `http://localhost:${PORT}`;
     }
-    return `http://localhost:${PORT}`;
+    return `http://192.168.8.187:${PORT}`;
 };
 
 const api = axios.create({

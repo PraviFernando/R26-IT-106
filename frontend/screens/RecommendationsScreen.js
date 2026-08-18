@@ -443,6 +443,26 @@ const RecommendationsScreen = ({ navigation, route }) => {
     return HARDCODED_VIDEO_MAP[primaryReason] || null;
   })();
 
+  const isBabyFeedingRelated = (reasonOrText) => {
+    if (!reasonOrText || typeof reasonOrText !== 'string') return false;
+    const r = reasonOrText.toLowerCase();
+    return (
+      r.includes('baby_feeding') ||
+      r.includes('breastfeeding_concerns') ||
+      r.includes('baby feeding') ||
+      r.includes('feeding the baby') ||
+      r.includes('infant feeding') ||
+      r.includes('feeding difficulties') ||
+      r.includes('baby meal') ||
+      r.includes('feeding guidance') ||
+      r.includes('baby food') ||
+      r.includes('breastfeeding support') ||
+      r.includes('feeding support') ||
+      r.includes('complementary feeding') ||
+      r.includes('feeding-related')
+    );
+  };
+
   const fetchDynamicVideos = async () => {
     try {
       setLoadingVideos(true);
@@ -741,7 +761,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       </View>
                     )}
 
-                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (ප්‍රතිඵල 4)</Text>
+                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (ප්‍රතිඵල 5)</Text>
                     {loadingVideos ? (
                       <ActivityIndicator size="large" color={colors.lavenderDark} style={{ marginVertical: 20 }} />
                     ) : videoError ? (
