@@ -1,179 +1,532 @@
 const axios = require('axios');
 
-/**
- * Generates a meaningful YouTube search query based on the prediction context.
- */
-function generateQuery(reason, emotion, riskLevel, babyIntent) {
-  const normReason = reason ? reason.toLowerCase().trim() : '';
-  const normEmotion = emotion ? emotion.toLowerCase().trim() : '';
-  const isBaby = (babyIntent === 'true' || babyIntent === true || normReason.includes('baby') || normReason.includes('feeding') || normReason.includes('crying'));
+// ============================================================
+// ALL CURATED VIDEOS REPOSITORY (Flat Store)
+// ============================================================
+const ALL_CURATED_VIDEOS = {
+  // Baby Feeding / Breastfeeding
+  'qdXehiELnIA': {
+    id: 'qdXehiELnIA',
+    title: 'මව්කිරි දීම සහ කිරි වමනය (Breastfeeding & Milk Vomiting)',
+    description: 'නිවැරදිව කිරි දෙන ආකාරය සහ කිරි වමනය යාම පාලනය කරන අයුරු.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/qdXehiELnIA',
+    thumbnail: 'https://img.youtube.com/vi/qdXehiELnIA/0.jpg'
+  },
+  'n2Iu6NooqgE': {
+    id: 'n2Iu6NooqgE',
+    title: 'බබාට නිවැරදිව බර්ප් (ගුඩුස්) යවන විදිහ (How to Burp your Baby Correctly)',
+    description: 'බබාට නිවැරදිව බර්ප් (ගුඩුස්) යවන ආකාරය පිළිබඳ පියවරෙන් පියවර මඟ පෙන්වීම.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/n2Iu6NooqgE',
+    thumbnail: 'https://img.youtube.com/vi/n2Iu6NooqgE/0.jpg'
+  },
+  '_FsNGM2cIpI': {
+    id: '_FsNGM2cIpI',
+    title: 'මව්කිරි දීමේදී මවට නිවැරදි ඉරියව් (Proper Breastfeeding Positions)',
+    description: 'මව්කිරි දෙන විට මව සහ දරුවා තබාගත යුතු නිවැරදි ඉරියව්.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/_FsNGM2cIpI',
+    thumbnail: 'https://img.youtube.com/vi/_FsNGM2cIpI/0.jpg'
+  },
 
-  // 1. PRIORITIZE BABY CARE INTENTS FIRST
-  if (isBaby) {
-    if (normReason.includes('sleep')) {
-      return "baby sleep care tips for mothers";
-    }
-    if (normReason.includes('feeding') || normReason.includes('breastfeeding')) {
-      return "baby feeding guidance for mothers";
-    }
-    if (normReason.includes('crying')) {
-      return "how to calm baby how to stop crying baby identify why baby crying";
-    }
-    if (normReason.includes('needs') || normReason.includes('understanding') || normReason.includes('cue')) {
-      return "understanding baby cues why baby crying how to calm baby";
-    }
-    if (normReason.includes('health') || normReason.includes('fever')) {
-      return "newborn baby health and wellness care tips";
-    }
-    if (normReason.includes('bonding') || normReason.includes('connection')) {
-      return "mother and baby bonding techniques and activities";
-    }
-    return "newborn baby care and parenting guidance for mothers";
+  // Baby Crying
+  'kmbKaSRyZ-c': {
+    id: 'kmbKaSRyZ-c',
+    title: 'අඬන බබා නලවගන්න ක්‍රම (How to Soothe a Colic Baby)',
+    description: 'අලුත උපන් බබා නොනවත්වා හැඬීම සහ කොලික් තත්ත්වය කළමනාකරණය කරන අයුරු.',
+    channelTitle: 'DP Education - Public Health',
+    url: 'https://www.youtube.com/watch?v=kmbKaSRyZ-c',
+    thumbnail: 'https://img.youtube.com/vi/kmbKaSRyZ-c/0.jpg'
+  },
+  'n1NGKj2B2eU': {
+    id: 'n1NGKj2B2eU',
+    title: 'අලුත උපන් ඔබේ පැටියා නොනවත්වා හඩනවාද? (How to Soothe a Crying Baby)',
+    description: 'Baby colic, baby reflux සහ අඬන බබෙකු නලවා ගැනීමට ප්‍රායෝගික උපදෙස්.',
+    channelTitle: 'Suwahas Clinic',
+    url: 'https://www.youtube.com/watch?v=n1NGKj2B2eU',
+    thumbnail: 'https://img.youtube.com/vi/n1NGKj2B2eU/0.jpg'
+  },
+
+  // Baby Sleep
+  'j2C8MkY7Co8': {
+    id: 'j2C8MkY7Co8',
+    title: 'ළදරුවාට සුව නින්දක් ලබාදීමේ ක්‍රමවේද (Baby Sleep Care Tips)',
+    description: 'ළදරුවාට සුව නින්දක් ලබාදීමට මවකට කළ හැකි දේ පිළිබඳ මඟ පෙන්වීම්.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/j2C8MkY7Co8',
+    thumbnail: 'https://img.youtube.com/vi/j2C8MkY7Co8/0.jpg'
+  },
+  'JePLWMMw3z0': {
+    id: 'JePLWMMw3z0',
+    title: 'ළදරු නින්ද පිළිබඳ උපදෙස් (Newborn Bedtime Routine Guide)',
+    description: 'ළදරුවාගේ නින්ද ක්‍රමවත් කරන ආකාරය සහ නින්ද වර්ධනය කරන අයුරු.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/JePLWMMw3z0',
+    thumbnail: 'https://img.youtube.com/vi/JePLWMMw3z0/0.jpg'
+  },
+
+  // Mother Sleep Problems
+  't0kACis_dJE': {
+    id: 't0kACis_dJE',
+    title: '6 tips for better sleep | Sleeping with Science, a TED series',
+    description: 'Sleep scientist Matt Walker explains how room factors can set the stage for a better night\'s rest.',
+    channelTitle: 'TED',
+    url: 'https://youtu.be/t0kACis_dJE',
+    thumbnail: 'https://img.youtube.com/vi/t0kACis_dJE/0.jpg'
+  },
+  '-aqpq-9UcH8': {
+    id: '-aqpq-9UcH8',
+    title: 'TOP 10 Tips for Better Sleep For Parents With A Newborn Baby',
+    description: 'Get Better Sleep as a New Parent. Postpartum sleep tips to help improve your healing and mood.',
+    channelTitle: 'Bridget Teyler',
+    url: 'https://youtu.be/-aqpq-9UcH8',
+    thumbnail: 'https://img.youtube.com/vi/-aqpq-9UcH8/0.jpg'
+  },
+  'e_3UoecZlxY': {
+    id: 'e_3UoecZlxY',
+    title: '14 Tips to Fall Asleep Faster & Sleep Better',
+    description: 'Small decisions and micro-habits you can implement right now to dramatically increase sleep quality.',
+    channelTitle: 'Sleep Doctor',
+    url: 'https://youtu.be/e_3UoecZlxY',
+    thumbnail: 'https://img.youtube.com/vi/e_3UoecZlxY/0.jpg'
+  },
+
+  // Understanding Baby / Development
+  'fpiYNkkNmEo': {
+    id: 'fpiYNkkNmEo',
+    title: 'ළදරුවන් කහ වීම පිළිබඳ දැනුවත් වෙමු (Understanding Newborn Jaundice)',
+    description: 'ළදරුවන් කහ වීම පිළිබඳ දෙමාපියන් දැනුවත් විය යුතු මූලික කරුණු.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/fpiYNkkNmEo',
+    thumbnail: 'https://img.youtube.com/vi/fpiYNkkNmEo/0.jpg'
+  },
+  '6rx_-__NsjU': {
+    id: '6rx_-__NsjU',
+    title: '5 Simple Ways to Boost Your Baby’s Cognitive Brain Development',
+    description: 'Help your baby thrive with 5 brain-boosting tips from a pediatrician! Simple, everyday ways to support learning from day one.',
+    channelTitle: 'PedsDocTalk',
+    url: 'https://youtu.be/6rx_-__NsjU',
+    thumbnail: 'https://img.youtube.com/vi/6rx_-__NsjU/0.jpg'
+  },
+  'dEQOWf-NuKs': {
+    id: 'dEQOWf-NuKs',
+    title: '9 Biggest Baby Development Myths, Debunked',
+    description: 'Understanding baby development myths will help you understand what to expect and what to do when you see certain behaviors.',
+    channelTitle: 'Emma Hubbard',
+    url: 'https://youtu.be/dEQOWf-NuKs',
+    thumbnail: 'https://img.youtube.com/vi/dEQOWf-NuKs/0.jpg'
+  },
+  'SQX5Nwr4ekc': {
+    id: 'SQX5Nwr4ekc',
+    title: 'නවජන්ම දරුවන්ගේ කහ පැහැය (Newborn Skin Yellowness Guide)',
+    description: 'නවජන්ම දරුවන්ගේ කහ පැහැය හඳුනාගැනීම සහ නිසි වෛද්‍ය උපදෙස් ලබාගැනීම.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/SQX5Nwr4ekc',
+    thumbnail: 'https://img.youtube.com/vi/SQX5Nwr4ekc/0.jpg'
+  },
+
+  // General / Support Categories
+  'jzGyjLGbAUc': {
+    id: 'jzGyjLGbAUc',
+    title: 'ළදරු සෞඛ්‍යය සහ රැකවරණය (Newborn Baby Health Care Guide)',
+    description: 'නවජන්ම දරුවාගේ සෞඛ්‍යය ආරක්‍ෂා කරගැනීමේ මූලික උපදෙස්.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://www.youtube.com/watch?v=jzGyjLGbAUc',
+    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg'
+  },
+  'hrozJ-EbdGI': {
+    id: 'hrozJ-EbdGI',
+    title: 'ප්‍රසව කාංසාව සහ බිය පාලනය කිරීම (Relieving Postpartum Anxiety)',
+    description: 'බිය සහ කාංසාව පාලනය කිරීමට උපකාරී වන මෘදු හුස්ම ගැනීමේ අභ්‍යාස.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://www.youtube.com/watch?v=hrozJ-EbdGI',
+    thumbnail: 'https://img.youtube.com/vi/hrozJ-EbdGI/0.jpg'
+  },
+  'fm5ZnhqWkO8': {
+    id: 'fm5ZnhqWkO8',
+    title: 'ප්‍රසව තෙහෙට්ටුව මඟහැරීමට මවට මෘදු සංගීතය (Soothing Postpartum Relaxation Music)',
+    description: 'තෙහෙට්ටුව සහ ආතතිය දුරු කර මනස සන්සුන් කරන මෘදු සංගීතය.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://www.youtube.com/watch?v=fm5ZnhqWkO8',
+    thumbnail: 'https://img.youtube.com/vi/fm5ZnhqWkO8/0.jpg'
+  },
+  '2OEL4P1Rz04': {
+    id: '2OEL4P1Rz04',
+    title: 'තනිකම සහ හුදකලා බව මඟහරවා ගැනීම (Overcoming Loneliness in Motherhood)',
+    description: 'මවක් වූ පසු දැනෙන තනිකම සහ ඒ සඳහා කළ හැකි දේ පිළිබඳ මඟ පෙන්වීම.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://www.youtube.com/watch?v=2OEL4P1Rz04',
+    thumbnail: 'https://img.youtube.com/vi/2OEL4P1Rz04/0.jpg'
+  },
+  '1n46HPsYsHM': {
+    id: '1n46HPsYsHM',
+    title: 'දරාගත නොහැකි පීඩනය කළමනාකරණය (Coping with Overwhelm)',
+    description: 'වැඩ අධික වීම නිසා ඇතිවන පීඩනය පාලනය කිරීමට නව මව්වරුන් සඳහා උපදෙස්.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://www.youtube.com/watch?v=1n46HPsYsHM',
+    thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg'
+  },
+  'sF80I-TQiW0': {
+    id: 'sF80I-TQiW0',
+    title: 'සහයෝගය නොමැති විට කළ හැකි දේ (Coping with Lack of Support)',
+    description: 'පවුලෙන් හෝ සැමියාගෙන් සහයෝගය නොලැබෙන විට මනස සන්සුන්ව තබාගැනීම.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://www.youtube.com/watch?v=sF80I-TQiW0',
+    thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg'
+  },
+  '9Q634rbsypE': {
+    id: '9Q634rbsypE',
+    title: 'අඳුරු සිතුවිලි සහ ජීවිතය ජය ගැනීම (Overcoming Negative Thoughts)',
+    description: 'ප්‍රසූතියෙන් පසු සිතට එන අශුභවාදී සිතුවිලි දුරු කර සුවය ලබාගන්නා ආකාරය.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://www.youtube.com/watch?v=9Q634rbsypE',
+    thumbnail: 'https://img.youtube.com/vi/9Q634rbsypE/0.jpg'
+  },
+  'ZToicYcHIOU': {
+    id: 'ZToicYcHIOU',
+    title: 'ප්‍රසව ශාරීරික සුවතාවය (Postpartum Physical Recovery Guide)',
+    description: 'ප්‍රසූතියෙන් පසු ශාරීරික සුවතාවය ලබාගන්නා ආකාරය.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://www.youtube.com/watch?v=ZToicYcHIOU',
+    thumbnail: 'https://img.youtube.com/vi/ZToicYcHIOU/0.jpg'
   }
+};
 
-  // 2. MOTHER-SPECIFIC EMOTIONS & REASONS
-  if (normReason.includes('anxiety') || normEmotion.includes('anxious')) {
-    return "relaxation and stress relief techniques for mothers";
+// ============================================================
+// CURATED VIDEO LIBRARY (Nested Mapping structure)
+// ============================================================
+const CURATED_VIDEO_LIBRARY = {
+  baby_feeding: {
+    default: ['qdXehiELnIA', 'n2Iu6NooqgE', '_FsNGM2cIpI'],
+    anxious: ['hrozJ-EbdGI', 'sF80I-TQiW0'],
+    sad: ['2OEL4P1Rz04', '9Q634rbsypE'],
+    stressed: ['1n46HPsYsHM', 'fm5ZnhqWkO8']
+  },
+  baby_crying: {
+    default: ['kmbKaSRyZ-c', 'n1NGKj2B2eU'],
+    stressed: ['1n46HPsYsHM', 'fm5ZnhqWkO8'],
+    anxious: ['hrozJ-EbdGI', 'sF80I-TQiW0']
+  },
+  baby_sleep: {
+    default: ['j2C8MkY7Co8', 'n1NGKj2B2eU', 'JePLWMMw3z0'],
+    stressed: ['1n46HPsYsHM', 'fm5ZnhqWkO8']
+  },
+  mother_sleep_problems: {
+    default: ['t0kACis_dJE', '-aqpq-9UcH8', 'e_3UoecZlxY'],
+    stressed: ['1n46HPsYsHM', 'fm5ZnhqWkO8']
+  },
+  understanding_baby: {
+    default: ['fpiYNkkNmEo', '6rx_-__NsjU', 'dEQOWf-NuKs'],
+    anxious: ['hrozJ-EbdGI', 'sF80I-TQiW0']
+  },
+  baby_health: {
+    default: ['jzGyjLGbAUc'],
+    anxious: ['hrozJ-EbdGI', 'sF80I-TQiW0']
+  },
+  bonding_issues: {
+    default: ['jzGyjLGbAUc'],
+    sad: ['2OEL4P1Rz04', '9Q634rbsypE']
+  },
+  anxiety: {
+    default: ['hrozJ-EbdGI', 'sF80I-TQiW0']
+  },
+  loneliness: {
+    default: ['2OEL4P1Rz04', '9Q634rbsypE']
+  },
+  fatigue: {
+    default: ['fm5ZnhqWkO8', '1n46HPsYsHM']
+  },
+  stress: {
+    default: ['1n46HPsYsHM', 'fm5ZnhqWkO8']
+  },
+  lack_of_support: {
+    default: ['sF80I-TQiW0', '2OEL4P1Rz04']
+  },
+  negative_thoughts: {
+    default: ['9Q634rbsypE', 'hrozJ-EbdGI']
+  },
+  physical_recovery: {
+    default: ['ZToicYcHIOU', 'fm5ZnhqWkO8']
   }
-  if (normReason.includes('lonely') || normReason.includes('loneliness') || normEmotion.includes('sad')) {
-    return "emotional support and motivation for mothers";
+};
+
+// ============================================================
+// SPECIFIC VIDEO SEARCH QUERIES
+// ============================================================
+const VIDEO_SEARCH_QUERIES = {
+  baby_feeding: {
+    anxious: "breastfeeding difficulties support for new mothers",
+    stressed: "breastfeeding problems and stress support for mothers",
+    sad: "breastfeeding support for postpartum mothers",
+    default: "breastfeeding latch technique tips guidelines"
+  },
+  baby_crying: {
+    stressed: "how to soothe crying newborn baby for stressed parents",
+    anxious: "understanding why newborn babies cry and calming techniques",
+    default: "how to soothe colic crying baby newborn"
+  },
+  baby_sleep: {
+    stressed: "baby sleep tips for exhausted new mothers",
+    default: "safe baby sleep tips newborn"
+  },
+  mother_sleep_problems: {
+    stressed: "mother sleep problems new mother sleep deprivation postpartum sleep support",
+    default: "maternal sleep problems new mother sleeping guidelines"
+  },
+  understanding_baby: {
+    anxious: "understanding baby cues body language anxiety support mothers",
+    default: "understanding baby milestones body language cues"
+  },
+  baby_health: {
+    anxious: "newborn baby health wellness care tips anxiety support",
+    default: "newborn baby health wellness care tips"
+  },
+  loneliness: {
+    default: "postpartum loneliness emotional support for new mothers"
+  },
+  anxiety: {
+    default: "postpartum anxiety calming and emotional support"
+  },
+  fatigue: {
+    default: "self care and rest tips for exhausted new mothers"
+  },
+  stress: {
+    default: "stress relief and management for new mothers guide"
+  },
+  bonding_issues: {
+    default: "how to build a bond connection with newborn baby"
+  },
+  lack_of_support: {
+    default: "coping with lack of support postpartum new mother"
+  },
+  negative_thoughts: {
+    default: "postpartum intrusive thoughts and mental health help"
+  },
+  physical_recovery: {
+    default: "postpartum c section healing physical recovery tips"
   }
-  if (normReason.includes('overwhelmed') || normEmotion.includes('stressed') || normReason.includes('stress')) {
-    return "stress management and calming techniques for mothers";
-  }
-  if (normReason.includes('confidence') || normReason.includes('self-doubt')) {
-    return "building confidence and overcoming self doubt for new mothers";
-  }
-  if (normReason.includes('support') || normReason.includes('family')) {
-    return "encouragement and emotional support for new mothers";
-  }
-  if (normReason.includes('fatigue') || normReason.includes('tired') || normReason.includes('exhausted')) {
-    return "energy recovery and rest techniques for tired mothers";
-  }
-  if (normReason.includes('recovery') || normReason.includes('pain') || normReason.includes('discomfort')) {
-    return "postpartum physical recovery and gentle self care for mothers";
-  }
-  if (normReason.includes('negative')) {
-    return "overcoming negative thoughts and mental wellbeing for mothers";
-  }
+};
 
-  return "postpartum emotional wellness and self care for new mothers";
-}
+// ============================================================
+// RELEVANCE SCORE KEYWORDS
+// ============================================================
+const POSITIVE_KEYWORDS = {
+  baby_feeding: ['feed', 'feeding', 'breastfeed', 'breastfeeding', 'lactation', 'milk', 'latch', 'latching', 'burp', 'burping', 'vomit', 'vomiting', 'කිරි', 'මව්කිරි', 'ගුඩුස්'],
+  baby_sleep: ['sleep', 'sleeping', 'bedtime', 'settle', 'soothe', 'night', 'nap', 'routine', 'නින්ද', 'නිදාගන්න'],
+  mother_sleep_problems: ['sleep', 'insomnia', 'night', 'rest', 'sleepy', 'fatigue', 'tired', 'sleepless', 'deprivation', 'නින්ද', 'නිදි', 'නොයාම', 'නොයෑම', 'රාත්රී', 'රාත්‍රිය'],
+  baby_crying: ['cry', 'crying', 'cries', 'soothe', 'calm', 'settle', 'stop', 'why', 'ඇඬීම', 'අඬනවා', 'අඬන', 'newborn crying'],
+  understanding_baby: ['cue', 'cues', 'understand', 'needs', 'body language', 'jaundice', 'yellow', 'yellowness', 'කහ', 'සංඥා', 'milestones', 'development', 'cognitive', 'myth', 'myths'],
+  baby_health: ['health', 'fever', 'sick', 'wellness', 'temp', 'doctor', 'medicine', 'සෞඛ්‍යය', 'උණ', 'අසනීප'],
+  anxiety: ['anxiety', 'anxious', 'panic', 'scared', 'worry', 'worried', 'calm', 'relax', 'breathing', 'කාංසාව', 'බය'],
+  loneliness: ['lonely', 'loneliness', 'alone', 'support', 'motivation', 'depressed', 'sad', 'තනිකම', 'පාළු'],
+  fatigue: ['tired', 'fatigue', 'exhausted', 'sleepy', 'rest', 'energy', 'මහන්සි', 'වෙහෙස'],
+  stress: ['stress', 'stressed', 'pressure', 'overwhelmed', 'tension', 'management', 'පීඩනය', 'ආතතිය'],
+  lack_of_support: ['support', 'help', 'family', 'husband', 'encouragement', 'සහයෝගය', 'උදව්'],
+  negative_thoughts: ['negative', 'thoughts', 'hopeless', 'self-doubt', 'අඳුරු', 'සිතුවිලි'],
+  bonding_issues: ['bond', 'bonding', 'connect', 'attachment', 'love', 'motherhood', 'බැඳීම', 'ආදරය'],
+  physical_recovery: ['recovery', 'pain', 'physical', 'exercise', 'healing', 'stitches', 'වේදනාව', 'සුවය'],
+  general: ['postpartum', 'mother', 'mom', 'parent', 'parenting', 'wellness', 'self care', 'අම්මා', 'මව'],
+  happy: ['happy', 'joy', 'smile', 'grateful', 'positive', 'hopeful', 'good day', 'සතුටුයි', 'සතුටක්'],
+  sad: ['sad', 'cry', 'unhappy', 'depressed', 'empty', 'down', 'දුකයි', 'කඳුළු', 'අඬනවා'],
+  stressed: ['stress', 'stressed', 'pressure', 'tension', 'calm', 'relax', 'ආතතිය', 'පීඩනය'],
+  anxious: ['anxious', 'anxiety', 'worry', 'worried', 'panic', 'scared', 'බයයි', 'කනස්සල්ල']
+};
 
-/**
- * Ranks candidate videos using a lightweight scoring algorithm.
- */
-function rankVideos(videos, reason, emotion, riskLevel, babyIntent, query) {
-  const normReason = reason ? reason.toLowerCase().trim() : '';
-  const normEmotion = emotion ? emotion.toLowerCase().trim() : '';
-  const isBaby = (babyIntent === 'true' || babyIntent === true || normReason.includes('baby') || normReason.includes('feeding') || normReason.includes('crying'));
+// ============================================================
+// HELPER FUNCTIONS
+// ============================================================
+const normalizeReasonKey = (reason) => {
+  if (!reason) return 'general';
+  const r = reason.toLowerCase().trim();
+  if (r.includes('baby_feeding') || r.includes('baby feeding') || r.includes('breastfeeding_concerns')) return 'baby_feeding';
+  if (r.includes('baby_sleep') || r.includes('baby sleep')) return 'baby_sleep';
+  if (r.includes('sleep_problems') || r.includes('mother_sleep') || r.includes('mother sleep') || r.includes('sleepless')) return 'mother_sleep_problems';
+  if (r.includes('crying') || r.includes('andanawa')) return 'baby_crying';
+  if (r.includes('understanding') || r.includes('needs') || r.includes('caring') || r.includes('kaha')) return 'understanding_baby';
+  if (r.includes('health') || r.includes('fever') || r.includes('una')) return 'baby_health';
+  if (r.includes('anxiety') || r.includes('anxious') || r.includes('baya')) return 'anxiety';
+  if (r.includes('lonely') || r.includes('loneliness')) return 'loneliness';
+  if (r.includes('fatigue') || r.includes('tired') || r.includes('exhausted') || r.includes('mahansi')) return 'fatigue';
+  if (r.includes('overwhelmed') || r.includes('stressed') || r.includes('stress')) return 'stress';
+  if (r.includes('support')) return 'lack_of_support';
+  if (r.includes('negative')) return 'negative_thoughts';
+  if (r.includes('bonding')) return 'bonding_issues';
+  if (r.includes('recovery') || r.includes('pain') || r.includes('discomfort') || r.includes('physical')) return 'physical_recovery';
+  return 'general';
+};
 
-  const reasonKws = {
-    anxiety: ['anxiety', 'anxious', 'panic', 'scared', 'worry', 'worried', 'calm', 'relax', 'breathing'],
-    loneliness: ['lonely', 'loneliness', 'alone', 'support', 'motivation', 'depressed', 'sad'],
-    overwhelmed: ['overwhelmed', 'stress', 'stressed', 'calming', 'cope', 'manage', 'relief'],
-    sleep: ['sleep', 'insomnia', 'night', 'rest', 'sleepy', 'fatigue', 'tired'],
-    feeding: ['feed', 'feeding', 'breastfeed', 'breastfeeding', 'lactation', 'milk'],
-    crying: ['cry', 'crying', 'cries', 'soothe', 'calm', 'settle', 'stop', 'identify', 'why'],
-    health: ['health', 'fever', 'sick', 'wellness', 'temp', 'doctor'],
-    bonding: ['bond', 'bonding', 'connect', 'attachment', 'love', 'motherhood'],
-    confidence: ['confidence', 'self-doubt', 'failure', 'capable', 'strong']
-  };
+const normalizeEmotionKey = (emotion) => {
+  if (!emotion) return 'default';
+  const e = emotion.toLowerCase().trim();
+  if (e === 'crying') return 'sad';
+  if (e === 'tired') return 'fatigue';
+  if (e === 'angry' || e === 'frustrated') return 'stressed';
+  if (e === 'sleepy') return 'fatigue';
+  if (e === 'calm') return 'happy';
+  if (['happy', 'sad', 'stressed', 'anxious'].includes(e)) return e;
+  return 'default';
+};
 
-  let targetReasonKws = [];
-  Object.keys(reasonKws).forEach(key => {
-    if (normReason.includes(key)) {
-      targetReasonKws = targetReasonKws.concat(reasonKws[key]);
-    }
-  });
-  if (targetReasonKws.length === 0) {
-    targetReasonKws = ['postpartum', 'mother', 'mom', 'parent'];
-  }
+// ============================================================
+// CURATED VIDEO SELECTION PRIORITY LOGIC
+// ============================================================
+function getCuratedVideos(reason, emotion, babyContext) {
+  const normReason = normalizeReasonKey(reason);
+  const normEmotion = normalizeEmotionKey(emotion);
 
-  const emotionKws = {
-    sad: ['sad', 'unhappy', 'cry', 'depressed', 'mood', 'emotional', 'tear'],
-    anxious: ['anxious', 'anxiety', 'panic', 'worry', 'scared', 'fear'],
-    stressed: ['stress', 'stressed', 'pressure', 'overwhelmed', 'tension'],
-    tired: ['tired', 'fatigue', 'exhausted', 'sleepy', 'rest', 'energy'],
-    angry: ['angry', 'anger', 'frustrated', 'irritated', 'calm']
-  };
+  const curatedList = [];
+  const seenIds = new Set();
 
-  let targetEmotionKws = emotionKws[normEmotion] || [];
-  const babyKws = ['baby', 'newborn', 'infant', 'child', 'toddler', 'feeding', 'crying', 'lullaby', 'motherhood', 'parenting'];
-
-  const queryWords = query.toLowerCase()
-    .split(/\s+/)
-    .filter(w => w.length > 2 && !['for', 'and', 'the', 'techniques', 'tips', 'guide', 'how', 'with', 'mothers', 'moms'].includes(w));
-
-  return videos.map(video => {
-    const title = (video.title || '').toLowerCase();
-    const desc = (video.description || '').toLowerCase();
-
-    // 1. Reason Relevance
-    let reasonRelevance = 0;
-    targetReasonKws.forEach(kw => {
-      if (title.includes(kw)) reasonRelevance += 5;
-      else if (desc.includes(kw)) reasonRelevance += 2;
-    });
-
-    // 2. Emotion Relevance
-    let emotionRelevance = 0;
-    targetEmotionKws.forEach(kw => {
-      if (title.includes(kw)) emotionRelevance += 3;
-      else if (desc.includes(kw)) emotionRelevance += 1;
-    });
-
-    // 3. Baby Intent Relevance
-    let babyIntentRelevance = 0;
-    if (isBaby) {
-      babyKws.forEach(kw => {
-        if (title.includes(kw)) babyIntentRelevance += 4;
-        else if (desc.includes(kw)) babyIntentRelevance += 1;
+  const addVideo = (vId) => {
+    if (!vId) return;
+    if (seenIds.has(vId)) return;
+    const details = ALL_CURATED_VIDEOS[vId];
+    if (details) {
+      curatedList.push({
+        ...details,
+        reason: normReason,
+        source: 'curated'
       });
+      seenIds.add(vId);
     }
+  };
 
-    // 4. Keyword Relevance
-    let keywordRelevance = 0;
-    queryWords.forEach(word => {
-      if (title.includes(word)) keywordRelevance += 3;
-      if (desc.includes(word)) keywordRelevance += 1;
-    });
+  const reasonConfig = CURATED_VIDEO_LIBRARY[normReason] || CURATED_VIDEO_LIBRARY.stress;
 
-    const score = reasonRelevance + emotionRelevance + babyIntentRelevance + keywordRelevance;
+  // 1. Primary Reason Video (Video 1)
+  const primaryId = reasonConfig.default?.[0];
+  addVideo(primaryId);
 
-    return {
-      ...video,
-      score,
-      scoreBreakdown: {
-        reasonRelevance,
-        emotionRelevance,
-        babyIntentRelevance,
-        keywordRelevance
+  // 2. Emotion Specific Video (Video 2)
+  const emotionSpecificId = reasonConfig[normEmotion]?.[0];
+  if (emotionSpecificId) {
+    addVideo(emotionSpecificId);
+  } else {
+    // Try the general emotion category default
+    const fallbackEmotionCat = CURATED_VIDEO_LIBRARY[normEmotion];
+    if (fallbackEmotionCat && fallbackEmotionCat.default?.[0]) {
+      addVideo(fallbackEmotionCat.default[0]);
+    }
+  }
+
+  // 3. Supportive / Relaxation Video (Video 3)
+  const emotionSpecificSecondId = reasonConfig[normEmotion]?.[1];
+  if (emotionSpecificSecondId) {
+    addVideo(emotionSpecificSecondId);
+  } else {
+    // Fallback to relaxation/stress reduction video as default
+    const supportiveId = 'fm5ZnhqWkO8'; // Soothing Postpartum Relaxation Music
+    addVideo(supportiveId);
+  }
+
+  // If still fewer than 3, fill from the reason's default list
+  if (curatedList.length < 3 && reasonConfig.default) {
+    reasonConfig.default.forEach(vId => {
+      if (curatedList.length < 3) {
+        addVideo(vId);
       }
-    };
-  });
+    });
+  }
+
+  return curatedList.slice(0, 3);
 }
 
-/**
- * Helper to fetch candidates from YouTube Search API.
- */
-async function fetchYouTubeItems(query, apiKey) {
+// ============================================================
+// SEARCH QUERY GENERATION
+// ============================================================
+function getSearchQuery(reason, emotion, babyContext) {
+  const normReason = normalizeReasonKey(reason);
+  const normEmotion = normalizeEmotionKey(emotion);
+
+  const reasonQueries = VIDEO_SEARCH_QUERIES[normReason] || VIDEO_SEARCH_QUERIES.loneliness;
+  let query = reasonQueries[normEmotion] || reasonQueries.default;
+  if (!query) {
+    query = reasonQueries.default || "postpartum emotional wellness self care tips mothers sinhala";
+  }
+  return query;
+}
+
+// ============================================================
+// RELEVANCE SCORING
+// ============================================================
+function scoreApiVideo(video, normReason, normEmotion, babyContext) {
+  let score = 0;
+  const title = (video.title || '').toLowerCase();
+  const desc = (video.description || '').toLowerCase();
+  const fullText = title + ' ' + desc;
+
+  // 1. Negative Filtering / Hard exclusion (-50)
+  const negativeKws = [
+    'workout', 'weight loss', 'exercise routine', 'pregnancy workout', 'gym', 'fitness',
+    'shorts', '#shorts', 'broken', 'status', 'whatsapp status', 'funny', 'fail', 'movie', 
+    'trailer', 'song', 'music video', 'cover', 'unrelated', 'comedy', 'prank', 'celebrity',
+    'gossip', 'drama', 'official video', 'teaser'
+  ];
+  const hasNegative = negativeKws.some(kw => title.includes(kw) || desc.includes(kw));
+  if (hasNegative) {
+    return -50; // Heavily penalize or reject
+  }
+
+  // 2. Reason Match (+5)
+  const reasonKeywords = POSITIVE_KEYWORDS[normReason] || POSITIVE_KEYWORDS.general;
+  const matchesReason = reasonKeywords.some(kw => title.includes(kw));
+  if (matchesReason) {
+    score += 5;
+  }
+  
+  // 3. Description Match (+3)
+  const matchesDesc = reasonKeywords.some(kw => desc.includes(kw));
+  if (matchesDesc) {
+    score += 3;
+  }
+
+  // 4. Emotion Match (+2)
+  const emotionKeywords = POSITIVE_KEYWORDS[normEmotion] || [];
+  const matchesEmotion = emotionKeywords.some(kw => fullText.includes(kw));
+  if (matchesEmotion) {
+    score += 2;
+  }
+
+  // 5. Baby Context Match (+4 when babyContext is active)
+  if (babyContext || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_health', 'bonding_issues'].includes(normReason)) {
+    const babyWords = ['baby', 'newborn', 'infant', 'child', 'toddler', 'ළදරු', 'බබා', 'දරුවා'];
+    const hasBabyWord = babyWords.some(w => fullText.includes(w));
+    if (hasBabyWord) {
+      score += 4;
+    }
+  }
+
+  // 6. Localized/Sinhala Relevance (+2)
+  const hasSinhalaScript = /[\u0D80-\u0DFF]/.test(fullText);
+  if (hasSinhalaScript) {
+    score += 2;
+  }
+
+  // 7. Relevant content keyword booster (+2)
+  const wellnessKeywords = ['care', 'parenting', 'maternal', 'postpartum', 'health', 'guide', 'tips', 'advice', 'soothe', 'education'];
+  const hasWellness = wellnessKeywords.some(w => fullText.includes(w));
+  if (hasWellness) {
+    score += 2;
+  }
+
+  return score;
+}
+
+async function fetchYouTubeItems(query, apiKey, maxResults = 10) {
   const url = 'https://www.googleapis.com/youtube/v3/search';
   const response = await axios.get(url, {
     params: {
       part: 'snippet',
       q: query,
       type: 'video',
-      maxResults: 10,
+      maxResults: maxResults,
       key: apiKey
     }
   });
   return response.data?.items || [];
 }
 
-/**
- * Helper to normalize raw search results from YouTube.
- */
 function normalizeVideoItem(item) {
   const videoId = item.id?.videoId;
   return {
@@ -187,327 +540,107 @@ function normalizeVideoItem(item) {
   };
 }
 
-/**
- * Returns a baby care specific search query.
- */
-function getBabyQuery(reason, emotion) {
-  const normReason = reason ? reason.toLowerCase().trim() : '';
-  if (normReason.includes('sleep')) {
-    return "baby sleep care tips for mothers";
-  }
-  if (normReason.includes('feeding') || normReason.includes('breastfeeding')) {
-    return "baby feeding guidance for mothers";
-  }
-  if (normReason.includes('crying')) {
-    return "how to calm baby how to stop crying baby identify why baby crying";
-  }
-  if (normReason.includes('needs') || normReason.includes('understanding') || normReason.includes('cue')) {
-    return "understanding baby cues why baby crying how to calm baby";
-  }
-  if (normReason.includes('health') || normReason.includes('fever')) {
-    return "newborn baby health and wellness care tips";
-  }
-  if (normReason.includes('bonding') || normReason.includes('connection')) {
-    return "mother and baby bonding techniques and activities";
-  }
-  return "newborn baby care and parenting guidance for mothers";
+// Keep legacy generateQuery for compatibility if needed elsewhere
+function generateQuery(reason, emotion, riskLevel, babyIntent) {
+  const normReason = normalizeReasonKey(reason);
+  const queries = VIDEO_SEARCH_QUERIES[normReason] || VIDEO_SEARCH_QUERIES.loneliness;
+  return queries.default;
 }
 
-/**
- * Returns a mother recovery and relaxation specific search query.
- */
-function getMotherQuery(reason, emotion) {
-  const normReason = reason ? reason.toLowerCase().trim() : '';
-  const normEmotion = emotion ? emotion.toLowerCase().trim() : '';
-
-  if (normReason.includes('anxiety') || normEmotion.includes('anxious')) {
-    return "relaxation and stress relief techniques for mothers";
-  }
-  if (normReason.includes('lonely') || normReason.includes('loneliness') || normEmotion.includes('sad')) {
-    return "emotional support and motivation for mothers";
-  }
-  if (normReason.includes('overwhelmed') || normEmotion.includes('stressed') || normReason.includes('stress')) {
-    return "stress management and calming techniques for mothers";
-  }
-  if (normReason.includes('fatigue') || normReason.includes('tired') || normReason.includes('exhausted') || normEmotion.includes('tired')) {
-    return "energy recovery and rest techniques for tired mothers";
-  }
-  if (normReason.includes('recovery') || normReason.includes('pain') || normReason.includes('discomfort')) {
-    return "postpartum physical recovery and gentle self care for mothers";
-  }
-  if (normReason.includes('negative')) {
-    return "overcoming negative thoughts and mental wellbeing for mothers";
-  }
-  return "postpartum emotional wellness and self care for new mothers";
-}
-
-/**
- * Dynamic YouTube Service: Fetch candidates and return top 4 ranked videos.
- * Alternates between baby care and mother support when both contexts are active.
- */
-const PREFERRED_BABY_VIDEOS = {
-  crying: {
-    id: 'UrfpkvvRTns',
-    title: 'බබා ඇඬීම නැවැත්වීමට සහ සන්සුන් කිරීමට මඟ පෙන්වීම් (Calming a Crying Baby Guide)',
-    description: 'බබා ඇඬීමට හේතු හඳුනාගෙන ඉක්මනින් සන්සුන් කරන ආකාරය.',
-    thumbnail: 'https://img.youtube.com/vi/UrfpkvvRTns/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=UrfpkvvRTns'
-  },
-  feeding: {
-    id: 'Uz978b7Gsm4',
-    title: 'නවජන්ම දරුවාට කිරි දීම සහ නිවැරදිව තබාගැනීම (Breastfeeding Latch Tips for Newborn)',
-    description: 'නිවැරදිව කිරි දෙන ආකාරය සහ ගැටලු මඟහරවා ගන්නා ආකාරය පිළිබඳ උපදෙස්.',
-    thumbnail: 'https://img.youtube.com/vi/Uz978b7Gsm4/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=Uz978b7Gsm4'
-  },
-  sleep: {
-    id: 'y23E11d8p08',
-    title: 'ළදරුවාට සුව නින්දක් ලබාදීමේ ක්‍රමවේද (Baby Sleep Care Tips)',
-    description: 'බබාට රාත්‍රියේ හොඳින් නිදා ගැනීමට උපකාරී වන ක්‍රමවේද සහ උපදෙස්.',
-    thumbnail: 'https://img.youtube.com/vi/y23E11d8p08/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=y23E11d8p08'
-  },
-  health: {
-    id: 'jzGyjLGbAUc',
-    title: 'ළදරු සෞඛ්‍යය සහ රැකවරණය (Newborn Baby Health Care Guide)',
-    description: 'නවජන්ම දරුවාගේ සෞඛ්‍යය ආරක්‍ෂා කරගැනීමේ මූලික උපදෙස්.',
-    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=jzGyjLGbAUc'
-  },
-  bonding: {
-    id: 'jzGyjLGbAUc',
-    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
-    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
-    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=jzGyjLGbAUc'
-  }
-};
-
-const PREFERRED_MOTHER_VIDEOS = {
-  anxiety: {
-    id: 'hrozJ-EbdGI',
-    title: 'ප්‍රසව කාංසාව සහ බිය පාලනය කිරීම (Relieving Postpartum Anxiety)',
-    description: 'බිය සහ කාංසාව පාලනය කිරීමට උපකාරී වන මෘදු හුස්ම ගැනීමේ අභ්‍යාස.',
-    thumbnail: 'https://img.youtube.com/vi/hrozJ-EbdGI/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=hrozJ-EbdGI'
-  },
-  fatigue: {
-    id: 'fm5ZnhqWkO8',
-    title: 'ප්‍රසව තෙහෙට්ටුව මඟහැරීමට මවට මෘදු සංගීතය (Soothing Postpartum Relaxation Music)',
-    description: 'තෙහෙට්ටුව සහ ආතතිය දුරු කර මනස සන්සුන් කරන මෘදු සංගීතය.',
-    thumbnail: 'https://img.youtube.com/vi/fm5ZnhqWkO8/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=fm5ZnhqWkO8'
-  },
-  loneliness: {
-    id: '2OEL4P1Rz04',
-    title: 'තනිකම සහ හුදකලා බව මඟහරවා ගැනීම (Overcoming Loneliness in Motherhood)',
-    description: 'මවක් වූ පසු දැනෙන තනිකම සහ ඒ සඳහා කළ හැකි දේ පිළිබඳ මඟ පෙන්වීම.',
-    thumbnail: 'https://img.youtube.com/vi/2OEL4P1Rz04/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=2OEL4P1Rz04'
-  },
-  overwhelmed: {
-    id: '1n46HPsYsHM',
-    title: 'දරාගත නොහැකි පීඩනය කළමනාකරණය (Coping with Overwhelm)',
-    description: 'වැඩ අධික වීම නිසා ඇතිවන පීඩනය පාලනය කිරීමට නව මව්වරුන් සඳහා උපදෙස්.',
-    thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=1n46HPsYsHM'
-  },
-  support: {
-    id: 'sF80I-TQiW0',
-    title: 'සහයෝගය නොමැති විට කළ හැකි දේ (Coping with Lack of Support)',
-    description: 'පවුලෙන් හෝ සැමියාගෙන් සහයෝගය නොලැබෙන විට මනස සන්සුන්ව තබාගැනීම.',
-    thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=sF80I-TQiW0'
-  },
-  negative: {
-    id: '9Q634rbsypE',
-    title: 'අඳුරු සිතුවිලි සහ ජීවිතය ජය ගැනීම (Overcoming Negative Thoughts)',
-    description: 'ප්‍රසූතියෙන් පසු සිතට එන අශුභවාදී සිතුවිලි දුරු කර සුවය ලබාගන්නා ආකාරය.',
-    thumbnail: 'https://img.youtube.com/vi/9Q634rbsypE/0.jpg',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://www.youtube.com/watch?v=9Q634rbsypE'
-  }
-};
-
-function isLowQuality(video) {
-  const title = (video.title || '').toLowerCase();
-  const desc = (video.description || '').toLowerCase();
-  
-  // Unwanted keywords matching clickbait/shorts/irrelevant videos
-  const unwanted = [
-    '#shorts', '#status', '#broken', '#sad', '#emotional', 'my mom once said', 
-    'unavailable mothers', 'immature parents', '2gIwyFQfzsI', 'steve harvey', 'short'
-  ];
-  return unwanted.some(kw => title.includes(kw) || desc.includes(kw) || video.id === '2gIwyFQfzsI');
-}
-
-/**
- * Dynamic YouTube Service: Fetch candidates and return top 4 ranked videos.
- * Alternates between baby care and mother support when both contexts are active.
- */
+// ============================================================
+// MAIN HYBRID RECOMMENDATION PIPELINE
+// ============================================================
 async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent) {
+  const normReason = normalizeReasonKey(reason);
+  const normEmotion = normalizeEmotionKey(emotion);
+  const isBaby = (babyIntent === 'true' || babyIntent === true || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_health', 'bonding_issues'].includes(normReason));
+
+  console.log(`\n--- [HYBRID VIDEO RECOMS] ---`);
+  console.log(`Inputs: reason=${reason}, emotion=${emotion}, babyIntent=${babyIntent}`);
+  console.log(`Resolved: reason=${normReason}, emotion=${normEmotion}, babyContext=${isBaby}`);
+
+  // 1. Get Curated Videos (Max 3)
+  const curated = getCuratedVideos(reason, emotion, isBaby);
+  console.log(`Curated videos resolved: ${curated.length}`);
+
+  // 2. Determine search query
+  const searchQuery = getSearchQuery(reason, emotion, isBaby);
+  console.log(`Search query: ${searchQuery}`);
+
+  let apiVideos = [];
   const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) {
-    throw new Error('YOUTUBE_API_KEY is not defined in environment variables');
-  }
 
-  const normReason = reason ? reason.toLowerCase().trim() : '';
-  const normEmotion = emotion ? emotion.toLowerCase().trim() : '';
-  const isBaby = (babyIntent === 'true' || babyIntent === true || normReason.includes('baby') || normReason.includes('feeding') || normReason.includes('crying'));
-  
-  // Detect if we need a hybrid query (both baby care and mother wellness are active)
-  const isHybrid = isBaby && (
-    normEmotion === 'sad' || normEmotion === 'anxious' || normEmotion === 'stressed' || normEmotion === 'tired' ||
-    normReason.includes('fatigue') || normReason.includes('anxiety') || normReason.includes('lonely') || normReason.includes('overwhelmed')
-  );
+  if (apiKey) {
+    try {
+      console.log(`Calling YouTube API...`);
+      // Fetch 10-15 candidate videos
+      const items = await fetchYouTubeItems(searchQuery, apiKey, 15);
+      console.log(`YouTube API candidate results received: ${items.length}`);
 
-  try {
-    if (isHybrid) {
-      const babyQuery = getBabyQuery(reason, emotion);
-      const motherQuery = getMotherQuery(reason, emotion);
+      const normalized = items.map(item => normalizeVideoItem(item)).filter(v => v.id);
 
-      // Fetch candidates for both queries in parallel
-      const [babyItems, motherItems] = await Promise.all([
-        fetchYouTubeItems(babyQuery, apiKey),
-        fetchYouTubeItems(motherQuery, apiKey)
-      ]);
-
-      // Normalize candidates and filter out low quality videos
-      let babyCandidates = babyItems.map(item => normalizeVideoItem(item)).filter(v => v.id && !isLowQuality(v));
-      let motherCandidates = motherItems.map(item => normalizeVideoItem(item)).filter(v => v.id && !isLowQuality(v));
-
-      // 1. Resolve preferred baby video dynamically based on topic
-      let prefBaby = null;
-      if (normReason.includes('crying')) {
-        prefBaby = PREFERRED_BABY_VIDEOS.crying;
-      } else if (normReason.includes('feeding') || normReason.includes('breastfeeding')) {
-        prefBaby = PREFERRED_BABY_VIDEOS.feeding;
-      } else if (normReason.includes('sleep')) {
-        prefBaby = PREFERRED_BABY_VIDEOS.sleep;
-      } else if (normReason.includes('health') || normReason.includes('fever')) {
-        prefBaby = PREFERRED_BABY_VIDEOS.health;
-      } else {
-        prefBaby = PREFERRED_BABY_VIDEOS.bonding;
-      }
-
-      if (prefBaby && !babyCandidates.some(v => v.id === prefBaby.id)) {
-        babyCandidates.unshift(prefBaby);
-      }
-
-      // 2. Resolve preferred mother video dynamically based on topic/emotion
-      let prefMother = null;
-      if (normReason.includes('fatigue') || normReason.includes('tired') || normEmotion.includes('tired')) {
-        prefMother = PREFERRED_MOTHER_VIDEOS.fatigue;
-      } else if (normReason.includes('anxiety') || normEmotion.includes('anxious') || normEmotion.includes('baya')) {
-        prefMother = PREFERRED_MOTHER_VIDEOS.anxiety;
-      } else if (normReason.includes('lonely') || normReason.includes('loneliness') || normEmotion.includes('sad')) {
-        prefMother = PREFERRED_MOTHER_VIDEOS.loneliness;
-      } else if (normReason.includes('overwhelmed') || normEmotion.includes('stressed') || normEmotion.includes('stress')) {
-        prefMother = PREFERRED_MOTHER_VIDEOS.overwhelmed;
-      } else if (normReason.includes('support')) {
-        prefMother = PREFERRED_MOTHER_VIDEOS.support;
-      } else if (normReason.includes('negative')) {
-        prefMother = PREFERRED_MOTHER_VIDEOS.negative;
-      } else {
-        prefMother = PREFERRED_MOTHER_VIDEOS.fatigue; // fallback
-      }
-
-      if (prefMother && !motherCandidates.some(v => v.id === prefMother.id)) {
-        motherCandidates.unshift(prefMother);
-      }
-
-      // Rank them separately
-      const rankedBaby = rankVideos(babyCandidates, reason, emotion, riskLevel, babyIntent, babyQuery);
-      const rankedMother = rankVideos(motherCandidates, reason, emotion, riskLevel, babyIntent, motherQuery);
-
-      // Force injected preferred videos to have highest scores so they always win
-      const allPrefIds = [
-        ...Object.values(PREFERRED_BABY_VIDEOS).map(v => v.id),
-        ...Object.values(PREFERRED_MOTHER_VIDEOS).map(v => v.id)
-      ];
-
-      rankedBaby.forEach(v => {
-        if (allPrefIds.includes(v.id)) v.score = 999;
+      // Score and rank candidates
+      let scored = normalized.map(v => {
+        const score = scoreApiVideo(v, normReason, normEmotion, isBaby);
+        return { ...v, score, source: 'youtube' };
       });
-      rankedMother.forEach(v => {
-        if (allPrefIds.includes(v.id)) v.score = 999;
+
+      // Filter by threshold & enforce safety exclusions globally
+      const threshold = 5;
+      let filtered = scored.filter(v => {
+        const titleLower = v.title.toLowerCase();
+        if (
+          v.id === 'UrfpkvvRTns' || 
+          v.id === 'LjdtfeVxRm0' || 
+          v.id === 'pbKy4RPq6gI' ||
+          titleLower.includes('grammarly') || 
+          titleLower.includes('body language tricks')
+        ) {
+          console.log(`[DEBUG fetchAndRankVideos] Filtered out blacklisted video: ${v.title}`);
+          return false;
+        }
+        return v.score >= threshold;
       });
+
+      console.log(`Candidates filtered/rejected: ${scored.length - filtered.length}`);
+
+      // De-duplicate against curated list
+      const curatedIds = new Set(curated.map(c => c.id));
+      filtered = filtered.filter(v => !curatedIds.has(v.id));
 
       // Sort descending by score
-      rankedBaby.sort((a, b) => b.score - a.score);
-      rankedMother.sort((a, b) => b.score - a.score);
+      filtered.sort((a, b) => b.score - a.score);
 
-      // Alternating selection to guarantee a hybrid mix
-      const finalVideos = [];
-      const maxLen = Math.max(rankedBaby.length, rankedMother.length);
-      for (let i = 0; i < maxLen; i++) {
-        if (rankedBaby[i]) finalVideos.push(rankedBaby[i]);
-        if (rankedMother[i]) finalVideos.push(rankedMother[i]);
-        if (finalVideos.length >= 4) break;
-      }
-
-      return finalVideos.slice(0, 4);
-    } else {
-      // Standard single query path
-      const query = generateQuery(reason, emotion, riskLevel, babyIntent);
-      const items = await fetchYouTubeItems(query, apiKey);
-      let candidates = items.map(item => normalizeVideoItem(item)).filter(v => v.id && !isLowQuality(v));
-
-      if (isBaby) {
-        let prefBaby = null;
-        if (normReason.includes('crying')) prefBaby = PREFERRED_BABY_VIDEOS.crying;
-        else if (normReason.includes('feeding') || normReason.includes('breastfeeding')) prefBaby = PREFERRED_BABY_VIDEOS.feeding;
-        else if (normReason.includes('sleep')) prefBaby = PREFERRED_BABY_VIDEOS.sleep;
-        else if (normReason.includes('health') || normReason.includes('fever')) prefBaby = PREFERRED_BABY_VIDEOS.health;
-        else prefBaby = PREFERRED_BABY_VIDEOS.bonding;
-
-        if (prefBaby && !candidates.some(v => v.id === prefBaby.id)) {
-          candidates.unshift(prefBaby);
-        }
-      } else {
-        let prefMother = null;
-        if (normReason.includes('fatigue') || normReason.includes('tired') || normEmotion.includes('tired')) prefMother = PREFERRED_MOTHER_VIDEOS.fatigue;
-        else if (normReason.includes('anxiety') || normEmotion.includes('anxious')) prefMother = PREFERRED_MOTHER_VIDEOS.anxiety;
-        else if (normReason.includes('lonely') || normReason.includes('loneliness') || normEmotion.includes('sad')) prefMother = PREFERRED_MOTHER_VIDEOS.loneliness;
-        else if (normReason.includes('overwhelmed') || normEmotion.includes('stressed')) prefMother = PREFERRED_MOTHER_VIDEOS.overwhelmed;
-        else if (normReason.includes('support')) prefMother = PREFERRED_MOTHER_VIDEOS.support;
-        else if (normReason.includes('negative')) prefMother = PREFERRED_MOTHER_VIDEOS.negative;
-        else prefMother = PREFERRED_MOTHER_VIDEOS.fatigue;
-
-        if (prefMother && !candidates.some(v => v.id === prefMother.id)) {
-          candidates.unshift(prefMother);
-        }
-      }
-
-      const scoredVideos = rankVideos(candidates, reason, emotion, riskLevel, babyIntent, query);
-      const allPrefIds = [
-        ...Object.values(PREFERRED_BABY_VIDEOS).map(v => v.id),
-        ...Object.values(PREFERRED_MOTHER_VIDEOS).map(v => v.id)
-      ];
-      scoredVideos.forEach(v => {
-        if (allPrefIds.includes(v.id)) v.score = 999;
-      });
-
-      scoredVideos.sort((a, b) => b.score - a.score);
-      return scoredVideos.slice(0, 4);
+      // Select top 2
+      apiVideos = filtered.slice(0, 2);
+      console.log(`Final API results selected (Max 2): ${apiVideos.length}`);
+    } catch (err) {
+      console.error('YouTube Service API error:', err.message);
     }
-  } catch (error) {
-    console.error('YouTube Service API error:', error.message);
-    throw new Error('Failed to fetch videos from YouTube');
+  } else {
+    console.log('No YOUTUBE_API_KEY. Returning curated videos only.');
   }
+
+  // Combine curated + API
+  const merged = [...curated, ...apiVideos];
+
+  // Final deduplication & capping at 5
+  const seenIds = new Set();
+  const finalVideos = [];
+  for (let v of merged) {
+    if (!seenIds.has(v.id)) {
+      seenIds.add(v.id);
+      finalVideos.push(v);
+    }
+  }
+
+  const capped = finalVideos.slice(0, 5);
+  console.log(`Final recommendations merged: ${capped.length}`);
+  return capped;
 }
 
 module.exports = {
   generateQuery,
+  getCuratedVideos,
   fetchAndRankVideos
 };

@@ -10,8 +10,8 @@ export const BABY_VIDEO_LIBRARY = {
       title: 'Breastfeeding Basics & How to Latch',
       category: 'Baby Feeding',
       ages: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-      tags: ['breastfeeding', 'latch', 'mother milk'],
-      url: 'https://www.youtube.com/results?search_query=how+to+breastfeed+a+baby+properly+latch',
+      tags: ['breastfeeding', 'latch', 'mother milk', 'feeding', 'baby feeding'],
+      url: 'https://youtu.be/iKSSi5pi57I?si=ZzW24HxSWHe2vzHa',
       description: 'Techniques for feeding mother\'s milk and ensuring baby latches properly.',
       emoji: '🤱',
     },
@@ -19,31 +19,21 @@ export const BABY_VIDEO_LIBRARY = {
       id: 'bf2',
       title: 'What to Do if Baby is Not Latching',
       category: 'Baby Feeding',
-      ages: [1, 2, 3, 4],
-      tags: ['latch', 'not latching', 'struggling'],
-      url: 'https://www.youtube.com/results?search_query=what+to+do+if+baby+wont+latch+breastfeeding',
+      ages: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      tags: ['latch', 'not latching', 'struggling', 'feeding', 'baby feeding'],
+      url: 'https://youtu.be/Nda1caXcvwk?si=G48OEIh6tW3hV5Rc',
       description: 'Solutions for when your baby is having trouble sucking or latching properly.',
       emoji: '⚠️',
     },
     {
       id: 'bf3',
-      title: 'How to Prepare and Give Formula Milk',
+      title: 'Baby Meal & Feeding Guidance',
       category: 'Baby Feeding',
       ages: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-      tags: ['formula', 'bottle', 'preparation'],
-      url: 'https://www.youtube.com/results?search_query=how+to+prepare+formula+milk+for+baby',
-      description: 'Safe preparation and feeding methods for formula milk.',
+      tags: ['complementary', 'baby food', 'feeding', 'baby feeding'],
+      url: 'https://youtu.be/3189HavdQfc?si=Gj44W-WR62w25E95',
+      description: 'Step-by-step guidance on baby feeding and food preparation.',
       emoji: '🍼',
-    },
-    {
-      id: 'bf4',
-      title: 'How to Burp Your Baby Effectively',
-      category: 'Baby Feeding',
-      ages: [1, 2, 3, 4, 5, 6],
-      tags: ['burping', 'gas'],
-      url: 'https://www.youtube.com/results?search_query=how+to+burp+a+newborn+baby',
-      description: 'Essential techniques for burping your baby effectively to avoid gas.',
-      emoji: '🌬️',
     },
   ],
 
@@ -304,3 +294,8 @@ export const BABY_VIDEO_LIBRARY = {
     },
   ],
 };
+
+export const getAllBabyVideos = () => {
+  return Object.values(BABY_VIDEO_LIBRARY).flat();
+};
+

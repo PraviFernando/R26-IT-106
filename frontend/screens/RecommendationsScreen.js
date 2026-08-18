@@ -19,6 +19,7 @@ import { MUSIC_LIBRARY } from '../services/mediaLibrary';
 import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibrary';
 import { KNOWLEDGE_CATEGORIES, KNOWLEDGE_RESOURCES } from '../services/knowledgeLibrary';
 import api from '../services/api';
+import { openYouTubeLink } from '../utils/openYouTube';
 
 const { width } = Dimensions.get('window');
 
@@ -183,12 +184,12 @@ const HARDCODED_VIDEO_MAP = {
     thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
   },
   baby_crying: {
-    id: 'jzGyjLGbAUc',
-    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
-    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
+    id: 'UrfpkvvRTns',
+    title: 'බබා ඇඬීම නැවැත්වීමට සහ සන්සුන් කිරීමට මඟ පෙන්වීම් (Calming a Crying Baby Guide)',
+    description: 'බබා ඇඬීමට හේතු හඳුනාගෙන ඉක්මනින් සන්සුන් කරන ආකාරය.',
     channelTitle: 'Bloom Supportive Care',
-    url: 'https://youtu.be/jzGyjLGbAUc',
-    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+    url: 'https://youtu.be/UrfpkvvRTns',
+    thumbnail: 'https://img.youtube.com/vi/UrfpkvvRTns/0.jpg',
   },
   baby_needs: {
     id: 'jzGyjLGbAUc',
@@ -199,25 +200,25 @@ const HARDCODED_VIDEO_MAP = {
     thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
   },
   baby_feeding: {
-    id: 'jzGyjLGbAUc',
-    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
-    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
+    id: 'Uz978b7Gsm4',
+    title: 'නවජන්ම දරුවාට කිරි දීම සහ නිවැරදිව තබාගැනීම (Breastfeeding Latch Tips for Newborn)',
+    description: 'නිවැරදිව කිරි දෙන ආකාරය සහ ගැටලු මඟහරවා ගන්නා ආකාරය පිළිබඳ උපදෙස්.',
     channelTitle: 'Bloom Supportive Care',
-    url: 'https://youtu.be/jzGyjLGbAUc',
-    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+    url: 'https://youtu.be/Uz978b7Gsm4',
+    thumbnail: 'https://img.youtube.com/vi/Uz978b7Gsm4/0.jpg',
   },
   baby_sleep: {
-    id: 'jzGyjLGbAUc',
-    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
-    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
+    id: 'y23E11d8p08',
+    title: 'ළදරුවාට සුව නින්දක් ලබාදීමේ ක්‍රමවේද (Baby Sleep Care Tips)',
+    description: 'බබාට රාත්‍රියේ හොඳින් නිදා ගැනීමට උපකාරී වන ක්‍රමවේද සහ උපදෙස්.',
     channelTitle: 'Bloom Supportive Care',
-    url: 'https://youtu.be/jzGyjLGbAUc',
-    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+    url: 'https://youtu.be/y23E11d8p08',
+    thumbnail: 'https://img.youtube.com/vi/y23E11d8p08/0.jpg',
   },
   baby_health: {
     id: 'jzGyjLGbAUc',
-    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
-    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
+    title: 'ළදරු සෞඛ්‍යය සහ රැකවරණය (Newborn Baby Health Care Guide)',
+    description: 'නවජන්ම දරුවාගේ සෞඛ්‍යය ආරක්‍ෂා කරගැනීමේ මූලික උපදෙස්.',
     channelTitle: 'Bloom Supportive Care',
     url: 'https://youtu.be/jzGyjLGbAUc',
     thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
@@ -441,6 +442,26 @@ const RecommendationsScreen = ({ navigation, route }) => {
     // 2. Fallback to local map based on primaryReason
     return HARDCODED_VIDEO_MAP[primaryReason] || null;
   })();
+
+  const isBabyFeedingRelated = (reasonOrText) => {
+    if (!reasonOrText || typeof reasonOrText !== 'string') return false;
+    const r = reasonOrText.toLowerCase();
+    return (
+      r.includes('baby_feeding') ||
+      r.includes('breastfeeding_concerns') ||
+      r.includes('baby feeding') ||
+      r.includes('feeding the baby') ||
+      r.includes('infant feeding') ||
+      r.includes('feeding difficulties') ||
+      r.includes('baby meal') ||
+      r.includes('feeding guidance') ||
+      r.includes('baby food') ||
+      r.includes('breastfeeding support') ||
+      r.includes('feeding support') ||
+      r.includes('complementary feeding') ||
+      r.includes('feeding-related')
+    );
+  };
 
   const fetchDynamicVideos = async () => {
     try {
@@ -740,7 +761,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       </View>
                     )}
 
-                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (ප්‍රතිඵල 4)</Text>
+                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (ප්‍රතිඵල 5)</Text>
                     {loadingVideos ? (
                       <ActivityIndicator size="large" color={colors.lavenderDark} style={{ marginVertical: 20 }} />
                     ) : videoError ? (

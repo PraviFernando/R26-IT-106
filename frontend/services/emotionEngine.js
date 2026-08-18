@@ -69,7 +69,14 @@ const REASON_KW = {
   sleep_problems: [
     'sleep', 'insomnia', 'awake all night', 'sleep deprived', 'cant sleep', 'no sleep',
     'නින්ද', 'නිදාගන්නේ නැහැ', 'නිදාගන්නෙ නෑ', 'නින්දක් නෑ', 'නින්ද යන්නෙ නෑ', 'රාත්‍රියට නිදි නෑ',
-    'ninda', 'nida ganne naha', 'nida na', 'ninda yanne naha', 'nidaganna baha'
+    'ninda', 'nida ganne naha', 'nida na', 'ninda yanne naha', 'nidaganna baha',
+    'මට නිදා නෑමට මහන්සියි', 'මට නින්ද නොයෑම', 'මවගේ නින්ද නොයාම', 'අම්මාට නින්ද නැහැ', 
+    'අම්මාට නින්ද නොයෑම', 'අම්මාට නිදිමත දැනීම', 'අම්මාගේ නින්ද', 'අම්මාට නින්ද ප්රශ්න', 
+    'නිදි නැති රාත්රිය', 'නිදි නැති රාත්රී', 'sleepless night', 'sleepless nights', 
+    'mother sleep problems', 'mothers sleep problems', 'maternal sleep problems', 
+    'mom sleep problems', 'mother cant sleep', 'mother cannot sleep', 'difficulty sleeping', 
+    'trouble sleeping', 'poor sleep', 'lack of sleep', 'sleep deprivation', 'tired mother', 
+    'exhausted mother', 'maternal sleep', 'mothers sleep'
   ],
   loss_of_confidence: [
     'confidence', 'self-doubt', 'failure', 'bad mother', 'useless', 'not capable', 'worthless',
