@@ -51,10 +51,22 @@ function UserRow({ user, onEdit, onDelete }) {
             <View style={styles.userInfo}>
                 <Text style={styles.userName}>{user.username}</Text>
                 <Text style={styles.userEmail} numberOfLines={1}>{user.email}</Text>
-                <View style={[styles.roleBadge, { backgroundColor: roleColor + '22' }]}>
-                    <Text style={[styles.roleBadgeText, { color: roleColor }]}>
-                        {roleIcon} {user.role}
-                    </Text>
+                {user.district && <Text style={styles.userDistrict}>📍 {user.district}</Text>}
+                <View style={{flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4}}>
+                    <View style={[styles.roleBadge, { backgroundColor: roleColor + '22' }]}>
+                        <Text style={[styles.roleBadgeText, { color: roleColor }]}>
+                            {roleIcon} {user.role}
+                        </Text>
+                    </View>
+                    <View style={[styles.statusBadge, { backgroundColor: user.isOnline ? '#DCFCE7' : '#F3F4F6' }]}>
+                        <View style={[styles.statusDot, { backgroundColor: user.isOnline ? '#10B981' : '#9CA3AF' }]} />
+                        <Text style={[styles.statusText, { color: user.isOnline ? '#166534' : '#4B5563' }]}>
+                            {user.isOnline ? 'Online' : 'Offline'}
+                        </Text>
+                    </View>
+                    {user.deviceType && (
+                        <Text style={styles.deviceText} numberOfLines={1}>📱 {user.deviceType.split(' ')[0]}</Text>
+                    )}
                 </View>
             </View>
             <View style={styles.userActions}>
@@ -73,9 +85,10 @@ function UserRow({ user, onEdit, onDelete }) {
 function EditModal({ visible, user, onClose, onSave }) {
     const [username, setUsername] = useState('');
     const [role, setRole] = useState('patient');
+    const [district, setDistrict] = useState('');
 
     useEffect(() => {
-        if (user) { setUsername(user.username); setRole(user.role); }
+        if (user) { setUsername(user.username); setRole(user.role); setDistrict(user.district || ''); }
     }, [user]);
 
     return (
@@ -92,6 +105,19 @@ function EditModal({ visible, user, onClose, onSave }) {
                         placeholder="Username"
                         placeholderTextColor="#9CA3AF"
                     />
+
+                    {role === 'midwife' && (
+                        <>
+                            <Text style={styles.modalLabel}>District (for Midwives)</Text>
+                            <TextInput
+                                style={styles.modalInput}
+                                value={district}
+                                onChangeText={setDistrict}
+                                placeholder="e.g. Colombo"
+                                placeholderTextColor="#9CA3AF"
+                            />
+                        </>
+                    )}
 
                     <Text style={styles.modalLabel}>Role</Text>
                     <View style={styles.roleGrid}>
@@ -112,7 +138,7 @@ function EditModal({ visible, user, onClose, onSave }) {
                         <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
                             <Text style={styles.cancelBtnText}>Cancel</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.saveBtn} onPress={() => onSave({ username, role })}>
+                        <TouchableOpacity style={styles.saveBtn} onPress={() => onSave({ username, role, district })}>
                             <Text style={styles.saveBtnText}>Save</Text>
                         </TouchableOpacity>
                     </View>
@@ -128,6 +154,7 @@ function CreateModal({ visible, onClose, onCreated }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('patient');
+    const [district, setDistrict] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleCreate = async () => {
@@ -137,9 +164,9 @@ function CreateModal({ visible, onClose, onCreated }) {
         }
         setLoading(true);
         try {
-            await api.post('/admin/users', { username, email, password, role });
+            await api.post('/admin/users', { username, email, password, role, district });
             Toast.show({ type: 'success', text1: '✅ User created', position: 'top' });
-            setUsername(''); setEmail(''); setPassword(''); setRole('patient');
+            setUsername(''); setEmail(''); setPassword(''); setRole('patient'); setDistrict('');
             onCreated();
             onClose();
         } catch (err) {
@@ -175,6 +202,19 @@ function CreateModal({ visible, onClose, onCreated }) {
                                 />
                             </View>
                         ))}
+
+                        {role === 'midwife' && (
+                            <>
+                                <Text style={styles.modalLabel}>District (for Midwives)</Text>
+                                <TextInput
+                                    style={styles.modalInput}
+                                    value={district}
+                                    onChangeText={setDistrict}
+                                    placeholder="e.g. Colombo"
+                                    placeholderTextColor="#9CA3AF"
+                                />
+                            </>
+                        )}
 
                         <Text style={styles.modalLabel}>Role</Text>
                         <View style={styles.roleGrid}>
@@ -275,14 +315,20 @@ export default function AdminDashboardScreen({ navigation }) {
     };
 
     const filteredUsers = users
-        .filter(u => filter === 'all' || u.role === filter)
+        .filter(u => {
+            if (filter === 'all') return true;
+            if (filter === 'online') return u.isOnline;
+            return u.role === filter;
+        })
         .filter(u =>
             u.username?.toLowerCase().includes(searchText.toLowerCase()) ||
-            u.email?.toLowerCase().includes(searchText.toLowerCase())
+            u.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+            (u.district && u.district.toLowerCase().includes(searchText.toLowerCase()))
         );
 
     const filterTabs = [
         { key: 'all', label: 'All', icon: '👥' },
+        { key: 'online', label: 'Online Users', icon: '🟢' },
         { key: 'patient', label: 'Patients', icon: '🤰' },
         { key: 'midwife', label: 'Midwives', icon: '👩‍⚕️' },
         { key: 'admin', label: 'Admins', icon: '🛡️' },
