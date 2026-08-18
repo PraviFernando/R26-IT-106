@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema({
   },
   fullName: { type: String, trim: true },
   age: { type: Number },
+  phoneNumber: { type: String, trim: true },
   district: { type: String, trim: true },
   village: { type: String, trim: true },
   babyDetails: {
@@ -32,6 +33,13 @@ const userSchema = new mongoose.Schema({
       date: { type: String, trim: true }
     }]
   },
+  growthHistory: [{
+    date: { type: String, trim: true },
+    weight: { type: String, trim: true },
+    length: { type: String, trim: true },
+    headCircumference: { type: String, trim: true },
+    notes: { type: String, trim: true }
+  }],
 
   // ── Onboarding ─────────────────────────────────────────────────────────────
   onboardingCompleted: { type: Boolean, default: false },
@@ -63,6 +71,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
   },
+  
+  // ── Session Tracking ───────────────────────────────────────────────────────
+  isOnline: { type: Boolean, default: false },
+  lastLogin: { type: Date },
+  deviceType: { type: String, trim: true },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
