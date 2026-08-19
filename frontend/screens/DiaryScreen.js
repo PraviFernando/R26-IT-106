@@ -88,7 +88,6 @@ const today = toDateString(new Date());
 
 export default function DiaryScreen({ navigation }) {
     const { t, i18n } = useTranslation();
-
     const [selectedDate, setSelectedDate] = useState(today);
     const [content, setContent] = useState('');
     const [isLocked, setIsLocked] = useState(false);
@@ -266,7 +265,6 @@ export default function DiaryScreen({ navigation }) {
                 saveDiary(content, isLocked, currentTheme, newMedia, mood, sentiment);
                 return;
             }
-
             let mimeType = '*/*';
             if (type === 'image') mimeType = 'image/*';
             else if (type === 'video') mimeType = 'video/*';
@@ -275,7 +273,6 @@ export default function DiaryScreen({ navigation }) {
 
             const result = await DocumentPicker.getDocumentAsync({ type: mimeType, copyToCacheDirectory: true });
             if (result.canceled) return;
-
             const asset = result.assets[0];
             const newMedia = [...media, { type, url: asset.uri, name: asset.name }];
             setMedia(newMedia);
@@ -364,7 +361,6 @@ export default function DiaryScreen({ navigation }) {
                 handleContentChange(newContent);
             }
         };
-
         recognition.start();
     }, [sinhalaMode]);
 

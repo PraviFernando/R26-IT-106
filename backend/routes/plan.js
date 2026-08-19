@@ -9,6 +9,15 @@ const {
     updatePlanStatus,
 } = require('../controllers/plan');
 
+upsertActivity,
+    getMonthActivities,
+    getDateActivities,
+    getActivityHistory
+} = require('../controllers/plan');
+
+// Static routes must be registered before parameter-based routes to avoid interception
+router.get('/activity/history', verifyToken, getActivityHistory);
+
 router.get('/:year/:month', verifyToken, getOrCreatePlan);      // GET  /plan/2026/3
 router.get('/:planId/details', verifyToken, getPlanDetails);    // GET  /plan/:planId/details
 router.post('/detail', verifyToken, saveDetail);                // POST /plan/detail

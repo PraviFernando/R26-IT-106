@@ -18,7 +18,7 @@ const getPatients = async (req, res, next) => {
     try {
         const midwife = await User.findById(req.user.id);
         const query = { role: 'patient' };
-        
+
         // Filter by midwife's district and village if they exist
         if (midwife) {
             if (midwife.district) query.district = midwife.district;

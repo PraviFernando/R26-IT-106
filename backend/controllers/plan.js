@@ -163,11 +163,11 @@ const getDateActivities = async (req, res, next) => {
     }
 };
 
-module.exports = { 
-    getOrCreatePlan, 
-    getPlanDetails, 
-    saveDetail, 
-    updateDetail, 
+module.exports = {
+    getOrCreatePlan,
+    getPlanDetails,
+    saveDetail,
+    updateDetail,
     updatePlanStatus,
     upsertActivity,
     getMonthActivities,

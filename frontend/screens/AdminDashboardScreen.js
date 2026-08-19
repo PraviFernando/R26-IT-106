@@ -52,7 +52,7 @@ function UserRow({ user, onEdit, onDelete }) {
                 <Text style={styles.userName}>{user.username}</Text>
                 <Text style={styles.userEmail} numberOfLines={1}>{user.email}</Text>
                 {user.district && <Text style={styles.userDistrict}>📍 {user.district}</Text>}
-                <View style={{flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4}}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
                     <View style={[styles.roleBadge, { backgroundColor: roleColor + '22' }]}>
                         <Text style={[styles.roleBadgeText, { color: roleColor }]}>
                             {roleIcon} {user.role}

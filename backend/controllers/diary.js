@@ -1,6 +1,5 @@
 const Diary = require('../models/Diary');
 const User = require('../models/User');
-
 const getDiary = async (req, res, next) => {
     try {
         const { date } = req.params;

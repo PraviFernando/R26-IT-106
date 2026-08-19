@@ -9,7 +9,7 @@ import translationSI from './locals/si/translation_si.json';
 const resources = {
     en: { translation: translationEN },
     si: { translation: translationSI },
-    
+
 };
 
 i18n
@@ -18,7 +18,7 @@ i18n
     .init({
         resources,
         fallbackLng: 'en',        // Default language if detection fails
-        supportedLngs: ['en', 'si'],   // Optional: restrict to these languages only
+        supportedLngs: ['en', 'si'],    // Restrict to English and Sinhala
 
         interpolation: {
             escapeValue: false,   // React already escapes by default

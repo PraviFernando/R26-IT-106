@@ -47,15 +47,15 @@ const userSchema = new mongoose.Schema({
   // Step 1 – Delivery Information
   deliveryType: { type: String, trim: true },
   deliveryDate: { type: String, trim: true },
-  numBabies:    { type: String, trim: true, default: 'Single' },
+  numBabies: { type: String, trim: true, default: 'Single' },
 
   // Step 2 – Baby Details
-  babyName:          { type: String, trim: true },
-  gender:            { type: String, trim: true },
-  birthWeight:       { type: String, trim: true },
-  currentWeight:     { type: String, trim: true },
-  birthLength:       { type: String, trim: true },
-  currentLength:     { type: String, trim: true },
+  babyName: { type: String, trim: true },
+  gender: { type: String, trim: true },
+  birthWeight: { type: String, trim: true },
+  currentWeight: { type: String, trim: true },
+  birthLength: { type: String, trim: true },
+  currentLength: { type: String, trim: true },
   headCircumference: { type: String, trim: true },
 
   // Step 3 – Feeding
@@ -71,11 +71,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png',
   },
-  
+
   // ── Session Tracking ───────────────────────────────────────────────────────
   isOnline: { type: Boolean, default: false },
   lastLogin: { type: Date },
   deviceType: { type: String, trim: true },
+  deliveryDate: {
+    type: String, // YYYY-MM-DD
+    default: null,
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

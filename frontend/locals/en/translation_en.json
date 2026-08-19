@@ -18,7 +18,12 @@
   "Admin": "Admin",
   "Already have an account?": "Already have an account?",
   "Dashboard": "Dashboard",
+<<<<<<< HEAD
   "Screening": "Maternal Wellness Check",
+=======
+  "Recommend": "Recommend",
+  "Screening": "Screening",
+>>>>>>> origin/NEW2
   "Maternal Wellness Check": "Maternal Wellness Check",
   "Maternal Wellness Check Completed": "Maternal Wellness Check Completed",
   "My Diary": "My Diary",
