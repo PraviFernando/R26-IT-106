@@ -1,6 +1,10 @@
 node_modules/
+<<<<<<< HEAD
 .env
 .env.*
 !.env.example
 !.env*.example
 *.log
+=======
+.env
+>>>>>>> a1c7499a8616619e57137bce39935daff52f2528
