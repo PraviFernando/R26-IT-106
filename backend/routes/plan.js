@@ -7,9 +7,7 @@ const {
     saveDetail,
     updateDetail,
     updatePlanStatus,
-} = require('../controllers/plan');
-
-upsertActivity,
+    upsertActivity,
     getMonthActivities,
     getDateActivities,
     getActivityHistory
@@ -25,7 +23,6 @@ router.put('/detail/:detailId', verifyToken, updateDetail);     // PUT  /plan/de
 router.put('/:planId/status', verifyToken, updatePlanStatus);   // PUT  /plan/:planId/status
 
 // Activity Sub-endpoints (embedded in PlanDetail)
-const { upsertActivity, getMonthActivities, getDateActivities } = require('../controllers/plan');
 router.post('/activity', verifyToken, upsertActivity);
 router.get('/activity/month/:year/:month', verifyToken, getMonthActivities);
 router.get('/activity/date/:date', verifyToken, getDateActivities);

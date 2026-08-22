@@ -20,6 +20,7 @@ i18n
         fallbackLng: 'en',        // Default language if detection fails
         supportedLngs: ['en', 'si'],    // Restrict to English and Sinhala
 
+        load: 'languageOnly',        // Only use language code (e.g., 'en' instead of 'en-US')
         interpolation: {
             escapeValue: false,   // React already escapes by default
         },
