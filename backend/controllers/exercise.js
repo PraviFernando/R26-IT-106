@@ -173,15 +173,24 @@ const submitHealthData = async (req, res, next) => {
 
         let finalWeeks = weeksAfterDelivery;
         let finalDeliveryDate = deliveryDate;
+        let finalDeliveryType = deliveryType;
+
+        const user = await User.findById(userId);
 
         if (deliveryDate) {
             await User.findByIdAndUpdate(userId, { deliveryDate });
             finalDeliveryDate = deliveryDate;
+        } else if (user && user.deliveryDate) {
+            finalDeliveryDate = user.deliveryDate;
+        }
+
+        if (deliveryType) {
+            await User.findByIdAndUpdate(userId, { deliveryType });
+            finalDeliveryType = deliveryType;
+        } else if (user && user.deliveryType) {
+            finalDeliveryType = user.deliveryType;
         } else {
-            const user = await User.findById(userId);
-            if (user && user.deliveryDate) {
-                finalDeliveryDate = user.deliveryDate;
-            }
+            finalDeliveryType = 'normal';
         }
 
         // Only calculate weeks from deliveryDate if weeksAfterDelivery was not explicitly provided by the user
@@ -197,7 +206,7 @@ const submitHealthData = async (req, res, next) => {
             date,
             deliveryDate: finalDeliveryDate,
             weeksAfterDelivery: finalWeeks || weeksAfterDelivery || 0,
-            deliveryType: deliveryType || 'normal',
+            deliveryType: finalDeliveryType,
             pelvicPain: pelvicPain === true || pelvicPain === 'true',
             backPain: backPain === true || backPain === 'true',
             abdominalPain: abdominalPain === true || abdominalPain === 'true',
