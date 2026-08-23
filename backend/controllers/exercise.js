@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Diary = require('../models/Diary');
 const Feedback = require('../models/Feedback');
 const ExerciseMovementSession = require('../models/ExerciseMovementSession');
+const EPDSScreening = require('../models/EPDSScreening');
 const MLPredictionService = require('../services/mlPredictionService');
 const axios = require('axios');
 
@@ -211,23 +212,33 @@ const submitHealthData = async (req, res, next) => {
             stressKeywords: stressKeywords || []
         };
 
-        // 1. Get ML risk prediction and exercise category
-        let riskScore = 1;
+        // 1. Get EPDS risk screening and recommend exercise category based on that
+        let riskScore = 0;
         let exerciseCategory = 3;
-        let mlPredictionData = null;
 
         try {
-            mlPredictionData = await MLPredictionService.predictRisk(healthData);
-            if (mlPredictionData.success) {
-                riskScore = mlPredictionData.riskLevel;
-                exerciseCategory = mlPredictionData.exerciseCategory;
+            const latestEpds = await EPDSScreening.findOne({ userId }).sort({ createdAt: -1 });
+            const epdsRisk = latestEpds ? latestEpds.riskLevel : 'low';
+
+            if (epdsRisk === 'high') {
+                riskScore = 2; // High risk
+                exerciseCategory = 1; // Bedrest/Breathing
+            } else if (epdsRisk === 'medium') {
+                riskScore = 1; // Medium risk
+                exerciseCategory = 2; // Gentle Mobility
+            } else {
+                riskScore = 0; // Low risk
+                if (healthData.weeksAfterDelivery >= 8) {
+                    exerciseCategory = 4; // Full Functional
+                } else {
+                    exerciseCategory = 3; // Strength & Core
+                }
             }
         } catch (err) {
-            console.error('ML API prediction failed:', err.message);
-            // Fallback automatically sets fallback parameters
-            const fallback = MLPredictionService.fallbackPrediction(healthData);
-            riskScore = fallback.riskLevel;
-            exerciseCategory = fallback.exerciseCategory;
+            console.error('Failed to fetch EPDS risk level:', err.message);
+            // Default to medium risk/gentle mobility as a safe fallback
+            riskScore = 1;
+            exerciseCategory = 2;
         }
 
         // 2. No safety overrides to match Excel predictions directly
