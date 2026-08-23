@@ -11,6 +11,7 @@ class MLPredictionService {
         const fatigueMap = { 'low': 0, 'medium': 1, 'high': 2 };
         const mobilityMap = { 'very_limited': 0, 'limited': 1, 'normal': 2 };
         const willingnessMap = { 'low': 0, 'medium': 1, 'high': 2 };
+        const epdsMap = { 'low': 0, 'medium': 1, 'moderate': 1, 'high': 2 };
         
         return {
             weeks_after_delivery: Number(healthData.weeksAfterDelivery || 0),
@@ -23,7 +24,8 @@ class MLPredictionService {
             muscle_weakness: healthData.muscleWeakness ? 1 : 0,
             fatigue_level: fatigueMap[healthData.fatigueLevel] ?? 0,
             mobility_level: mobilityMap[healthData.mobilityLevel] ?? 2,
-            willingness: willingnessMap[healthData.willingnessToExercise] ?? 1
+            willingness: willingnessMap[healthData.willingnessToExercise] ?? 1,
+            epds_risk_level: epdsMap[healthData.epdsRiskLevel] ?? 0
         };
     }
 
@@ -86,7 +88,7 @@ class MLPredictionService {
         // Healthy / low risk / Fully recovered checks (Weeks >= 8)
         else if (healthData.weeksAfterDelivery >= 8 && healthData.mobilityLevel === 'normal' && healthData.fatigueLevel === 'low') {
             riskScore = 0; // Low risk (0)
-            exerciseCategory = 4; // Full Functional (4)
+            exerciseCategory = (healthData.epdsRiskLevel === 'high') ? 3 : 4; // High EPDS drops full functional to Strength & Core
         }
         // Healthy / intermediate checks (Weeks 3-7)
         else {

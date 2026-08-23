@@ -51,7 +51,8 @@ def predict():
             int(data.get('muscle_weakness', 0)),
             int(data.get('fatigue_level', 0)),
             int(data.get('mobility_level', 2)),
-            int(data.get('willingness', 1))
+            int(data.get('willingness', 1)),
+            int(data.get('epds_risk_level', 0))
         ]
         print("DEBUG: Extracted features:", features)
         
