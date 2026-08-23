@@ -26,7 +26,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
         if (!url) return '';
         let videoId = '';
         if (url.includes('youtube.com/embed/')) {
-            return url;
+            const separator = url.includes('?') ? '&' : '?';
+            return `${url}${separator}enablejsapi=1&autoplay=1&mute=1`;
         }
         if (url.includes('youtu.be/')) {
             videoId = url.split('youtu.be/')[1]?.split('?')[0];
@@ -38,7 +39,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
             }
         }
         if (videoId) {
-            return `https://www.youtube.com/embed/${videoId}?playsinline=1&controls=1&rel=0&modestbranding=1`;
+            return `https://www.youtube.com/embed/${videoId}?playsinline=1&controls=1&rel=0&modestbranding=1&enablejsapi=1&autoplay=1&mute=1`;
         }
         return url;
     };
@@ -74,6 +75,41 @@ export default function MovementTrackingScreen({ route, navigation }) {
     const [saving, setSaving] = useState(false);
 
     const webViewRef = useRef(null);
+    const videoRef = useRef(null);
+
+    const playDemoVideo = () => {
+        if (Platform.OS === 'web') {
+            const iframe = document.querySelector('iframe[src*="youtube.com"]');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+            }
+        } else if (videoRef.current) {
+            videoRef.current.injectJavaScript(`
+                const iframe = document.querySelector('iframe');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo' }), '*');
+                }
+                true;
+            `);
+        }
+    };
+
+    const pauseDemoVideo = () => {
+        if (Platform.OS === 'web') {
+            const iframe = document.querySelector('iframe[src*="youtube.com"]');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo' }), '*');
+            }
+        } else if (videoRef.current) {
+            videoRef.current.injectJavaScript(`
+                const iframe = document.querySelector('iframe');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo' }), '*');
+                }
+                true;
+            `);
+        }
+    };
 
     // Start Timer
     useEffect(() => {
@@ -98,6 +134,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
             timerRef.current = setInterval(() => {
                 setTimeElapsed(prev => prev + 1);
             }, 1000);
+            playDemoVideo();
         }
     };
 
@@ -105,6 +142,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
         if (timerRef.current) {
             clearInterval(timerRef.current);
             timerRef.current = null;
+            pauseDemoVideo();
         }
     };
 
@@ -1167,6 +1205,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             />
                         ) : (
                             <WebView
+                                ref={videoRef}
                                 originWhitelist={['*']}
                                 source={{ uri: getEmbedUrl(videoUrl) }}
                                 style={styles.exerciseWebView}
@@ -1232,14 +1271,6 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     <View style={styles.statBox}>
                         <Text style={styles.statLabel}>{isSinhala ? 'කාලය' : 'Timer'}</Text>
                         <Text style={styles.statValue}>{formatTime(timeElapsed)}</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>{isSinhala ? 'වට (මුළු)' : 'Reps (Total)'}</Text>
-                        <Text style={styles.statValue}>{reps}</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>{isSinhala ? 'නිවැරදි වට' : 'Correct Reps'}</Text>
-                        <Text style={[styles.statValue, { color: '#10B981' }]}>{correctReps}</Text>
                     </View>
                     <View style={styles.statBox}>
                         <Text style={styles.statLabel}>{isSinhala ? 'නිරවද්‍යතාවය' : 'Accuracy'}</Text>
