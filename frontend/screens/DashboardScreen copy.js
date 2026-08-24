@@ -240,14 +240,7 @@ const DashboardScreenCopy = ({ navigation }) => {
             <Text style={s.affirmText}>"{affirmation}"</Text>
           </LinearGradient>
 
-          {/* Demo Simulator */}
-          <View style={s.demoSection}>
-            <Text style={s.demoTitle}>{SI.simulateDiary}</Text>
-            <Text style={s.demoPreview}>ඊළඟ: "{nextDemoPreview?.slice(0, 60)}..."</Text>
-            <TouchableOpacity style={s.demoBtn} onPress={handleSimulate} disabled={processing}>
-              <Text style={s.demoBtnText}>{processing ? 'විශ්ලේෂණය කරමින්...' : SI.processNewEntry}</Text>
-            </TouchableOpacity>
-          </View>
+
 
           <View style={{ height: 110 }} />
         </ScrollView>

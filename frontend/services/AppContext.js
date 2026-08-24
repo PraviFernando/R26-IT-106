@@ -184,6 +184,7 @@ export const AppProvider = ({ children }) => {
       fetchCompletedActivities();
       fetchProgressData();
       const analysis = analyzeDiary(diaryText);
+      analysis.diaryText = diaryText;
       const defaultEmotionEmojis = {
         happy: '😊',
         sad: '😔',

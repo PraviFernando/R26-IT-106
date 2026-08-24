@@ -442,17 +442,25 @@ const RecommendationsScreen = ({ navigation, route }) => {
   let libraryMusic = MUSIC_LIBRARY[primaryReason] || (isBabyActive ? MUSIC_LIBRARY.bonding_issues : MUSIC_LIBRARY.loneliness);
   
   if (risk !== 'high' && risk !== 'medium') {
-    if (normEmotion.includes('happ') || normEmotion.includes('calm')) {
-      libraryMusic = MUSIC_LIBRARY.motivation || MUSIC_LIBRARY.loneliness;
-    } else if (normEmotion.includes('sad') || normEmotion.includes('cry')) {
-      libraryMusic = MUSIC_LIBRARY.bonding_issues || MUSIC_LIBRARY.loneliness;
-    } else if (normEmotion.includes('anxi') || normEmotion.includes('stress') || normEmotion.includes('angr') || normEmotion.includes('frust')) {
-      libraryMusic = MUSIC_LIBRARY.anxiety || MUSIC_LIBRARY.stress;
+    if (isBabyActive) {
+      if (normEmotion.includes('anxi') || normEmotion.includes('stress') || normEmotion.includes('angr') || normEmotion.includes('frust')) {
+        libraryMusic = MUSIC_LIBRARY.anxiety;
+      } else {
+        libraryMusic = MUSIC_LIBRARY.bonding_issues;
+      }
+    } else {
+      if (normEmotion.includes('happ') || normEmotion.includes('calm')) {
+        libraryMusic = MUSIC_LIBRARY.motivation || MUSIC_LIBRARY.loneliness;
+      } else if (normEmotion.includes('sad') || normEmotion.includes('cry')) {
+        libraryMusic = MUSIC_LIBRARY[primaryReason] || MUSIC_LIBRARY.loneliness;
+      } else if (normEmotion.includes('anxi') || normEmotion.includes('stress') || normEmotion.includes('angr') || normEmotion.includes('frust')) {
+        libraryMusic = MUSIC_LIBRARY.anxiety || MUSIC_LIBRARY.stress;
+      }
     }
   } else {
     libraryMusic = MUSIC_LIBRARY.anxiety || MUSIC_LIBRARY.loneliness;
   }
-  const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 3);
+  const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
 
   const activeBabyTopics = (detectedBabyTopics && detectedBabyTopics.length > 0)
     ? detectedBabyTopics
@@ -499,6 +507,37 @@ const RecommendationsScreen = ({ navigation, route }) => {
       }
     }
     // 2. Fallback to local map based on primaryReason
+    if (primaryReason === 'baby_health') {
+      const text = activeDiaryText.toLowerCase();
+      const feverKws = ['fever', 'temperature', 'hot', 'feverish', 'උණ', 'una', 'temperature eka', 'ඇඟ රුක් වෙලා', 'ඇඟ රත් වෙලා'];
+      const jaundiceKws = ['jaundice', 'yellow', 'yellowish', 'ඇස් කහ', 'සම කහ', 'yellow wela', 'kaha wela'];
+      const illnessKws = ['sick', 'ill', 'cold', 'cough', 'vomit', 'vomiting', 'diarrhea', 'flu', 'අසනීප', 'ලෙඩ', 'leda', 'asanipa', 'una gasila', 'වමනය'];
+      const emergencyKws = ['emergency', 'doctor', 'hospital', 'pediatrician', 'severe', 'danger', 'හදිසි', 'බයයි', 'baya'];
+
+      const healthVideos = BABY_VIDEO_LIBRARY['Baby Health'] || [];
+      if (feverKws.some(kw => text.includes(kw))) {
+        const v = healthVideos.find(item => item.id === 'bh1');
+        if (v) return { id: 'bh1', title: v.title, description: v.description, channelTitle: 'PeriCare Care Library', url: 'https://www.youtube.com/results?search_query=what+to+do+when+baby+has+a+fever', thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg' };
+      }
+      if (illnessKws.some(kw => text.includes(kw))) {
+        return {
+          id: 'ZCQUPRyZbO0',
+          title: 'ළදරුවන්ගේ අසනීප ලක්ෂණ (Newborn Baby Illness Warning Signs)',
+          description: 'ළදරුවෙකුට අසනීපයක් වැළඳී ඇති බව හඳුනාගත හැකි ප්‍රධාන රෝග ලක්ෂණ.',
+          channelTitle: 'PeriCare Care Library',
+          url: 'https://youtu.be/ZCQUPRyZbO0',
+          thumbnail: 'https://img.youtube.com/vi/ZCQUPRyZbO0/0.jpg'
+        };
+      }
+      if (jaundiceKws.some(kw => text.includes(kw))) {
+        const v = healthVideos.find(item => item.id === 'bh2');
+        if (v) return { id: 'bh2', title: v.title, description: v.description, channelTitle: 'PeriCare Care Library', url: 'https://www.youtube.com/results?search_query=newborn+baby+jaundice+what+to+do', thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg' };
+      }
+      if (emergencyKws.some(kw => text.includes(kw))) {
+        const v = healthVideos.find(item => item.id === 'bh3');
+        if (v) return { id: 'bh3', title: v.title, description: v.description, channelTitle: 'PeriCare Care Library', url: 'https://www.youtube.com/results?search_query=when+to+take+baby+to+hospital+or+doctor', thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg' };
+      }
+    }
     return HARDCODED_VIDEO_MAP[primaryReason] || null;
   })();
 
@@ -531,7 +570,8 @@ const RecommendationsScreen = ({ navigation, route }) => {
           reason: primaryReason,
           emotion: emotion,
           riskLevel: risk || 'low',
-          babyIntent: isBabyActive
+          babyIntent: isBabyActive,
+          diaryText: activeDiaryText
         }
       });
       if (response.data && Array.isArray(response.data)) {
@@ -623,7 +663,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
           </View>
 
           {/* Emergency Medical Callout Banner */}
-          {(isEmergencyTopic || risk === 'high') && (
+          {risk === 'high' && (
             <View style={s.emergencyBanner}>
               <Text style={s.emergencyIcon}>🆘</Text>
               <View style={{ flex: 1 }}>

@@ -910,7 +910,7 @@ export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, prefer
   const existingRecommendations = getRecommendationRule(reason, riskLevel, preferredActivities, preferredGames);
   const newActivities = getRankedActivities(emotion, reason, riskLevel, diaryText, preferredActivities, completedActivities);
 
-  const games = getRecommendedGames({}, diaryText, reason, 4);
+  const games = getRecommendedGames({}, diaryText, reason, 4, riskLevel, emotion);
   const game = games[0] || existingRecommendations.game;
 
   return {
@@ -1084,7 +1084,8 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
     }
 
     // 7. UNRELATED FILTERING
-    if (isBabyActive && !babyActivities.includes(act.id) && !act.id.includes('breathing') && !act.id.includes('meditation') && !act.id.includes('relaxing_music')) {
+    const isMapped = reasonList.includes(act.id) || emotionList.includes(act.id);
+    if (isBabyActive && !babyActivities.includes(act.id) && !act.id.includes('breathing') && !act.id.includes('meditation') && !act.id.includes('relaxing_music') && !isMapped) {
       score -= 12;
     }
 

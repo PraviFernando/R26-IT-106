@@ -10,7 +10,7 @@ const CACHE_TTL = 15 * 60 * 1000; // 15 minutes in milliseconds
  */
 const getVideos = async (req, res, next) => {
   try {
-    const { reason, emotion, babyIntent } = req.query;
+    const { reason, emotion, babyIntent, diaryText } = req.query;
     
     // Retrieve actual stored EPDS risk level from the database for the user
     let epdsRiskLevel = 'low';
@@ -21,10 +21,10 @@ const getVideos = async (req, res, next) => {
       }
     }
 
-    console.log('[DEBUG getVideos] params received & resolved:', { reason, emotion, epdsRiskLevel, babyIntent });
+    console.log('[DEBUG getVideos] params received & resolved:', { reason, emotion, epdsRiskLevel, babyIntent, diaryText });
 
     // Build the cache key
-    const cacheKey = `${reason || ''}_${emotion || ''}_${epdsRiskLevel}_${babyIntent || ''}`;
+    const cacheKey = `${reason || ''}_${emotion || ''}_${epdsRiskLevel}_${babyIntent || ''}_${diaryText || ''}`;
 
     // Return cached results if valid
     const cachedItem = cache[cacheKey];
@@ -33,7 +33,7 @@ const getVideos = async (req, res, next) => {
     }
 
     // Call service to get ranked videos using retrieved EPDS risk level
-    const videos = await fetchAndRankVideos(reason, emotion, epdsRiskLevel, babyIntent);
+    const videos = await fetchAndRankVideos(reason, emotion, epdsRiskLevel, babyIntent, diaryText);
 
     // Save to cache
     cache[cacheKey] = {

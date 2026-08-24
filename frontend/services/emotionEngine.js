@@ -34,6 +34,14 @@ export const normalizeMultilingualText = (text = '') => {
     .replace(/bonne\s*naha/g, 'bonna naha')
     .replace(/baya\s*hithenawa/g, 'baya')
     .replace(/mahansi\b/g, 'mahansiyi')
+    .replace(/thanikama[k]?/g, 'paluyi')
+    .replace(/tanikama[k]?/g, 'paluyi')
+    .replace(/thanikam\b/g, 'paluyi')
+    .replace(/tanikam\b/g, 'paluyi')
+    .replace(/kavuruth\s*mata\s*na/g, 'kawuruth naha')
+    .replace(/kavurth\s*mata\s*na/g, 'kawuruth naha')
+    .replace(/kavuruth\s*na/g, 'kawuruth naha')
+    .replace(/kavurth\s*na/g, 'kawuruth naha')
     // Singlish/Sinhala spelling variations:
     .replace(/there\s*nne/g, 'therenne')
     .replace(/there\s*ne/g, 'therenne')
@@ -63,8 +71,11 @@ export const normalizeMultilingualText = (text = '') => {
 const REASON_KW = {
   loneliness: [
     'alone', 'lonely', 'isolated', 'nobody', 'no one', 'miss', 'empty', 'no friends', 'left out',
+    'empty feeling', 'loku thanikamak', 'mukuth wadak', 'mukuth na', 'nobody cares', 'no one cares',
     'තනිවෙලා', 'පාළුයි', 'පාළුවක්', 'කවුරුත් නෑ', 'කවුරුත් නැහැ', 'තනියම', 'පාළු',
-    'paluyi', 'taniyen', 'taniwela', 'kugewat na', 'kawuruth naha', 'palu'
+    'paluyi', 'taniyen', 'taniwela', 'kugewat na', 'kawuruth naha', 'palu',
+    'thanikamak danenawa', 'thanikamak daneno', 'thainkamak daneo', 'thanikamak daneo',
+    'karaganna ba', 'wadak na', 'wadak naha', 'wadak wath naha'
   ],
   fatigue: [
     'tired', 'exhausted', 'drained', 'no energy', 'worn out', 'sleepy', 'burnt out', 'sluggish',
@@ -128,8 +139,9 @@ const EMOTION_KW = {
   ],
   sad: [
     'sad', 'cry', 'unhappy', 'depressed', 'hopeless', 'hurt', 'empty', 'down', 'devastated',
-    'දුකයි', 'කඳුළු', 'අඬනවා', 'කනගාටුයි', 'වේදනාව',
-    'dukai', 'dukayi', 'andana', 'kandulu'
+    'empty feeling', 'no point', 'nothing matters', 'karaganna ba', 'wadak na', 'godak dukai',
+    'දුකයි', 'කඳුළු', 'අඬනවා', 'කනගාටුයි', 'වේදනාව', 'ගොඩක් දුකයි',
+    'dukai', 'dukayi', 'godak dukai', 'andana', 'kandulu', 'daneo', 'daneno'
   ],
   stressed: [
     'stress', 'overwhelmed', 'tense', 'frustrated', 'on edge', 'pressure', 'anxious', 'irritated',
@@ -345,7 +357,7 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
     : null;
 
   const cappedGames = (rule.games || []).slice(0, 4);
-  const cappedMusic = (music || []).slice(0, 3);
+  const cappedMusic = (music || []).slice(0, 4);
 
   // DEBUG LOGGING REQUIREMENT
   console.log('[GAME RANKING]');

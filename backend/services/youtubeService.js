@@ -190,6 +190,46 @@ const ALL_CURATED_VIDEOS = {
     channelTitle: 'PeriCare Care Library',
     url: 'https://www.youtube.com/watch?v=ZToicYcHIOU',
     thumbnail: 'https://img.youtube.com/vi/ZToicYcHIOU/0.jpg'
+  },
+  'fever_tips': {
+    id: 'fever_tips',
+    title: 'Fever in Babies: What Parents Need to Know (Mayo Clinic)',
+    description: 'Pediatric guidance on recognizing fever symptoms and safe care practices.',
+    channelTitle: 'Mayo Clinic',
+    url: 'https://www.youtube.com/watch?v=o04j0558t2A',
+    thumbnail: 'https://img.youtube.com/vi/o04j0558t2A/0.jpg'
+  },
+  'fever_care': {
+    id: 'fever_care',
+    title: 'බබාලගේ උණ හරියටම අඩුකරගන්නේ කොහොමද? (How to Manage Baby Fever Correctly)',
+    description: 'ළදරුවාගේ උණ පාලනය සහ නිවැරදිව පැරසිටමෝල් ලබා දීම පිළිබඳ වෛද්‍ය උපදෙස්.',
+    channelTitle: 'Dr. Ravi / Studio Health',
+    url: 'https://www.youtube.com/watch?v=k2oYJ_k8i2A',
+    thumbnail: 'https://img.youtube.com/vi/k2oYJ_k8i2A/0.jpg'
+  },
+  'ZCQUPRyZbO0': {
+    id: 'ZCQUPRyZbO0',
+    title: 'ළදරුවන්ගේ අසනීප ලක්ෂණ (Newborn Baby Illness Warning Signs)',
+    description: 'ළදරුවෙකුට අසනීපයක් වැළඳී ඇති බව හඳුනාගත හැකි ප්‍රධාන රෝග ලක්ෂණ.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/ZCQUPRyZbO0',
+    thumbnail: 'https://img.youtube.com/vi/ZCQUPRyZbO0/0.jpg'
+  },
+  '4SQNqugTUmw': {
+    id: '4SQNqugTUmw',
+    title: 'අලුත උපන් බබා ලෙඩ උනාම (When a Newborn Baby Falls Sick)',
+    description: 'අලුත උපන් දරුවෙකු අසනීප වූ විට කළ යුතු සත්කාර සහ උපදෙස්.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/4SQNqugTUmw',
+    thumbnail: 'https://img.youtube.com/vi/4SQNqugTUmw/0.jpg'
+  },
+  'k_FyoBhaFTA': {
+    id: 'k_FyoBhaFTA',
+    title: 'දරුවා වෛද්‍යවරයෙකුට පෙන්විය යුතු හදිසි අවස්ථා (Emergency Signs in Babies)',
+    description: 'දරුවෙකු වහාම රෝහල් ගත කළ යුතු හෝ වෛද්‍යවරයෙකු වෙත යොමු කළ යුතු රෝග ලක්ෂණ.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/k_FyoBhaFTA',
+    thumbnail: 'https://img.youtube.com/vi/k_FyoBhaFTA/0.jpg'
   }
 };
 
@@ -199,9 +239,9 @@ const ALL_CURATED_VIDEOS = {
 const CURATED_VIDEO_LIBRARY = {
   baby_feeding: {
     default: ['qdXehiELnIA', 'n2Iu6NooqgE', '_FsNGM2cIpI'],
-    anxious: ['hrozJ-EbdGI', 'sF80I-TQiW0'],
-    sad: ['2OEL4P1Rz04', '9Q634rbsypE'],
-    stressed: ['1n46HPsYsHM', 'fm5ZnhqWkO8']
+    anxious: ['sF80I-TQiW0', 'hrozJ-EbdGI', 'qdXehiELnIA'],
+    sad: ['sF80I-TQiW0', '2OEL4P1Rz04', 'qdXehiELnIA'],
+    stressed: ['sF80I-TQiW0', '1n46HPsYsHM', 'qdXehiELnIA']
   },
   baby_crying: {
     default: ['kmbKaSRyZ-c', 'n1NGKj2B2eU'],
@@ -371,7 +411,44 @@ const normalizeEmotionKey = (emotion) => {
 // ============================================================
 // CURATED VIDEO SELECTION PRIORITY LOGIC
 // ============================================================
-function getCuratedVideos(reason, emotion, babyContext) {
+function detectBabyHealthSubIntent(text = '') {
+  if (!text) return 'Other Baby Health';
+  const t = text.toLowerCase();
+
+  // 1. Baby Fever
+  const feverKws = ['fever', 'temperature', 'hot', 'feverish', 'උණ', 'una', 'temperature eka', 'ඇඟ රුක් වෙලා', 'ඇඟ රත් වෙලා'];
+  if (feverKws.some(kw => t.includes(kw))) {
+    return 'Baby Fever';
+  }
+
+  // 2. Baby Illness
+  const illnessKws = ['sick', 'ill', 'cold', 'cough', 'vomit', 'vomiting', 'diarrhea', 'flu', 'අසනීප', 'ලෙඩ', 'leda', 'asanipa', 'una gasila', 'වමනය'];
+  if (illnessKws.some(kw => t.includes(kw))) {
+    return 'Baby Illness';
+  }
+
+  // 3. Baby Pain/Discomfort
+  const painKws = ['pain', 'hurt', 'sore', 'colic', 'gas', 'constipated', 'constipation', 'stomach ache', 'කැක්කුමයි', 'රිදෙනවා', 'kakkumai', 'ridenawa', 'bada kakkuma'];
+  if (painKws.some(kw => t.includes(kw))) {
+    return 'Baby Pain/Discomfort';
+  }
+
+  // 4. Baby Not Feeding
+  const feedingKws = ['not feeding', 'refuses milk', 'not drinking milk', 'wont feed', 'wont drink', 'කිරි බොන්නේ නෑ', 'කිරි බොන්නේ නැහැ', 'kiri bonna ba', 'kiri bonna naha', 'kiri bonne na'];
+  if (feedingKws.some(kw => t.includes(kw))) {
+    return 'Baby Not Feeding';
+  }
+
+  // 5. Baby Health Concern
+  const concernKws = ['doctor', 'hospital', 'medicine', 'clinic', 'pediatrician', 'health concern', 'jaundice', 'yellow', 'බයයි', 'baya', 'bayaයි', 'බය හිතෙනවා', 'ඇස් කහ', 'සම කහ'];
+  if (concernKws.some(kw => t.includes(kw))) {
+    return 'Baby Health Concern';
+  }
+
+  return 'Other Baby Health';
+}
+
+function getCuratedVideos(reason, emotion, babyContext, subIntent = '') {
   const normReason = normalizeReasonKey(reason);
   const normEmotion = normalizeEmotionKey(emotion);
 
@@ -391,6 +468,23 @@ function getCuratedVideos(reason, emotion, babyContext) {
       seenIds.add(vId);
     }
   };
+
+  if (normReason === 'baby_health') {
+    if (subIntent === 'Baby Fever') {
+      ['fever_tips', 'fever_care', 'jzGyjLGbAUc'].forEach(addVideo);
+    } else if (subIntent === 'Baby Illness') {
+      ['ZCQUPRyZbO0', '4SQNqugTUmw', 'k_FyoBhaFTA'].forEach(addVideo);
+    } else if (subIntent === 'Baby Pain/Discomfort') {
+      ['kmbKaSRyZ-c', 'n1NGKj2B2eU'].forEach(addVideo);
+    } else if (subIntent === 'Baby Not Feeding') {
+      ['qdXehiELnIA', 'n2Iu6NooqgE', '_FsNGM2cIpI'].forEach(addVideo);
+    } else if (subIntent === 'Baby Health Concern') {
+      ['jzGyjLGbAUc', 'fpiYNkkNmEo', 'SQX5Nwr4ekc'].forEach(addVideo);
+    } else {
+      ['jzGyjLGbAUc', 'fpiYNkkNmEo'].forEach(addVideo);
+    }
+    return curatedList.slice(0, 3);
+  }
 
   const reasonConfig = CURATED_VIDEO_LIBRARY[normReason] || CURATED_VIDEO_LIBRARY.stress;
 
@@ -442,7 +536,7 @@ function getCuratedVideos(reason, emotion, babyContext) {
 // ============================================================
 // SEARCH QUERY GENERATION
 // ============================================================
-function getSearchQuery(reason, emotion, babyContext) {
+function getSearchQuery(reason, emotion, babyContext, subIntent = '') {
   const normReason = normalizeReasonKey(reason);
   const normEmotion = normalizeEmotionKey(emotion);
 
@@ -457,7 +551,19 @@ function getSearchQuery(reason, emotion, babyContext) {
   } else if (normReason === 'baby_sleep') {
     baseQuery = "newborn baby sleep cues safe soothing bedtime";
   } else if (normReason === 'baby_health') {
-    baseQuery = "newborn baby health wellness care jaundice tips";
+    if (subIntent === 'Baby Fever') {
+      baseQuery = "newborn baby fever signs when to seek medical care pediatrician guide";
+    } else if (subIntent === 'Baby Illness') {
+      baseQuery = "newborn baby sick symptoms cold cough treatment guidelines";
+    } else if (subIntent === 'Baby Pain/Discomfort') {
+      baseQuery = "baby colic gas pains relief soothing baby stomach pain";
+    } else if (subIntent === 'Baby Not Feeding') {
+      baseQuery = "newborn baby refuses milk feeding latching problems pediatrician tips";
+    } else if (subIntent === 'Baby Health Concern') {
+      baseQuery = "newborn baby warning signs seek medical help pediatrician";
+    } else {
+      baseQuery = "newborn baby health wellness care tips guide";
+    }
   } else if (normReason === 'bonding_issues') {
     baseQuery = "how to build a bond connection with newborn baby";
   } else if (normReason === 'mother_sleep_problems') {
@@ -494,7 +600,7 @@ function getSearchQuery(reason, emotion, babyContext) {
 // ============================================================
 // RELEVANCE SCORING
 // ============================================================
-function scoreApiVideo(video, normReason, normEmotion, babyContext) {
+function scoreApiVideo(video, normReason, normEmotion, babyContext, subIntent = '') {
   let score = 0;
   const title = (video.title || '').toLowerCase();
   const desc = (video.description || '').toLowerCase();
@@ -556,6 +662,49 @@ function scoreApiVideo(video, normReason, normEmotion, babyContext) {
     }
   }
 
+  // 6.b Specific Sub-Intent relevance check
+  if (normReason === 'baby_health' && subIntent) {
+    if (subIntent === 'Baby Fever') {
+      const feverKeywords = ['fever', 'temperature', 'hot', 'උණ', 'una', 'ඇඟ රුක් වෙලා', 'ඇඟ රත් වෙලා'];
+      const hasFeverKw = feverKeywords.some(kw => fullText.includes(kw));
+      if (hasFeverKw) {
+        score += 20;
+      }
+      const negativeFeverKeywords = ['jaundice', 'yellow', 'kaha', 'feeding', 'crying', 'vitamin'];
+      if (negativeFeverKeywords.some(kw => fullText.includes(kw))) {
+        score -= 30;
+      }
+    } else if (subIntent === 'Baby Illness') {
+      const illnessKeywords = ['sick', 'ill', 'cold', 'cough', 'vomit', 'vomiting', 'diarrhea', 'flu', 'අසනීප', 'ලෙඩ', 'leda', 'asanipa', 'una gasila', 'වමනය'];
+      const hasIllnessKw = illnessKeywords.some(kw => fullText.includes(kw));
+      if (hasIllnessKw) {
+        score += 20;
+      }
+      const negativeIllnessKeywords = ['diaper', 'sleep', 'jaundice', 'breastfeed', 'crying'];
+      if (negativeIllnessKeywords.some(kw => fullText.includes(kw))) {
+        score -= 30;
+      }
+    } else if (subIntent === 'Baby Pain/Discomfort') {
+      const painKeywords = ['pain', 'hurt', 'sore', 'colic', 'gas', 'constipated', 'constipation', 'stomach ache', 'කැක්කුමයි', 'රිදෙනවා', 'kakkumai', 'ridenawa'];
+      const hasPainKw = painKeywords.some(kw => fullText.includes(kw));
+      if (hasPainKw) {
+        score += 20;
+      }
+    } else if (subIntent === 'Baby Not Feeding') {
+      const feedingKeywords = ['not feeding', 'refuses milk', 'not drinking milk', 'wont feed', 'wont drink', 'කිරි බොන්නේ නෑ', 'කිරි බොන්නේ නැහැ', 'kiri bonna ba', 'kiri bonna naha', 'kiri bonne na'];
+      const hasFeedingKw = feedingKeywords.some(kw => fullText.includes(kw));
+      if (hasFeedingKw) {
+        score += 20;
+      }
+    } else if (subIntent === 'Baby Health Concern') {
+      const concernKeywords = ['doctor', 'hospital', 'medicine', 'clinic', 'pediatrician', 'health concern', 'jaundice', 'yellow', 'බයයි', 'baya', 'bayaයි', 'බය හිතෙනවා', 'ඇස් කහ', 'සම කහ'];
+      const hasConcernKw = concernKeywords.some(kw => fullText.includes(kw));
+      if (hasConcernKw) {
+        score += 20;
+      }
+    }
+  }
+
   // 7. Localized/Sinhala Relevance (+2)
   const hasSinhalaScript = /[\u0D80-\u0DFF]/.test(fullText);
   if (hasSinhalaScript) {
@@ -608,13 +757,15 @@ function generateQuery(reason, emotion, riskLevel, babyIntent) {
 // ============================================================
 // MAIN HYBRID RECOMMENDATION PIPELINE
 // ============================================================
-async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent) {
+async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryText = '') {
   const normReason = normalizeReasonKey(reason);
   const normEmotion = normalizeEmotionKey(emotion);
   const isBaby = (babyIntent === 'true' || babyIntent === true || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_health', 'bonding_issues'].includes(normReason));
 
-  const curated = getCuratedVideos(reason, emotion, isBaby);
-  const searchQuery = getSearchQuery(reason, emotion, isBaby);
+  const subIntent = normReason === 'baby_health' ? detectBabyHealthSubIntent(diaryText) : 'Other Baby Health';
+
+  const curated = getCuratedVideos(reason, emotion, isBaby, subIntent);
+  const searchQuery = getSearchQuery(reason, emotion, isBaby, subIntent);
 
   let apiVideos = [];
   const apiKey = process.env.YOUTUBE_API_KEY;
@@ -632,7 +783,7 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent) {
       });
 
       const scored = normalized.map(v => {
-        const score = scoreApiVideo(v, normReason, normEmotion, isBaby);
+        const score = scoreApiVideo(v, normReason, normEmotion, isBaby, subIntent);
         return { ...v, score, source: 'youtube' };
       });
 
@@ -663,7 +814,8 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent) {
       });
 
       filtered.sort((a, b) => b.score - a.score);
-      apiVideos = filtered.slice(0, 2);
+      const neededApiVideos = Math.max(0, 5 - curated.length);
+      apiVideos = filtered.slice(0, neededApiVideos);
     } catch (err) {
       console.error('YouTube Service API error:', err.message);
     }
