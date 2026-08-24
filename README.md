@@ -1,1 +1,3 @@
 # AI-Based-Perinatal-Depression-Screening-and-Support-System
+
+The Depression Screening and Classification Module is a bilingual Sinhala–English AI-supported system designed to screen, monitor, and support postpartum mothers in Sri Lanka. It uses the EPDS questionnaire and a Random Forest machine learning model to classify depression risk as Low, Medium, or High. The system also provides emotional diaries with Sinhala voice input, personalized daily planning, baby-care information, and secure multimedia journaling. Authorized midwives can monitor relevant risk information for timely follow-up, making the module a continuous and personalized postpartum mental health support platform.
