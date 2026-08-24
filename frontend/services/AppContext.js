@@ -45,8 +45,20 @@ export const AppProvider = ({ children }) => {
   const [completedActivities, setCompletedActivities] = useState([]);
   const [progressDiaries, setProgressDiaries] = useState([]);
   const [progressActivities, setProgressActivities] = useState([]);
+  const [epdsRiskLevel, setEpdsRiskLevel] = useState('low');
   const [loadingProgress, setLoadingProgress] = useState(true);
   const [errorProgress, setErrorProgress] = useState(null);
+
+  const [localRuleRecs, setLocalRuleRecs] = useState(null);
+  const [isSkipped, setIsSkipped] = useState(false);
+  const [showAssessment, setShowAssessment] = useState(true);
+
+  React.useEffect(() => {
+    if (latestAnalysis) {
+      setShowAssessment(false);
+      setLocalRuleRecs(null);
+    }
+  }, [latestAnalysis]);
 
   const fetchProgressData = async () => {
     try {
@@ -70,6 +82,24 @@ export const AppProvider = ({ children }) => {
 
       setProgressDiaries(diaries);
       setProgressActivities(activities);
+
+      // 3. Fetch EPDS screening history for actual risk level
+      try {
+        console.log('[DEBUG Progress] Requesting GET /epds/history ...');
+        const epdsRes = await api.get('/epds/history');
+        console.log('[DEBUG Progress] GET /epds/history SUCCESS:', epdsRes.status, 'records count:', epdsRes.data?.length);
+        if (epdsRes.data && epdsRes.data.length > 0) {
+          const latestRisk = epdsRes.data[0].riskLevel || 'low';
+          setEpdsRiskLevel(latestRisk.toLowerCase());
+          console.log('[DEBUG Progress] epdsRiskLevel resolved in state to:', latestRisk);
+        } else {
+          setEpdsRiskLevel('low');
+        }
+      } catch (epdsErr) {
+        console.log('Error fetching EPDS history for recommendations:', epdsErr.message);
+        setEpdsRiskLevel('low');
+      }
+
       setLoadingProgress(false);
     } catch (err) {
       console.error('[DEBUG Progress ERROR] Failed in fetchProgressData:');
@@ -174,6 +204,9 @@ export const AppProvider = ({ children }) => {
         setDetectedBabyTopic(null);
       }
 
+      // Override rule-based riskLevel with true stored EPDS riskLevel
+      analysis.riskLevel = epdsRiskLevel;
+
       const recommendations = getRecommendations(analysis, userPreferredActivities, userPreferredGames, diaryText, completedActivities);
       setLatestAnalysis(analysis);
       setLatestRecommendations(recommendations);
@@ -223,7 +256,11 @@ export const AppProvider = ({ children }) => {
       moodHistory, processDiary, simulateNextDiary, nextDemoPreview, demoDiaryIdx,
       setLatestData,
       completedActivities, fetchCompletedActivities,
-      progressDiaries, progressActivities, loadingProgress, errorProgress, fetchProgressData
+      progressDiaries, progressActivities, loadingProgress, errorProgress, fetchProgressData,
+      epdsRiskLevel, setEpdsRiskLevel,
+      localRuleRecs, setLocalRuleRecs,
+      isSkipped, setIsSkipped,
+      showAssessment, setShowAssessment
     }}>
       {children}
     </AppContext.Provider>

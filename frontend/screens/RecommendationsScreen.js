@@ -226,17 +226,31 @@ const HARDCODED_VIDEO_MAP = {
 };
 
 const RecommendationsScreen = ({ navigation, route }) => {
-  const { latestRecommendations, latestAnalysis, userPreferredActivities, userPreferredGames, detectedBabyTopic, detectedBabyTopics, detectedBabyAge, completedActivities, fetchCompletedActivities } = useApp();
+  const { 
+    latestRecommendations, 
+    latestAnalysis, 
+    userPreferredActivities, 
+    userPreferredGames, 
+    detectedBabyTopic, 
+    detectedBabyTopics, 
+    detectedBabyAge, 
+    completedActivities, 
+    fetchCompletedActivities, 
+    epdsRiskLevel,
+    localRuleRecs,
+    setLocalRuleRecs,
+    isSkipped,
+    setIsSkipped,
+    showAssessment,
+    setShowAssessment
+  } = useApp();
 
   // Quick Assessment State
   const hasAnalysis = Boolean(latestAnalysis);
-  const [showAssessment, setShowAssessment] = useState(!hasAnalysis);
   const [step, setStep] = useState(1);
   const [selEmotion, setSelEmotion] = useState('anxious');
   const [selReason, setSelReason] = useState('baby_crying');
   const [selHelp, setSelHelp] = useState(['activities', 'baby_care']);
-  const [isSkipped, setIsSkipped] = useState(false);
-  const [localRuleRecs, setLocalRuleRecs] = useState(null);
 
   // Screen UI State
   const initialBabyTopics = (detectedBabyTopics && detectedBabyTopics.length > 0)
@@ -258,6 +272,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
   useEffect(() => {
     if (latestAnalysis) {
       setShowAssessment(false);
+      setLocalRuleRecs(null);
     }
   }, [latestAnalysis]);
 
@@ -278,10 +293,40 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
   const activeAnalysis = isSkipped
     ? null
-    : (hasAnalysis ? latestAnalysis : { detectedEmotion: selEmotion, primaryReason: selReason, riskLevel: latestAnalysis?.riskLevel || null });
+    : (localRuleRecs 
+        ? { 
+            detectedEmotion: localRuleRecs.emotion, 
+            primaryReason: localRuleRecs.reason, 
+            riskLevel: localRuleRecs.riskLevel || null,
+            babyIntents: { 
+              baby_related: isBabyRelatedReason(localRuleRecs.reason), 
+              baby_crying: localRuleRecs.reason === 'baby_crying', 
+              baby_needs: localRuleRecs.reason === 'understanding_baby' || localRuleRecs.reason === 'baby_needs', 
+              baby_feeding: localRuleRecs.reason === 'baby_feeding', 
+              baby_sleep: localRuleRecs.reason === 'baby_sleep',
+              baby_health: localRuleRecs.reason === 'baby_health'
+            }
+          } 
+        : (hasAnalysis 
+            ? latestAnalysis 
+            : { 
+                detectedEmotion: selEmotion, 
+                primaryReason: selReason, 
+                riskLevel: latestAnalysis?.riskLevel || null,
+                babyIntents: {
+                  baby_related: isBabyRelatedReason(selReason),
+                  baby_crying: selReason === 'baby_crying',
+                  baby_needs: selReason === 'understanding_baby' || selReason === 'baby_needs',
+                  baby_feeding: selReason === 'baby_feeding',
+                  baby_sleep: selReason === 'baby_sleep',
+                  baby_health: selReason === 'baby_health'
+                }
+              }
+          )
+      );
 
   const emotion = activeAnalysis?.detectedEmotion || selEmotion || 'stressed';
-  const risk = activeAnalysis?.riskLevel || null;
+  const risk = epdsRiskLevel || activeAnalysis?.riskLevel || 'low';
   const ec = EMOTION_CFG[emotion] || EMOTION_CFG.stressed;
   const rc = risk ? (RISK_CFG[risk] || RISK_CFG.low) : null;
 
@@ -291,7 +336,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
       emotion: selEmotion,
       reason: selReason,
       helpCategories: selHelp,
-      riskLevel: latestAnalysis?.riskLevel || null, // Receives existing risk level if available (does not calculate risk inside)
+      riskLevel: epdsRiskLevel || null, 
       preferredActivities: userPreferredActivities,
       preferredGames: userPreferredGames,
     });
@@ -385,15 +430,29 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const activeIntents = activeAnalysis?.babyIntents || {};
   const activeReason = activeAnalysis?.primaryReason || selReason || '';
 
-  const dynamicRecommendedGames = getRecommendedGames(activeIntents, activeDiaryText, activeReason, 4);
+  const dynamicRecommendedGames = getRecommendedGames(activeIntents, activeDiaryText, activeReason, 4, risk, emotion);
 
   const finalGames = isSkipped
     ? ALL_GAMES.filter(g => g.id !== 'baby_mood').slice(0, 4)
     : dynamicRecommendedGames;
 
   const primaryReason = activeAnalysis?.primaryReason || selReason || 'loneliness';
-  const libraryMusic = MUSIC_LIBRARY[primaryReason] || (isBabyActive ? MUSIC_LIBRARY.bonding_issues : MUSIC_LIBRARY.loneliness);
-  const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
+  const normEmotion = emotion ? emotion.toLowerCase().trim() : '';
+
+  let libraryMusic = MUSIC_LIBRARY[primaryReason] || (isBabyActive ? MUSIC_LIBRARY.bonding_issues : MUSIC_LIBRARY.loneliness);
+  
+  if (risk !== 'high' && risk !== 'medium') {
+    if (normEmotion.includes('happ') || normEmotion.includes('calm')) {
+      libraryMusic = MUSIC_LIBRARY.motivation || MUSIC_LIBRARY.loneliness;
+    } else if (normEmotion.includes('sad') || normEmotion.includes('cry')) {
+      libraryMusic = MUSIC_LIBRARY.bonding_issues || MUSIC_LIBRARY.loneliness;
+    } else if (normEmotion.includes('anxi') || normEmotion.includes('stress') || normEmotion.includes('angr') || normEmotion.includes('frust')) {
+      libraryMusic = MUSIC_LIBRARY.anxiety || MUSIC_LIBRARY.stress;
+    }
+  } else {
+    libraryMusic = MUSIC_LIBRARY.anxiety || MUSIC_LIBRARY.loneliness;
+  }
+  const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 3);
 
   const activeBabyTopics = (detectedBabyTopics && detectedBabyTopics.length > 0)
     ? detectedBabyTopics
@@ -663,6 +722,8 @@ const RecommendationsScreen = ({ navigation, route }) => {
                           onPress={() => {
                             if (actId === 'baby_mood') {
                               navigation.navigate('Activity', { gameId: 'baby_mood', fromRecommendations: true, returnTo: 'Recommendations' });
+                            } else if (actId === 'new_calm_coloring') {
+                              navigation.navigate('Art', { fromRecommendations: true, returnTo: 'Recommendations' });
                             } else {
                               navigation.navigate('Activity', { activityId: actId, fromRecommendations: true, returnTo: 'Recommendations' });
                             }

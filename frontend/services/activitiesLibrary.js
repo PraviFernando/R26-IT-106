@@ -477,7 +477,7 @@ export const GAME_RECOMMENDATION_MAP = {
   general:            ['memory_match', 'pattern_repeat', 'word_builder', 'spot_diff']
 };
 
-export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', maxGames = 4) => {
+export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', maxGames = 4, riskLevel = 'low', emotion = '') => {
   const isBaby = (intents && (intents.baby_related || intents.baby_crying || intents.baby_needs || intents.baby_feeding || intents.baby_sleep || intents.baby_health))
     || isBabyRelatedContent(diaryText)
     || isBabyRelatedReason(reason);
@@ -493,6 +493,19 @@ export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', m
 
   if (reason && GAME_RECOMMENDATION_MAP[reason] && !activeKeys.includes(reason)) {
     activeKeys.push(reason);
+  }
+
+  // Interleave emotion-specific games
+  const normEmotion = emotion ? emotion.toLowerCase().trim() : '';
+  let emotionKey = '';
+  if (normEmotion.includes('sad') || normEmotion.includes('cry')) emotionKey = 'sadness';
+  else if (normEmotion.includes('anxi')) emotionKey = 'anxiety';
+  else if (normEmotion.includes('stress') || normEmotion.includes('angr') || normEmotion.includes('frust')) emotionKey = 'stress';
+  else if (normEmotion.includes('fatig') || normEmotion.includes('tir') || normEmotion.includes('sleep')) emotionKey = 'fatigue';
+  else if (normEmotion.includes('happ') || normEmotion.includes('calm')) emotionKey = 'general';
+
+  if (emotionKey && GAME_RECOMMENDATION_MAP[emotionKey] && !activeKeys.includes(emotionKey)) {
+    activeKeys.push(emotionKey);
   }
 
   const collected = [];
@@ -517,6 +530,13 @@ export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', m
     return true;
   });
 
+  // If riskLevel is high/medium, filter out complex cognitive games to prevent mental strain
+  const normRisk = (riskLevel || 'low').toLowerCase();
+  if (normRisk === 'high' || normRisk === 'medium') {
+    const safeCalmingGames = ['baby_mood', 'bubble_pop', 'mindful_tap', 'colouring', 'mandala', 'pattern_repeat', 'memory_match'];
+    filtered = filtered.filter(gId => safeCalmingGames.includes(gId));
+  }
+
   // If baby context is active, force baby_mood to index 0
   if (isBaby) {
     filtered = ['baby_mood', ...filtered.filter(gId => gId !== 'baby_mood')];
@@ -529,6 +549,12 @@ export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', m
       return !filtered.includes(gId);
     });
     filtered = [...filtered, ...fallbacks];
+  }
+
+  // If riskLevel filter left us with fewer fallbacks, ensure we filter again
+  if (normRisk === 'high' || normRisk === 'medium') {
+    const safeCalmingGames = ['baby_mood', 'bubble_pop', 'mindful_tap', 'colouring', 'mandala', 'pattern_repeat', 'memory_match'];
+    filtered = filtered.filter(gId => safeCalmingGames.includes(gId));
   }
 
   // Ensure unique and capped at maxGames
@@ -1015,75 +1041,63 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
   const pool = getCandidatesPool();
 
   const ranked = pool.map(act => {
-    let reasonScore = 0;
-    let emotionScore = 0;
-    let riskScore = 0;
-    let babyScore = 0;
-    let preferenceScore = 0;
-    let historyPenalty = 0;
-
-    // 1. Reason Match (Weight: 5)
+    let score = 0;
+    
+    // 1. PRIMARY INTENT / REASON MATCH
     const reasonList = REASON_ACTIVITY_MAP[normReason] || REASON_ACTIVITY_MAP.overwhelmed;
     if (reasonList.includes(act.id)) {
-      reasonScore = 5;
+      score += 15;
     }
 
-    // 2. Emotion Match (Weight: 3)
+    // 2. BABY CONTEXT BOOST
+    const babyActivities = ['baby_mood', 'new_baby_interaction_ideas', 'baby_bonding'];
+    if (isBabyActive && babyActivities.includes(act.id)) {
+      score += 20;
+    }
+
+    // 3. EMOTION MATCH
     const emotionList = EMOTION_ACTIVITY_MAP[normEmotion] || EMOTION_ACTIVITY_MAP.stressed;
     if (emotionList.includes(act.id)) {
-      emotionScore = 3;
+      score += 5;
     }
 
-    // 3. Risk Level Suitability (Weight: 4 for high, 3 for others)
+    // 4. RISK LEVEL MATCH
     if (normRisk === 'high') {
       const highRiskList = ['new_deep_breathing', 'new_guided_meditation', 'new_worry_box', 'new_relaxing_music', 'deep_breathing', 'guided_meditation'];
-      if (highRiskList.includes(act.id)) {
-        riskScore = 4;
-      }
+      if (highRiskList.includes(act.id)) score += 8;
     } else if (normRisk === 'medium') {
       const medRiskList = ['new_guided_meditation', 'new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'new_sleep_reflection', 'new_worry_box', 'new_bubble_pop', 'new_memory_card', 'new_self_care_checklist', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321'];
-      if (medRiskList.includes(act.id)) {
-        riskScore = 3;
-      }
-    } else { // low
+      if (medRiskList.includes(act.id)) score += 6;
+    } else {
       const lowRiskList = ['new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations', 'new_relaxing_music', 'new_drink_water', 'new_smile_challenge', 'new_emotion_check_in', 'new_calm_coloring', 'write_positive', 'journaling', 'gentle_stretch'];
-      if (lowRiskList.includes(act.id)) {
-        riskScore = 3;
-      } else {
-        riskScore = 1;
-      }
+      if (lowRiskList.includes(act.id)) score += 4;
     }
 
-    // 4. Baby Intent Match (Weight: 6)
-    if (isBabyActive) {
-      const babyList = ['baby_mood', 'new_baby_interaction_ideas'];
-      if (babyList.includes(act.id)) {
-        babyScore = 6;
-      }
-    }
-
-    // 5. User Preferences Match (Weight: 4)
+    // 5. USER PREFERENCES
     if (preferredActivities && preferredActivities.includes(act.id)) {
-      preferenceScore = 4;
+      score += 10;
     }
 
-    // 6. Previous Activity History (Repetition Penalty: -5)
+    // 6. HISTORY REPETITION PENALTY
     if (completedActivities && completedActivities.includes(act.id)) {
-      historyPenalty = -5;
+      score -= 15;
     }
 
-    const score = reasonScore + emotionScore + riskScore + babyScore + preferenceScore + historyPenalty;
+    // 7. UNRELATED FILTERING
+    if (isBabyActive && !babyActivities.includes(act.id) && !act.id.includes('breathing') && !act.id.includes('meditation') && !act.id.includes('relaxing_music')) {
+      score -= 12;
+    }
 
     return {
       ...act,
       score,
       scoreBreakdown: {
-        reason: reasonScore,
-        emotion: emotionScore,
-        risk: riskScore,
-        babyIntent: babyScore,
-        preference: preferenceScore,
-        historyPenalty
+        reason: reasonList.includes(act.id) ? 15 : 0,
+        emotion: emotionList.includes(act.id) ? 5 : 0,
+        risk: normRisk === 'high' ? 8 : (normRisk === 'medium' ? 6 : 4),
+        babyIntent: (isBabyActive && babyActivities.includes(act.id)) ? 20 : 0,
+        preference: (preferredActivities && preferredActivities.includes(act.id)) ? 10 : 0,
+        historyPenalty: (completedActivities && completedActivities.includes(act.id)) ? -15 : 0
       }
     };
   });
@@ -1091,6 +1105,28 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
   // Sort by score descending
   ranked.sort((a, b) => b.score - a.score);
 
-  // Return top 4
-  return ranked.slice(0, 4);
+  let top4 = ranked.slice(0, 4);
+
+  // If user selected crying, sad, anxious, stressed, or frustrated, ensure Mandala Art (new_calm_coloring) is in activities list
+  const targetEmotions = ['crying', 'sad', 'anxious', 'stressed', 'frustrated'];
+  if (targetEmotions.includes(normEmotion)) {
+    const hasColoring = top4.some(act => act.id === 'new_calm_coloring');
+    if (!hasColoring) {
+      const coloringAct = pool.find(act => act.id === 'new_calm_coloring');
+      if (coloringAct) {
+        // Replace the 4th (least relevant / lowest score in top 4) activity with Mandala Art
+        top4[3] = {
+          ...coloringAct,
+          score: 0,
+          scoreBreakdown: { reason: 0, emotion: 0, risk: 0, babyIntent: 0, preference: 0, historyPenalty: 0 }
+        };
+      }
+    }
+  }
+
+  // DEBUG LOGGING REQUIREMENT
+  console.log('[ACTIVITY RANKING]');
+  console.log('Selected activities:', JSON.stringify(top4.map(a => ({ id: a.id, score: a.score }))));
+
+  return top4;
 };

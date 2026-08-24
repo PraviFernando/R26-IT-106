@@ -429,6 +429,13 @@ function getCuratedVideos(reason, emotion, babyContext) {
     });
   }
 
+  // Fallback to absolute defaults if needed
+  if (curatedList.length < 3) {
+    ['jzGyjLGbAUc', 'hrozJ-EbdGI', 'fm5ZnhqWkO8'].forEach(vId => {
+      if (curatedList.length < 3) addVideo(vId);
+    });
+  }
+
   return curatedList.slice(0, 3);
 }
 
@@ -439,12 +446,49 @@ function getSearchQuery(reason, emotion, babyContext) {
   const normReason = normalizeReasonKey(reason);
   const normEmotion = normalizeEmotionKey(emotion);
 
-  const reasonQueries = VIDEO_SEARCH_QUERIES[normReason] || VIDEO_SEARCH_QUERIES.loneliness;
-  let query = reasonQueries[normEmotion] || reasonQueries.default;
-  if (!query) {
-    query = reasonQueries.default || "postpartum emotional wellness self care tips mothers sinhala";
+  let baseQuery = "";
+
+  if (normReason === 'baby_crying') {
+    baseQuery = "newborn baby crying reasons baby cues soothing crying baby";
+  } else if (normReason === 'understanding_baby') {
+    baseQuery = "understanding newborn baby cues crying hunger tiredness";
+  } else if (normReason === 'baby_feeding') {
+    baseQuery = "newborn breastfeeding feeding cues proper latch";
+  } else if (normReason === 'baby_sleep') {
+    baseQuery = "newborn baby sleep cues safe soothing bedtime";
+  } else if (normReason === 'baby_health') {
+    baseQuery = "newborn baby health wellness care jaundice tips";
+  } else if (normReason === 'bonding_issues') {
+    baseQuery = "how to build a bond connection with newborn baby";
+  } else if (normReason === 'mother_sleep_problems') {
+    baseQuery = "mother sleep problems new mother sleep deprivation guidelines";
+  } else if (normReason === 'loneliness') {
+    baseQuery = "postpartum loneliness emotional support for new mothers";
+  } else if (normReason === 'anxiety') {
+    baseQuery = "postpartum anxiety calming and emotional support";
+  } else if (normReason === 'fatigue') {
+    baseQuery = "self care and rest tips for exhausted new mothers";
+  } else if (normReason === 'stress') {
+    baseQuery = "stress relief and management for new mothers guide";
+  } else if (normReason === 'lack_of_support') {
+    baseQuery = "coping with lack of support postpartum new mother";
+  } else if (normReason === 'negative_thoughts') {
+    baseQuery = "postpartum intrusive thoughts and mental health help";
+  } else if (normReason === 'physical_recovery') {
+    baseQuery = "postpartum c section healing physical recovery tips";
+  } else {
+    baseQuery = "postpartum emotional wellness self care tips mothers";
   }
-  return query;
+
+  if (normEmotion && normEmotion !== 'default') {
+    if (babyContext || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_health', 'bonding_issues'].includes(normReason)) {
+      return `${baseQuery} ${normEmotion} mother support`;
+    } else {
+      return `${baseQuery} for ${normEmotion} mothers`;
+    }
+  }
+
+  return baseQuery;
 }
 
 // ============================================================
@@ -456,54 +500,69 @@ function scoreApiVideo(video, normReason, normEmotion, babyContext) {
   const desc = (video.description || '').toLowerCase();
   const fullText = title + ' ' + desc;
 
-  // 1. Negative Filtering / Hard exclusion (-50)
+  // 1. Hard exclusions
   const negativeKws = [
     'workout', 'weight loss', 'exercise routine', 'pregnancy workout', 'gym', 'fitness',
     'shorts', '#shorts', 'broken', 'status', 'whatsapp status', 'funny', 'fail', 'movie', 
     'trailer', 'song', 'music video', 'cover', 'unrelated', 'comedy', 'prank', 'celebrity',
-    'gossip', 'drama', 'official video', 'teaser'
+    'gossip', 'drama', 'official video', 'teaser', 'gaming', 'gameplay', 'lets play'
   ];
   const hasNegative = negativeKws.some(kw => title.includes(kw) || desc.includes(kw));
   if (hasNegative) {
-    return -50; // Heavily penalize or reject
+    return -100;
   }
 
-  // 2. Reason Match (+5)
+  if (title.includes('meditation') || title.includes('music') || title.includes('lullaby')) {
+    if (!['stress', 'loneliness', 'anxiety'].includes(normReason) && !babyContext) {
+      return -50;
+    }
+  }
+
+  // 2. Strong Positive Boosts
+  if (normReason === 'baby_crying') {
+    const cryKws = ['baby crying', 'newborn crying', 'why baby cries', 'baby cues', 'soothing baby', 'calming crying baby', 'infant crying'];
+    const hasCryKw = cryKws.some(kw => fullText.includes(kw));
+    if (hasCryKw) score += 15;
+  }
+
+  // 3. Reason Match (+5)
   const reasonKeywords = POSITIVE_KEYWORDS[normReason] || POSITIVE_KEYWORDS.general;
   const matchesReason = reasonKeywords.some(kw => title.includes(kw));
   if (matchesReason) {
     score += 5;
   }
   
-  // 3. Description Match (+3)
+  // 4. Description Match (+3)
   const matchesDesc = reasonKeywords.some(kw => desc.includes(kw));
   if (matchesDesc) {
     score += 3;
   }
 
-  // 4. Emotion Match (+2)
+  // 5. Emotion Match (+2)
   const emotionKeywords = POSITIVE_KEYWORDS[normEmotion] || [];
   const matchesEmotion = emotionKeywords.some(kw => fullText.includes(kw));
   if (matchesEmotion) {
     score += 2;
   }
 
-  // 5. Baby Context Match (+4 when babyContext is active)
+  // 6. Baby Context Match (+6 / -10)
   if (babyContext || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_health', 'bonding_issues'].includes(normReason)) {
     const babyWords = ['baby', 'newborn', 'infant', 'child', 'toddler', 'ළදරු', 'බබා', 'දරුවා'];
     const hasBabyWord = babyWords.some(w => fullText.includes(w));
     if (hasBabyWord) {
-      score += 4;
+      score += 6;
+    } else {
+      score -= 10;
     }
   }
 
-  // 6. Localized/Sinhala Relevance (+2)
+  // 7. Localized/Sinhala Relevance (+2)
   const hasSinhalaScript = /[\u0D80-\u0DFF]/.test(fullText);
   if (hasSinhalaScript) {
     score += 2;
   }
 
-  // 7. Relevant content keyword booster (+2)
+  // 8. Relevant content keyword booster (+2)
   const wellnessKeywords = ['care', 'parenting', 'maternal', 'postpartum', 'health', 'guide', 'tips', 'advice', 'soothe', 'education'];
   const hasWellness = wellnessKeywords.some(w => fullText.includes(w));
   if (hasWellness) {
@@ -540,7 +599,6 @@ function normalizeVideoItem(item) {
   };
 }
 
-// Keep legacy generateQuery for compatibility if needed elsewhere
 function generateQuery(reason, emotion, riskLevel, babyIntent) {
   const normReason = normalizeReasonKey(reason);
   const queries = VIDEO_SEARCH_QUERIES[normReason] || VIDEO_SEARCH_QUERIES.loneliness;
@@ -555,76 +613,63 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent) {
   const normEmotion = normalizeEmotionKey(emotion);
   const isBaby = (babyIntent === 'true' || babyIntent === true || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_health', 'bonding_issues'].includes(normReason));
 
-  console.log(`\n--- [HYBRID VIDEO RECOMS] ---`);
-  console.log(`Inputs: reason=${reason}, emotion=${emotion}, babyIntent=${babyIntent}`);
-  console.log(`Resolved: reason=${normReason}, emotion=${normEmotion}, babyContext=${isBaby}`);
-
-  // 1. Get Curated Videos (Max 3)
   const curated = getCuratedVideos(reason, emotion, isBaby);
-  console.log(`Curated videos resolved: ${curated.length}`);
-
-  // 2. Determine search query
   const searchQuery = getSearchQuery(reason, emotion, isBaby);
-  console.log(`Search query: ${searchQuery}`);
 
   let apiVideos = [];
   const apiKey = process.env.YOUTUBE_API_KEY;
+  const rejectedLogs = [];
+  const acceptedLogs = [];
+  const candidateLogs = [];
 
   if (apiKey) {
     try {
-      console.log(`Calling YouTube API...`);
-      // Fetch 10-15 candidate videos
       const items = await fetchYouTubeItems(searchQuery, apiKey, 15);
-      console.log(`YouTube API candidate results received: ${items.length}`);
-
       const normalized = items.map(item => normalizeVideoItem(item)).filter(v => v.id);
 
-      // Score and rank candidates
-      let scored = normalized.map(v => {
+      normalized.forEach(v => {
+        candidateLogs.push({ id: v.id, title: v.title });
+      });
+
+      const scored = normalized.map(v => {
         const score = scoreApiVideo(v, normReason, normEmotion, isBaby);
         return { ...v, score, source: 'youtube' };
       });
 
-      // Filter by threshold & enforce safety exclusions globally
-      const threshold = 5;
-      let filtered = scored.filter(v => {
+      const threshold = 8;
+      const curatedIds = new Set(curated.map(c => c.id));
+
+      let filtered = [];
+      scored.forEach(v => {
         const titleLower = v.title.toLowerCase();
-        if (
-          v.id === 'UrfpkvvRTns' || 
-          v.id === 'LjdtfeVxRm0' || 
-          v.id === 'pbKy4RPq6gI' ||
-          titleLower.includes('grammarly') || 
-          titleLower.includes('body language tricks')
-        ) {
-          console.log(`[DEBUG fetchAndRankVideos] Filtered out blacklisted video: ${v.title}`);
-          return false;
+        
+        if (curatedIds.has(v.id)) {
+          rejectedLogs.push({ id: v.id, title: v.title, reason: 'Duplicate of curated video' });
+          return;
         }
-        return v.score >= threshold;
+
+        if (v.score < threshold) {
+          rejectedLogs.push({ id: v.id, title: v.title, reason: `Below relevance threshold (Score: ${v.score} < ${threshold})` });
+          return;
+        }
+
+        if (titleLower.includes('grammarly') || titleLower.includes('body language tricks') || v.id === 'UrfpkvvRTns' || v.id === 'LjdtfeVxRm0') {
+          rejectedLogs.push({ id: v.id, title: v.title, reason: 'Blacklisted title/id' });
+          return;
+        }
+
+        filtered.push(v);
+        acceptedLogs.push({ id: v.id, title: v.title, score: v.score });
       });
 
-      console.log(`Candidates filtered/rejected: ${scored.length - filtered.length}`);
-
-      // De-duplicate against curated list
-      const curatedIds = new Set(curated.map(c => c.id));
-      filtered = filtered.filter(v => !curatedIds.has(v.id));
-
-      // Sort descending by score
       filtered.sort((a, b) => b.score - a.score);
-
-      // Select top 2
       apiVideos = filtered.slice(0, 2);
-      console.log(`Final API results selected (Max 2): ${apiVideos.length}`);
     } catch (err) {
       console.error('YouTube Service API error:', err.message);
     }
-  } else {
-    console.log('No YOUTUBE_API_KEY. Returning curated videos only.');
   }
 
-  // Combine curated + API
   const merged = [...curated, ...apiVideos];
-
-  // Final deduplication & capping at 5
   const seenIds = new Set();
   const finalVideos = [];
   for (let v of merged) {
@@ -635,7 +680,16 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent) {
   }
 
   const capped = finalVideos.slice(0, 5);
-  console.log(`Final recommendations merged: ${capped.length}`);
+
+  // DEBUG LOGGING REQUIREMENT
+  console.log('\n[YOUTUBE]');
+  console.log(`Search query: "${searchQuery}"`);
+  console.log(`Curated videos:`, JSON.stringify(curated.map(c => ({ id: c.id, title: c.title }))));
+  console.log(`API candidates:`, JSON.stringify(candidateLogs));
+  console.log(`Rejected API videos + reason:`, JSON.stringify(rejectedLogs));
+  console.log(`Accepted API videos:`, JSON.stringify(acceptedLogs));
+  console.log(`Final videos:`, JSON.stringify(capped.map(f => ({ id: f.id, title: f.title, source: f.source }))));
+
   return capped;
 }
 

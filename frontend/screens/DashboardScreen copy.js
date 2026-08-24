@@ -90,7 +90,13 @@ const DashboardScreenCopy = ({ navigation }) => {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
           {/* Back Button */}
-          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+          <TouchableOpacity onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('Dashboard');
+            }
+          }} style={s.backBtn}>
             <Text style={s.backText}>← ආපසු</Text>
           </TouchableOpacity>
 

@@ -19,6 +19,8 @@ export const normalizeMultilingualText = (text = '') => {
     .replace(/adanawa/g, 'andanawa')
     .replace(/andanne/g, 'andanawa')
     .replace(/andana/g, 'andanawa')
+    .replace(/ada\s*nawa/g, 'andanawa')
+    .replace(/ada\s*na/g, 'andanawa')
     .replace(/therenne\s*na\b/g, 'therenne naha')
     .replace(/therenne\s*nehe/g, 'therenne naha')
     .replace(/therum\s*ganna\s*ba\b/g, 'therum ganna baha')
@@ -32,6 +34,24 @@ export const normalizeMultilingualText = (text = '') => {
     .replace(/bonne\s*naha/g, 'bonna naha')
     .replace(/baya\s*hithenawa/g, 'baya')
     .replace(/mahansi\b/g, 'mahansiyi')
+    // Singlish/Sinhala spelling variations:
+    .replace(/there\s*nne/g, 'therenne')
+    .replace(/there\s*ne/g, 'therenne')
+    .replace(/therennet\s*na/g, 'therenne naha')
+    .replace(/therenneth\s*na/g, 'therenne naha')
+    .replace(/තෙරේන්නේ/g, 'තේරෙන්නේ')
+    .replace(/තේරෙන්නෙ/g, 'තේරෙන්නේ')
+    .replace(/අඩනවා/g, 'අඬනවා')
+    .replace(/අඩන/g, 'අඬන')
+    // Stress / Anger mappings
+    .replace(/stress\s*ekak/g, 'stress')
+    .replace(/stress\s*eka/g, 'stress')
+    .replace(/ස්ට්රෙස්/g, 'stress')
+    .replace(/කේන්තියක්/g, 'kenthia')
+    .replace(/කේන්ති/g, 'kenthia')
+    .replace(/කේන්තිය/g, 'kenthia')
+    .replace(/kenthiyen/g, 'kenthia')
+    .replace(/kenthiyak/g, 'kenthia')
     .replace(/['’]/g, '');
 
   // Keep alphanumeric, spaces, and Sinhala Unicode range (\u0D80-\u0DFF)
@@ -113,6 +133,7 @@ const EMOTION_KW = {
   ],
   stressed: [
     'stress', 'overwhelmed', 'tense', 'frustrated', 'on edge', 'pressure', 'anxious', 'irritated',
+    'kenthia', 'angry', 'anger', 'frustrated', 'frustration',
     'ආතතිය', 'මහන්සියි', 'බයයි', 'කලබලයි', 'පීඩනය',
     'stress', 'athathiya', 'baya', 'mahansi'
   ],
@@ -213,12 +234,14 @@ export const analyzeDiary = (text) => {
   });
   const sortedReasons = Object.entries(rScores).sort((a, b) => b[1] - a[1]);
   const motherReason = sortedReasons[0][1] > 0 ? sortedReasons[0][0] : 'fatigue';
-  const secondaryReason = sortedReasons[1]?.[1] > 0 ? sortedReasons[1][0] : null;
+  let motherSecondaryReason = sortedReasons[1]?.[1] > 0 ? sortedReasons[1][0] : null;
 
   const babyIntents = detectBabyIntents(text);
 
-  // Step 3: Determine primary reason priority (Earliest occurrence priority)
+  // Step 3: Determine primary reason priority
   let primaryReason = motherReason;
+  let secondaryReason = motherSecondaryReason !== primaryReason ? motherSecondaryReason : null;
+
   if (babyIntents.baby_related) {
     const intentsList = [
       { id: 'baby_crying', kws: ['crying', 'cries', 'cry', 'andana', 'andanawa', 'adanawa', 'අඬනවා', 'අඬන', 'ඇඬීම', 'කෑගහනවා'] },
@@ -228,25 +251,29 @@ export const analyzeDiary = (text) => {
       { id: 'baby_health', kws: ['fever', 'sick', 'health', 'unwell', 'baya', 'බයයි', 'ලෙඩ', 'උණ', 'අසනීප', 'asanipa', 'una', 'leda'] }
     ];
 
-    let earliestIntent = null;
-    let earliestPos = -1;
-
+    const activeBabyIntents = [];
     intentsList.forEach(item => {
       if (babyIntents[item.id]) {
+        let earliestPos = -1;
         item.kws.forEach(kw => {
           const pos = norm.indexOf(kw);
-          if (pos !== -1) {
-            if (earliestPos === -1 || pos < earliestPos) {
-              earliestPos = pos;
-              earliestIntent = item.id;
-            }
+          if (pos !== -1 && (earliestPos === -1 || pos < earliestPos)) {
+            earliestPos = pos;
           }
         });
+        activeBabyIntents.push({ id: item.id, pos: earliestPos !== -1 ? earliestPos : 9999 });
       }
     });
 
-    if (earliestIntent) {
-      primaryReason = earliestIntent;
+    activeBabyIntents.sort((a, b) => a.pos - b.pos);
+
+    if (activeBabyIntents.length > 0) {
+      primaryReason = activeBabyIntents[0].id;
+      if (activeBabyIntents.length > 1) {
+        secondaryReason = activeBabyIntents[1].id;
+      } else {
+        secondaryReason = motherReason !== primaryReason ? motherReason : (motherSecondaryReason || null);
+      }
     } else {
       primaryReason = 'caring_for_baby';
     }
@@ -267,6 +294,16 @@ export const analyzeDiary = (text) => {
 
   const isSinhala = /[\u0D80-\u0DFF]/.test(text);
   const isSinglish = !isSinhala && /(baba|andanawa|ninda|kiri|daruwa|putha|duwa|mahansi|baya|duk)/i.test(text);
+
+  // DEBUG LOGGING REQUIREMENT
+  console.log('\n[DIARY ANALYSIS]');
+  console.log(`Original text: "${text}"`);
+  console.log(`Normalized text: "${norm}"`);
+  console.log(`Emotion: "${detectedEmotion}"`);
+  console.log(`Primary reason: "${primaryReason}"`);
+  console.log(`Secondary reason: "${secondaryReason}"`);
+  console.log(`Baby context: "${babyIntents.baby_related}"`);
+  console.log(`Baby intents:`, JSON.stringify(babyIntents));
 
   return {
     detectedEmotion,
@@ -307,14 +344,23 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
     ? 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'
     : null;
 
+  const cappedGames = (rule.games || []).slice(0, 4);
+  const cappedMusic = (music || []).slice(0, 3);
+
+  // DEBUG LOGGING REQUIREMENT
+  console.log('[GAME RANKING]');
+  console.log('Selected games:', JSON.stringify(cappedGames.map(g => g.id || g)));
+  console.log('[MUSIC RANKING]');
+  console.log('Selected music:', JSON.stringify(cappedMusic));
+
   return {
     detectedEmotion,
     riskLevel,
-    music,
+    music: cappedMusic,
     videos,
     activities: rule.activities,
     newActivities: rule.newActivities,
-    games: rule.games,
+    games: cappedGames,
     game: rule.game,
     messages,
     urgencyMessage,

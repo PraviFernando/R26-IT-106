@@ -1368,11 +1368,11 @@ const ArtScreen = ({ navigation, route }) => {
 
           <TouchableOpacity onPress={() => {
             if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
-              navigation.navigate('Recommendations');
+              navigation.navigate('Tabs', { screen: 'Recommendations' });
             } else if (navigation.canGoBack()) {
               navigation.goBack();
             } else {
-              navigation.navigate('Home');
+              navigation.navigate('Tabs', { screen: 'Home' });
             }
           }} style={s.backBtn}>
             <Text style={s.backTxt}>← ආපසු</Text>
