@@ -60,7 +60,38 @@ export const normalizeMultilingualText = (text = '') => {
     .replace(/කේන්තිය/g, 'kenthia')
     .replace(/kenthiyen/g, 'kenthia')
     .replace(/kenthiyak/g, 'kenthia')
-    .replace(/['’]/g, '');
+    .replace(/['’]/g, '')
+    // Physical recovery Singlish normalizations
+    .replace(/recover\s*wenne\s*nehe/g, 'recover wenne naha')
+    .replace(/recover\s*wenne\s*na\b/g, 'recover wenne naha')
+    .replace(/recover\s*wenna\s*one/g, 'recover wenna one')
+    .replace(/recover\s*wenna\s*ona/g, 'recover wenna one')
+    .replace(/passe\s*recover/g, 'passe recover')
+    .replace(/delivery\s*eken\s*passe/g, 'delivery eken passe')
+    .replace(/delivery\s*passe/g, 'delivery passe')
+    .replace(/anga\s*amaru[i]?/g, 'anga amarui')
+    .replace(/anga\s*weak/g, 'anga weak')
+    .replace(/body\s*eka\s*recover/g, 'body eka recover')
+    .replace(/back\s*pain\s*thiyenawa/g, 'back pain thiyenawa')
+    // Mother sleep Singlish normalizations
+    .replace(/nid\s*naha/g, 'ninda naha')
+    .replace(/nid\s*na\b/g, 'ninda naha')
+    .replace(/raata\s*nid/g, 'rata ninda')
+    .replace(/rata\s*nid/g, 'rata ninda')
+    .replace(/ninda\s*adui/g, 'ninda adui')
+    .replace(/ninda\s*yanne\s*nehe/g, 'ninda yanne naha')
+    .replace(/nindak\s*naha/g, 'ninda adui')
+    .replace(/nida\s*ganna\s*ba\b/g, 'nida ganna baha')
+    .replace(/nida\s*ganna\s*baha/g, 'nida ganna baha')
+    .replace(/nidimathai/g, 'mata nidimathai')
+    .replace(/hariyata\s*nindak/g, 'hariyata nindak naha')
+    // Bonding Issues Singlish normalizations
+    .replace(/bandeemak/g, 'bandimak')
+    .replace(/bandeema/g, 'bandima')
+    .replace(/danenne\s*na\b/g, 'danenne naha')
+    .replace(/danennee\s*na\b/g, 'danenne naha')
+    .replace(/danenne\s*nehe/g, 'danenne naha')
+    .replace(/daranne\s*naha/g, 'danenne naha');
 
   // Keep alphanumeric, spaces, and Sinhala Unicode range (\u0D80-\u0DFF)
   cleaned = cleaned.replace(/[^\w\s\u0D80-\u0DFF]/g, ' ');
@@ -72,6 +103,9 @@ const REASON_KW = {
   loneliness: [
     'alone', 'lonely', 'isolated', 'nobody', 'no one', 'miss', 'empty', 'no friends', 'left out',
     'empty feeling', 'loku thanikamak', 'mukuth wadak', 'mukuth na', 'nobody cares', 'no one cares',
+    'kauruth mata kohomada kiyala ahanne na', 'baby kohomada kiyala witharai ahanne', 'kauruth mata',
+    'kohomada kiyala ahanne na', 'witharai ahanne', 'taniyama karagena yanawa', 'ath wela wage',
+    'ain wela wage', 'amma kenek widihata witharai', 'hiskamak', 'viswasa karanna kenek na',
     'තනිවෙලා', 'පාළුයි', 'පාළුවක්', 'කවුරුත් නෑ', 'කවුරුත් නැහැ', 'තනියම', 'පාළු',
     'paluyi', 'taniyen', 'taniwela', 'kugewat na', 'kawuruth naha', 'palu',
     'thanikamak danenawa', 'thanikamak daneno', 'thainkamak daneo', 'thanikamak daneo',
@@ -79,35 +113,78 @@ const REASON_KW = {
   ],
   fatigue: [
     'tired', 'exhausted', 'drained', 'no energy', 'worn out', 'sleepy', 'burnt out', 'sluggish',
-    'මහන්සියි', 'වෙහෙසයි', 'වෙහෙස', 'නින්ද මදි', 'ශක්තියක් නෑ', 'අමාරුයි',
+    'මහන්සියි', 'වෙහෙසයි', 'වෙහෙස', 'ශක්තියක් නෑ',
     'mahansiyi', 'wehesayi', 'mahansi', 'shakthiyak naha', 'hondata mahansiyi'
   ],
   anxiety: [
     'anxious', 'worried', 'panic', 'scared', 'nervous', 'overthinking', 'heart racing', 'restless',
-    'බයයි', 'කාංසාව', 'ලොකු බයක්', 'කනස්සල්ල', 'බියක්', 'බය හිතෙනවා',
-    'baye', 'baya', 'baya hithenawa', 'bayaයි', 'kansawa'
+    'worrying', 'terrible will happen', 'chest feels tight', 'chest tight', 'can\'t stop worrying', 'cant stop worrying',
+    'something terrible', 'heart is racing',
+    'බයයි', 'කාංසාව', 'ලොකු බයක්', 'කනස්සල්ල', 'බියක්', 'බය හිතෙනවා', 'පපුවේ ගැස්මක්', 'නරක දෙයක් වෙයි',
+    'baye', 'baya', 'baya hithenawa', 'bayaයි', 'kansawa', 'bayak thiyenawa', 'anxious wela', 'kisima shanthiyak na', 'monawa hari wei'
   ],
   bonding_issues: [
     'bond', 'bonding', 'feel nothing', 'not attached', 'distant from baby', 'no connection', 'indifferent',
-    'බැඳීමක් නෑ', 'ආදරයක් දැනෙන්නේ නෑ', 'සම්බන්ධයක් නෑ', 'කිසිම හැඟීමක් නෑ',
-    'bandimak naha', 'daranne naha', 'connection ekak naha'
+    'cannot feel a real connection', 'emotionally distant', 'try to love my baby but feel nothing',
+    'detached and disconnected', 'do not feel the bond', 'feel empty instead of love',
+    'guilty because i am not attached', 'expected to feel overwhelming love', 'bond between me and my baby feels broken',
+    'like a caregiver not a mother', 'scared i will never feel connected', 'baby feels like a stranger',
+    'feel no instinct', 'care for my baby but do not feel', 'lack of bond makes me feel',
+    'going through the motions with no feeling', 'feel emotionally numb', 'ashamed to admit i do not feel attached',
+    'distant from my baby even when', 'do not enjoy holding my baby', 'no connection and it breaks my heart',
+    'emotionally disconnected', 'disconnected', 'feel a bond', 'feel distant', 'feel closer', 'more connected',
+    'don\'t feel a bond', 'dont feel a bond', 'motherly affection', 'terribly guilty', 'disconnected from my baby',
+    ' struggle to feel', 'feel that motherly affection', 'not close to my baby', 'not close', 'feel close to my baby', 'feel close',
+    'connection with my baby', 'attachment to my baby', 'can\'t connect with my baby',
+    'cant connect with my baby', 'can\'t connect', 'cant connect', 'don\'t feel connected', 'dont feel connected', 'not attached to my baby',
+    'බැඳීමක් නෑ', 'බැඳීමක් නැහැ', 'ආදරයක් දැනෙන්නේ නෑ', 'ආදරයක් දැනෙන්නේ නැහැ', 'සම්බන්ධයක් නෑ', 'සම්බන්ධයක් නැහැ',
+    'කිසිම හැඟීමක් නෑ', 'හැඟීමක් නැහැ', 'හැඟීමක් නෑ', 'ලං වෙලා නැහැ', 'ලං වෙලා නෑ', 'ලං වෙලා නැහැ වගේ',
+    'ලොකු බැඳීමක්', 'බැඳීමක් දැනෙන්නේ නැහැ', 'බැඳීමක් දැනෙන්නේ නෑ', 'දැනෙන්නේ නැහැ', 'හොඳ අම්මා කෙනෙක් නෙවෙයිද',
+    'අම්මා කෙනෙක් නෙවෙයිද', 'බැඳීමක් දැනෙන්නෙ නැහැ', 'බැඳීමක් දැනෙන්නෙ නෑ', 'බබා එක්ක ලොකු බැඳීමක්', 'බැඳීමක්',
+    'සම්බන්ධ වෙන්න බැහැ', 'සම්බන්ධ වෙන්න බෑ', 'connection එකක් නැහැ', 'connection එකක් නෑ', 'ඈත් වෙලා වගේ', 'ඈත් වෙලා',
+    'bandimak naha', 'danenne naha', 'connection ekak naha', 'connection ekak na', 'connection na', 'emotional connection na', 'emotional connection', 'bandeemak', 'bandeemak danenne na', 'bandeemak danenne naha',
+    'bandimak danenne na', 'bandimak danenne naha', 'loku bandeemak', 'loku bandimak', 'danenne na',
+    'wenas feeling', 'wenas feeling ekak', 'feeling ekak enne', 'baby langa hitiyath', 'loku bandeemak danenne na',
+    'bond wenna amarui', 'bond wenna', 'baba ekka close na', 'close na', 'baba ekka sambandha wenna ba', 'sambandha wenna ba'
   ],
   lack_of_support: [
     'husband', 'partner', 'no help', 'unsupported', 'nobody helps', 'no family', 'doing it alone',
+    'no one help me', 'no one helps me', 'no one help', 'no one helps', 'do everything alone',
+    'do everything alone now', 'have to do everything alone', 'doing everything alone',
+    'everything alone', 'all alone',
     'සැමියා උදව් කරන්නේ නැහැ', 'සැමියා උදව් කරන්නේ නෑ', 'උදව්වක් නෑ', 'කාගෙවත් සහයක් නෑ', 'උදව් නෑ',
+    'කවුරුත් උදව් කරන්නේ නැහැ', 'කවුරුත් උදව් කරන්නේ නෑ', 'උදව් කරන්නේ නැහැ', 'උදව් කරන්නේ නෑ', 'කවුරුත් උදව්',
+    'කිසිම උදව්වක්', 'උදව්වක් කරන්නේ නැහැ', 'උදව්වක් කරන්නේ නෑ', 'උදව්වක්', 'තනියම කරනවා',
     'husband udaw naha', 'udawwak naha', 'kagegenwat support naha'
   ],
   sleep_problems: [
     'sleep', 'insomnia', 'awake all night', 'sleep deprived', 'cant sleep', 'no sleep',
-    'නින්ද', 'නිදාගන්නේ නැහැ', 'නිදාගන්නෙ නෑ', 'නින්දක් නෑ', 'නින්ද යන්නෙ නෑ', 'රාත්‍රියට නිදි නෑ',
-    'ninda', 'nida ganne naha', 'nida na', 'ninda yanne naha', 'nidaganna baha',
-    'මට නිදා නෑමට මහන්සියි', 'මට නින්ද නොයෑම', 'මවගේ නින්ද නොයාම', 'අම්මාට නින්ද නැහැ', 
-    'අම්මාට නින්ද නොයෑම', 'අම්මාට නිදිමත දැනීම', 'අම්මාගේ නින්ද', 'අම්මාට නින්ද ප්රශ්න', 
-    'නිදි නැති රාත්රිය', 'නිදි නැති රාත්රී', 'sleepless night', 'sleepless nights', 
-    'mother sleep problems', 'mothers sleep problems', 'maternal sleep problems', 
-    'mom sleep problems', 'mother cant sleep', 'mother cannot sleep', 'difficulty sleeping', 
-    'trouble sleeping', 'poor sleep', 'lack of sleep', 'sleep deprivation', 'tired mother', 
-    'exhausted mother', 'maternal sleep', 'mothers sleep'
+    'cannot sleep', 'difficulty sleeping', 'trouble sleeping', 'poor sleep', 'lack of sleep',
+    'sleep deprivation', 'sleepless night', 'sleepless nights', 'not getting enough sleep',
+    'baby keeps waking me up', 'tired because i cant sleep', 'sleep problems',
+    'mother sleep problems', 'mothers sleep problems', 'maternal sleep problems',
+    'mom sleep problems', 'mother cant sleep', 'mother cannot sleep',
+    'tired mother', 'exhausted mother', 'maternal sleep', 'mothers sleep',
+    'mata raata nid naha', 'mata rata nid naha', 'raata nid naha', 'rata nid naha',
+    'nid naha', 'nid na', 'nida naha', 'ninda naha', 'raata ninda naha', 'raata nid', 'rata nid',
+    // Sinhala Unicode — sleep-specific phrases (including sleep deprivation)
+    'නින්ද', 'නින්ද මදි', 'නින්ද නොමැති', 'නිදි නෑ', 'නිදාගන්නේ නැහැ', 'නිදාගන්නෙ නෑ',
+    'නින්දක් නෑ', 'නින්ද යන්නෙ නෑ', 'නින්ද යන්නේ නැහැ', 'නින්දක් නැහැ',
+    'රාත්‍රියට නිදි නෑ', 'රාත්රියට නිදි නෑ',
+    'රෑට නින්ද නැහැ', 'රෑට නිදා ගන්න බෑ', 'රෑට හරියට නින්දක් නැහැ',
+    'නින්ද අඩුයි', 'නින්දේ ප්රශ්නයක් තියෙනවා', 'නිදාගන්න බැහැ',
+    'බබා නිසා මට නින්ද නැහැ', 'බබා රෑට නැගිටින නිසා', 'හරියට නින්දක් නැහැ',
+    'නිදිමතයි', 'හොඳට නිදාගන්න බැහැ', 'නින්ද නොලැබෙනවා', 'නින්ද ලැබෙන්නේ නෑ',
+    'මට නිදා නෑමට මහන්සියි', 'මට නින්ද නොයෑම', 'මවගේ නින්ද නොයාම',
+    'අම්මාට නින්ද නැහැ', 'අම්මාට නින්ද නොයෑම', 'අම්මාට නිදිමත දැනීම',
+    'අම්මාගේ නින්ද', 'අම්මාට නින්ද ප්රශ්න',
+    'නිදි නැති රාත්රිය', 'නිදි නැති රාත්රී',
+    // Singlish
+    'ninda', 'nida ganne naha', 'nida na', 'ninda yanne naha', 'nida ganna baha', 'nidaganna baha',
+    'mata ninda yanne naha', 'mata ninda yanney naha', 'mata hariyata nindak naha',
+    'raatta ninda naha', 'rata ninda naha', 'ninda adui', 'ninda prashnayak thiyenawa',
+    'baba nisa mata ninda naha', 'baba rata nagitinawa nisa mata nida ganna baha',
+    'mata nidimathai', 'mata hondin nida ganna baha', 'hariyata nindak naha'
   ],
   loss_of_confidence: [
     'confidence', 'self-doubt', 'failure', 'bad mother', 'useless', 'not capable', 'worthless',
@@ -116,18 +193,51 @@ const REASON_KW = {
   ],
   overwhelmed: [
     'overwhelmed', 'too much', 'drowning', 'breaking down', 'cant cope', 'too hard', 'falling apart',
-    'දරාගන්න බැහැ', 'දරාගන්න බෑ', 'ඔළුව රිදෙනවා', 'ඔක්කොම වැඩ', 'අමාරුයි',
+    'දරාගන්න බැහැ', 'දරාගන්න බෑ', 'ඔළුව රිදෙනවා', 'ඔක්කොම වැඩ',
+    'බබාගේ වැඩයි', 'ගෙදර වැඩයි', 'ඔක්කොම මගේ පිටට', 'මගේ පිටට ඇවිත්',
+    'වැඩ ගොඩක්', 'ගෙදර වැඩ', 'බබාගේ වැඩ', 'කළමනාකරණය කරගන්න', 'කළමනාකරණය', 'කරන්න වැඩ ගොඩක්', 'හැමදේම කළමනාකරණය',
     'daraganna baha', 'daraganna ba', 'amaruwi', 'godak wada'
   ],
   physical_discomfort: [
-    'pain', 'hurt', 'sore', 'c-section', 'recovery', 'stitches', 'body aches', 'discomfort',
+    // English
+    'pain', 'hurt', 'sore', 'c-section', 'recovery', 'recover', 'stitches', 'body aches', 'discomfort',
+    'physical recovery', 'postpartum recovery', 'body recovery', 'recovering after delivery',
+    'recovery after birth', 'body pain after delivery', 'postpartum body pain',
+    'back pain after delivery', 'abdominal pain after delivery', 'weak after delivery',
+    'body feels weak', 'still recovering', 'back pain', 'body pain',
+    // Sinhala Unicode
     'කැක්කුමයි', 'රිදෙනවා', 'තුවාලය', 'සිරුරේ කැක්කුම',
-    'kakkumai', 'ridenawa', 'thuwala', 'kakul ridenawa'
+    'ඇඟට අමාරුයි', 'ඇඟ දුර්වලයි', 'පිට කොන්ද රිදෙනවා',
+    'ශරීරය සුව වෙන්නෙ නැහැ', 'ශරීරය recover වෙන්නේ නැහැ',
+    'දරු ප්රසූතියෙන් පස්සේ ඇඟට අමාරුයි', 'දරු ප්රසූතියෙන් පස්සේ වේදනාව',
+    'දරු ප්රසූතියෙන් පස්සේ', 'ඇඟ ගොඩක් රිදෙනවා', 'ඇඟ රිදෙනවා',
+    'ප්රසූතියෙන් පස්සේ ශරීරය', 'recover වෙන්නේ නැහැ', 'recover වෙන්නෙ නෑ',
+    'recover වෙන්න ඕනේ', 'ශාරීරික',
+    // Singlish
+    'kakkumai', 'ridenawa', 'thuwala', 'kakul ridenawa',
+    'delivery eken passe anga amarui', 'delivery eken passe recover wenne naha',
+    'mage anga weak', 'body eka recover wenne naha', 'back pain thiyenawa',
+    'delivery passe body pain', 'mata recover wenna one', 'anga amarui',
+    'anga weak', 'delivery passe', 'passe recover', 'recover wenna'
   ],
   negative_thoughts: [
     'hopeless', 'hate myself', 'dark', 'disappear', 'dark thoughts', 'no point', 'worthless',
     'ජීවිතේ එපා වෙලා', 'මැරෙන්න හිතෙනවා', 'කිසිම තේරුමක් නෑ', 'අඳුරු සිතුවිලි',
     'jeewithe epa wela', 'merenna hithenawa', 'therumak naha'
+  ],
+  financial_worry: [
+    'financial', 'finance', 'money', 'afford', 'bills', 'budget', 'expenses', 'financial stability',
+    'financial worry', 'money problems', 'financial stress', 'salli', 'mila mudal', 'wiyadam',
+    'සල්ලි', 'මුදල්', "සල්ලි ප්‍රශ්න", "වියදම්"
+  ],
+  relationship_family_problem: [
+    'husband', 'partner', 'relationship', 'marriage', 'argue', 'arguing', 'fighting', 'fight', 'distant from partner',
+    'relationship with my husband', 'argue all the time', 'husband and i are becoming distant', 'problems in our relationship',
+    'husband and i are constantly fighting', 'disconnected from my partner', 'conflict with my in-laws', 'family conflict',
+    'husband ekka prashna', 'relationship eka hari naha', 'husband ekka nitharama prashna', 'husband ekka randu',
+    'husband ekka', 'relationship eka', 'husband', 'රණ්ඩු', 'ආරවුල්', 'සැමියා එක්ක ප්‍රශ්න', 'පවුලේ අය එක්ක ප්‍රශ්න',
+    'සැමියාත් එක්ක', 'සැමියා එක්ක', 'සම්බන්ධය ගොඩක් නරක', 'සම්බන්ධය', 'සැමියාටයි', 'ප්රශ්න ඇති වෙනවා', 'ප්‍රශ්න ඇති වෙනවා',
+    'සම්බන්ධතාවය', 'සම්බන්ධතාවය ගොඩක් වෙනස්', 'අපි දෙන්නා අතර'
   ],
 };
 
@@ -159,6 +269,7 @@ const HIGH_CRISIS_KW = [
   'hopeless', 'want to die', 'end it all', 'cannot control my emotions',
   'cant control my emotions', 'panic very easily', 'failing as a mother',
   'disappear', 'hate myself', 'dark thoughts', 'panic',
+  'kill myself', 'dont want to live', 'want to kill myself', 'dont want to live anymore',
   'මැරෙන්න හිතෙනවා', 'ජීවිතේ එපා වෙලා', 'merenna hithenawa'
 ];
 
@@ -169,22 +280,22 @@ const MEDIUM_CRISIS_KW = [
 ];
 
 const SUPPORT_MESSAGES = {
-  loneliness:          ['ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
-  fatigue:             ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌙', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
-  anxiety:             ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ. 🌿'],
-  bonding_issues:      ['ශ්‍රේෂ්ඨ — ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
-  lack_of_support:     ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ 🌸'],
-  sleep_problems:      ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌙', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
-  loss_of_confidence:  ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
-  overwhelmed:         ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
+  loneliness: ['ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
+  fatigue: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌙', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
+  anxiety: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ. 🌿'],
+  bonding_issues: ['ශ්‍රේෂ්ඨ — ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
+  lack_of_support: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ 🌸'],
+  sleep_problems: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌙', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
+  loss_of_confidence: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
+  overwhelmed: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
   physical_discomfort: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
-  negative_thoughts:   ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
-  baby_crying:         ['ඔබේ බබාගේ ඇඬීම ස්වාභාවිකය. ඔබ හොඳින් සැලකිලිමත් වෙනවා 💜', 'බබා සමඟ සන්සුන්ව සිටින්න 🌸'],
-  baby_needs:          ['බබාගේ සංඥා තේරුම් ගැනීමට කාලය දෙන්න 💜', 'ඔබ ඔබේ බබා වෙනුවෙන් ඉගෙන ගනිමින් සිටිනවා 🌸'],
-  baby_feeding:        ['කිරි දීම කාලය සමඟ පහසු වෙයි 💜', 'ඔබේ මෘදු බව බබාට සහනයකි 🌸'],
-  baby_sleep:          ['බබාගේ නින්ද රටාව වර්ධනය වෙමින් පවතී 🌙', 'කෙටි විවේක පවා ඔබට උපකාරී වෙයි 💜'],
-  baby_health:         ['සෞඛ්‍යය කෙරෙහි සැලකිලිමත් වීම අගනේය 💜', 'වෛද්‍ය උපදෙස් ලබා ගැනීම සැමවිටම සුදුසුයි 🌸'],
-  caring_for_baby:     ['දරුවා රැකබලා ගැනීම උතුම් කාර්යයකි 💜', 'ඔබ අද්භූත මවකි 🌸'],
+  negative_thoughts: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
+  baby_crying: ['ඔබේ බබාගේ ඇඬීම ස්වාභාවිකය. ඔබ හොඳින් සැලකිලිමත් වෙනවා 💜', 'බබා සමඟ සන්සුන්ව සිටින්න 🌸'],
+  baby_needs: ['බබාගේ සංඥා තේරුම් ගැනීමට කාලය දෙන්න 💜', 'ඔබ ඔබේ බබා වෙනුවෙන් ඉගෙන ගනිමින් සිටිනවා 🌸'],
+  baby_feeding: ['කිරි දීම කාලය සමඟ පහසු වෙයි 💜', 'ඔබේ මෘදු බව බබාට සහනයකි 🌸'],
+  baby_sleep: ['බබාගේ නින්ද රටාව වර්ධනය වෙමින් පවතී 🌙', 'කෙටි විවේක පවා ඔබට උපකාරී වෙයි 💜'],
+  baby_health: ['සෞඛ්‍යය කෙරෙහි සැලකිලිමත් වීම අගනේය 💜', 'වෛද්‍ය උපදෙස් ලබා ගැනීම සැමවිටම සුදුසුයි 🌸'],
+  caring_for_baby: ['දරුවා රැකබලා ගැනීම උතුම් කාර්යයකි 💜', 'ඔබ අද්භූත මවකි 🌸'],
 };
 
 export const detectBabyIntents = (text = '') => {
@@ -212,7 +323,7 @@ export const detectBabyIntents = (text = '') => {
     'කිරි', 'කිරි දෙන්න', 'කිරි බොන්නේ', 'කිරි දීම'
   ];
   const healthKW = [
-    'fever', 'sick', 'health', 'unwell', 'baya', 'bayaයි', 'බයයි', 'ලෙඩ', 'උණ', 'අසනීප', 'asanipa', 'una', 'leda'
+    'fever', 'sick', 'health', 'unwell', 'doctor', 'hospital', 'pediatrician', 'ලෙඩ', 'උණ', 'අසනීප', 'asanipa', 'una', 'leda'
   ];
 
   return {
@@ -245,7 +356,8 @@ export const analyzeDiary = (text) => {
     rScores[r] = kws.filter(k => norm.includes(k)).length;
   });
   const sortedReasons = Object.entries(rScores).sort((a, b) => b[1] - a[1]);
-  const motherReason = sortedReasons[0][1] > 0 ? sortedReasons[0][0] : 'fatigue';
+  const hasMaternalMatch = sortedReasons[0][1] > 0;
+  const motherReason = hasMaternalMatch ? sortedReasons[0][0] : 'fatigue';
   let motherSecondaryReason = sortedReasons[1]?.[1] > 0 ? sortedReasons[1][0] : null;
 
   const babyIntents = detectBabyIntents(text);
@@ -254,13 +366,20 @@ export const analyzeDiary = (text) => {
   let primaryReason = motherReason;
   let secondaryReason = motherSecondaryReason !== primaryReason ? motherSecondaryReason : null;
 
-  if (babyIntents.baby_related) {
+  const primaryMaternalReasons = new Set([
+    'bonding_issues', 'loneliness', 'negative_thoughts', 'overwhelmed',
+    'relationship_family_problem', 'lack_of_support', 'physical_discomfort',
+    'fatigue', 'sleep_problems', 'financial_worry', 'loss_of_confidence'
+  ]);
+
+  // Only override with baby-specific care topics (crying, health, feeding, sleep) if maternal state isn't an explicit primary concern
+  if (babyIntents.baby_related && (!hasMaternalMatch || !primaryMaternalReasons.has(motherReason))) {
     const intentsList = [
       { id: 'baby_crying', kws: ['crying', 'cries', 'cry', 'andana', 'andanawa', 'adanawa', 'අඬනවා', 'අඬන', 'ඇඬීම', 'කෑගහනවා'] },
       { id: 'baby_needs', kws: ['needs', 'want', 'wants', 'understand', 'therenne naha', 'therenne na', 'therum ganna baha', 'one kiyala', 'mokakda one', 'monawada one', 'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා'] },
       { id: 'baby_sleep', kws: ['sleep', 'sleeping', 'ninda', 'nida ganne', 'නින්ද', 'නිදා', 'නිදාගන්නේ'] },
       { id: 'baby_feeding', kws: ['feeding', 'feed', 'breastfeeding', 'milk', 'kiri', 'කිරි', 'කිරි දෙන්න', 'කිරි බොන්නේ'] },
-      { id: 'baby_health', kws: ['fever', 'sick', 'health', 'unwell', 'baya', 'බයයි', 'ලෙඩ', 'උණ', 'අසනීප', 'asanipa', 'una', 'leda'] }
+      { id: 'baby_health', kws: ['fever', 'sick', 'health', 'unwell', 'doctor', 'hospital', 'pediatrician', 'ලෙඩ', 'උණ', 'අසනීප', 'asanipa', 'una', 'leda'] }
     ];
 
     const activeBabyIntents = [];
@@ -286,8 +405,6 @@ export const analyzeDiary = (text) => {
       } else {
         secondaryReason = motherReason !== primaryReason ? motherReason : (motherSecondaryReason || null);
       }
-    } else {
-      primaryReason = 'caring_for_baby';
     }
   }
 

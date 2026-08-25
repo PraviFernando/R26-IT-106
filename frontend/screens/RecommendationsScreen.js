@@ -160,12 +160,20 @@ const HARDCODED_VIDEO_MAP = {
     thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg',
   },
   lack_of_support: {
-    id: 'sF80I-TQiW0',
-    title: 'සහයෝගය නොමැති විට කළ හැකි දේ (Coping with Lack of Support)',
-    description: 'පවුලෙන් හෝ සැමියාගෙන් සහයෝගය නොලැබෙන විට මනස සන්සුන්ව තබාගැනීම.',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://youtu.be/sF80I-TQiW0',
-    thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg',
+    id: 'bnlKVPj4zeQ',
+    title: 'Coping with Lack of Support Postpartum (සහයෝගය නොමැති විට මව්වරුන් සඳහා උපදෙස්)',
+    description: 'පවුලෙන් හෝ සහකරුගෙන් ප්‍රමාණවත් සහයෝගයක් නොලැබෙන අවස්ථාවන්හිදී මානසික සුවතාව පවත්වා ගැනීමේ මඟ පෙන්වීම.',
+    channelTitle: 'PeriCare Support',
+    url: 'https://www.youtube.com/watch?v=bnlKVPj4zeQ',
+    thumbnail: 'https://img.youtube.com/vi/bnlKVPj4zeQ/0.jpg',
+  },
+  daily_responsibilities: {
+    id: 'gA-Eokbod38',
+    title: 'Managing Daily Responsibilities as a New Mom (නව මවකගේ දෛනික වගකීම් කළමනාකරණය)',
+    description: 'ප්‍රසූතියෙන් පසු නිවසේ දෛනික වගකීම් සහ බබාගේ වැඩ පහසුවෙන් කළමනාකරණය කරගන්නා ආකාරය.',
+    channelTitle: 'PeriCare Daily Care Guidance',
+    url: 'https://youtu.be/gA-Eokbod38?si=dtwXkhZBAKH1bYHY',
+    thumbnail: 'https://img.youtube.com/vi/gA-Eokbod38/0.jpg',
   },
   negative_thoughts: {
     id: '9Q634rbsypE',
@@ -176,12 +184,28 @@ const HARDCODED_VIDEO_MAP = {
     thumbnail: 'https://img.youtube.com/vi/9Q634rbsypE/0.jpg',
   },
   bonding_issues: {
-    id: 'jzGyjLGbAUc',
-    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
-    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://youtu.be/jzGyjLGbAUc',
-    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+    id: 'kQiT2tO3KeE',
+    title: 'Attachment and bonding - Your Baby and You',
+    description: 'Attachment and bonding guidance for parents and newborns.',
+    channelTitle: 'Pennine Care NHS Foundation Trust',
+    url: 'https://www.youtube.com/watch?v=kQiT2tO3KeE',
+    thumbnail: 'https://img.youtube.com/vi/kQiT2tO3KeE/0.jpg',
+  },
+  financial_worry: {
+    id: 'financial_worry_guide',
+    title: 'How to be Financially Stable After Baby (දරුවෙකුගෙන් පසු මූල්‍ය ස්ථායීතාවය)',
+    description: 'ප්‍රසූතියෙන් පසු මූල්‍ය සැලසුම්කරණය සහ අයවැය කළමනාකරණය පිළිබඳ මඟ පෙන්වීම.',
+    channelTitle: 'PeriCare Financial Guidance',
+    url: 'https://www.youtube.com/results?search_query=how+to+financial+stabel+after+baby',
+    thumbnail: 'https://img.youtube.com/vi/6m9sCmDIlL0/0.jpg',
+  },
+  relationship_family_problem: {
+    id: 'wbN3M1aQAjw',
+    title: 'Relationship Changes After Having a Baby (ප්‍රසූතියෙන් පසු සබඳතා පාලනය)',
+    description: 'දරුවෙකු ලැබුණු පසු දම්පතීන් අතර ඇතිවන ගැටලු සහ සබඳතා ශක්තිමත් කරගන්නා ආකාරය.',
+    channelTitle: 'PeriCare Relationship Guidance',
+    url: 'https://youtu.be/wbN3M1aQAjw?si=V6WwjvUmhPlQetfD',
+    thumbnail: 'https://img.youtube.com/vi/wbN3M1aQAjw/0.jpg',
   },
   baby_crying: {
     id: 'UrfpkvvRTns',
@@ -192,12 +216,12 @@ const HARDCODED_VIDEO_MAP = {
     thumbnail: 'https://img.youtube.com/vi/UrfpkvvRTns/0.jpg',
   },
   baby_needs: {
-    id: 'jzGyjLGbAUc',
+    id: 'fpiYNkkNmEo',
     title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
     description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
     channelTitle: 'Bloom Supportive Care',
-    url: 'https://youtu.be/jzGyjLGbAUc',
-    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+    url: 'https://youtu.be/fpiYNkkNmEo',
+    thumbnail: 'https://img.youtube.com/vi/fpiYNkkNmEo/0.jpg',
   },
   baby_feeding: {
     id: 'Uz978b7Gsm4',
@@ -216,12 +240,12 @@ const HARDCODED_VIDEO_MAP = {
     thumbnail: 'https://img.youtube.com/vi/y23E11d8p08/0.jpg',
   },
   baby_health: {
-    id: 'jzGyjLGbAUc',
+    id: 'ZCQUPRyZbO0',
     title: 'ළදරු සෞඛ්‍යය සහ රැකවරණය (Newborn Baby Health Care Guide)',
     description: 'නවජන්ම දරුවාගේ සෞඛ්‍යය ආරක්‍ෂා කරගැනීමේ මූලික උපදෙස්.',
     channelTitle: 'Bloom Supportive Care',
-    url: 'https://youtu.be/jzGyjLGbAUc',
-    thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg',
+    url: 'https://youtu.be/ZCQUPRyZbO0',
+    thumbnail: 'https://img.youtube.com/vi/ZCQUPRyZbO0/0.jpg',
   },
 };
 
@@ -256,7 +280,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const initialBabyTopics = (detectedBabyTopics && detectedBabyTopics.length > 0)
     ? detectedBabyTopics
     : (detectedBabyTopic ? [detectedBabyTopic] : getBabyTopicsFromReason(latestAnalysis?.primaryReason || selReason));
-  const hasBabyCareTopic = initialBabyTopics.length > 0;
+  const hasBabyCareTopic = !hasAnalysis && initialBabyTopics.length > 0;
   const initialTab = route?.params?.tab || (hasBabyCareTopic ? 'videos' : 'activities');
   const [tab, setTab] = useState(initialTab);
   const [videoTab, setVideoTab] = useState(hasBabyCareTopic ? 'නිර්දේශිත වීඩියෝ' : 'Motivation');
@@ -395,7 +419,11 @@ const RecommendationsScreen = ({ navigation, route }) => {
     return NEW_ACTIVITIES.find(item => item.id === id) || ALL_ACTIVITIES.find(item => item.id === id) || a;
   }).filter(Boolean);
 
-  const isBabyActive = (activeAnalysis?.primaryReason && isBabyRelatedReason(activeAnalysis.primaryReason)) || (activeAnalysis?.diaryText && isBabyRelatedContent(activeAnalysis.diaryText)) || (latestRecommendations?.isBabyRelated) || (localRuleRecs?.isBabyRelated) || (detectedBabyTopic || (detectedBabyTopics && detectedBabyTopics.length > 0));
+  const primaryReason = activeAnalysis?.primaryReason || selReason || 'bonding_issues';
+
+  const isBabyActive = (primaryReason === 'bonding_issues' || primaryReason === 'loneliness')
+    ? false
+    : ((activeAnalysis?.primaryReason && isBabyRelatedReason(activeAnalysis.primaryReason)) || (activeAnalysis?.diaryText && isBabyRelatedContent(activeAnalysis.diaryText)) || (latestRecommendations?.isBabyRelated) || (localRuleRecs?.isBabyRelated) || (detectedBabyTopic || (detectedBabyTopics && detectedBabyTopics.length > 0)));
 
   let finalActList = [...resolvedActivities];
   if (isBabyActive) {
@@ -436,18 +464,78 @@ const RecommendationsScreen = ({ navigation, route }) => {
     ? ALL_GAMES.filter(g => g.id !== 'baby_mood').slice(0, 4)
     : dynamicRecommendedGames;
 
-  const primaryReason = activeAnalysis?.primaryReason || selReason || 'loneliness';
   const normEmotion = emotion ? emotion.toLowerCase().trim() : '';
 
-  let libraryMusic = MUSIC_LIBRARY[primaryReason] || (isBabyActive ? MUSIC_LIBRARY.bonding_issues : MUSIC_LIBRARY.loneliness);
-  
-  if (risk !== 'high' && risk !== 'medium') {
+  // Helper to detect if the subject of sleep/crying is the BABY vs the MOTHER
+  const textLower = (activeDiaryText || '').toLowerCase();
+  const reasonLower = (primaryReason || selReason || '').toLowerCase();
+  const intents = activeIntents || {};
+
+  const isBabySubject = (
+    reasonLower === 'baby_crying' ||
+    reasonLower === 'baby_sleep' ||
+    reasonLower === 'baby_needs' ||
+    reasonLower === 'baby_feeding' ||
+    reasonLower === 'caring_for_baby' ||
+    reasonLower === 'understanding_baby' ||
+    intents.baby_crying ||
+    intents.baby_sleep ||
+    intents.baby_needs ||
+    intents.baby_feeding ||
+    intents.baby_health ||
+    /baby|බබා|බබාට|බබාගේ|දරුවා|දරුවාට|දරුවාගේ|baba|babata|babage|daruwa|infant|newborn/.test(textLower)
+  );
+
+  const isBabyCryingContext = isBabySubject && (
+    reasonLower === 'baby_crying' ||
+    intents.baby_crying ||
+    /cry|crying|cries|අඬන|අඬනව|andanawa|andanne/.test(textLower) ||
+    reasonLower.includes('crying') ||
+    reasonLower.includes('cry')
+  );
+
+  const isBabySleepContext = isBabySubject && (
+    reasonLower === 'baby_sleep' ||
+    intents.baby_sleep ||
+    /sleep|sleeping|wakes|waking|ninda|නිදා|nidaganne/.test(textLower)
+  );
+
+  const isMotherSleepContext = !isBabySubject && (
+    reasonLower === 'sleep_problems' ||
+    reasonLower === 'mother_sleep' ||
+    reasonLower === 'mother_sleep_problems' ||
+    /ninda|sleep|sleeping|නිදා/.test(textLower)
+  );
+
+  let libraryMusic;
+
+  if (isBabyCryingContext || isBabySleepContext || (isBabySubject && (reasonLower.includes('bonding') || reasonLower.includes('crying') || reasonLower.includes('sleep')))) {
+    // BABY CRYING and BABY SLEEP ALWAYS get bonding/lullaby/soothing baby music (bo1-bo6)
+    libraryMusic = MUSIC_LIBRARY.bonding_issues;
+  } else if (isMotherSleepContext || reasonLower === 'sleep_problems' || reasonLower === 'mother_sleep') {
+    // MOTHER SLEEP PROBLEMS gets mother sleep problems music
+    libraryMusic = MUSIC_LIBRARY.sleep_problems;
+  } else if (reasonLower.includes('financial') || reasonLower.includes('money')) {
+    libraryMusic = MUSIC_LIBRARY.financial_worry;
+  } else if (reasonLower.includes('relationship') || reasonLower.includes('family')) {
+    libraryMusic = MUSIC_LIBRARY.relationship_family_problem;
+  } else if (reasonLower.includes('support')) {
+    libraryMusic = MUSIC_LIBRARY.lack_of_support;
+  } else if (reasonLower.includes('confidence')) {
+    libraryMusic = MUSIC_LIBRARY.loss_of_confidence;
+  } else if (reasonLower.includes('overwhelm') || reasonLower.includes('daily')) {
+    libraryMusic = MUSIC_LIBRARY.overwhelmed;
+  } else if (reasonLower.includes('fatigue') || reasonLower.includes('tired')) {
+    libraryMusic = MUSIC_LIBRARY.fatigue;
+  } else if (reasonLower.includes('physical')) {
+    libraryMusic = MUSIC_LIBRARY.physical_discomfort;
+  } else if (reasonLower.includes('negative')) {
+    libraryMusic = MUSIC_LIBRARY.negative_thoughts;
+  } else if (reasonLower.includes('anxi')) {
+    libraryMusic = MUSIC_LIBRARY.anxiety;
+  } else if (risk !== 'high' && risk !== 'medium') {
     if (isBabyActive) {
-      if (normEmotion.includes('anxi') || normEmotion.includes('stress') || normEmotion.includes('angr') || normEmotion.includes('frust')) {
-        libraryMusic = MUSIC_LIBRARY.anxiety;
-      } else {
-        libraryMusic = MUSIC_LIBRARY.bonding_issues;
-      }
+      libraryMusic = MUSIC_LIBRARY.bonding_issues;
     } else {
       if (normEmotion.includes('happ') || normEmotion.includes('calm')) {
         libraryMusic = MUSIC_LIBRARY.motivation || MUSIC_LIBRARY.loneliness;
@@ -460,11 +548,18 @@ const RecommendationsScreen = ({ navigation, route }) => {
   } else {
     libraryMusic = MUSIC_LIBRARY.anxiety || MUSIC_LIBRARY.loneliness;
   }
+
+  if (!libraryMusic || libraryMusic.length === 0) {
+    libraryMusic = isBabySubject ? MUSIC_LIBRARY.bonding_issues : MUSIC_LIBRARY.loneliness;
+  }
+
   const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
 
-  const activeBabyTopics = (detectedBabyTopics && detectedBabyTopics.length > 0)
-    ? detectedBabyTopics
-    : (detectedBabyTopic ? [detectedBabyTopic] : getBabyTopicsFromReason(activeAnalysis?.primaryReason || selReason));
+  const activeBabyTopics = (primaryReason === 'bonding_issues' || primaryReason === 'loneliness')
+    ? []
+    : ((detectedBabyTopics && detectedBabyTopics.length > 0)
+        ? detectedBabyTopics
+        : (detectedBabyTopic ? [detectedBabyTopic] : getBabyTopicsFromReason(activeAnalysis?.primaryReason || selReason)));
 
   // Resolve featured hardcoded video based on reason
   const featuredVideo = (() => {
@@ -517,7 +612,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
       const healthVideos = BABY_VIDEO_LIBRARY['Baby Health'] || [];
       if (feverKws.some(kw => text.includes(kw))) {
         const v = healthVideos.find(item => item.id === 'bh1');
-        if (v) return { id: 'bh1', title: v.title, description: v.description, channelTitle: 'PeriCare Care Library', url: 'https://www.youtube.com/results?search_query=what+to+do+when+baby+has+a+fever', thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg' };
+        if (v) return { id: 'bh1', title: v.title, description: v.description, channelTitle: 'PeriCare Care Library', url: 'https://www.youtube.com/results?search_query=what+to+do+when+baby+has+a+fever', thumbnail: 'https://img.youtube.com/vi/ZCQUPRyZbO0/0.jpg' };
       }
       if (illnessKws.some(kw => text.includes(kw))) {
         return {
@@ -531,11 +626,11 @@ const RecommendationsScreen = ({ navigation, route }) => {
       }
       if (jaundiceKws.some(kw => text.includes(kw))) {
         const v = healthVideos.find(item => item.id === 'bh2');
-        if (v) return { id: 'bh2', title: v.title, description: v.description, channelTitle: 'PeriCare Care Library', url: 'https://www.youtube.com/results?search_query=newborn+baby+jaundice+what+to+do', thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg' };
+        if (v) return { id: 'bh2', title: v.title, description: v.description, channelTitle: 'PeriCare Care Library', url: 'https://www.youtube.com/results?search_query=newborn+baby+jaundice+what+to+do', thumbnail: 'https://img.youtube.com/vi/ZCQUPRyZbO0/0.jpg' };
       }
       if (emergencyKws.some(kw => text.includes(kw))) {
         const v = healthVideos.find(item => item.id === 'bh3');
-        if (v) return { id: 'bh3', title: v.title, description: v.description, channelTitle: 'PeriCare Care Library', url: 'https://www.youtube.com/results?search_query=when+to+take+baby+to+hospital+or+doctor', thumbnail: 'https://img.youtube.com/vi/jzGyjLGbAUc/0.jpg' };
+        if (v) return { id: 'bh3', title: v.title, description: v.description, channelTitle: 'PeriCare Care Library', url: 'https://www.youtube.com/results?search_query=when+to+take+baby+to+hospital+or+doctor', thumbnail: 'https://img.youtube.com/vi/ZCQUPRyZbO0/0.jpg' };
       }
     }
     return HARDCODED_VIDEO_MAP[primaryReason] || null;
@@ -725,6 +820,14 @@ const RecommendationsScreen = ({ navigation, route }) => {
                     <Text style={[s.badgeText, { color: rc.col }]}>{rc.label}</Text>
                   </View>
                 )}
+                {!isSkipped && activeReason && (() => {
+                  const reasonLabel = REASON_OPTIONS.find(r => r.key === activeReason)?.label;
+                  return reasonLabel ? (
+                    <View style={[s.badge, { backgroundColor: '#FFF3E0' }]}>
+                      <Text style={[s.badgeText, { color: '#E65100' }]}>📌 {reasonLabel.split('(')[0].trim()}</Text>
+                    </View>
+                  ) : null;
+                })()}
                 {isSkipped && (
                   <View style={[s.badge, { backgroundColor: '#E0F2FE' }]}>
                     <Text style={[s.badgeText, { color: '#0369A1' }]}>🌐 සියලු අන්තර්ගතයන්</Text>
@@ -732,11 +835,21 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 )}
               </View>
 
-              {!isSkipped && (localRuleRecs || hasAnalysis) && (
+              {!isSkipped && hasAnalysis && activeDiaryText ? (
+                <View style={s.reasonNoticeCont}>
+                  <Text style={s.reasonNoticeIcon}>📔</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={s.reasonNoticeTitle}>ඩයරි සටහන අනුව නිර්දේශ</Text>
+                    <Text style={s.reasonNoticeText}>
+                      ඔබ ලියූ ඩයරි සටහනෙහි හැඟීම් හා හේතු විශ්ලේෂණය කර, ඔබට වඩාත්ම ගැළපෙන සම්පත් නිර්දේශ කරන ලදී. 🌸
+                    </Text>
+                  </View>
+                </View>
+              ) : !isSkipped && (localRuleRecs || hasAnalysis) ? (
                 <Text style={s.supportiveNotice}>
                   ඔබ තෝරාගත් කරුණු මත පදනම්ව, අද ඔබට උපකාරී විය හැකි ඇතැම් සම්පත් මෙන්න. 🌸
                 </Text>
-              )}
+              ) : null}
 
               {/* Main Category Tabs */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.tabsScroll} contentContainerStyle={s.tabsCont}>
@@ -841,28 +954,8 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       </View>
                     )}
 
-                    {/* Featured/Hardcoded Video */}
-                    {featuredVideo && (
-                      <View style={s.featuredVideoCont}>
-                        <Text style={s.featuredVideoHeader}>⭐ විශේෂිත නිර්දේශය (Featured Relief Video)</Text>
-                        <TouchableOpacity style={s.featuredCard} onPress={() => openYouTube(featuredVideo)}>
-                          {featuredVideo.thumbnail ? (
-                            <Image source={{ uri: featuredVideo.thumbnail }} style={s.featuredVideoThumb} />
-                          ) : (
-                            <View style={[s.mediaIcon, { backgroundColor: colors.lavenderLight, marginRight: 12 }]}>
-                              <Text style={s.mediaEmoji}>🎬</Text>
-                            </View>
-                          )}
-                          <View style={s.featuredVideoInfo}>
-                            <Text style={s.featuredVideoTitle} numberOfLines={2}>{featuredVideo.title}</Text>
-                            <Text style={s.featuredVideoDesc} numberOfLines={2}>{featuredVideo.description}</Text>
-                            <Text style={s.mediaSub}>{featuredVideo.channelTitle}</Text>
-                          </View>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-
-                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (ප්‍රතිඵල 5)</Text>
+                    {/* Render backend hybrid 5 videos directly with clear source badges */}
+                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (නිර්දේශිත වීඩියෝ 5 — 3 Curated + 2 YouTube API)</Text>
                     {loadingVideos ? (
                       <ActivityIndicator size="large" color={colors.lavenderDark} style={{ marginVertical: 20 }} />
                     ) : videoError ? (
@@ -874,27 +967,85 @@ const RecommendationsScreen = ({ navigation, route }) => {
                         </TouchableOpacity>
                       </View>
                     ) : dynamicVideos.length === 0 ? (
-                      <View style={s.emptyBox}>
-                        <Text style={s.emptyEmoji}>🎬</Text>
-                        <Text style={s.emptyText}>දැනට නිර්දේශිත වීඩියෝ නොමැත.</Text>
-                      </View>
-                    ) : (
-                      dynamicVideos.map((video, idx) => (
-                        <TouchableOpacity key={video.id || idx} style={s.mediaCard} onPress={() => openYouTube(video.url)}>
-                          {video.thumbnail ? (
-                            <Image source={{ uri: video.thumbnail }} style={s.videoThumb} />
-                          ) : (
-                            <View style={[s.mediaIcon, { backgroundColor: colors.roseLight }]}>
-                              <Text style={s.mediaEmoji}>🎬</Text>
+                      featuredVideo ? (
+                        <View style={s.featuredVideoCont}>
+                          <Text style={s.featuredVideoHeader}>⭐ විශේෂිත නිර්දේශය (Featured Relief Video)</Text>
+                          <TouchableOpacity style={s.featuredCard} onPress={() => openYouTube(featuredVideo)}>
+                            {featuredVideo.thumbnail ? (
+                              <Image source={{ uri: featuredVideo.thumbnail }} style={s.featuredVideoThumb} />
+                            ) : (
+                              <View style={[s.mediaIcon, { backgroundColor: colors.lavenderLight, marginRight: 12 }]}>
+                                <Text style={s.mediaEmoji}>🎬</Text>
+                              </View>
+                            )}
+                            <View style={s.featuredVideoInfo}>
+                              <Text style={s.featuredVideoTitle} numberOfLines={2}>{featuredVideo.title}</Text>
+                              <Text style={s.featuredVideoDesc} numberOfLines={2}>{featuredVideo.description}</Text>
+                              <Text style={s.mediaSub}>{featuredVideo.channelTitle}</Text>
                             </View>
-                          )}
-                          <View style={s.mediaInfo}>
-                            <Text style={s.mediaTitle} numberOfLines={2}>{video.title}</Text>
-                            <Text style={s.mediaSub} numberOfLines={1}>{video.channelTitle || 'YouTube'}</Text>
-                            <Text style={s.videoDesc} numberOfLines={2}>{video.description}</Text>
-                          </View>
-                        </TouchableOpacity>
-                      ))
+                          </TouchableOpacity>
+                        </View>
+                      ) : (
+                        <View style={s.emptyBox}>
+                          <Text style={s.emptyEmoji}>🎬</Text>
+                          <Text style={s.emptyText}>දැනට නිර්දේශිත වීඩියෝ නොමැත.</Text>
+                        </View>
+                      )
+                    ) : (
+                      dynamicVideos.map((video, idx) => {
+                        const REASON_LABEL_MAP = {
+                          loneliness: 'Feeling lonely (තනිකම)',
+                          feeling_lonely: 'Feeling lonely (තනිකම)',
+                          anxiety: 'Anxiety (කනස්සල්ල)',
+                          fatigue: 'Fatigue (මහන්සිය)',
+                          mother_sleep: 'Sleep problems (නින්ද නොයාම)',
+                          sleep_problems: 'Sleep problems (නින්ද නොයාම)',
+                          overwhelmed: 'Feeling overwhelmed (මානසික වෙහෙස)',
+                          feeling_overwhelmed: 'Feeling overwhelmed (මානසික වෙහෙස)',
+                          lack_of_support: 'Lack of support (සහයෝගය මදි වීම)',
+                          negative_thoughts: 'Negative thoughts (අඳුරු සිතුවිලි)',
+                          bonding_issues: 'Bonding issues (බැඳීමේ ගැටලු)',
+                          physical_discomfort: 'Physical discomfort (ශාරීරික අපහසුව)',
+                          physical_recovery: 'Physical recovery (ශාරීරික අපහසුව)',
+                          baby_crying: 'Baby crying (ළදරුවා හැඬීම)',
+                          baby_feeding: 'Baby feeding (ළදරුවාට කිරි දීම)',
+                          breastfeeding_concerns: 'Breastfeeding concerns (මව්කිරි දීම)',
+                          baby_sleep: 'Baby sleep (ළදරුවාගේ නින්ද)',
+                          understanding_baby: 'Understanding baby (ළදරු සංඥා)',
+                          caring_for_baby: 'Caring for baby (ළදරු සාත්තු)',
+                        };
+                        const itemReason = video.reason || activeReason;
+                        const displayReason = REASON_LABEL_MAP[itemReason] || REASON_OPTIONS.find(r => r.key === itemReason)?.label;
+                        const reasonLabel = displayReason ? displayReason.split('(')[0]?.trim() : (itemReason ? itemReason.replace(/_/g, ' ') : null);
+
+                        const isCurated = video.source === 'curated';
+                        const isApi = video.source === 'youtube_api' || video.source === 'youtube';
+                        const sourceLabel = isCurated ? '⭐ Curated Relief' : isApi ? '▶️ YouTube API' : '📌 Related Guide';
+                        const badgeBg = isCurated ? '#EDE7F6' : isApi ? '#FFEBEE' : '#E0F2FE';
+                        const badgeCol = isCurated ? '#6A1B9A' : isApi ? '#C62828' : '#0369A1';
+
+                        return (
+                          <TouchableOpacity key={video.id || idx} style={s.mediaCard} onPress={() => openYouTube(video.url)}>
+                            {video.thumbnail ? (
+                              <Image source={{ uri: video.thumbnail }} style={s.videoThumb} />
+                            ) : (
+                              <View style={[s.mediaIcon, { backgroundColor: colors.roseLight }]}>
+                                <Text style={s.mediaEmoji}>🎬</Text>
+                              </View>
+                            )}
+                            <View style={s.mediaInfo}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                <View style={[s.typeTag, { backgroundColor: badgeBg }]}>
+                                  <Text style={[s.typeTagText, { color: badgeCol }]}>{sourceLabel}</Text>
+                                </View>
+                              </View>
+                              <Text style={s.mediaTitle} numberOfLines={2}>{video.title}</Text>
+                              <Text style={s.mediaSub} numberOfLines={1}>{video.channelTitle || 'YouTube'}</Text>
+                              <Text style={s.videoDesc} numberOfLines={2}>{video.description}</Text>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })
                     )}
                   </View>
                 )}
@@ -1142,6 +1293,44 @@ const s = StyleSheet.create({
     color: colors.white,
     fontSize: 12,
     fontWeight: '700',
+  },
+  videoReasonChip: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FFF8E1',
+    borderWidth: 1,
+    borderColor: '#FFB300',
+    borderRadius: 6,
+    paddingVertical: 2,
+    paddingHorizontal: 7,
+    marginBottom: 4,
+  },
+  videoReasonChipText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#E65100',
+  },
+  reasonNoticeCont: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFF8E1',
+    borderWidth: 1.5,
+    borderColor: '#FFB300',
+    borderRadius: 12,
+    padding: 10,
+    marginBottom: 12,
+    gap: 8,
+  },
+  reasonNoticeIcon: { fontSize: 20 },
+  reasonNoticeTitle: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#E65100',
+    marginBottom: 2,
+  },
+  reasonNoticeText: {
+    fontSize: 11,
+    color: '#6D4C41',
+    lineHeight: 16,
   },
   videoTabsScroll: { marginBottom: spacing.md },
   videoSubTab: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: radius.full, backgroundColor: colors.offWhite, borderWidth: 1, borderColor: colors.lavenderLight, marginRight: 6 },

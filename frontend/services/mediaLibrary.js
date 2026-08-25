@@ -183,16 +183,16 @@ export const VIDEO_LIBRARY = {
   ],
   // ── BONDING ISSUES ──────────────────────────────────────
   bonding_issues: [
-    { id: 'vbo1', title: 'දෙමාපිය දරු බැඳීමේ වීඩියෝ', titleEn: 'Parenting Bonding Video', duration: '12 min', emoji: '👶', url: 'https://www.youtube.com/results?search_query=mother+baby+bonding+tips+video', source: null },
-    { id: 'vbo2', title: 'බැඳීමට කාලය ගත වේ - කමක් නැත', titleEn: 'Bonding Takes Time - OK', duration: '8 min', emoji: '⏱️', url: 'https://www.youtube.com/results?search_query=bonding+with+baby+takes+time', source: null },
-    { id: 'vbo3', title: 'දෙමාපිය චිත්තවේගීය සහාය', titleEn: 'Parenting Emotional Support', duration: '15 min', emoji: '💜', url: 'https://www.youtube.com/results?search_query=emotional+support+for+new+parents', source: null },
-    { id: 'vbo4', title: 'සමට-සම ප්‍රතිලාභ', titleEn: 'Skin-to-Skin Benefits', duration: '6 min', emoji: '🤱', url: 'https://www.youtube.com/results?search_query=benefits+of+skin+to+skin+contact+baby', source: null },
-    { id: 'vbo5', title: 'ළදරු ආදරයේ විද්‍යාව', titleEn: 'The Science of Baby Love', duration: '10 min', emoji: '🔬', url: 'https://www.youtube.com/results?search_query=science+of+mother+infant+bonding', source: null },
-    { id: 'vbo6', title: 'මට එය ක්ෂණිකව දැනුණේ නැත', titleEn: 'I Didn\'t Feel It Instantly', duration: '14 min', emoji: '🌸', url: 'https://www.youtube.com/results?search_query=i+didnt+bond+with+my+baby+instantly', source: null },
-    { id: 'vbo7', title: 'ඇස් ස්පර්ශය සහ ආරක්ෂාව', titleEn: 'Eye Contact and Safety', duration: '8 min', emoji: '👁️', url: 'https://www.youtube.com/results?search_query=eye+contact+baby+bonding+safety', source: null },
-    { id: 'vbo8', title: 'ළදරු කතා සහ සම්බන්ධතාව', titleEn: 'Baby Talk and Connection', duration: '7 min', emoji: '🗣️', url: 'https://www.youtube.com/results?search_query=talking+to+your+baby+for+connection', source: null },
-    { id: 'vbo9', title: 'සෑම පෝෂණයක්ම බැඳීමකි', titleEn: 'Every Feeding Is Bonding', duration: '5 min', emoji: '🍼', url: 'https://www.youtube.com/results?search_query=feeding+time+is+bonding+time', source: null },
-    { id: 'vbo10', title: 'දිනෙන් දින වැඩෙන ආදරය', titleEn: 'Growing Love Day by Day', duration: '11 min', emoji: '🌱', url: 'https://www.youtube.com/results?search_query=growing+love+with+baby+day+by+day', source: null },
+    { id: 'kQiT2tO3KeE', title: 'Attachment and bonding - Your Baby and You', titleEn: 'Attachment and bonding - Your Baby and You', duration: '12 min', emoji: '👶', url: 'https://www.youtube.com/watch?v=kQiT2tO3KeE', source: null },
+    { id: '4VuEIeDrwAM', title: 'Mother-Baby Bonding & Emotional Connection Guide', titleEn: 'Mother-Baby Bonding & Emotional Connection Guide', duration: '8 min', emoji: '⏱️', url: 'https://www.youtube.com/watch?v=4VuEIeDrwAM', source: null },
+    { id: 'bnlKVPj4zeQ', title: 'දෙමාපිය චිත්තවේගීය සහාය (Parenting Emotional Support)', titleEn: 'Parenting Emotional Support', duration: '15 min', emoji: '💜', url: 'https://www.youtube.com/watch?v=bnlKVPj4zeQ', source: null },
+    { id: '2OEL4P1Rz04', title: 'සමට-සම ප්‍රතිලාභ සහ බැඳීම (Skin-to-Skin Bonding & Support)', titleEn: 'Skin-to-Skin Bonding & Support', duration: '6 min', emoji: '🤱', url: 'https://www.youtube.com/watch?v=2OEL4P1Rz04', source: null },
+    { id: 'AJpErm8H2aU', title: 'නව මව්වරුන්ට චිත්තවේගීය සහාය (Emotional Support for New Mothers)', titleEn: 'Emotional Support for New Mothers', duration: '10 min', emoji: '🔬', url: 'https://www.youtube.com/watch?v=AJpErm8H2aU', source: null },
+    { id: 'kmbKaSRyZ-c', title: 'අඬන බබා සමඟ බැඳීම ශක්තිමත් කිරීම (Soothing and Bonding with Baby)', titleEn: 'Soothing and Bonding with Baby', duration: '14 min', emoji: '🌸', url: 'https://www.youtube.com/watch?v=kmbKaSRyZ-c', source: null },
+    { id: 'n1NGKj2B2eU', title: 'ළදරු ආදරය සහ සන්සුන් කිරීම (Baby Love and Comfort)', titleEn: 'Baby Love and Comfort', duration: '8 min', emoji: '👁️', url: 'https://www.youtube.com/watch?v=n1NGKj2B2eU', source: null },
+    { id: '6rx_-__NsjU', title: 'ළදරු කතා සහ සම්බන්ධතාව (Baby Interaction and Cognitive Bonding)', titleEn: 'Baby Interaction and Cognitive Bonding', duration: '7 min', emoji: '🗣️', url: 'https://www.youtube.com/watch?v=6rx_-__NsjU', source: null },
+    { id: 'qdXehiELnIA', title: 'සෑම පෝෂණයක්ම බැඳීමකි (Breastfeeding & Bonding)', titleEn: 'Breastfeeding & Bonding', duration: '5 min', emoji: '🍼', url: 'https://www.youtube.com/watch?v=qdXehiELnIA', source: null },
+    { id: 'j2C8MkY7Co8', title: 'දිනෙන් දින වැඩෙන ආදරය (Growing Love and Rest)', titleEn: 'Growing Love and Rest', duration: '11 min', emoji: '🌱', url: 'https://www.youtube.com/watch?v=j2C8MkY7Co8', source: null },
   ],
   // ── LACK OF SUPPORT ─────────────────────────────────────
   lack_of_support: [
@@ -331,7 +331,11 @@ MUSIC_LIBRARY.baby_crying = MUSIC_LIBRARY.bonding_issues;
 MUSIC_LIBRARY.baby_needs = MUSIC_LIBRARY.bonding_issues;
 MUSIC_LIBRARY.baby_feeding = MUSIC_LIBRARY.bonding_issues;
 MUSIC_LIBRARY.caring_for_baby = MUSIC_LIBRARY.bonding_issues;
-MUSIC_LIBRARY.baby_sleep = MUSIC_LIBRARY.sleep_problems;
+MUSIC_LIBRARY.baby_sleep = MUSIC_LIBRARY.bonding_issues;
+MUSIC_LIBRARY.mother_sleep = MUSIC_LIBRARY.sleep_problems;
+MUSIC_LIBRARY.mother_sleep_problems = MUSIC_LIBRARY.sleep_problems;
+MUSIC_LIBRARY.sleep_problems = MUSIC_LIBRARY.sleep_problems;
+MUSIC_LIBRARY.sleep = MUSIC_LIBRARY.sleep_problems;
 MUSIC_LIBRARY.baby_health = MUSIC_LIBRARY.anxiety;
 
 VIDEO_LIBRARY.baby_crying = VIDEO_LIBRARY.bonding_issues;
@@ -339,4 +343,8 @@ VIDEO_LIBRARY.baby_needs = VIDEO_LIBRARY.bonding_issues;
 VIDEO_LIBRARY.baby_feeding = VIDEO_LIBRARY.bonding_issues;
 VIDEO_LIBRARY.caring_for_baby = VIDEO_LIBRARY.bonding_issues;
 VIDEO_LIBRARY.baby_sleep = VIDEO_LIBRARY.sleep_problems;
+VIDEO_LIBRARY.mother_sleep = VIDEO_LIBRARY.sleep_problems;
+VIDEO_LIBRARY.mother_sleep_problems = VIDEO_LIBRARY.sleep_problems;
+VIDEO_LIBRARY.sleep_problem = VIDEO_LIBRARY.sleep_problems;
+VIDEO_LIBRARY.sleep = VIDEO_LIBRARY.sleep_problems;
 VIDEO_LIBRARY.baby_health = VIDEO_LIBRARY.anxiety;

@@ -23,7 +23,7 @@ async function analyzeText(text) {
       recommendations: {
         activities: ["breathing_478"],
         games: ["bubble_pop"],
-        videoUrl: "https://youtu.be/jzGyjLGbAUc"
+        videoUrl: "https://youtu.be/ZCQUPRyZbO0"
       }
     };
   }

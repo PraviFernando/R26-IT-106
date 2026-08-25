@@ -31,6 +31,9 @@ export const SI = {
   // Risk
   get lowRisk() { return i18n.t('lowRisk', { defaultValue: '🟢 අඩු අවදානම' }); },
   get mediumRisk() { return i18n.t('mediumRisk', { defaultValue: '🟡 මධ්‍යම අවදානම' }); },
+  get highRisk() { return i18n.t('highRisk', { defaultValue: '🔴 අධික අවදානම' }); },
+  get highRiskWarningTitle() { return i18n.t('highRiskWarningTitle', { defaultValue: '🚨 ඔබට විශේෂ අවධානය සහ සහාය අවශ්‍යයි' }); },
+  get highRiskWarningMsg() { return i18n.t('highRiskWarningMsg', { defaultValue: 'ඔබ ඉතා අපහසු අඳුරු මොහොතක් පසු කරමින් සිටිය හැක. කරුණාකර ඔබ තනිවම නැත. වහාම පවුලේ අයෙකු, සෞඛ්‍ය නිලධාරියෙකු හෝ සහන දුරකථන සේවාවක් (1926) අමතන්න. ඔබ ඉතා අගනා පුද්ගලයෙකි! 💖' }); },
 
   // Support Screen
   get emotionalAnalysis() { return i18n.t('emotionalAnalysis', { defaultValue: 'හැඟීම් විශ්ලේෂණය 💜' }); },

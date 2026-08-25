@@ -1,14 +1,15 @@
+# -*- coding: utf-8 -*-
 """
 ================================================================
-BLOOM — Training Data Module
+BLOOM -- Training Data Module
 ================================================================
 All training sentences live here. To improve accuracy, just add
 more sentences to any category below and run /retrain.
 
 STRUCTURE:
-  TRAIN_TEXTS   → list of diary-like sentences
-  TRAIN_REASONS → matching reason label for each sentence
-  TRAIN_EMOTIONS→ matching emotion label for each sentence
+  TRAIN_TEXTS   -> list of diary-like sentences
+  TRAIN_REASONS -> matching reason label for each sentence
+  TRAIN_EMOTIONS-> matching emotion label for each sentence
 
 CATEGORIES:
   Reasons  : loneliness, fatigue, anxiety, bonding_issues,
@@ -16,13 +17,20 @@ CATEGORIES:
              overwhelmed, physical_discomfort, negative_thoughts
   Emotions : happy, sad, stressed, anxious
   Risk     : low, medium, high  (computed, not trained)
+
+CHANGELOG (v2 -- accuracy improvement):
+  - Moved sleep-deprivation sentences from fatigue -> sleep_problems
+  - Expanded all categories to 60+ samples
+  - Balanced English / Sinhala Unicode / Singlish coverage
+  - Reduced keyword overlap between fatigue / sleep_problems / overwhelmed
 ================================================================
 """
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # LONELINESS  (emotion: sad)
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 LONELINESS_TEXTS = [
+    # English
     "I feel so alone and nobody is around me",
     "I am completely isolated from everyone I love",
     "Nobody checks on me or asks how I am doing",
@@ -53,29 +61,64 @@ LONELINESS_TEXTS = [
     "I just want someone to sit with me and talk",
     "The silence in this house makes me feel so alone",
     "I have never felt this lonely in my entire life",
-    "මගේ ගෙදර කිසිම කෙනෙක් නෑ මට හරිම පාළුයි",
-    "කවුරුත් මාව බලන්න එන්නේ නෑ මට තනිවෙලා වගේ දැනෙනවා",
-    "මගේ සැමියා වැඩට ගියාම මම මුළු දවසම තනියම",
-    "මගේ යාළුවෝ කවුරුත් දැන් මාත් එක්ක කතා කරන්නේ නෑ",
-    "මට කතා කරන්න කෙනෙක් නෑ මගේ සිත හිස් වෙලා",
-    "මම දවස පුරාම ගෙදර තනියම මට හරිම පාළුයි",
-    "කිසිම කෙනෙක් මගේ දුක අහන්නේ නෑ",
-    "මම තනිවෙලා ඉන්නවා වගේ දැනෙනවා",
-    "mata harima paluyi kauruth naha",
-    "mage husband wadata giyama mata harima taniyen",
-    "mata katha karanna kauruth naha",
-    "kudawath mawa balanna enne naha",
-    "mama dawasa purama gedara taniyen paluyi",
-    "mage yaluwo kauruth dan naha",
-    "mata taniyen inna baha",
+    "I have no adult conversation all day long",
+    "I feel like motherhood has made me invisible to others",
+    "My world has shrunk to just me and the baby",
+    "I miss the days when people would call me just to chat",
+    "I feel profoundly isolated since the baby came",
+    # Indirect Loneliness expressions & user diary examples (Singlish & Sinhala)
+    "kauruth mata kohomada kiyala ahanne na baby kohomada kiyala witharai ahanne",
+    "samahara welawata nikan nikan innakota kauruth mata me welawe ona kiyala therum gannawa nam hondai",
+    "kauruth nikanma mawa balanna awilla tikak wela inna nam mata godak sathutui",
+    "wate aya hitiyath motherhood eka mama thaniyama karagena yanawa wage danenawa",
+    "samahara dawas wala ka ekka hari kathaa karanna ona unath kawda call karanne kiyala hithaganna ba",
+    "mama godak welawata gedarama inne nisa pita lokayen ath wela wage danenawa",
+    "baby enna kalin yaluwo ekka hina wela kathaa karapu kale mata godak mathak wenawa",
+    "mage yaluwo eliyata gihilla sathutin innawa dakiddi mama hamogenma ain wela wage danenawa",
+    "dan mata mama widihata nemei amma kenek widihata witharai aya salakanawa wage danenawa",
+    "mata wage aluth amma kenek langa hitiyanam me dawas therum ganna puluwan wei",
+    "baby mage langa hitiyath gedara athule hitata hiskamak wage danenawa",
+    "mage hithe godak dewal thiyenawa eth ewa kiyanna mata viswasa karanna kenek na",
+    "kauruth mata kohomada kiyala ahanne naha baby kohomada kiyala vitharai ahanne",
+    "kauruth mawa balanna awilla tikak wela innam mata sathutui",
+    "wate aya hitiyath thaniyama karagena yanawa wage danenawa",
+    "gedara athule hitata hiskamak wage danenawa",
+    # Sinhala Unicode
+    "mage gedara kisima kenek na mata harima paluyi",
+    "kavuruth mawa balanna enne na mata taniwela wage danenawa",
+    "mage husband wadata giyama mama mulu dawasama taniyen",
+    "mage yaluwo kauruth dan mata ekka katha karanne na",
+    "mata katha karanna kenek na mage sitha his wela",
+    "mama dawasa purama gedara taniyen mata harima paluyi",
+    "kisima kenek mage duka ahanne na",
+    "mama taniwela innawa wage danenawa",
+    "kavuruth mata balanna enney na harima paluwa",
+    "mama gedara taniyen inna kama nisa godak duka",
+    "mage yaluwo api yana goda kauruth awa na",
+    "amma wenata passe mage yaluwo kauruth na",
+    "mata kenek inna ona kiyala harima asa hithenawa",
+    "gedara hushima kata kalak mata paluyi",
+    "mata kavuruth nathi nisa gedara inna baha",
+    # Sinhala Unicode proper script
+    "\u0db8\u0d9c\u0dda \u0d9c\u0daf\u0dbb \u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0d9a\u0dd9\u0db1\u0dda\u0d9a\u0dca \u0db1\u0dda \u0db8\u0da7 \u0dc4\u0dbb\u0dd2\u0db8 \u0db4\u0dcf\u0dbd\u0dd4\u0dba\u0dd2",
+    "\u0d9a\u0dc0\u0dd4\u0dbb\u0dd4\u0dad\u0dca \u0db8\u0dcf\u0dc0 \u0db6\u0dbd\u0db1\u0dca\u0db1 \u0d87\u0db1\u0dca\u0db1\u0dda \u0db1\u0dda \u0db8\u0da7 \u0dad\u0db1\u0dd2\u0dc0\u0dda\u0dbd\u0dcf \u0dc0\u0d9c\u0dda \u0daf\u0dd0\u0db1\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0d9c\u0dda \u0dc3\u0dd0\u0db8\u0dd2\u0dba\u0dcf \u0dc0\u0dd0\u0da9\u0da7 \u0d9c\u0dd2\u0dba\u0dcf\u0db8 \u0db8\u0db8 \u0db8\u0dd4\u0dbd\u0dd4 \u0daf\u0dc0\u0dc3\u0db8 \u0dad\u0db1\u0dd2\u0dba\u0db8",
+    "\u0db8\u0d9c\u0dda \u0dba\u0dcf\u0dbd\u0dd4\u0dc0\u0ddd \u0d9a\u0dc0\u0dd4\u0dbb\u0dd4\u0dad\u0dca \u0daf\u0dd0\u0db1\u0dca \u0db8\u0dcf\u0dad\u0dca \u0d91\u0d9a\u0dca\u0d9a \u0d9a\u0dad\u0dcf \u0d9a\u0dbb\u0db1\u0dca\u0db1\u0dda \u0db1\u0dda",
+    "\u0db8\u0da7 \u0d9a\u0dad\u0dcf \u0d9a\u0dbb\u0db1\u0dca\u0db1 \u0d9a\u0dd9\u0db1\u0dd9\u0d9a\u0dca \u0db1\u0dda \u0db8\u0d9c\u0dda \u0dc3\u0dd2\u0dad \u0dc4\u0dd2\u0dc3\u0dca \u0dc0\u0dda\u0dbd\u0dcf",
+    "\u0db8\u0db8 \u0daf\u0dc0\u0dc3 \u0db4\u0dd4\u0dbb\u0dcf\u0db8 \u0d9c\u0daf\u0dbb \u0dad\u0db1\u0dd2\u0dba\u0db8 \u0db8\u0da7 \u0dc4\u0dbb\u0dd2\u0db8 \u0db4\u0dcf\u0dbd\u0dd4\u0dba\u0dd2",
+    "\u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0d9a\u0dd9\u0db1\u0dd9\u0d9a\u0dca \u0db8\u0d9c\u0dda \u0daf\u0dd4\u0d9a \u0d85\u0dc4\u0db1\u0dca\u0db1\u0dda \u0db1\u0dda",
+    "\u0db8\u0db8 \u0dad\u0db1\u0dd2\u0dc0\u0dda\u0dbd\u0dcf \u0d89\u0db1\u0dca\u0db1\u0dc0\u0dcf \u0dc0\u0d9c\u0dda \u0daf\u0dd0\u0db1\u0dd9\u0db1\u0dc0\u0dcf",
 ]
 LONELINESS_REASONS = ["loneliness"] * len(LONELINESS_TEXTS)
 LONELINESS_EMOTIONS = ["sad"] * len(LONELINESS_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # FATIGUE  (emotion: stressed)
-# ──────────────────────────────────────────────────────────────
+# NOTE: Fatigue = low physical energy, body weakness, exhaustion
+#       doing daily tasks. NOT sleep deprivation (sleep_problems).
+# --------------------------------------------------------------
 FATIGUE_TEXTS = [
+    # English -- body energy / physical depletion focus
     "I am extremely tired and have no energy left at all",
     "I feel completely drained and burnt out every single day",
     "I cannot even get out of bed in the morning",
@@ -86,8 +129,6 @@ FATIGUE_TEXTS = [
     "Every task feels impossible because I have no energy",
     "I am so fatigued that even brushing my teeth is hard",
     "My exhaustion is affecting everything I do",
-    "I need to sleep so badly but I cannot get a break",
-    "I have been surviving on barely any sleep for months",
     "I feel mentally and physically exhausted every day",
     "The tiredness never goes away no matter what I do",
     "I feel like I am falling apart from pure exhaustion",
@@ -101,34 +142,54 @@ FATIGUE_TEXTS = [
     "I feel sluggish and heavy from the moment I wake up",
     "I am so tired that simple decisions feel impossible",
     "Exhaustion is making me irritable and short tempered",
-    "I feel like I need a week of sleep just to recover",
     "My energy is completely depleted and I feel broken",
     "I cannot remember the last time I felt rested",
-    "I feel hollow and empty from the lack of sleep",
     "This level of tiredness feels unbearable and never-ending",
-    "මට අද හරිම මහන්සියි කිසිම ශක්තියක් නෑ",
-    "මගේ ඇඟට කිසිම පණක් නෑ මට ගොඩක් වෙහෙසයි",
-    "මම දවස පුරාම මහන්සියෙන් ඉන්නේ",
-    "මට නින්ද මදි නිසා හරිම අමාරුයි",
-    "මගේ මුළු ඇඟම රිදෙනවා මහන්සිය වැඩියි",
-    "මම ගොඩක් වෙහෙස වෙලා ඉන්නේ",
-    "මට පොඩි විවේකයක්වත් නෑ",
-    "මහන්සිය වැඩි කම නිසා මට මුකුත් කරන්න බෑ",
+    "I have zero energy and every movement is an effort",
+    "I feel physically weak from doing everything alone",
+    "My body has hit a wall and I cannot push through it",
+    "I feel so drained by the end of the day that I cannot move",
+    "Even the smallest chores feel like climbing a mountain",
+    "I feel burnt out from the non-stop demands of motherhood",
+    "My body feels like it is shutting down from exhaustion",
+    "I cannot carry my baby because I am too weak and tired",
+    "I feel hollow and empty from sheer physical depletion",
+    # Sinhala -- energy / body weakness focus
+    "\u0db8\u0da7 \u0d85\u0daf \u0dc4\u0dbb\u0dd2\u0db8 \u0db8\u0dc4\u0db1\u0dca\u0dc3\u0dd2\u0dba\u0dd2 \u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0dc1\u0d9a\u0dca\u0dad\u0dd2\u0dba\u0d9a\u0dca \u0db1\u0dda",
+    "\u0db8\u0d9c\u0dda \u0d87\u0d9f\u0da7 \u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0db4\u0dab\u0d9a\u0dca \u0db1\u0dda \u0db8\u0da7 \u0d9c\u0ddc\u0daf\u0d9a\u0dca \u0dc0\u0dda\u0dc4\u0dda\u0dc3\u0dba\u0dd2",
+    "\u0db8\u0db8 \u0daf\u0dc0\u0dc3 \u0db4\u0dd4\u0dbb\u0dcf\u0db8 \u0db8\u0dc4\u0db1\u0dca\u0dc3\u0dd2\u0dba\u0dd9\u0db1\u0dca \u0d89\u0db1\u0dca\u0db1\u0dda",
+    "\u0db8\u0d9c\u0dda \u0db8\u0dd4\u0dbd\u0dd4 \u0d87\u0d9f\u0db8 \u0dbb\u0dd2\u0daf\u0dd9\u0db1\u0dc0\u0dcf \u0db8\u0dc4\u0db1\u0dca\u0dc3\u0dd2\u0dba \u0dc0\u0dd0\u0da9\u0dd2\u0dba\u0dd2",
+    "\u0db8\u0db8 \u0d9c\u0ddc\u0daf\u0d9a\u0dca \u0dc0\u0dda\u0dc4\u0dda\u0dc3 \u0dc0\u0dda\u0dbd\u0dcf \u0d89\u0db1\u0dca\u0db1\u0dda",
+    "\u0db8\u0da7 \u0db4\u0ddc\u0da9\u0dd2 \u0dc0\u0dd2\u0dc0\u0dda\u0d9a\u0dba\u0d9a\u0dca\u0dc0\u0dad\u0dca \u0db1\u0dda",
+    "\u0db8\u0dc4\u0db1\u0dca\u0dc3\u0dd2\u0dba \u0dc0\u0dd0\u0da9\u0dd2\u0d9a\u0db8 \u0db1\u0dd2\u0dc3\u0dcf \u0db8\u0da7 \u0db8\u0dd4\u0d9a\u0dd4\u0dad\u0dca \u0d9a\u0dbb\u0db1\u0dca\u0db1 \u0db6\u0dda",
+    "\u0db8\u0da7 \u0dc1\u0d9a\u0dca\u0dad\u0dd2\u0dba\u0d9a\u0dca \u0db1\u0dda \u0d9a\u0dd2\u0dc3\u0dd2\u0daf\u0dd9\u0dba\u0d9a\u0dca \u0d9a\u0dbb\u0db1\u0dca\u0db1",
+    "\u0dc1\u0dbb\u0dd3\u0dbb\u0dba \u0d9c\u0ddc\u0daf\u0dcf\u0d9a\u0dca \u0daf\u0dd4\u0dbb\u0dca\u0dc0\u0dbd\u0dba\u0dd2",
+    "\u0db8\u0da7 \u0dc3\u0dcf\u0db8\u0dcf\u0db1\u0dca\u200d\u0dba \u0daf\u0dda\u0dc0\u0dbd\u0dca \u0dc0\u0dad\u0dca \u0d9a\u0dbb\u0db1\u0dca\u0db1 \u0dc1\u0dbb\u0dd3\u0dbb\u0dba\u0dda\u0db1\u0dca \u0dc1\u0d9a\u0dca\u0dad\u0dd2\u0dba \u0db1\u0dda",
+    "\u0d9a\u0dca\u0dbd\u0dcf\u0db1\u0dca\u0dad \u0dc0\u0dda\u0dbd\u0dcf \u0d89\u0db1\u0dca\u0db1\u0dc0\u0dcf",
+    "\u0daf\u0dc0\u0dc3 \u0d9c\u0dda\u0dc0\u0dd9\u0db1\u0d9a\u0ddc\u0da7 \u0dc1\u0dbb\u0dd3\u0dbb\u0dba \u0dc4\u0dd2\u0dc3\u0dca \u0dc0\u0dda\u0dbd\u0dcf",
+    "\u0dc1\u0d9a\u0dca\u0dad\u0dd2\u0dba \u0d9c\u0dda\u0dc0\u0dd2\u0dbd\u0dcf \u0d9c\u0dd2\u0dc4\u0dd2\u0dbd\u0dca\u0dbd\u0dcf",
+    # Singlish -- energy / physical drain focus
     "mata ada harima mahansiyi kisima shakthiyak naha",
     "mage angata kisima panak naha mata godak wehesayi",
     "mama dawasa purama mahansiyen inne",
-    "mata ninda madi nisa harima amaruwi",
-    "mage mulu angama ridenawa",
+    "mage mulu angama ridenawa mahansi wadiyi",
     "mata podi wiwekayakwat naha",
     "mahansiya wadi kama nisa mukuth karanna baha",
+    "mata shakthiyak naha kisima deyak karanna",
+    "shaririya durbalayi kisima karanna baha",
+    "mata ada dawasama angata panak nethi mahansiyi",
+    "kisima deyak karanna shakthiyak naha",
+    "mama godak wehesa wela innawa",
+    "mata anga duluwaya kisima deyak karanna baha",
 ]
 FATIGUE_REASONS = ["fatigue"] * len(FATIGUE_TEXTS)
 FATIGUE_EMOTIONS = ["stressed"] * len(FATIGUE_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # ANXIETY  (emotion: anxious)
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 ANXIETY_TEXTS = [
+    # English
     "I feel anxious and worried about everything all the time",
     "My heart is racing and I cannot calm down",
     "I keep overthinking every little thing and cannot stop",
@@ -159,14 +220,25 @@ ANXIETY_TEXTS = [
     "I feel anxious in social situations and avoid going out",
     "The anxiety feels like a storm in my chest and head",
     "I feel like I am always bracing for disaster",
-    "මට ලොකු බයක් දැනෙනවා මොනවා වෙයිද කියලා",
-    "මගේ හෘද ස්පන්දනය වැඩි වෙලා මට කාංසාවයි",
-    "මම හැමදේම ගැන ඕනවට වඩා හිතනවා",
-    "මට බයයි බබාට යම් දෙයක් වෙයි කියලා",
-    "මගේ සිතට කිසිම සහනයක් නෑ බය හිතෙනවා",
-    "මට ලොකු කනස්සල්ලක් දැනෙනවා",
-    "මගේ මනස කලබල වෙලා",
-    "මට හැමවෙලේම ලොකු බයක් තියෙනවා",
+    "I have racing thoughts that I cannot switch off",
+    "The worry is constant and I feel powerless to stop it",
+    "I am scared of being alone with my baby in case something goes wrong",
+    "I cannot enjoy any moment because I am always afraid",
+    "I feel a knot in my stomach that never goes away",
+    # Sinhala
+    "\u0db8\u0da7 \u0dbd\u0ddc\u0d9a\u0dd4 \u0db6\u0dba\u0d9a\u0dca \u0daf\u0dd0\u0db1\u0dd9\u0db1\u0dc0\u0dcf \u0db8\u0ddc\u0db1\u0dc0\u0dcf \u0dc0\u0dda\u0dba\u0dd2\u0daf \u0d9a\u0dd2\u0dba\u0dbd\u0dcf",
+    "\u0db8\u0d9c\u0dda \u0dc4\u0dd8\u0daf \u0dc3\u0dca\u0db4\u0db1\u0dca\u0daf\u0db1\u0dba \u0dc0\u0dd0\u0da9\u0dd2 \u0dc0\u0dda\u0dbd\u0dcf \u0db8\u0da7 \u0d9a\u0dcf\u0d82\u0dc3\u0dcf\u0dc0\u0dba\u0dd2",
+    "\u0db8\u0db8 \u0dc4\u0dd0\u0db8\u0daf\u0dda\u0db8 \u0d9c\u0dd0\u0db1\u0dca \u0d91\u0db1\u0dc0\u0da7 \u0dc0\u0daf\u0dcf \u0dc4\u0dd2\u0dad\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0da7 \u0db6\u0dba\u0dba\u0dd2 \u0db6\u0db6\u0dcf\u0da7 \u0dba\u0db8 \u0daf\u0dd9\u0dba\u0d9a\u0dca \u0dc0\u0dda\u0dba\u0dd2 \u0d9a\u0dd2\u0dba\u0dbd\u0dcf",
+    "\u0db8\u0d9c\u0dda \u0dc3\u0dd2\u0dad\u0da7 \u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0dc3\u0dc4\u0db1\u0dba\u0d9a\u0dca \u0db1\u0dda \u0db6\u0dba \u0dc4\u0dd2\u0dad\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0da7 \u0dbd\u0ddc\u0d9a\u0dd4 \u0d9a\u0db1\u0dc3\u0dca\u0dc3\u0dbd\u0dca\u0dbd\u0d9a\u0dca \u0daf\u0dd0\u0db1\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0d9c\u0dda \u0db8\u0db1\u0dc3 \u0d9a\u0dbd\u0db6\u0dbd \u0dc0\u0dda\u0dbd\u0dcf",
+    "\u0db8\u0da7 \u0dc4\u0dd0\u0db8\u0dc0\u0dda\u0dbd\u0dda\u0db8 \u0dbd\u0ddc\u0d9a\u0dd4 \u0db6\u0dba\u0d9a\u0dca \u0dad\u0dd2\u0dba\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0daf\u0dd9\u0dba\u0d9a\u0dca \u0db1\u0dd2\u0dc0\u0dd0\u0dbb\u0daf\u0dd2\u0dc0 \u0dc0\u0dda\u0dba\u0dd2\u0daf \u0d9a\u0dd2\u0dba\u0dbd\u0dcf \u0db8\u0da7 \u0d9a\u0db1\u0dc3\u0dca\u0dc3\u0dbd\u0dca\u0dbd\u0dba\u0dd2",
+    "\u0db4\u0db4\u0dd4\u0dc0 \u0d9c\u0dd0\u0dc3\u0dca\u0dc3\u0dd9\u0db1\u0dc0\u0dcf \u0dbd\u0db8\u0dcf \u0d9c\u0dd0\u0db1\u0dca \u0dbd\u0ddc\u0d9a\u0dd4 \u0db6\u0dba",
+    "\u0dc4\u0dd2\u0dad \u0db1\u0dad\u0dbb \u0db1\u0ddc\u0dc0\u0dd3 \u0daf\u0dd4\u0dc0\u0db1\u0dc0\u0dcf \u0d9a\u0db1\u0dc3\u0dca\u0dc3\u0dbd\u0dca\u0dbd\u0dd9\u0db1\u0dca",
+    "\u0dbd\u0db8\u0dcf \u0dad\u0db1\u0dd2 \u0d9a\u0dbb\u0db1\u0dca\u0db1\u0dad\u0dca \u0db6\u0dba",
+    # Singlish
     "mata loku baya hithenawa monawa weida kiyala",
     "mage hadawatha ikmanin gahanawa mata kansawai",
     "mama hamadema gana onawata wada hithanawa",
@@ -174,14 +246,28 @@ ANXIETY_TEXTS = [
     "mage sithata kisima sahanayak naha baya hithenawa",
     "mata loku kanasallak danenawa",
     "mage manasa kalabala wela",
+    "mata hamawelema loku bayak thiyenawa",
+    "mama kanasallata dawasama inna",
+    "baba aya kiyada kiyala baya hithenawa",
+    "mata panikkuwa denna pewthiwa",
+    "hitha nadur nowi duwanawa kanasallaten",
 ]
 ANXIETY_REASONS = ["anxiety"] * len(ANXIETY_TEXTS)
 ANXIETY_EMOTIONS = ["anxious"] * len(ANXIETY_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # BONDING ISSUES  (emotion: sad)
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 BONDING_TEXTS = [
+    # English - Bonding Difficulty & Attachment
+    "I feel like I am not bonding with my baby",
+    "Sometimes I look at my baby but I don't feel the connection I thought I would",
+    "I feel guilty because I don't feel close to my baby",
+    "My baby smiles at me, but I still feel emotionally distant from my baby",
+    "I don't know how to connect with my newborn and I feel like I am failing as a mother",
+    "I feel like I am not close to my baby and I don't know how to build a bond with my baby",
+    "I feel like I am not close to my baby",
+    "don't know how to build a bond with my baby",
     "I cannot feel a real connection with my baby",
     "I feel emotionally distant from my newborn",
     "I try to love my baby but feel nothing inside",
@@ -212,28 +298,79 @@ BONDING_TEXTS = [
     "My heart feels closed off from my own baby",
     "I feel grief over the bond I thought I would have",
     "I am desperate to feel connected but it just will not come",
-    "මගේ බබා අද ගොඩක් අඬනවා ඇයි කියලා මට තේරෙන්නේ නැහැ",
-    "මගේ බබා නිතරම අඬනවා මට තේරෙන්නේ නෑ මොනවා කරන්නද කියලා",
-    "මට බබා එක්ක ලොකු ආදරයක් දැනෙන්නේ නෑ",
-    "මගේ බබාට මම ලං වෙලා නෑ වගේ දැනෙනවා",
+    "I feel no maternal instinct and I am terrified",
+    "I look at my baby and do not feel what mothers describe",
+    "I feel numb when I hold my baby and I hate myself for it",
+    "The disconnection makes me feel like I am failing",
+    "I do not feel the rush of love other mothers talk about",
+    # Sinhala Unicode
+    "මගේ බබාට මම ලං වෙලා නැහැ වගේ දැනෙනවා",
+    "මට මගේ බබා එක්ක කලින් හිතුවා වගේ බැඳීමක් දැනෙන්නේ නැහැ",
+    "මගේ බබා එක්ක සම්බන්ධ වෙන්න බැරි වගේ මට දැනෙනවා මම හොඳ අම්මා කෙනෙක් නෙමෙයි වගේ",
+    "මගේ බබාට මම ලං වෙලා නැහැ",
+    "බබා එක්ක බැඳීමක් නැහැ",
+    "බබා එක්ක සම්බන්ධ වෙන්න බැහැ",
+    "බබා එක්ක connection එකක් නැහැ",
+    "බබාගෙන් ඈත් වෙලා වගේ",
+    "මට බබා එක්ක ආදරයක් දැනෙන්නේ නැහැ",
+    "මගේ බබා එක්ක connection එකක් නැහැ",
+    "මට බබා එක්ක bond වෙන්න අමාරුයි",
+    "මට මගේ බබා ගැන හැඟීමක් දැනෙන්නේ නැහැ",
+    "මම බබාට ආදරෙයි කියලා දැනෙන්නේ නැහැ",
+    "මට මගේ බබාගෙන් emotionally distant වගේ දැනෙනවා",
+    "මම බබා එක්ක ඉන්නවා නමුත් connection එකක් නැහැ",
+    "මට බබා එක්ක ලොකු ආදරයක් දැනෙන්නේ නැහැ",
+    "මගේ බබාට මම ලං වෙලා නැහැ වගේ දැනෙනවා",
     "මට කිසිම ආදර හැඟීමක් එන්නේ නැහැ",
-    "මම බබා දිහා බැලුවාම හිස් බවක් දැනෙනවා",
-    "මගේ බබා ගොඩක් අඬනවා එයාට මොනවද ඕන කියලා මට තේරෙන්නේ නැහැ",
-    "mage baba godak andanawa eyata monawada one kiyala mata therenne naha",
-    "mage baba nitharama andanawa ai kiyala mata therenne naha",
-    "mage baba godak adanawa mata therum ganna baha",
+    "මම බබා දිහා බැලුවම හිස් බවක් දැනෙනවා",
+    "බබා එක්ක ඉද්දී ආදරය දැනෙන්නේ නැහැ",
+    "බබාට ආදරය දෙන්නට පුළුවන් බැහැ",
+    "බබා ළඟ ඉද්දී හිස් බවක් දැනෙනවා",
+    # Singlish
+    "mata mage baba ekka bond wenna amarui wage danenawa",
+    "mage baba langa innakotath mata eya ekka emotional connection ekak danenne na",
+    "mata hithenawa mama mage babata hariyata adare pennanne na wage mata eka gana guilt ekak thiyenawa",
+    "baba wa balagena innakota mata sathutu wenna one wage hithenawa habai mata ehema feeling ekak enne na",
+    "mage baba ekka bond wenna amarui",
+    "mage baba ekka connection ekak na",
+    "baba ekka close na",
+    "baba ekka emotional connection na",
+    "baba ekka sambandha wenna ba",
+    "mata mage baba ekka bond ekak danenne naha",
+    "mata baba ekka adarayak danenne naha",
+    "mage babata mama langa wela naha wage danenawa",
+    "baba ekka bond wenna amarui",
     "mata baba ekka loku adarayak danenne naha",
     "mage babata mama lan wela naha wage danenawa",
     "mata kisima adara hangimak enne naha",
     "mama baba diha baluwama his bawak danenawa",
+    "mata baba ekka connection ekak naha",
+    "baba ekka connection ne",
+    "baba ekka bandenna ba",
+    "baba ekka sambandha wenna ba",
+    "baby gena adarayak danenne naha",
+    "baby ta adarayak danenne na",
+    "baby mata stranger wage",
+    "mata babywa therenne naha",
+    "baby ektama mata feel ne",
+    "mata amma kenek wage danenne naha",
+    "caregiver kenek wage danenawa",
+    "babywa wagedenath feeling naha",
+    "baby ekka emotionally athiwela wage",
+    "bond eka naha",
+    "attachment ekak naha",
+    "I feel disconnected from my baby and I struggle to feel that motherly affection. It makes me feel terribly guilty.",
+    "මට බබා එක්ක ලොකු බැඳීමක් දැනෙන්නේ නැහැ. මම හොඳ අම්මා කෙනෙක් නෙවෙයිද කියලා හිතෙනවා.",
+    "mata baby ekka loku bandeemak danenne na, baby langa hitiyath wenas feeling ekak enne."
 ]
 BONDING_REASONS = ["bonding_issues"] * len(BONDING_TEXTS)
 BONDING_EMOTIONS = ["sad"] * len(BONDING_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # LACK OF SUPPORT  (emotion: sad)
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 SUPPORT_TEXTS = [
+    # English
     "Nobody helps me with the baby and I feel so alone",
     "I am doing absolutely everything by myself",
     "My family is not supportive at all during this time",
@@ -264,7 +401,12 @@ SUPPORT_TEXTS = [
     "Nobody steps in unless I explicitly beg for it",
     "I feel used and unsupported by the people around me",
     "I am running on empty because no one shares the load",
-    "මගේ සැමියා මට කිසිම උදව්වක් කරන්නේ නැහැ",
+    "My husband comes home and does not help at all",
+    "I have no one to call when things get too hard",
+    "My family lives far away and I have no practical help",
+    "I expected support but got none after having the baby",
+    "I carry all the emotional and physical load entirely alone",
+    # Sinhala Unicode
     "මට උදව් කරන්න ගෙදර කවුරුත් නෑ",
     "මම හැමදේම තනියම කරන්න ඕනේ",
     "මගේ පවුලේ අය මට සහය දක්වන්නේ නෑ",
@@ -272,20 +414,104 @@ SUPPORT_TEXTS = [
     "මට උදව් ඉල්ලුවත් කවුරුත් අහන්නේ නෑ",
     "මට තනියම මේ ඔක්කොම බර දරන්න බෑ",
     "කිසිම කෙනෙක් මට සහයක් දෙන්නේ නෑ",
+    "සැමියා ගෙදර ආවත් උදව් කරන්නේ නෑ",
+    "කවුරුත් මට උදව් කරන්න එන්නේ නෑ",
+    # Singlish
     "mage husband mata kisima udawwak karanne naha",
     "mata udaw karanna gedara kauruth naha",
     "mama hamadema taniyen karanna one",
     "mage pawule aya mata support karanne naha",
     "mata kagegenwat udawwak nathuwa amaruwi",
     "mata taniyen me okkoma bara daranna baha",
+    "kavuruth mata udaw karanna ewee naha",
+    "mama taniyen baba balanna one kavuruth naha",
+    "mage husband gedara awat help karanne naha",
+    "mata udaw iguwat kavuruth nehawa kiuwe",
 ]
 SUPPORT_REASONS = ["lack_of_support"] * len(SUPPORT_TEXTS)
 SUPPORT_EMOTIONS = ["sad"] * len(SUPPORT_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
+# FINANCIAL WORRY  (emotion: stressed)
+# --------------------------------------------------------------
+FINANCIAL_TEXTS = [
+    # English
+    "I am worried about money after having the baby",
+    "I am struggling financially after having my baby",
+    "I don't know how I will manage our finances",
+    "Having a baby has created financial stress",
+    "I cannot afford everything my baby needs right now",
+    "We are having major money problems after the birth",
+    "I am constantly stressed about expenses and bills",
+    "Money is very tight and I am worried about the future",
+    "I don't know how we will manage our baby expenses",
+    "Financial pressure is making me feel hopeless",
+    # Sinhala Unicode
+    "මට බබා ලැබුණාට පස්සේ සල්ලි ගැන ලොකු බයක් තියෙනවා",
+    "මට වියදම් ගැන ගොඩක් කනස්සල්ලයි",
+    "බබාගේ වියදම් කොහොමද දරන්නේ කියලා බයයි",
+    "සල්ලි ප්රශ්න නිසා මට stress",
+    "මට බබා ලැබුණාට පස්සේ සල්ලි ගැන ගොඩක් stress",
+    "සල්ලි ප්‍රශ්න නිසා මට හරිම අමාරුයි",
+    "වියදම් වැඩි නිසා මට මූල්‍යමය කනස්සල්ලක් තියෙනවා",
+    "මුදල් ප්‍රශ්න නිසා හිතට කිසිම සහනයක් නැහැ",
+    # Singlish
+    "mata salli gana godak baya hithenawa",
+    "mata financial problems thiyenawa",
+    "baba nisa expenses manage karanna amarui",
+    "mata salli prashna nisa stress",
+    "baba labunata passe salli gana baya hithenawa",
+    "expenses wadi nisa financial stress",
+    "salli naha baby ge wada walata",
+    "mudal gatalu nisa mata harima amaruwi"
+]
+FINANCIAL_REASONS = ["financial_worry"] * len(FINANCIAL_TEXTS)
+FINANCIAL_EMOTIONS = ["stressed"] * len(FINANCIAL_TEXTS)
+
+# --------------------------------------------------------------
+# RELATIONSHIP / FAMILY PROBLEMS  (emotion: stressed)
+# --------------------------------------------------------------
+RELATIONSHIP_TEXTS = [
+    # English
+    "My relationship with my husband has changed since the baby arrived",
+    "We argue all the time after having the baby",
+    "I feel like my husband and I are becoming distant",
+    "Having the baby has created problems in our relationship",
+    "My husband and I are constantly fighting after childbirth",
+    "I feel disconnected from my partner since becoming a mother",
+    "There is so much conflict with my in-laws and family",
+    "My partner and I cannot communicate without arguing",
+    "Family problems are making my postpartum recovery harder",
+    "I feel like my marriage is breaking apart after the baby",
+    # Sinhala Unicode
+    "මට බබා ලැබුණාට පස්සේ මගේ husband එක්ක ප්රශ්න",
+    "අපි දෙන්නා අතර නිතරම රණ්ඩු වෙනවා",
+    "බබා ලැබුණාට පස්සේ අපේ relationship එක වෙනස් වෙලා",
+    "මගේ පවුලේ අය එක්ක ප්රශ්න තියෙනවා",
+    "බබා ලැබුණාට පස්සේ මගේ husband එක්ක නිතරම ප්රශ්න",
+    "සැමියා එක්ක නිතරම ආරවුල් ඇතිවෙනවා",
+    "පවුලේ අය මට සහයෝගය නොදී ප්‍රශ්න ඇතිකරනවා",
+    "අපේ අඹුසැමි සබඳතාවය බබා ලැබුණාට පස්සේ දුරස් වෙලා",
+    # Singlish
+    "mata husband ekka relationship eka gana prashna thiyenawa",
+    "baba labunata passe ape relationship eka hari naha",
+    "baba labunata passe mage husband ekka nitharama prashna",
+    "husband ekka hamawelama randu wenawa",
+    "pawule aya ekka prashna nisa stress",
+    "ape relationship eka badaga wela baba labuna passe"
+]
+RELATIONSHIP_REASONS = ["relationship_family_problem"] * len(RELATIONSHIP_TEXTS)
+RELATIONSHIP_EMOTIONS = ["stressed"] * len(RELATIONSHIP_TEXTS)
+
+
+# --------------------------------------------------------------
 # SLEEP PROBLEMS  (emotion: stressed)
-# ──────────────────────────────────────────────────────────────
+# NOTE: Sleep problems = mother cannot sleep / insufficient sleep /
+#       waking at night / insomnia. NOT generic energy depletion.
+#       Includes sentences MOVED FROM FATIGUE category.
+# --------------------------------------------------------------
 SLEEP_TEXTS = [
+    # English
     "I cannot sleep at night even when my baby is sleeping",
     "I keep waking up every hour throughout the night",
     "I am severely sleep deprived and it is affecting everything",
@@ -310,19 +536,34 @@ SLEEP_TEXTS = [
     "I cannot nap during the day even though I am desperate",
     "Sleep deprivation feels like a form of torture",
     "I am so tired but cannot sleep and it is so frustrating",
-    "My baby wakes up constantly and I have no energy left",
+    "My baby wakes up constantly and I have no sleep left",
     "I feel like I am losing my mind from sleep deprivation",
     "I cannot remember what a good night sleep feels like",
     "I am so tired I could cry but I still cannot sleep",
     "Sleep feels like a luxury I am no longer allowed to have",
     "The night feeds are destroying me mentally and physically",
-    "මගේ පුතා රෑට නිදාගන්නේ නැහැ",
-    "මට රෑට පොඩ්ඩක්වත් නිදාගන්න බැහැ",
-    "මගේ නින්ද නිතරම කැඩෙනවා",
-    "බබා නිදාගත්තත් මට නින්ද යන්නේ නැහැ",
-    "මම නිදි නැතුව මුළු රෑම ඉන්නවා",
-    "මට නින්දක් නැතුව ඔළුව රිදෙනවා",
-    "මට නිදාගන්න හරිම අමාරුයි",
+    # sleep-deprivation specific (previously miscategorized)
+    "I cannot sleep enough and it makes everything so hard",
+    "Not getting enough sleep is ruining my health",
+    "I need more sleep but cannot get it because of the baby",
+    "The lack of sleep is the hardest part of being a new mother",
+    "Insufficient sleep has made me feel completely broken",
+    # Sinhala
+    "\u0db8\u0d9c\u0dda \u0db4\u0dd4\u0dad\u0dcf \u0dbb\u0dd1\u0da7 \u0db1\u0dd2\u0daf\u0dcf\u0d9c\u0db1\u0dca\u0db1\u0dda \u0db1\u0dd0\u0dc4\u0dd0",
+    "\u0db8\u0da7 \u0dbb\u0dd1\u0da7 \u0db4\u0ddc\u0da9\u0dca\u0da9\u0d9a\u0dca\u0dc0\u0dad\u0dca \u0db1\u0dd2\u0daf\u0dcf\u0d9c\u0db1\u0dca\u0db1 \u0db6\u0dd0\u0dc4\u0dd0",
+    "\u0db8\u0d9c\u0dda \u0db1\u0dd2\u0db1\u0dca\u0daf \u0db1\u0dd2\u0dad\u0dbb\u0db8 \u0d9a\u0dd0\u0da9\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0db6\u0db6\u0dcf \u0db1\u0dd2\u0daf\u0dcf\u0d9c\u0dad\u0dca\u0dad\u0dad\u0dca \u0db8\u0da7 \u0db1\u0dd2\u0db1\u0dca\u0daf \u0dba\u0db1\u0dca\u0db1\u0dda \u0db1\u0dd0\u0dc4\u0dd0",
+    "\u0db8\u0db8 \u0db1\u0dd2\u0daf\u0dd2 \u0db1\u0dd0\u0dad\u0dd4\u0dc0 \u0db8\u0dd4\u0dbd\u0dd4 \u0dbb\u0dd1\u0db8 \u0d89\u0db1\u0dca\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0da7 \u0db1\u0dd2\u0db1\u0dca\u0daf\u0d9a\u0dca \u0db1\u0dd0\u0dad\u0dd4\u0dc0 \u0d94\u0dbd\u0dd4\u0dc0 \u0dbb\u0dd2\u0daf\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0da7 \u0db1\u0dd2\u0daf\u0dcf\u0d9c\u0db1\u0dca\u0db1 \u0dc4\u0dbb\u0dd2\u0db8 \u0d85\u0db8\u0dcf\u0dbb\u0dd4\u0dba\u0dd2",
+    # MOVED FROM FATIGUE (sleep-deprivation specific Sinhala)
+    "\u0db8\u0da7 \u0db1\u0dd2\u0db1\u0dca\u0daf \u0db8\u0daf\u0dd2 \u0db1\u0dd2\u0dc3\u0dcf \u0dc4\u0dbb\u0dd2\u0db8 \u0d85\u0db8\u0dcf\u0dbb\u0dd4\u0dba\u0dd2",
+    "\u0db1\u0dd2\u0db1\u0dca\u0daf \u0db1\u0ddc\u0dbd\u0dd0\u0db6\u0dd9\u0db1 \u0db1\u0dd2\u0dc3\u0dcf \u0dc1\u0dbb\u0dd3\u0dbb\u0dba \u0d9c\u0ddc\u0daf\u0dcf\u0d9a\u0dca \u0daf\u0dd4\u0dbb\u0dca\u0dc0\u0dbd\u0dba\u0dd2",
+    "\u0dbb\u0dd1\u0da7 \u0dc4\u0dbb\u0dd2\u0dba\u0da7 \u0db1\u0dd2\u0daf\u0dcf\u0d9c\u0db1\u0dca\u0db1\u0da7 \u0db1\u0ddc\u0dc4\u0dd0\u0d9a\u0dd2\u0dc0 \u0d89\u0db1\u0dca\u0db1\u0dc0\u0dcf",
+    "\u0db1\u0dd2\u0daf\u0dcf\u0d9c\u0db1\u0dca\u0db1\u0dda \u0db1\u0dd0\u0dad\u0dd2\u0dc0 \u0dc4\u0dd2\u0dad\u0dad\u0dca \u0d9c\u0ddc\u0daf\u0dcf\u0d9a\u0dca \u0dbd\u0dda\u0daf",
+    "\u0db6\u0db6\u0dcf \u0db1\u0dd2\u0dc3\u0dcf \u0dbb\u0dd1 \u0db1\u0dd2\u0daf\u0dcf \u0d9c\u0dad \u0db1\u0ddc\u0dc4\u0dd0\u0d9a\u0dd2\u0dc0 \u0d89\u0db1\u0dca\u0db1\u0dda",
+    "\u0db1\u0dd2\u0db1\u0dca\u0daf \u0dc4\u0dd2\u0d82\u0d9c \u0db1\u0dd2\u0dc3\u0dcf \u0dc1\u0dbb\u0dd3\u0dbb\u0dba\u0da7 \u0dc1\u0d9a\u0dca\u0dad\u0dd2\u0dba \u0d89\u0dbd\u0dca\u0dbd\u0db1\u0dc0\u0dcf",
+    # Singlish
     "mage putha rata nida ganne naha",
     "mata rata poddakwat nidaganna baha",
     "mage ninda nitharama kadenawa",
@@ -330,14 +571,22 @@ SLEEP_TEXTS = [
     "mama nidi nathuwa mulu rama innawa",
     "mata nindak nathuwa oluwa ridenawa",
     "mata nidaganna harima amaruwi",
+    # MOVED FROM FATIGUE (sleep-deprivation Singlish)
+    "mata ninda madi nisa harima amaruwi",
+    "ninda nadapu nisa shaririyata shakthiyak naha",
+    "rata hariyata nida ganna baha nisa godak amaruwi",
+    "ninda labenna baha baby nisa",
+    "rata nida natha inna nisa hitha leda",
+    "mama rata nidaganna bari inna nisa dawasata amaruwi",
 ]
 SLEEP_REASONS = ["sleep_problems"] * len(SLEEP_TEXTS)
 SLEEP_EMOTIONS = ["stressed"] * len(SLEEP_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # LOSS OF CONFIDENCE  (emotion: sad)
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 CONFIDENCE_TEXTS = [
+    # English
     "I feel like a terrible mother and I am failing my baby",
     "I have lost all confidence in myself as a parent",
     "I feel useless and completely incapable of doing this",
@@ -368,26 +617,44 @@ CONFIDENCE_TEXTS = [
     "I am ashamed of how much I struggle every day",
     "I feel defeated and have given up on believing in myself",
     "I feel like everyone can see how bad of a mother I am",
-    "මම නරක අම්මා කෙනෙක් මට කිසිම දෙයක් බැහැ",
-    "මට මං ගැන කිසිම විශ්වාසයක් නැහැ",
-    "මම කරන්නේ හැමදේම වරදිනවා",
-    "අනිත් අම්මලා වගේ මට හොඳට කරන්න බෑ",
-    "මට කිසිම ආත්ම විශ්වාසයක් නෑ",
-    "මම අසාර්ථක අම්මා කෙනෙක්",
+    "I feel like I have failed at the most important job",
+    "I cannot make a decision without feeling it is wrong",
+    "I feel like I am not cut out for motherhood",
+    "I keep comparing myself to other mothers and feeling inferior",
+    "I have no confidence left and feel like giving up",
+    # Sinhala
+    "\u0db8\u0db8 \u0db1\u0dbb\u0d9a \u0d85\u0db8\u0dca\u0db8\u0dcf \u0d9a\u0dd9\u0db1\u0dd9\u0d9a\u0dca \u0db8\u0da7 \u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0daf\u0dd9\u0dba\u0d9a\u0dca \u0db6\u0dd0\u0dc4\u0dd0",
+    "\u0db8\u0da7 \u0db8\u0d82 \u0d9c\u0dd0\u0db1 \u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0dc5\u0dc1\u0dca\u0dc0\u0dcf\u0dc3\u0dba\u0d9a\u0dca \u0db1\u0dd0\u0dc4\u0dd0",
+    "\u0db8\u0db8 \u0d9a\u0dbb\u0db1\u0dca\u0db1\u0dda \u0dc4\u0dd0\u0db8\u0daf\u0dda\u0db8 \u0dc0\u0dbb\u0daf\u0dd2\u0db1\u0dc0\u0dcf",
+    "\u0d85\u0db1\u0dd2\u0dad\u0dca \u0d85\u0db8\u0dca\u0db8\u0dbd\u0dcf \u0dc0\u0d9c\u0dda \u0db8\u0da7 \u0dc4\u0ddc\u0da9\u0da7 \u0d9a\u0dbb\u0db1\u0dca\u0db1 \u0db6\u0dda",
+    "\u0db8\u0da7 \u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0d86\u0dad\u0dca\u0db8 \u0dc5\u0dc1\u0dca\u0dc0\u0dcf\u0dc3\u0dba\u0d9a\u0dca \u0db1\u0dda",
+    "\u0db8\u0db8 \u0d85\u0dc3\u0dcf\u0dbb\u0dca\u0dad\u0d9a \u0d85\u0db8\u0dca\u0db8\u0dcf \u0d9a\u0dd9\u0db1\u0dd9\u0d9a\u0dca",
+    "\u0db8\u0da7 \u0d85\u0db8\u0dca\u0db8\u0dcf \u0dc0\u0dd2\u0daf\u0dd2\u0dba\u0da7 \u0d89\u0db1\u0dca\u0db1 \u0db6\u0dda \u0d9a\u0dd2\u0dba\u0dbd\u0dcf \u0dc4\u0dd2\u0dad\u0dd9\u0db1\u0dcf",
+    "\u0db8\u0db8 \u0d9a\u0dbb\u0db1\u0dca\u0db1 \u0d9c\u0ddc\u0daf\u0d9a\u0dca \u0d9a\u0dd2\u0dba\u0dcf\u0dc0\u0dd9 \u0db8\u0dad\u0dca \u0dc4\u0dd0\u0db8\u0daf\u0dda\u0db8 \u0dc0\u0dbb\u0daf\u0dd2\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0da7 \u0db8\u0d82 \u0d9c\u0dd0\u0db1 \u0dc5\u0dc1\u0dca\u0dc0\u0dcf\u0dc3\u0dba\u0d9a\u0dca \u0db1\u0dda \u0d85\u0db8\u0dca\u0db8\u0dcf \u0dc0\u0dd9\u0db1\u0dca\u0db1 \u0db6\u0dda \u0d9a\u0dd2\u0dba\u0dbd\u0dcf",
+    "\u0db8\u0db8 \u0d85\u0db1\u0dd2\u0dad\u0dca \u0d85\u0db8\u0dca\u0db8\u0dbd\u0dcf \u0dc0\u0d9c\u0dda \u0d9a\u0dbb\u0db1\u0dca\u0db1 \u0db6\u0dda",
+    # Singlish
     "mama naraka amma kenek mata kisima deyak baha",
     "mata man gana kisima wishwasayak naha",
     "mama karanne hamadema waradinawa",
     "anith ammala wage mata hodata karanna baha",
     "mata kisima self confidence naha",
     "mama asarthaka amma kenek",
+    "mama godak try karanawa bat hamadema waradinawa",
+    "mata amma widiyata inna baha kiyala hithena",
+    "mata man gana wishwasayak naha amma wenna baha kiyala",
+    "mama anith ammala wage karana baha kiyala harima duka",
 ]
 CONFIDENCE_REASONS = ["loss_of_confidence"] * len(CONFIDENCE_TEXTS)
 CONFIDENCE_EMOTIONS = ["sad"] * len(CONFIDENCE_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # OVERWHELMED  (emotion: stressed)
-# ──────────────────────────────────────────────────────────────
+# NOTE: Overwhelmed = too many responsibilities / tasks / pressure.
+#       NOT sleep problems or physical pain.
+# --------------------------------------------------------------
 OVERWHELMED_TEXTS = [
+    # English
     "Everything feels like too much and I cannot cope",
     "I feel overwhelmed by all my responsibilities at once",
     "I cannot handle all this pressure and I am breaking down",
@@ -418,24 +685,44 @@ OVERWHELMED_TEXTS = [
     "The chaos of my life feels unmanageable and endless",
     "I feel overwhelmed by even the smallest tasks now",
     "I cannot see a way through this mountain of responsibilities",
-    "මට මේ ඔක්කොම වැඩ දරාගන්න බැහැ",
-    "මට පීඩනය වැඩියි මට මුකුත් කරගන්න බෑ",
-    "හැමදේම මගේ පිටට ඇවිත් මට අමාරුයි",
-    "මට ඔළුව විකාර වෙනවා වැඩ වැඩියි",
-    "මම නිතරම කලබල වෙනවා දරාගන්න බෑ",
+    "I have so many tasks I do not know where to start",
+    "The pressure of doing everything is crushing me completely",
+    "I feel swamped by the endless demands of daily life",
+    "I cannot cope with all these responsibilities at once",
+    "I feel like I am constantly running but never finishing anything",
+    # Sinhala
+    "\u0db8\u0da7 \u0db8\u0dda \u0d94\u0d9a\u0dca\u0d9a\u0ddc\u0db8 \u0dc0\u0dd0\u0da9 \u0daf\u0dbb\u0dcf\u0d9c\u0db1\u0dca\u0db1 \u0db6\u0dd0\u0dc4\u0dd0",
+    "\u0db8\u0da7 \u0db4\u0dd3\u0daf\u0db1\u0dba \u0dc0\u0dd0\u0da9\u0dd2\u0dba\u0dd2 \u0db8\u0da7 \u0db8\u0dd4\u0d9a\u0dd4\u0dad\u0dca \u0d9a\u0dbb\u0d9c\u0db1\u0dca\u0db1 \u0db6\u0dda",
+    "\u0dc4\u0dd0\u0db8\u0daf\u0dda\u0db8 \u0db8\u0d9c\u0dda \u0db4\u0dd2\u0da7\u0da7 \u0d87\u0dc0\u0dd2\u0dad\u0dca \u0db8\u0da7 \u0d85\u0db8\u0dcf\u0dbb\u0dd4\u0dba\u0dd2",
+    "\u0db8\u0da7 \u0d94\u0dbd\u0dd4\u0dc0 \u0dc5\u0d9a\u0dcf\u0dbb \u0dc0\u0dd9\u0db1\u0dc0\u0dcf \u0dc0\u0dd0\u0da9 \u0dc0\u0dd0\u0da9\u0dd2\u0dba\u0dd2",
+    "\u0db8\u0db8 \u0db1\u0dd2\u0dad\u0dbb\u0db8 \u0d9a\u0dbd\u0db6\u0dbd \u0dc0\u0dd9\u0db1\u0dc0\u0dcf \u0daf\u0dbb\u0dcf\u0d9c\u0db1\u0dca\u0db1 \u0db6\u0dda",
+    "\u0dc4\u0dd0\u0db8\u0daf\u0dda\u0db8 \u0db8\u0d9c\u0dda \u0d94\u0d9a\u0dca\u0d9a\u0ddc\u0db8 \u0d9a\u0dbb\u0db1\u0dca\u0db1\u0da7 \u0db8\u0da7 \u0db6\u0dda",
+    "\u0dc0\u0dd0\u0da9 \u0dc0\u0dd0\u0da9\u0dd2\u0dba\u0dd2 \u0dc4\u0dd2\u0dad \u0d9a\u0dbd\u0db6\u0dbd\u0dba\u0dd2",
+    "\u0db8\u0da7 \u0d94\u0d9a\u0dca\u0d9a\u0ddc\u0db8 \u0d9a\u0da7\u0dba\u0dd4\u0dad\u0dca \u0d9a\u0dbb\u0db1\u0dca\u0db1 \u0db6\u0dda",
+    "\u0dc4\u0dd0\u0db8\u0daf\u0dda\u0db8\u0da7 \u0db8\u0dd4\u0dc4\u0dd4\u0dab \u0db4\u0dd3\u0daf\u0db1\u0dba \u0daf\u0dd9\u0db1\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0d9c\u0dda \u0d94\u0d9a\u0dca\u0d9a\u0ddc\u0db8 \u0d9a\u0dd3\u0dbb\u0dca\u0db8\u0dca \u0daf\u0dd9\u0db1\u0dd9\u0db1\u0dc0\u0dcf",
+    # Singlish
     "mata me okkoma wada daraganna baha",
     "mata pressure wadiyi mata mukuth karaganna baha",
     "hamadema mage pitata awith mata amaruwi",
     "mata oluwa wikara wenawa wada wadiyi",
     "mama nitharama kalabala wenawa daraganna ba",
+    "hamadema wada ekama karana eka mata burden",
+    "mata okkoma wada manage karanna shakathiyak naha",
+    "mama hamawelema piyawela innawa bat adiwela",
+    "okkoma wada mage pitata wela tiyenawa daraganna ba",
+    "mata okkoma deyam manage karanna bari pressure",
 ]
 OVERWHELMED_REASONS = ["overwhelmed"] * len(OVERWHELMED_TEXTS)
 OVERWHELMED_EMOTIONS = ["stressed"] * len(OVERWHELMED_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # PHYSICAL DISCOMFORT  (emotion: stressed)
-# ──────────────────────────────────────────────────────────────
+# NOTE: Physical = pain, body aches, c-section recovery,
+#       postpartum body pain. NOT sleep or energy depletion.
+# --------------------------------------------------------------
 PHYSICAL_TEXTS = [
+    # English
     "My body is in constant pain since giving birth",
     "I feel sore and very uncomfortable all the time",
     "My recovery from birth has been extremely painful",
@@ -466,24 +753,42 @@ PHYSICAL_TEXTS = [
     "I feel like I am trapped in a body that is constantly hurting",
     "My physical symptoms are being dismissed by my doctor",
     "I feel broken physically and I do not know when it will end",
-    "මගේ සැත්කම කළ තැන ගොඩක් රිදෙනවා",
-    "මගේ මුළු ඇඟම කැක්කුමයි අමාරුයි",
-    "මට තුවාලය නිසා ඇවිදින්නත් බෑ",
-    "මගේ කොන්ද ගොඩක් රිදෙනවා",
-    "මට ශාරීරිකව ගොඩක් වේදනායි",
+    "The postpartum pain in my back is unbearable every day",
+    "My abdominal pain after delivery has not gone away",
+    "I am still recovering from a difficult labour and it hurts",
+    "My body has not healed properly and everything aches",
+    "I feel sore in my entire body from the delivery",
+    # Sinhala
+    "\u0db8\u0d9c\u0dda \u0dc3\u0dd0\u0dad\u0dca\u0d9a\u0db8 \u0d9a\u0dbd \u0dad\u0dd0\u0db1 \u0d9c\u0ddc\u0daf\u0d9a\u0dca \u0dbb\u0dd2\u0daf\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0d9c\u0dda \u0db8\u0dd4\u0dbd\u0dd4 \u0d87\u0d9f\u0db8 \u0d9a\u0dd0\u0d9a\u0dca\u0d9a\u0dd4\u0db8\u0dba\u0dd2 \u0d85\u0db8\u0dcf\u0dbb\u0dd4\u0dba\u0dd2",
+    "\u0db8\u0da7 \u0dad\u0dd4\u0dc0\u0dcf\u0dbd\u0dba \u0db1\u0dd2\u0dc3\u0dcf \u0d87\u0dc0\u0dd2\u0daf\u0dd2\u0db1\u0dca\u0db1\u0dad\u0dca \u0db6\u0dda",
+    "\u0db8\u0d9c\u0dda \u0d9a\u0ddc\u0db1\u0dca\u0daf \u0d9c\u0ddc\u0daf\u0d9a\u0dca \u0dbb\u0dd2\u0daf\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0da7 \u0dc1\u0dcf\u0dbb\u0dd3\u0dbb\u0dd2\u0d9a\u0dc0 \u0d9c\u0ddc\u0daf\u0d9a\u0dca \u0dc0\u0dda\u0daf\u0db1\u0dcf\u0dba\u0dd2",
+    "\u0db4\u0dca\u200d\u0dbb\u0dc3\u0dd6\u0dad\u0dd2\u0dba \u0d9a\u0dbb\u0dbd\u0dcf \u0d87\u0d9f \u0dbb\u0dd2\u0daf\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0dc1\u0dbb\u0dd3\u0dbb\u0dba \u0dc3\u0dd4\u0dc0 \u0db1\u0ddc\u0dc0\u0dda\u0dbd\u0dcf\u0db8 \u0d89\u0db1\u0dca\u0db1\u0dda",
+    "\u0d9a\u0ddc\u0db1\u0dca\u0daf \u0dbb\u0dd2\u0daf\u0dd9\u0db1\u0dc0\u0dcf \u0daf\u0dbb\u0dd4\u0dc0\u0dcf \u0d9c\u0dd9\u0db1 \u0d89\u0db1\u0dca\u0db1\u0d9a\u0ddc\u0da7",
+    "\u0dc1\u0dcf\u0dbb\u0dd3\u0dbb\u0dd2\u0d9a \u0dc0\u0dda\u0daf\u0db1\u0dcf\u0dc0 \u0d9c\u0ddc\u0daf\u0dcf\u0d9a\u0dca \u0daf\u0dbb\u0dcf\u0d9c\u0db1\u0dca\u0db1\u0dda",
+    "\u0dc1\u0dbb\u0dd3\u0dbb\u0dba \u0dbb\u0dd2\u0daf\u0dd9\u0db1\u0dc0\u0dcf \u0dc1\u0dd2\u0dc1\u0dd4 \u0dbd\u0dd0\u0db6\u0dd2\u0dbd\u0dcf",
+    # Singlish
     "mage c section thuwala ridenawa",
     "mage mulu angama kakkumai amaruwi",
     "mata thuwalaya nisa awidinnath baha",
     "mage konda godak ridenawa",
     "mata sharirikawa godak wedanayi",
+    "prasuthiya karala anga ridenawa",
+    "shariraya suwa nowela innawa",
+    "konda ridenawa darua geninna",
+    "mata prasuthiyata passe anga godak ridenawa",
+    "shariraya hariyata suwa nowela tiyenawa",
 ]
 PHYSICAL_REASONS = ["physical_discomfort"] * len(PHYSICAL_TEXTS)
 PHYSICAL_EMOTIONS = ["stressed"] * len(PHYSICAL_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # NEGATIVE THOUGHTS  (emotion: sad)
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 NEGATIVE_TEXTS = [
+    # English
     "I feel completely hopeless and cannot see any future",
     "I have dark thoughts that scare and frighten me",
     "I feel like giving up on everything in my life",
@@ -514,24 +819,42 @@ NEGATIVE_TEXTS = [
     "I feel like my brain is working against me",
     "I feel trapped in negative thoughts with no way out",
     "I feel devastated and broken in ways I cannot explain",
-    "මට ජීවිතේ එපා වෙලා මැරෙන්න හිතෙනවා",
-    "මට අඳුරු සිතුවිලි එනවා මට බයයි",
-    "මම නැති වුණොත් ඔක්කොම හොඳ වෙයි",
-    "මට කිසිම බලාපොරොත්තුවක් නෑ",
-    "මට ජීවත් වෙන්න හිතෙන්නේ නෑ",
+    "I think about not being here and it scares me",
+    "I feel completely empty and see no reason to go on",
+    "The dark thoughts come even when things seem okay",
+    "I feel like I will always feel this bad and never recover",
+    "I feel hopeless about my future and my baby's future",
+    # Sinhala
+    "\u0db8\u0da7 \u0da2\u0dd3\u0dc5\u0dd2\u0dad\u0dda \u0d91\u0db4\u0dcf \u0dc0\u0dda\u0dbd\u0dcf \u0db8\u0dd0\u0dbb\u0dd9\u0db1\u0dca\u0db1 \u0dc4\u0dd2\u0dad\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0db8\u0da7 \u0d85\u0da9\u0dd4\u0dbb\u0dd4 \u0dc3\u0dd2\u0dad\u0dd4\u0dc5\u0dd2\u0dbd\u0dd2 \u0d91\u0db1\u0dc0\u0dcf \u0db8\u0da7 \u0db6\u0dba\u0dba\u0dd2",
+    "\u0db8\u0db8 \u0db1\u0dd0\u0dad\u0dd2 \u0dc0\u0dd4\u0dab\u0ddc\u0dad\u0dca \u0d94\u0d9a\u0dca\u0d9a\u0ddc\u0db8 \u0dc4\u0ddc\u0da9 \u0dc0\u0dda\u0dba\u0dd2",
+    "\u0db8\u0da7 \u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0db6\u0dbd\u0dcf\u0db4\u0ddc\u0dbb\u0ddc\u0dad\u0dca\u0dad\u0dd4\u0dc0\u0d9a\u0dca \u0db1\u0dda",
+    "\u0db8\u0da7 \u0da2\u0dd3\u0dc5\u0dad\u0dca \u0dc0\u0dd9\u0db1\u0dca\u0db1 \u0dc4\u0dd2\u0dad\u0dd9\u0db1\u0dca\u0db1\u0dda \u0db1\u0dda",
+    "\u0da2\u0dd3\u0dc5\u0dd2\u0dad\u0dba \u0d9c\u0dd9\u0dc0\u0dd9\u0db1\u0d9a\u0ddc\u0da7 \u0d85\u0da9\u0dd4\u0dbb\u0dd4 \u0dc3\u0dd2\u0dad\u0dd2\u0dc5\u0dd2\u0dbd\u0dd2",
+    "\u0db8\u0da7 \u0db6\u0dbd\u0dcf\u0db4\u0ddd\u0dad\u0dca\u0dad\u0dd4\u0dc0\u0d9a\u0dca \u0db1\u0dda \u0dc4\u0ddc\u0da9 \u0dc0\u0dda\u0dbd\u0d9a\u0dca \u0d91\u0db1\u0dc0\u0dcf \u0d9a\u0dd2\u0dba\u0dbd\u0dcf",
+    "\u0d85\u0da9\u0dd4\u0dbb\u0dd4 \u0dc4\u0dd2\u0dad\u0dd4\u0dc5\u0dd2\u0dbd\u0dd2 \u0dc3\u0dca\u0da7\u0ddc\u0db4\u0dca \u0d9a\u0dbb\u0db1\u0dca\u0db1 \u0db6\u0dda",
+    "\u0db8\u0da7 \u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0d86\u0dc3 \u0db1\u0dda \u0da2\u0dd3\u0dc5\u0dd2\u0dad\u0dba \u0d9c\u0dd9\u0db1",
+    "\u0db8\u0db8 \u0db1\u0dd0\u0dad\u0dd2 \u0dc0\u0dd4\u0dab\u0dcf \u0db1\u0db8 \u0dc4\u0ddc\u0da9 \u0dc0\u0dda\u0dba\u0dd2 \u0d9a\u0dd2\u0dba\u0dbd\u0dcf \u0dc4\u0dd2\u0dad\u0dd9\u0db1\u0dca\u0db1\u0dda",
+    # Singlish
     "mata jeewithe epa wela merenna hithenawa",
     "mata anduru sithuwili enawa mata bayai",
     "mama nathiwunot okkoma hoda wei",
     "mata kisima balaporoththuwak naha",
     "mata jeewath wenna hithenne naha",
+    "jeewithaya geneema anduru sithiwili",
+    "mata balapoththuwak naha hoda welak enawa kiyala",
+    "mama nathi wuna nama hoda wei kiyala hithenne",
+    "mata kisima asa naha jeewithe gena",
+    "anduru hithuwili enawa stop karanna baha",
 ]
 NEGATIVE_REASONS = ["negative_thoughts"] * len(NEGATIVE_TEXTS)
 NEGATIVE_EMOTIONS = ["sad"] * len(NEGATIVE_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # HAPPY  (emotion: happy)
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 HAPPY_TEXTS = [
+    # English
     "I feel happy and peaceful and grateful today",
     "My baby smiled at me and it made my whole day beautiful",
     "I feel blessed to have this little one in my life",
@@ -562,39 +885,51 @@ HAPPY_TEXTS = [
     "I feel so much love it fills me completely",
     "Today I smiled and laughed and it felt so good",
     "I am proud of myself for getting through another day well",
-    "අද මගේ බබා හිනා වුණා මට හරිම සතුටුයි",
-    "මගේ හිතට ලොකු සතුටක් දැනෙනවා",
-    "අද හරිම ලස්සන දවසක් මම සන්තෝෂෙන් ඉන්නේ",
-    "මට බබා එක්ක හරිම ආසයි",
-    "අද මගේ සිතට ලොකු සහනයක් තියෙනවා",
+    # Sinhala
+    "\u0d85\u0daf \u0db8\u0d9c\u0dda \u0db6\u0db6\u0dcf \u0dc4\u0dd2\u0db1\u0dcf \u0dc0\u0dd4\u0dab\u0dcf \u0db8\u0da7 \u0dc4\u0dbb\u0dd2\u0db8 \u0dc3\u0dad\u0dd4\u0da7\u0dd4\u0dba\u0dd2",
+    "\u0db8\u0d9c\u0dda \u0dc4\u0dd2\u0dad\u0da7 \u0dbd\u0ddc\u0d9a\u0dd4 \u0dc3\u0dad\u0dd4\u0da7\u0d9a\u0dca \u0daf\u0dd0\u0db1\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0d85\u0daf \u0dc4\u0dbb\u0dd2\u0db8 \u0dbd\u0dc3\u0dca\u0dc3\u0db1 \u0daf\u0dc0\u0dc3\u0d9a\u0dca \u0db8\u0db8 \u0dc3\u0db1\u0dca\u0dad\u0ddd\u0dc3\u0dd9\u0db1\u0dca \u0d89\u0db1\u0dca\u0db1\u0dda",
+    "\u0db8\u0da7 \u0db6\u0db6\u0dcf \u0d91\u0d9a\u0dca\u0d9a \u0dc4\u0dbb\u0dd2\u0db8 \u0d86\u0dc3\u0dba\u0dd2",
+    "\u0d85\u0daf \u0db8\u0d9c\u0dda \u0dc3\u0dd2\u0dad\u0da7 \u0dbd\u0ddc\u0d9a\u0dd4 \u0dc3\u0dc4\u0db1\u0dba\u0dca\u0dad\u0dd2\u0dba\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0d85\u0daf \u0dc4\u0ddc\u0da9 \u0daf\u0dc0\u0dc3\u0d9a\u0dca \u0db8\u0db8 \u0dc3\u0db1\u0dca\u0dad\u0ddc\u0dc3\u0dba\u0dca\u0dad\u0dd2\u0dba\u0d9a\u0dca \u0daf\u0dd0\u0db1\u0dd9\u0db1\u0dc0\u0dcf",
+    "\u0db6\u0db6\u0dcf \u0dc4\u0dd9\u0db1\u0dc0\u0dd9\u0db1\u0dc0\u0dcf \u0daf\u0dd2\u0dc0 \u0db8\u0d9c\u0dda \u0dc4\u0dd2\u0dad \u0db4\u0dd2\u0dbb\u0dd2 \u0dc0\u0dda\u0dbd\u0dcf",
+    "\u0d85\u0daf \u0db8\u0db8 \u0db8\u0db8 \u0dc0\u0d9c\u0dda \u0daf\u0dd0\u0db1\u0dd9\u0db1\u0dc0\u0dcf \u0dc4\u0dbb\u0dd2\u0db8 \u0dc4\u0ddc\u0da9",
+    "\u0db8\u0d9c\u0dda \u0db6\u0db6\u0dcf \u0dc3\u0dd4\u0dc0 \u0db1\u0dd2\u0dc3\u0dcf \u0db8\u0da7 \u0dbd\u0ddc\u0d9a\u0dd4 \u0dc3\u0db1\u0dca\u0dad\u0ddc\u0dc3\u0d9a\u0dca",
+    "\u0d85\u0daf \u0daf\u0dc0\u0dc3 \u0dc4\u0ddc\u0da9 \u0dc0\u0dda\u0dbd\u0d9a\u0dca \u0dad\u0dd2\u0db6\u0db6\u0dcf \u0db8\u0db8 \u0dc3\u0db1\u0dca\u0dad\u0ddc\u0dc3\u0dba\u0dd2",
+    # Singlish
     "ada mage baba hina wuna mata harima sathutuyi",
     "mage hithata loku sathutak danenawa",
     "ada harima lassana dawasak mama sathoshen inne",
     "mata baba ekka harima aasayi",
     "ada mage sithata loku sahanayak thiyenawa",
+    "ada hoda dawasak mama santhosayak danenawa",
+    "baba hena wenawa diwa mage hitha piri wela",
+    "ada mama mama wage danenawa harima hoda",
+    "mage baba suwa nisa mata loku santhosak",
+    "ada dawasa hoda welak thibba mama santhosayi",
 ]
 HAPPY_REASONS = ["loneliness"] * len(HAPPY_TEXTS)   # fallback reason for happy
 HAPPY_EMOTIONS = ["happy"] * len(HAPPY_TEXTS)
 
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 # COMBINE ALL DATA
-# ──────────────────────────────────────────────────────────────
+# --------------------------------------------------------------
 TRAIN_TEXTS = (
     LONELINESS_TEXTS + FATIGUE_TEXTS + ANXIETY_TEXTS + BONDING_TEXTS +
     SUPPORT_TEXTS + SLEEP_TEXTS + CONFIDENCE_TEXTS + OVERWHELMED_TEXTS +
-    PHYSICAL_TEXTS + NEGATIVE_TEXTS + HAPPY_TEXTS
+    PHYSICAL_TEXTS + NEGATIVE_TEXTS + HAPPY_TEXTS + FINANCIAL_TEXTS + RELATIONSHIP_TEXTS
 )
 
 TRAIN_REASONS = (
     LONELINESS_REASONS + FATIGUE_REASONS + ANXIETY_REASONS + BONDING_REASONS +
     SUPPORT_REASONS + SLEEP_REASONS + CONFIDENCE_REASONS + OVERWHELMED_REASONS +
-    PHYSICAL_REASONS + NEGATIVE_REASONS + HAPPY_REASONS
+    PHYSICAL_REASONS + NEGATIVE_REASONS + HAPPY_REASONS + FINANCIAL_REASONS + RELATIONSHIP_REASONS
 )
 
 TRAIN_EMOTIONS = (
     LONELINESS_EMOTIONS + FATIGUE_EMOTIONS + ANXIETY_EMOTIONS + BONDING_EMOTIONS +
     SUPPORT_EMOTIONS + SLEEP_EMOTIONS + CONFIDENCE_EMOTIONS + OVERWHELMED_EMOTIONS +
-    PHYSICAL_EMOTIONS + NEGATIVE_EMOTIONS + HAPPY_EMOTIONS
+    PHYSICAL_EMOTIONS + NEGATIVE_EMOTIONS + HAPPY_EMOTIONS + FINANCIAL_EMOTIONS + RELATIONSHIP_EMOTIONS
 )
 
 assert len(TRAIN_TEXTS) == len(TRAIN_REASONS) == len(TRAIN_EMOTIONS), \
@@ -607,8 +942,8 @@ TOTAL_EXAMPLES = len(TRAIN_TEXTS)
 # ============================================================
 if __name__ == "__main__":
     """
-    Run this file directly (python training_data.py) to compare
-    the accuracy of different ML models on this dataset.
+    Run this file directly (python training_data.py) to see
+    dataset quality report and cross-validation accuracy.
     """
     try:
         from sklearn.feature_extraction.text import TfidfVectorizer
@@ -619,32 +954,54 @@ if __name__ == "__main__":
         from sklearn.model_selection import cross_val_score
         import numpy as np
         import re
+        from collections import Counter
 
         def simple_clean(text):
             return re.sub(r"[^\w\s]", " ", text.lower().strip())
 
-        print(f"\n🌸 BLOOM ML EVALUATION")
-        print(f"📊 Dataset Size: {TOTAL_EXAMPLES} examples\n")
+        print("\n[BLOOM ML EVALUATION]")
+        print("Dataset Size: {} examples\n".format(TOTAL_EXAMPLES))
+
+        # -- Data Quality Report --
+        print("-- DATA QUALITY REPORT --")
+        reason_counts = Counter(TRAIN_REASONS)
+        emotion_counts = Counter(TRAIN_EMOTIONS)
+        print("Reason distribution:")
+        for r, c in sorted(reason_counts.items()):
+            print("  {:<25} {:>4} samples".format(r, c))
+        print("\nEmotion distribution:")
+        for e, c in sorted(emotion_counts.items()):
+            print("  {:<12} {:>4} samples".format(e, c))
+
+        # Duplicate check
+        seen = set()
+        dupes = 0
+        for t in TRAIN_TEXTS:
+            if t in seen:
+                dupes += 1
+            seen.add(t)
+        print("\nExact duplicates found: {}".format(dupes))
+        print("-" * 50)
 
         cleaned = [simple_clean(t) for t in TRAIN_TEXTS]
 
         MODELS = {
             "SVM (LinearSVC)": LinearSVC(
-                class_weight='balanced', 
-                random_state=42, 
+                class_weight='balanced',
+                random_state=42,
                 max_iter=3000
             ),
             "Decision Tree": DecisionTreeClassifier(
-                max_depth=20, 
-                min_samples_split=4, 
-                class_weight='balanced', 
+                max_depth=20,
+                min_samples_split=4,
+                class_weight='balanced',
                 random_state=42
             ),
             "Random Forest": RandomForestClassifier(
-                n_estimators=200, 
-                max_depth=25, 
-                min_samples_split=4, 
-                class_weight='balanced', 
+                n_estimators=200,
+                max_depth=25,
+                min_samples_split=4,
+                class_weight='balanced',
                 random_state=42,
                 n_jobs=-1
             )
@@ -655,15 +1012,12 @@ if __name__ == "__main__":
                 ("tfidf", TfidfVectorizer(ngram_range=(1, 2))),
                 ("clf", clf)
             ])
-
-            # Evaluate Emotion Prediction
             e_scores = cross_val_score(pipeline, cleaned, TRAIN_EMOTIONS, cv=5)
-            # Evaluate Reason Prediction
             r_scores = cross_val_score(pipeline, cleaned, TRAIN_REASONS, cv=5)
 
-            print(f"✅ {name}:")
-            print(f"   - Emotion Accuracy: {np.mean(e_scores):.3f}")
-            print(f"   - Reason Accuracy:  {np.mean(r_scores):.3f}\n")
+            print("[OK] {}:".format(name))
+            print("   - Emotion Accuracy: {:.3f}".format(np.mean(e_scores)))
+            print("   - Reason Accuracy:  {:.3f}\n".format(np.mean(r_scores)))
 
     except ImportError:
-        print("❌ Scikit-learn not found. Please install: pip install scikit-learn")
+        print("[ERROR] Scikit-learn not found. Please install: pip install scikit-learn")

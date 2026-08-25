@@ -44,10 +44,13 @@ const SupportScreen = ({ navigation }) => {
   const selectedFeeling = emojiFeelingsSI[selectedEmoji] || ec.label;
   const msg = supportMessages[emotion];
 
-  const riskPct = risk === 'medium' ? 65 : 30;
-  const riskColor = risk === 'medium' ? colors.riskMediumDark : colors.riskLowDark;
-  const riskBg = risk === 'medium' ? '#FFFDE7' : '#E8F5E9';
-  const riskDesc = risk === 'medium' ? 'ඔබට දැන් ඉතිරි ආධාරක ශ්‍රේෂ්ඨ 💛' : 'ඔබ ශ්‍රේෂ්ඨව ගෙවනවා. දිගටම! 💚';
+  const riskPct = risk === 'high' ? 90 : (risk === 'medium' ? 65 : 30);
+  const riskColor = risk === 'high' ? '#D32F2F' : (risk === 'medium' ? colors.riskMediumDark : colors.riskLowDark);
+  const riskBg = risk === 'high' ? '#FFEBEE' : (risk === 'medium' ? '#FFFDE7' : '#E8F5E9');
+  const riskDesc = risk === 'high'
+    ? 'අධික අවදානම් මට්ටමක් හඳුනාගෙන ඇත. කරුණාකර වහාම සහාය පතන්න. 💖'
+    : (risk === 'medium' ? 'ඔබට දැන් ඉතිරි ආධාරක ශ්‍රේෂ්ඨ 💛' : 'ඔබ ශ්‍රේෂ්ඨව ගෙවනවා. දිගටම! 💚');
+  const riskLabelText = risk === 'high' ? (SI.highRisk || '🔴 අධික අවදානම') : (risk === 'medium' ? 'මධ්‍යම' : 'අඩු');
 
   const handleSimulate = () => {
     setProcessing(true);
@@ -61,6 +64,17 @@ const SupportScreen = ({ navigation }) => {
 
           <Text style={s.title}>{SI.emotionalAnalysis}</Text>
           <Text style={s.subtitle}>{SI.diaryProcessed}</Text>
+
+          {/* High Risk Red Warning Banner */}
+          {risk === 'high' && (
+            <View style={s.highRiskBanner}>
+              <View style={s.highRiskHeaderRow}>
+                <Text style={s.highRiskIcon}>🚨</Text>
+                <Text style={s.highRiskTitle}>{SI.highRiskWarningTitle}</Text>
+              </View>
+              <Text style={s.highRiskMessage}>{SI.highRiskWarningMsg}</Text>
+            </View>
+          )}
 
           {/* System Note */}
           <View style={s.systemNote}>
@@ -80,11 +94,11 @@ const SupportScreen = ({ navigation }) => {
           </LinearGradient>
 
           {/* Risk Level */}
-          <View style={[s.riskCard, { backgroundColor: riskBg }]}>
+          <View style={[s.riskCard, { backgroundColor: riskBg, borderColor: risk === 'high' ? '#EF9A9A' : 'transparent', borderWidth: risk === 'high' ? 1.5 : 0 }]}>
             <View style={s.riskTop}>
               <Text style={s.riskCardLabel}>{SI.riskLevel}</Text>
               <Text style={[s.riskText, { color: riskColor }]}>
-                {risk === 'medium' ? 'මධ්‍යම' : 'අඩු'}
+                {riskLabelText}
               </Text>
             </View>
             <View style={s.riskBar}>
@@ -119,7 +133,7 @@ const SupportScreen = ({ navigation }) => {
             style={s.recBtn}
           >
             <LinearGradient
-              colors={['#8E24AA', '#D81B60']}
+              colors={risk === 'high' ? ['#C62828', '#AD1457'] : ['#8E24AA', '#D81B60']}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
               style={s.recBtnInner}
             >
@@ -150,6 +164,40 @@ const s = StyleSheet.create({
   scroll: { paddingHorizontal: spacing.md, paddingTop: 60 },
   title: { fontSize: 26, fontWeight: '900', color: colors.textPrimary, marginBottom: 8 },
   subtitle: { fontSize: 14, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.md },
+  highRiskBanner: {
+    backgroundColor: '#FFEBEE',
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1.5,
+    borderColor: '#E53935',
+    shadowColor: '#D32F2F',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  highRiskHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  highRiskIcon: {
+    fontSize: 22,
+    marginRight: 8,
+  },
+  highRiskTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#C62828',
+    flex: 1,
+  },
+  highRiskMessage: {
+    fontSize: 13.5,
+    color: '#B71C1C',
+    lineHeight: 21,
+    fontWeight: '600',
+  },
   systemNote: {
     backgroundColor: '#F3E5F5',
     borderRadius: radius.full,

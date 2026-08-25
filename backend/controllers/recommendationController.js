@@ -23,23 +23,8 @@ const getVideos = async (req, res, next) => {
 
     console.log('[DEBUG getVideos] params received & resolved:', { reason, emotion, epdsRiskLevel, babyIntent, diaryText });
 
-    // Build the cache key
-    const cacheKey = `${reason || ''}_${emotion || ''}_${epdsRiskLevel}_${babyIntent || ''}_${diaryText || ''}`;
-
-    // Return cached results if valid
-    const cachedItem = cache[cacheKey];
-    if (cachedItem && (Date.now() - cachedItem.timestamp < CACHE_TTL)) {
-      return res.status(200).json(cachedItem.data);
-    }
-
-    // Call service to get ranked videos using retrieved EPDS risk level
+    // Call service to get fresh ranked videos using retrieved EPDS risk level
     const videos = await fetchAndRankVideos(reason, emotion, epdsRiskLevel, babyIntent, diaryText);
-
-    // Save to cache
-    cache[cacheKey] = {
-      timestamp: Date.now(),
-      data: videos
-    };
 
     return res.status(200).json(videos);
   } catch (err) {
