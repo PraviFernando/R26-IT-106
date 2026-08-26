@@ -9,12 +9,17 @@ import {
     KeyboardAvoidingView,
     Platform,
     ScrollView,
+    Image,
+    Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import api, { setAuthToken } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { COLORS, SHADOWS } from '../constants/theme';
+
+const { width, height } = Dimensions.get('window');
 
 export default function LoginScreen({ navigation }) {
     const { t, i18n } = useTranslation();
@@ -28,8 +33,8 @@ export default function LoginScreen({ navigation }) {
         if (!email || !password) {
             Toast.show({
                 type: 'error',
-                text1: 'Missing Fields',
-                text2: 'Please fill in your email and password.',
+                text1: t('⚠️ Incomplete'),
+                text2: t('Please fill in your email and password.'),
                 position: 'top',
             });
             return;
@@ -40,18 +45,16 @@ export default function LoginScreen({ navigation }) {
             const response = await api.post('/user/signin', { email, password });
             const { token, ...userData } = response.data;
 
-            // Store token so all future API calls are authenticated
             setAuthToken(token);
             login(userData, token);
 
             Toast.show({
                 type: 'success',
-                text1: '✅ Welcome Back!',
-                text2: `Signed in as ${userData?.username || email}`,
+                text1: `✅ ${t('Welcome Back')}`,
+                text2: `${t('Sign in to continue')} ${userData?.username || email}`,
                 position: 'top',
             });
 
-            // Route to the correct dashboard based on role
             const role = userData?.role || 'patient';
             setTimeout(() => {
                 if (role === 'admin') {
@@ -59,22 +62,30 @@ export default function LoginScreen({ navigation }) {
                 } else if (role === 'midwife') {
                     navigation.replace('MidwifeDashboard');
                 } else {
-                    navigation.replace('Dashboard');
+                    if (!userData?.onboardingCompleted) {
+                        navigation.replace('Onboarding');
+                    } else {
+                        navigation.replace('Dashboard');
+                    }
                 }
             }, 1000);
         } catch (error) {
             console.error(error);
             const message =
-                error.response?.data?.message || 'Login failed. Please try again.';
+                error.response?.data?.message || t('Submission failed. Please try again.');
             Toast.show({
                 type: 'error',
-                text1: '❌ Sign In Failed',
+                text1: `❌ ${t('Save Failed')}`,
                 text2: message,
                 position: 'top',
             });
         } finally {
             setLoading(false);
         }
+    };
+
+    const toggleLanguage = () => {
+        i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en');
     };
 
     return (
@@ -86,34 +97,45 @@ export default function LoginScreen({ navigation }) {
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}
                     keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
                 >
-                    <View style={{ position: 'absolute', top: 30, right: 20, zIndex: 10 }}>
-                        <TouchableOpacity onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')} style={{ paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#EDE9FE', borderRadius: 16 }}>
-                            <Text style={{ fontWeight: 'bold', color: '#7C3AED', fontSize: 14 }}>{i18n.language === 'en' ? 'සිං' : 'EN'}</Text>
+                    {/* Language Toggle Header */}
+                    <View style={styles.languageToggle}>
+                        <TouchableOpacity
+                            onPress={toggleLanguage}
+                            style={styles.langButton}
+                            activeOpacity={0.8}
+                        >
+                            <Text style={styles.langText}>
+                                {i18n.language === 'en' ? 'සිං' : 'EN'}
+                            </Text>
                         </TouchableOpacity>
                     </View>
 
-                    {/* Decorative top banner */}
-                    <View style={styles.topBanner}>
-                        <Text style={styles.bannerEmoji}>🌸</Text>
-                        <Text style={styles.bannerTitle}>{t('PeriCare')}</Text>
-                        <Text style={styles.bannerSubtitle}>
-                            {t('Perinatal Depression Support System')}
-                        </Text>
+                    {/* Image Section using User's Added Asset */}
+                    <View style={styles.imageContainer}>
+                        <Image
+                            source={require('../assets/screening_system/image 7.png')}
+                            style={styles.image}
+                            resizeMode="contain"
+                        />
                     </View>
 
-                    {/* Card */}
-                    <View style={styles.card}>
-                        <Text style={styles.title}>{t('Welcome Back')}</Text>
-                        <Text style={styles.subtitle}>{t('Sign in to continue')}</Text>
+                    {/* Welcome Text translated */}
+                    <View style={styles.welcomeContainer}>
+                        <Text style={styles.welcomeTitle}>{t('Welcome Back')}</Text>
+                        <Text style={styles.welcomeSubtitle}>{t('Login your account')}</Text>
+                    </View>
 
-                        {/* Email */}
+                    {/* Login Form Card */}
+                    <View style={styles.card}>
+                        {/* Username/Email */}
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>📧 {t('Email')}</Text>
+                            <Text style={styles.label}>{t('Username')}</Text>
                             <TextInput
                                 style={styles.input}
-                                placeholder="Enter your email"
-                                placeholderTextColor="#9CA3AF"
+                                placeholder={t('Enter your username or email')}
+                                placeholderTextColor={COLORS.textMuted}
                                 value={email}
                                 onChangeText={setEmail}
                                 keyboardType="email-address"
@@ -124,12 +146,12 @@ export default function LoginScreen({ navigation }) {
 
                         {/* Password */}
                         <View style={styles.inputContainer}>
-                            <Text style={styles.label}>🔒 {t('Password')}</Text>
+                            <Text style={styles.label}>{t('Password')}</Text>
                             <View style={styles.passwordRow}>
                                 <TextInput
-                                    style={[styles.input, { flex: 1 }]}
-                                    placeholder="Enter your password"
-                                    placeholderTextColor="#9CA3AF"
+                                    style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: 'transparent' }]}
+                                    placeholder={t('Enter your password')}
+                                    placeholderTextColor={COLORS.textMuted}
                                     value={password}
                                     onChangeText={setPassword}
                                     secureTextEntry={!showPassword}
@@ -145,39 +167,36 @@ export default function LoginScreen({ navigation }) {
                             </View>
                         </View>
 
-                        {/* Forgot Password */}
-                        <TouchableOpacity
-                            style={styles.forgotRow}
-                            onPress={() =>
-                                Toast.show({
-                                    type: 'info',
-                                    text1: 'Reset Password',
-                                    text2: 'Password reset feature coming soon.',
-                                    position: 'top',
-                                })
-                            }
-                        >
-                            <Text style={styles.forgotText}>Forgot Password?</Text>
-                        </TouchableOpacity>
-
-                        {/* Sign In Button */}
+                        {/* Login Button */}
                         <TouchableOpacity
                             style={[styles.button, loading && styles.buttonDisabled]}
                             onPress={handleLogin}
                             disabled={loading}
                         >
                             {loading ? (
-                                <ActivityIndicator color="#fff" />
+                                <ActivityIndicator color={COLORS.textWhite} />
                             ) : (
-                                <Text style={styles.buttonText}>{t('Sign In')}</Text>
+                                <Text style={styles.buttonText}>{t('Login')}</Text>
                             )}
                         </TouchableOpacity>
 
-                        {/* Signup Link */}
+                        {/* Footer Links */}
                         <View style={styles.footer}>
-                            <Text style={styles.footerText}>{t('Don\'t have an account?')} </Text>
                             <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                                <Text style={styles.link}>{t('Sign Up')}</Text>
+                                <Text style={styles.footerLink}>{t('Create Account')}</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() =>
+                                    Toast.show({
+                                        type: 'info',
+                                        text1: t('Forgot Password?'),
+                                        text2: 'Password reset feature coming soon.',
+                                        position: 'top',
+                                    })
+                                }
+                            >
+                                <Text style={styles.footerLink}>{t('Forgot Password?')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -188,86 +207,93 @@ export default function LoginScreen({ navigation }) {
     );
 }
 
-const PURPLE = '#7C3AED';
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: COLORS.background, // Light Purple Screen Background
     },
     scrollContent: {
         flexGrow: 1,
-        justifyContent: 'center',
         paddingHorizontal: 20,
-        paddingVertical: 32,
+        paddingTop: 12,
+        paddingBottom: 32,
     },
-    topBanner: {
+    languageToggle: {
+        alignItems: 'flex-end',
+        marginBottom: 8,
+    },
+    langButton: {
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        backgroundColor: COLORS.primaryLight,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: COLORS.primary,
+    },
+    langText: {
+        fontWeight: 'bold',
+        color: COLORS.primary,
+        fontSize: 14,
+    },
+    imageContainer: {
         alignItems: 'center',
-        marginBottom: 28,
+        justifyContent: 'center',
+        marginVertical: 8,
     },
-    bannerEmoji: {
-        fontSize: 52,
-        marginBottom: 6,
+    image: {
+        width: width * 0.7,
+        height: height * 0.23,
+        maxHeight: 200,
     },
-    bannerTitle: {
+    welcomeContainer: {
+        marginBottom: 20,
+        alignItems: 'center',
+    },
+    welcomeTitle: {
         fontSize: 28,
         fontWeight: '800',
-        color: PURPLE,
-        letterSpacing: 1,
-    },
-    bannerSubtitle: {
-        fontSize: 13,
-        color: '#6B7280',
-        marginTop: 4,
-        textAlign: 'center',
-    },
-    card: {
-        backgroundColor: '#fff',
-        borderRadius: 24,
-        padding: 24,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-    },
-    title: {
-        fontSize: 26,
-        fontWeight: '800',
-        color: '#111827',
+        color: COLORS.textPrimary,
         marginBottom: 4,
     },
-    subtitle: {
-        fontSize: 14,
-        color: '#6B7280',
-        marginBottom: 24,
+    welcomeSubtitle: {
+        fontSize: 15,
+        color: COLORS.textMuted,
+        fontWeight: '500',
+    },
+    card: {
+        backgroundColor: COLORS.cardBg,
+        borderRadius: 22,
+        padding: 24,
+        width: '100%',
+        ...SHADOWS.card,
     },
     inputContainer: {
         marginBottom: 16,
     },
     label: {
-        fontSize: 13,
-        color: '#374151',
+        fontSize: 14,
+        color: COLORS.textSecondary,
         marginBottom: 6,
         fontWeight: '600',
     },
     input: {
         borderWidth: 1.5,
-        borderColor: '#E5E7EB',
+        borderColor: COLORS.borderLight,
         borderRadius: 12,
-        padding: 13,
+        padding: 14,
         fontSize: 15,
-        backgroundColor: '#F9FAFB',
-        color: '#111827',
+        backgroundColor: COLORS.background,
+        color: COLORS.textPrimary,
     },
     passwordRow: {
         flexDirection: 'row',
         alignItems: 'center',
         borderWidth: 1.5,
-        borderColor: '#E5E7EB',
+        borderColor: COLORS.borderLight,
         borderRadius: 12,
-        backgroundColor: '#F9FAFB',
+        backgroundColor: COLORS.background,
         overflow: 'hidden',
+        paddingRight: 4,
     },
     eyeBtn: {
         paddingHorizontal: 12,
@@ -279,48 +305,34 @@ const styles = StyleSheet.create({
     eyeIcon: {
         fontSize: 18,
     },
-    forgotRow: {
-        alignSelf: 'flex-end',
-        marginBottom: 20,
-        marginTop: -4,
-    },
-    forgotText: {
-        color: PURPLE,
-        fontSize: 13,
-        fontWeight: '600',
-    },
     button: {
-        backgroundColor: PURPLE,
+        backgroundColor: COLORS.primary,
         padding: 16,
         borderRadius: 14,
         alignItems: 'center',
-        elevation: 3,
-        shadowColor: PURPLE,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.4,
-        shadowRadius: 8,
+        marginTop: 4,
+        ...SHADOWS.button,
     },
     buttonDisabled: {
         opacity: 0.7,
     },
     buttonText: {
-        color: '#fff',
+        color: COLORS.textWhite,
         fontSize: 16,
         fontWeight: '700',
         letterSpacing: 0.5,
     },
     footer: {
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         marginTop: 20,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: COLORS.borderLight,
     },
-    footerText: {
-        color: '#6B7280',
+    footerLink: {
+        color: COLORS.primary,
         fontSize: 14,
-    },
-    link: {
-        color: PURPLE,
-        fontSize: 14,
-        fontWeight: '700',
+        fontWeight: '600',
     },
 });
