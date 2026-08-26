@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
     ScrollView, Animated, Dimensions, Platform, KeyboardAvoidingView,
-    ActivityIndicator, Modal,
+    ActivityIndicator, Modal, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar } from 'react-native-calendars';
@@ -79,8 +79,8 @@ export default function OnboardingScreen({ navigation }) {
     // ── Animated transition between steps
     const goToStep = (next) => {
         Animated.sequence([
-            Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
-            Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
+            Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: false }),
+            Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: false }),
         ]).start();
         setTimeout(() => setStep(next), 150);
     };
@@ -197,6 +197,17 @@ export default function OnboardingScreen({ navigation }) {
                         {/* ══════════════════ STEP 1 ══════════════════ */}
                         {step === 1 && (
                             <View style={styles.card}>
+                                {/* Step 1 Hero Image */}
+                                <View style={styles.stepHeroCard}>
+                                    <Image source={require('../assets/screening_system/image 9.jpg')} style={styles.stepHeroImg} resizeMode="cover" />
+                                    <View style={styles.stepHeroOverlay} />
+                                    <View style={styles.stepHeroContent}>
+                                        <Text style={styles.stepHeroBadge}>Step 1 of 3</Text>
+                                        <Text style={styles.stepHeroTitle}>🤱 Delivery Information</Text>
+                                        <Text style={styles.stepHeroSub}>Tell us about your birth experience</Text>
+                                    </View>
+                                </View>
+
                                 <Text style={styles.stepIcon}>🤱</Text>
                                 <Text style={styles.title}>Delivery Information</Text>
                                 <Text style={styles.subtitle}>Tell us about your birth experience</Text>
@@ -312,6 +323,17 @@ export default function OnboardingScreen({ navigation }) {
                         {/* ══════════════════ STEP 2 ══════════════════ */}
                         {step === 2 && (
                             <View style={styles.card}>
+                                {/* Step 2 Hero Image */}
+                                <View style={styles.stepHeroCard}>
+                                    <Image source={require('../assets/screening_system/image 8.jpg')} style={styles.stepHeroImg} resizeMode="cover" />
+                                    <View style={styles.stepHeroOverlay} />
+                                    <View style={styles.stepHeroContent}>
+                                        <Text style={styles.stepHeroBadge}>Step 2 of 3</Text>
+                                        <Text style={styles.stepHeroTitle}>👶 Baby Details</Text>
+                                        <Text style={styles.stepHeroSub}>Help us personalise your experience</Text>
+                                    </View>
+                                </View>
+
                                 <Text style={styles.stepIcon}>👶</Text>
                                 <Text style={styles.title}>Baby Details</Text>
                                 <Text style={styles.subtitle}>Help us personalise your experience</Text>
@@ -404,6 +426,17 @@ export default function OnboardingScreen({ navigation }) {
                         {/* ══════════════════ STEP 3 ══════════════════ */}
                         {step === 3 && (
                             <View style={styles.card}>
+                                {/* Step 3 Hero Image */}
+                                <View style={styles.stepHeroCard}>
+                                    <Image source={require('../assets/screening_system/image 10.jpg')} style={styles.stepHeroImg} resizeMode="cover" />
+                                    <View style={styles.stepHeroOverlay} />
+                                    <View style={styles.stepHeroContent}>
+                                        <Text style={styles.stepHeroBadge}>Step 3 of 3</Text>
+                                        <Text style={styles.stepHeroTitle}>🍼 Feeding Method</Text>
+                                        <Text style={styles.stepHeroSub}>How are you planning to feed your baby?</Text>
+                                    </View>
+                                </View>
+
                                 <Text style={styles.stepIcon}>🍼</Text>
                                 <Text style={styles.title}>Feeding Method</Text>
                                 <Text style={styles.subtitle}>How are you planning to feed your baby?</Text>
@@ -519,6 +552,35 @@ const styles = StyleSheet.create({
     stepDotTextActive: { color: '#fff' },
 
     scroll: { padding: 20, paddingBottom: 40 },
+
+    // Step Hero Image (for onboarding steps)
+    stepHeroCard: {
+        height: 150,
+        borderRadius: 16,
+        overflow: 'hidden',
+        marginBottom: 16,
+        marginHorizontal: -4,
+    },
+    stepHeroImg: { width: '100%', height: '100%', position: 'absolute' },
+    stepHeroOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(124, 58, 237, 0.52)',
+    },
+    stepHeroContent: { flex: 1, padding: 14, justifyContent: 'flex-end' },
+    stepHeroBadge: {
+        backgroundColor: 'rgba(255,255,255,0.25)',
+        color: '#fff',
+        fontSize: 11,
+        fontWeight: '700',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        marginBottom: 4,
+        overflow: 'hidden',
+    },
+    stepHeroTitle: { fontSize: 18, fontWeight: '800', color: '#fff', marginBottom: 2 },
+    stepHeroSub: { fontSize: 12, color: 'rgba(255,255,255,0.85)' },
 
     // Card
     card: {
@@ -746,86 +808,3 @@ const styles = StyleSheet.create({
 
     btnRow: { flexDirection: 'row', gap: 12, marginTop: 24 },
 });
-// ================================================================
-// ONBOARDING SCREEN — OnboardingScreen.js  (Sinhala UI)
-// ================================================================
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, FlatList } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors, spacing, radius, shadows } from '../theme';
-import { SI } from '../services/translations';
-
-const { width, height } = Dimensions.get('window');
-
-const slides = [
-    { id: '1', emoji: '🌸', title: SI.welcome, subtitle: SI.on1Sub, gradient: ['#F8F4FF', '#FFE8F8'] },
-    { id: '2', emoji: '📓', title: SI.on2Title, subtitle: SI.on2Sub, gradient: ['#EDE7F6', '#F8F4FF'] },
-    { id: '3', emoji: '💜', title: SI.on3Title, subtitle: SI.on3Sub, gradient: ['#FFF0F8', '#E8F8FF'] },
-    { id: '4', emoji: '🎮', title: SI.on4Title, subtitle: SI.on4Sub, gradient: ['#E8F8F0', '#F0F8FF'] },
-    { id: '5', emoji: '⚙️', title: SI.on5Title, subtitle: SI.on5Sub, gradient: ['#FFF9C4', '#FFF0E0'] },
-];
-
-const OnboardingScreen = ({ navigation }) => {
-    const [idx, setIdx] = useState(0);
-    const ref = useRef(null);
-
-    const goNext = () => {
-        if (idx < slides.length - 1) {
-            ref.current?.scrollToIndex({ index: idx + 1 });
-            setIdx(idx + 1);
-        } else {
-            navigation.replace('Main');
-        }
-    };
-
-    return (
-        <View style={s.container}>
-            <FlatList ref={ref} data={slides} keyExtractor={i => i.id} horizontal pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onMomentumScrollEnd={e => setIdx(Math.round(e.nativeEvent.contentOffset.x / width))}
-                renderItem={({ item }) => (
-                    <LinearGradient colors={item.gradient} style={s.slide}>
-                        <View style={s.emojiBox}><Text style={s.emoji}>{item.emoji}</Text></View>
-                        <Text style={s.slideTitle}>{item.title}</Text>
-                        <Text style={s.slideSub}>{item.subtitle}</Text>
-                    </LinearGradient>
-                )}
-            />
-            <View style={s.dots}>
-                {slides.map((_, i) => <View key={i} style={[s.dot, i === idx && s.dotActive]} />)}
-            </View>
-            <View style={s.btnWrap}>
-                <TouchableOpacity onPress={goNext} style={s.nextBtn}>
-                    <LinearGradient colors={[colors.lavenderDark, colors.roseDark]} style={s.nextBtnInner}>
-                        <Text style={s.nextBtnText}>{idx === slides.length - 1 ? SI.getStarted : SI.continueBtn}</Text>
-                    </LinearGradient>
-                </TouchableOpacity>
-                {idx < slides.length - 1 && (
-                    <TouchableOpacity onPress={() => navigation.replace('Main')} style={s.skipBtn}>
-                        <Text style={s.skipText}>{SI.skipBtn}</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
-        </View>
-    );
-};
-
-const s = StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.offWhite },
-    slide: { width, height, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl },
-    emojiBox: { width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(255,255,255,0.6)', justifyContent: 'center', alignItems: 'center', marginBottom: spacing.xl, ...shadows.card },
-    emoji: { fontSize: 70 },
-    slideTitle: { fontSize: 28, fontWeight: '900', color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.md },
-    slideSub: { fontSize: 16, color: colors.textSecondary, textAlign: 'center', lineHeight: 26 },
-    dots: { position: 'absolute', bottom: 160, flexDirection: 'row', gap: 8, alignSelf: 'center' },
-    dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.lavenderLight },
-    dotActive: { width: 28, backgroundColor: colors.lavenderDark },
-    btnWrap: { position: 'absolute', bottom: 60, left: spacing.xl, right: spacing.xl, alignItems: 'center', gap: 12 },
-    nextBtn: { width: '100%', borderRadius: radius.full, overflow: 'hidden' },
-    nextBtnInner: { paddingVertical: 16, alignItems: 'center' },
-    nextBtnText: { color: colors.white, fontWeight: '800', fontSize: 17 },
-    skipBtn: { paddingVertical: 8 },
-    skipText: { color: colors.textMuted, fontWeight: '600', fontSize: 14 },
-});
-
-export default OnboardingScreen;
