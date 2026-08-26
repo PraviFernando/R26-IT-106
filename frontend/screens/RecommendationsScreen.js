@@ -15,7 +15,7 @@ import { colors, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
 import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames, getRankedActivities } from '../services/activitiesLibrary';
 import { getPersonalizedRecommendations } from '../services/emotionEngine';
-import { MUSIC_LIBRARY } from '../services/mediaLibrary';
+import { MUSIC_LIBRARY, getMusicForReason } from '../services/mediaLibrary';
 import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibrary';
 import { KNOWLEDGE_CATEGORIES, KNOWLEDGE_RESOURCES } from '../services/knowledgeLibrary';
 import api from '../services/api';
@@ -507,51 +507,11 @@ const RecommendationsScreen = ({ navigation, route }) => {
     /ninda|sleep|sleeping|නිදා/.test(textLower)
   );
 
-  let libraryMusic;
-
-  if (isBabyCryingContext || isBabySleepContext || (isBabySubject && (reasonLower.includes('bonding') || reasonLower.includes('crying') || reasonLower.includes('sleep')))) {
-    // BABY CRYING and BABY SLEEP ALWAYS get bonding/lullaby/soothing baby music (bo1-bo6)
-    libraryMusic = MUSIC_LIBRARY.bonding_issues;
-  } else if (isMotherSleepContext || reasonLower === 'sleep_problems' || reasonLower === 'mother_sleep') {
-    // MOTHER SLEEP PROBLEMS gets mother sleep problems music
-    libraryMusic = MUSIC_LIBRARY.sleep_problems;
-  } else if (reasonLower.includes('financial') || reasonLower.includes('money')) {
-    libraryMusic = MUSIC_LIBRARY.financial_worry;
-  } else if (reasonLower.includes('relationship') || reasonLower.includes('family')) {
-    libraryMusic = MUSIC_LIBRARY.relationship_family_problem;
-  } else if (reasonLower.includes('support')) {
-    libraryMusic = MUSIC_LIBRARY.lack_of_support;
-  } else if (reasonLower.includes('confidence')) {
-    libraryMusic = MUSIC_LIBRARY.loss_of_confidence;
-  } else if (reasonLower.includes('overwhelm') || reasonLower.includes('daily')) {
-    libraryMusic = MUSIC_LIBRARY.overwhelmed;
-  } else if (reasonLower.includes('fatigue') || reasonLower.includes('tired')) {
-    libraryMusic = MUSIC_LIBRARY.fatigue;
-  } else if (reasonLower.includes('physical')) {
-    libraryMusic = MUSIC_LIBRARY.physical_discomfort;
-  } else if (reasonLower.includes('negative')) {
-    libraryMusic = MUSIC_LIBRARY.negative_thoughts;
-  } else if (reasonLower.includes('anxi')) {
-    libraryMusic = MUSIC_LIBRARY.anxiety;
-  } else if (risk !== 'high' && risk !== 'medium') {
-    if (isBabyActive) {
-      libraryMusic = MUSIC_LIBRARY.bonding_issues;
-    } else {
-      if (normEmotion.includes('happ') || normEmotion.includes('calm')) {
-        libraryMusic = MUSIC_LIBRARY.motivation || MUSIC_LIBRARY.loneliness;
-      } else if (normEmotion.includes('sad') || normEmotion.includes('cry')) {
-        libraryMusic = MUSIC_LIBRARY[primaryReason] || MUSIC_LIBRARY.loneliness;
-      } else if (normEmotion.includes('anxi') || normEmotion.includes('stress') || normEmotion.includes('angr') || normEmotion.includes('frust')) {
-        libraryMusic = MUSIC_LIBRARY.anxiety || MUSIC_LIBRARY.stress;
-      }
-    }
-  } else {
-    libraryMusic = MUSIC_LIBRARY.anxiety || MUSIC_LIBRARY.loneliness;
-  }
-
-  if (!libraryMusic || libraryMusic.length === 0) {
-    libraryMusic = isBabySubject ? MUSIC_LIBRARY.bonding_issues : MUSIC_LIBRARY.loneliness;
-  }
+  // Music selection STRICTLY driven by primaryReason using getMusicForReason
+  const recMusicRes = getMusicForReason(primaryReason, emotion);
+  const libraryMusic = (latestRecommendations?.music && latestRecommendations.music.length > 0)
+    ? latestRecommendations.music
+    : recMusicRes.music;
 
   const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
 

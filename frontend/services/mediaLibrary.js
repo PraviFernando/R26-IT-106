@@ -348,3 +348,68 @@ VIDEO_LIBRARY.mother_sleep_problems = VIDEO_LIBRARY.sleep_problems;
 VIDEO_LIBRARY.sleep_problem = VIDEO_LIBRARY.sleep_problems;
 VIDEO_LIBRARY.sleep = VIDEO_LIBRARY.sleep_problems;
 VIDEO_LIBRARY.baby_health = VIDEO_LIBRARY.anxiety;
+
+// ── SUPPORTED MUSIC REASONS & STRICT SELECTION ──────────────────
+export const SUPPORTED_MUSIC_REASONS = [
+  'loneliness',
+  'fatigue',
+  'anxiety',
+  'bonding_issues',
+  'lack_of_support',
+  'sleep_problems',
+  'loss_of_confidence',
+  'overwhelmed',
+  'physical_discomfort',
+  'negative_thoughts'
+];
+
+/**
+ * Resolves music from MUSIC_LIBRARY strictly using the detected final reason.
+ * Final reason has priority over emotion.
+ */
+export const getMusicForReason = (finalReason = '', emotion = '') => {
+  let targetCategory = (finalReason || '').toLowerCase().trim();
+
+  // Handle known aliases or baby intents safely
+  if (targetCategory && !SUPPORTED_MUSIC_REASONS.includes(targetCategory)) {
+    if (['mother_sleep', 'mother_sleep_problems', 'sleep'].includes(targetCategory)) {
+      targetCategory = 'sleep_problems';
+    } else if (['baby_crying', 'baby_needs', 'baby_feeding', 'caring_for_baby', 'baby_sleep'].includes(targetCategory)) {
+      targetCategory = 'bonding_issues';
+    } else if (['baby_health'].includes(targetCategory)) {
+      targetCategory = 'anxiety';
+    } else if (['feeling_lonely'].includes(targetCategory)) {
+      targetCategory = 'loneliness';
+    } else if (['feeling_overwhelmed'].includes(targetCategory)) {
+      targetCategory = 'overwhelmed';
+    } else if (['physical_recovery'].includes(targetCategory)) {
+      targetCategory = 'physical_discomfort';
+    } else if (['family_problems', 'relationship_family_problem'].includes(targetCategory)) {
+      targetCategory = 'lack_of_support';
+    } else if (['financial_worries', 'financial_worry'].includes(targetCategory)) {
+      targetCategory = 'overwhelmed';
+    }
+  }
+
+  // Validate supported reason (fallback to loneliness if missing/unsupported)
+  const selectedCategory = SUPPORTED_MUSIC_REASONS.includes(targetCategory)
+    ? targetCategory
+    : 'loneliness';
+
+  const fullLibrary = MUSIC_LIBRARY[selectedCategory] || MUSIC_LIBRARY.loneliness;
+  const cappedMusic = fullLibrary.slice(0, 4);
+
+  // DEVELOPMENT DEBUG LOGGING
+  console.log('[MusicRecommendation]');
+  console.log(`Diary Reason: ${finalReason}`);
+  console.log(`Emotion: ${emotion}`);
+  console.log(`Selected Music Category: ${selectedCategory}`);
+  console.log(`Music Library Count: ${fullLibrary.length}`);
+  console.log(`Selected Music IDs: ${cappedMusic.map(m => m.id).join(', ')}`);
+
+  return {
+    category: selectedCategory,
+    musicList: fullLibrary,
+    music: cappedMusic
+  };
+};

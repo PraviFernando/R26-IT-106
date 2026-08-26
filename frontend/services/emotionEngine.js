@@ -3,7 +3,7 @@
 // ================================================================
 
 import { getEnhancedRecommendationRule, getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent } from './activitiesLibrary.js';
-import { MUSIC_LIBRARY, VIDEO_LIBRARY } from './mediaLibrary.js';
+import { MUSIC_LIBRARY, VIDEO_LIBRARY, getMusicForReason } from './mediaLibrary.js';
 
 export { getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent };
 
@@ -106,7 +106,7 @@ const REASON_KW = {
     'kauruth mata kohomada kiyala ahanne na', 'baby kohomada kiyala witharai ahanne', 'kauruth mata',
     'kohomada kiyala ahanne na', 'witharai ahanne', 'taniyama karagena yanawa', 'ath wela wage',
     'ain wela wage', 'amma kenek widihata witharai', 'hiskamak', 'viswasa karanna kenek na',
-    'තනිවෙලා', 'පාළුයි', 'පාළුවක්', 'කවුරුත් නෑ', 'කවුරුත් නැහැ', 'තනියම', 'පාළු',
+    'තනිවෙලා', 'පාළුයි', 'පාළුවක්', 'කවුරුත් නෑ', 'කවුරුත් නැහැ', 'තනියම', 'පාළු', 'පාලුයි', 'පාලු', 'එන්නේ නැහැ', 'එන්නේ නෑ',
     'paluyi', 'taniyen', 'taniwela', 'kugewat na', 'kawuruth naha', 'palu',
     'thanikamak danenawa', 'thanikamak daneno', 'thainkamak daneo', 'thanikamak daneo',
     'karaganna ba', 'wadak na', 'wadak naha', 'wadak wath naha'
@@ -462,10 +462,9 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
 
   const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames, diaryText);
 
-  const musicKey = rule.musicKey || (primaryReason.includes('baby') ? 'bonding_issues' : primaryReason);
+  const { category: musicCategory, music: cappedMusic } = getMusicForReason(primaryReason, detectedEmotion);
   const videoKey = rule.videoKey || (primaryReason.includes('baby') ? 'bonding_issues' : primaryReason);
 
-  const music = MUSIC_LIBRARY[musicKey] || MUSIC_LIBRARY.loneliness;
   const videos = VIDEO_LIBRARY[videoKey] || VIDEO_LIBRARY.loneliness;
   const messages = SUPPORT_MESSAGES[primaryReason] || SUPPORT_MESSAGES.overwhelmed;
 
@@ -474,17 +473,18 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
     : null;
 
   const cappedGames = (rule.games || []).slice(0, 4);
-  const cappedMusic = (music || []).slice(0, 4);
 
   // DEBUG LOGGING REQUIREMENT
   console.log('[GAME RANKING]');
   console.log('Selected games:', JSON.stringify(cappedGames.map(g => g.id || g)));
   console.log('[MUSIC RANKING]');
+  console.log('Selected music category:', musicCategory);
   console.log('Selected music:', JSON.stringify(cappedMusic));
 
   return {
     detectedEmotion,
     riskLevel,
+    musicCategory,
     music: cappedMusic,
     videos,
     activities: rule.activities,

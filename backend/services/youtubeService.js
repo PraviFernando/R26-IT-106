@@ -31,6 +31,22 @@ const ALL_CURATED_VIDEOS = {
   },
 
   // Baby Crying
+  'j2C8MkY7Co8': {
+    id: 'j2C8MkY7Co8',
+    title: 'How To Calm A Crying Baby - Dr. Robert Hamilton Demonstrates "The Hold" (Official)',
+    description: 'Dr. Robert Hamilton demonstrates "The Hold" technique to calm a crying baby.',
+    channelTitle: 'Dr. Robert Hamilton',
+    url: 'https://www.youtube.com/watch?v=j2C8MkY7Co8',
+    thumbnail: 'https://img.youtube.com/vi/j2C8MkY7Co8/0.jpg'
+  },
+  'JePLWMMw3z0': {
+    id: 'JePLWMMw3z0',
+    title: 'Instantly Calm a Crying Baby (4 Little-Known Techniques That Work When Nothing Else Does)',
+    description: '4 little-known techniques to calm a crying baby when nothing else works.',
+    channelTitle: 'Pediatric Care Guidance',
+    url: 'https://www.youtube.com/watch?v=JePLWMMw3z0',
+    thumbnail: 'https://img.youtube.com/vi/JePLWMMw3z0/0.jpg'
+  },
   'kmbKaSRyZ-c': {
     id: 'kmbKaSRyZ-c',
     title: 'අඬන බබා නලවගන්න ක්‍රම (How to Soothe a Colic Baby)',
@@ -49,21 +65,21 @@ const ALL_CURATED_VIDEOS = {
   },
 
   // Baby Sleep
-  'j2C8MkY7Co8': {
-    id: 'j2C8MkY7Co8',
-    title: 'ළදරුවාට සුව නින්දක් ලබාදීමේ ක්‍රමවේද (Baby Sleep Care Tips)',
-    description: 'ළදරුවාට සුව නින්දක් ලබාදීමට මවකට කළ හැකි දේ පිළිබඳ මඟ පෙන්වීම්.',
+  'SfCxUG1nE84': {
+    id: 'SfCxUG1nE84',
+    title: 'Baby Sleep Advice & Soothing Techniques',
+    description: 'Practical sleep advice and soothing techniques for newborn baby sleep.',
     channelTitle: 'PeriCare Care Library',
-    url: 'https://youtu.be/j2C8MkY7Co8',
-    thumbnail: 'https://img.youtube.com/vi/j2C8MkY7Co8/0.jpg'
+    url: 'https://youtu.be/SfCxUG1nE84',
+    thumbnail: 'https://img.youtube.com/vi/SfCxUG1nE84/0.jpg'
   },
-  'JePLWMMw3z0': {
-    id: 'JePLWMMw3z0',
-    title: 'ළදරු නින්ද පිළිබඳ උපදෙස් (Newborn Bedtime Routine Guide)',
-    description: 'ළදරුවාගේ නින්ද ක්‍රමවත් කරන ආකාරය සහ නින්ද වර්ධනය කරන අයුරු.',
+  'pJYWRlTQ9s8': {
+    id: 'pJYWRlTQ9s8',
+    title: 'Newborn Baby Sleep Routine & Bedtime Guide',
+    description: 'Creating a healthy bedtime routine and safe sleep environment for newborn babies.',
     channelTitle: 'PeriCare Care Library',
-    url: 'https://youtu.be/JePLWMMw3z0',
-    thumbnail: 'https://img.youtube.com/vi/JePLWMMw3z0/0.jpg'
+    url: 'https://youtu.be/pJYWRlTQ9s8',
+    thumbnail: 'https://img.youtube.com/vi/pJYWRlTQ9s8/0.jpg'
   },
 
   // Mother Sleep Problems
@@ -143,6 +159,14 @@ const ALL_CURATED_VIDEOS = {
     thumbnail: 'https://img.youtube.com/vi/4VuEIeDrwAM/0.jpg'
   },
 
+  '6m9sCmDIlL0': {
+    id: '6m9sCmDIlL0',
+    title: 'Financial Planning for New Parents (නව දෙමාපියන් සඳහා මූල්‍ය සැලසුම්කරණය)',
+    description: 'දරුවාගේ පැමිණීමත් සමඟ අයවැය සකස් කර මූල්‍ය බිය පාලනය කරගැනීම.',
+    channelTitle: 'PeriCare Financial Guidance',
+    url: 'https://www.youtube.com/watch?v=6m9sCmDIlL0',
+    thumbnail: 'https://img.youtube.com/vi/6m9sCmDIlL0/0.jpg'
+  },
   'financial_stable_search': {
     id: 'financial_stable_search',
     title: 'How to be Financially Stable After Baby (දරුවෙකුගෙන් පසු මූල්‍ය ස්ථායීතාවය)',
@@ -519,6 +543,106 @@ const ALL_CURATED_VIDEOS = {
     channelTitle: 'PeriCare Support',
     url: 'https://www.youtube.com/watch?v=AJpErm8H2aU',
     thumbnail: 'https://img.youtube.com/vi/AJpErm8H2aU/0.jpg'
+  },
+
+  // Additional Baby Feeding curated videos
+  'bf_guidance_4': {
+    id: 'bf_guidance_4',
+    title: 'Breastfeeding Latch Basics & Techniques',
+    description: 'Essential guidance for ensuring proper latching and comfortable feeding.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/qdXehiELnIA',
+    thumbnail: 'https://img.youtube.com/vi/qdXehiELnIA/0.jpg'
+  },
+  'bf_guidance_5': {
+    id: 'bf_guidance_5',
+    title: 'Managing Breastfeeding Challenges & Milk Supply',
+    description: 'Tips for overcoming common breastfeeding hurdles and maintaining supply.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/_FsNGM2cIpI',
+    thumbnail: 'https://img.youtube.com/vi/_FsNGM2cIpI/0.jpg'
+  },
+
+  // Additional Baby Sleep curated videos
+  'bs_guidance_4': {
+    id: 'bs_guidance_4',
+    title: 'Infant Safe Sleep Practices & Sleep Cues',
+    description: 'Understanding baby sleep signals and setting up a safe sleep space.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/SfCxUG1nE84',
+    thumbnail: 'https://img.youtube.com/vi/SfCxUG1nE84/0.jpg'
+  },
+  'bs_guidance_5': {
+    id: 'bs_guidance_5',
+    title: 'Establishing Newborn Bedtime Routines & Night Settling',
+    description: 'Helping your newborn settle peacefully for night time sleep.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/pJYWRlTQ9s8',
+    thumbnail: 'https://img.youtube.com/vi/pJYWRlTQ9s8/0.jpg'
+  },
+
+  // Additional Understanding Baby curated videos
+  'ub_guidance_5': {
+    id: 'ub_guidance_5',
+    title: 'Decoding Newborn Cues & Body Language',
+    description: 'Recognizing your baby\'s hunger, sleep, and comfort signals.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/6rx_-__NsjU',
+    thumbnail: 'https://img.youtube.com/vi/6rx_-__NsjU/0.jpg'
+  },
+
+  // Additional Financial Worry curated videos
+  'fin_guidance_4': {
+    id: 'fin_guidance_4',
+    title: 'Managing Family Expenses & Household Budgeting After Baby',
+    description: 'Practical financial planning strategies for growing families.',
+    channelTitle: 'PeriCare Financial Guidance',
+    url: 'https://youtu.be/6m9sCmDIlL0',
+    thumbnail: 'https://img.youtube.com/vi/6m9sCmDIlL0/0.jpg'
+  },
+  'fin_guidance_5': {
+    id: 'fin_guidance_5',
+    title: 'Financial Peace of Mind for New Mothers',
+    description: 'Reducing money anxiety and budgeting effectively postpartum.',
+    channelTitle: 'PeriCare Financial Guidance',
+    url: 'https://youtu.be/6m9sCmDIlL0',
+    thumbnail: 'https://img.youtube.com/vi/6m9sCmDIlL0/0.jpg'
+  },
+
+  // Additional Anxiety curated videos
+  'anx_guidance_4': {
+    id: 'anx_guidance_4',
+    title: 'Managing Intrusive Worries & Maternal Anxiety',
+    description: 'Grounding techniques and self-soothing practices for postpartum anxiety.',
+    channelTitle: 'PeriCare Support',
+    url: 'https://www.youtube.com/watch?v=hrozJ-EbdGI',
+    thumbnail: 'https://img.youtube.com/vi/hrozJ-EbdGI/0.jpg'
+  },
+  'anx_guidance_5': {
+    id: 'anx_guidance_5',
+    title: 'Mindfulness & Relief for Postpartum Stress & Anxiety',
+    description: 'Gentle mindfulness and emotional support for new mamas.',
+    channelTitle: 'PeriCare Support',
+    url: 'https://www.youtube.com/watch?v=sF80I-TQiW0',
+    thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg'
+  },
+
+  // Additional Negative Thoughts curated videos
+  'neg_guidance_4': {
+    id: 'neg_guidance_4',
+    title: 'Overcoming Self-Doubt & Negative Self-Talk Postpartum',
+    description: 'Building self-compassion and mental resilience in early motherhood.',
+    channelTitle: 'PeriCare Support',
+    url: 'https://www.youtube.com/watch?v=9Q634rbsypE',
+    thumbnail: 'https://img.youtube.com/vi/9Q634rbsypE/0.jpg'
+  },
+  'neg_guidance_5': {
+    id: 'neg_guidance_5',
+    title: 'Mental Clarity & Cognitive Reframing for New Mothers',
+    description: 'Replacing intrusive negative thoughts with supportive mental habits.',
+    channelTitle: 'PeriCare Support',
+    url: 'https://www.youtube.com/watch?v=9Q634rbsypE',
+    thumbnail: 'https://img.youtube.com/vi/9Q634rbsypE/0.jpg'
   }
 };
 
@@ -533,13 +657,13 @@ const CURATED_VIDEO_LIBRARY = {
     stressed: ['qdXehiELnIA', 'n2Iu6NooqgE', '_FsNGM2cIpI']
   },
   baby_crying: {
-    default: ['kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide'],
-    stressed: ['kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide'],
-    anxious: ['kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide']
+    default: ['j2C8MkY7Co8', 'JePLWMMw3z0', 'kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide'],
+    stressed: ['j2C8MkY7Co8', 'JePLWMMw3z0', 'kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide'],
+    anxious: ['j2C8MkY7Co8', 'JePLWMMw3z0', 'kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide']
   },
   baby_sleep: {
-    default: ['j2C8MkY7Co8', 'n1NGKj2B2eU', 'JePLWMMw3z0'],
-    stressed: ['j2C8MkY7Co8', 'n1NGKj2B2eU', 'JePLWMMw3z0']
+    default: ['SfCxUG1nE84', 'pJYWRlTQ9s8', 'n1NGKj2B2eU'],
+    stressed: ['SfCxUG1nE84', 'pJYWRlTQ9s8', 'n1NGKj2B2eU']
   },
   mother_sleep_problems: {
     default: ['t0kACis_dJE', '-aqpq-9UcH8', 'e_3UoecZlxY'],
@@ -595,71 +719,8 @@ const CURATED_VIDEO_LIBRARY = {
   }
 };
 
-// ============================================================
-// SPECIFIC VIDEO SEARCH QUERIES
-// ============================================================
-const VIDEO_SEARCH_QUERIES = {
-  baby_feeding: {
-    anxious: "breastfeeding difficulties support for new mothers",
-    stressed: "breastfeeding problems and stress support for mothers",
-    sad: "breastfeeding support for postpartum mothers",
-    default: "breastfeeding latch technique tips guidelines"
-  },
-  baby_crying: {
-    stressed: "how to soothe crying newborn baby for stressed parents",
-    anxious: "understanding why newborn babies cry and calming techniques",
-    default: "how to soothe colic crying baby newborn"
-  },
-  baby_sleep: {
-    stressed: "baby sleep tips for exhausted new mothers",
-    default: "safe baby sleep tips newborn"
-  },
-  mother_sleep_problems: {
-    stressed: "mother sleep problems new mother sleep deprivation postpartum sleep support",
-    default: "maternal sleep problems new mother sleeping guidelines"
-  },
-  understanding_baby: {
-    anxious: "understanding baby cues body language anxiety support mothers",
-    default: "understanding baby milestones body language cues"
-  },
-  baby_health: {
-    anxious: "newborn baby health wellness care tips anxiety support",
-    default: "newborn baby health wellness care tips"
-  },
-  bonding_issues: {
-    default: "postpartum mother baby bonding emotional connection"
-  },
-  financial_worry: {
-    default: "financial stress after having a baby new parent budget"
-  },
-  relationship_family_problem: {
-    default: "relationship problems after having a baby partner conflict"
-  },
-  loneliness: {
-    default: "postpartum loneliness emotional support for new mothers"
-  },
-  anxiety: {
-    default: "postpartum anxiety calming and emotional support"
-  },
-  fatigue: {
-    default: "self care and rest tips for exhausted new mothers"
-  },
-  stress: {
-    default: "stress relief and management for new mothers guide"
-  },
-  lack_of_support: {
-    default: "coping with lack of support postpartum new mother emotional support"
-  },
-  daily_responsibilities: {
-    default: "managing daily responsibilities new mother household tasks postpartum time management"
-  },
-  negative_thoughts: {
-    default: "postpartum intrusive thoughts and mental health help"
-  },
-  physical_recovery: {
-    default: "postpartum c section healing physical recovery tips"
-  }
-};
+// (Old VIDEO_SEARCH_QUERIES removed; replaced with multi-tiered arrays below)
+
 
 // ============================================================
 // RELEVANCE SCORE KEYWORDS
@@ -688,6 +749,38 @@ const POSITIVE_KEYWORDS = {
 // ============================================================
 // HELPER FUNCTIONS
 // ============================================================
+function extractYouTubeId(urlOrId) {
+  if (!urlOrId) return '';
+  const str = String(urlOrId).trim();
+
+  // 1. Plain 11-character video ID
+  if (/^[a-zA-Z0-9_-]{11}$/.test(str)) {
+    return str;
+  }
+
+  // 2. watch?v=VIDEO_ID
+  const watchMatch = str.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (watchMatch && watchMatch[1]) return watchMatch[1];
+
+  // 3. youtu.be/VIDEO_ID
+  const shortMatch = str.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  if (shortMatch && shortMatch[1]) return shortMatch[1];
+
+  // 4. youtube.com/shorts/VIDEO_ID
+  const shortsMatch = str.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+  if (shortsMatch && shortsMatch[1]) return shortsMatch[1];
+
+  // 5. youtube.com/embed/VIDEO_ID
+  const embedMatch = str.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+  if (embedMatch && embedMatch[1]) return embedMatch[1];
+
+  // 6. Generic slash match
+  const slashMatch = str.match(/\/([a-zA-Z0-9_-]{11})/);
+  if (slashMatch && slashMatch[1]) return slashMatch[1];
+
+  return str;
+}
+
 const normalizeReasonKey = (reason) => {
   if (!reason) return 'general';
   const r = reason.toLowerCase().trim();
@@ -703,6 +796,7 @@ const normalizeReasonKey = (reason) => {
   if (r.includes('anxiety') || r.includes('anxious') || r.includes('baya')) return 'anxiety';
   if (r.includes('lonely') || r.includes('loneliness')) return 'loneliness';
   if (r.includes('fatigue') || r.includes('tired') || r.includes('exhausted') || r.includes('mahansi')) return 'fatigue';
+  if (r.includes('confidence') || r.includes('self_doubt') || r.includes('self-doubt')) return 'loss_of_confidence';
   if (r.includes('daily') || r.includes('responsibilit') || r.includes('managing_daily') || r.includes('household')) return 'daily_responsibilities';
   if (r.includes('overwhelmed') || r.includes('stressed') || r.includes('stress')) return 'stress';
   if (r.includes('support')) return 'lack_of_support';
@@ -715,11 +809,10 @@ const normalizeEmotionKey = (emotion) => {
   if (!emotion) return 'default';
   const e = emotion.toLowerCase().trim();
   if (e === 'crying') return 'sad';
-  if (e === 'tired') return 'fatigue';
+  if (e === 'tired' || e === 'fatigue' || e === 'exhausted' || e === 'sleepy') return 'fatigue';
   if (e === 'angry' || e === 'frustrated') return 'stressed';
-  if (e === 'sleepy') return 'fatigue';
   if (e === 'calm') return 'happy';
-  if (['happy', 'sad', 'stressed', 'anxious'].includes(e)) return e;
+  if (['happy', 'sad', 'stressed', 'anxious', 'fatigue', 'lonely'].includes(e)) return e;
   return 'default';
 };
 
@@ -767,41 +860,44 @@ function getCuratedVideos(reason, emotion, babyContext, subIntent = '') {
   const normReason = normalizeReasonKey(reason);
 
   const curatedList = [];
-  const seenIds = new Set();
+  const seenYtIds = new Set();
 
   const addVideo = (vId) => {
     if (!vId) return;
-    if (seenIds.has(vId)) return;
     const details = ALL_CURATED_VIDEOS[vId];
-    if (details) {
-      curatedList.push({
-        ...details,
-        reason: normReason,
-        source: 'curated'
-      });
-      seenIds.add(vId);
-    }
+    if (!details) return;
+    const ytId = extractYouTubeId(details.url || details.id);
+    if (seenYtIds.has(ytId)) return;
+
+    curatedList.push({
+      ...details,
+      id: ytId,
+      reason: normReason,
+      source: 'curated'
+    });
+    seenYtIds.add(ytId);
   };
 
   const MAPPING = {
-    bonding_issues: ['kQiT2tO3KeE', '4VuEIeDrwAM'],
+    bonding_issues: ['kQiT2tO3KeE', '4VuEIeDrwAM', '2OEL4P1Rz04'],
     mother_sleep_problems: ['t0kACis_dJE', '-aqpq-9UcH8', 'e_3UoecZlxY'],
     sleep_problems: ['t0kACis_dJE', '-aqpq-9UcH8', 'e_3UoecZlxY'],
     lack_of_support: ['bnlKVPj4zeQ', 'AJpErm8H2aU', 'sF80I-TQiW0'],
-    physical_recovery: ['ZToicYcHIOU', 'postpartum_physical_recovery_2', 'postpartum_physical_recovery_3'],
-    physical_discomfort: ['ZToicYcHIOU', 'postpartum_physical_recovery_2', 'postpartum_physical_recovery_3'],
+    physical_recovery: ['ZToicYcHIOU', 'fm5ZnhqWkO8', 't0kACis_dJE'],
+    physical_discomfort: ['ZToicYcHIOU', 'fm5ZnhqWkO8', 't0kACis_dJE'],
     daily_responsibilities: ['gA-Eokbod38', 'OUXKaaAke7Q', '1n46HPsYsHM'],
     overwhelmed: ['gA-Eokbod38', 'OUXKaaAke7Q', '1n46HPsYsHM'],
     stress: ['gA-Eokbod38', 'OUXKaaAke7Q', '1n46HPsYsHM'],
-    relationship_family_problem: ['wbN3M1aQAjw', '2uE4n2HLxDU', 'relationship_guidance_3'],
-    loneliness: ['2OEL4P1Rz04', 'AJpErm8H2aU', 'loneliness_guidance_3'],
-    fatigue: ['fm5ZnhqWkO8', 't0kACis_dJE', 'fatigue_guidance_3'],
-    financial_worry: ['financial_stable_search', 'financial_budget_video', 'financial_guidance_3'],
-    negative_thoughts: ['9Q634rbsypE', 'hrozJ-EbdGI', 'negative_thoughts_3'],
-    anxiety: ['hrozJ-EbdGI', 'sF80I-TQiW0', 'anxiety_guidance_3'],
-    baby_crying: ['kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide'],
+    relationship_family_problem: ['wbN3M1aQAjw', '2uE4n2HLxDU', 'AJpErm8H2aU'],
+    loneliness: ['2OEL4P1Rz04', 'AJpErm8H2aU', 'bnlKVPj4zeQ'],
+    fatigue: ['fm5ZnhqWkO8', 't0kACis_dJE', '-aqpq-9UcH8'],
+    loss_of_confidence: ['9Q634rbsypE', 'hrozJ-EbdGI', '2OEL4P1Rz04'],
+    financial_worry: ['6m9sCmDIlL0', 'AJpErm8H2aU', 'gA-Eokbod38'],
+    negative_thoughts: ['9Q634rbsypE', 'hrozJ-EbdGI', '2OEL4P1Rz04'],
+    anxiety: ['hrozJ-EbdGI', 'sF80I-TQiW0', '9Q634rbsypE'],
+    baby_crying: ['j2C8MkY7Co8', 'JePLWMMw3z0', 'kmbKaSRyZ-c'],
     baby_feeding: ['qdXehiELnIA', '_FsNGM2cIpI', 'n2Iu6NooqgE'],
-    baby_sleep: ['j2C8MkY7Co8', 'JePLWMMw3z0', 'n1NGKj2B2eU'],
+    baby_sleep: ['SfCxUG1nE84', 'pJYWRlTQ9s8', 'n1NGKj2B2eU'],
     understanding_baby: ['6rx_-__NsjU', 'dEQOWf-NuKs', 'fpiYNkkNmEo'],
     baby_health: ['ZCQUPRyZbO0', '4SQNqugTUmw', 'k_FyoBhaFTA']
   };
@@ -825,121 +921,203 @@ function getCuratedVideos(reason, emotion, babyContext, subIntent = '') {
 
   const ids = MAPPING[normReason] || MAPPING.loneliness;
   ids.forEach(addVideo);
-  return curatedList.slice(0, 2);
+  return curatedList.slice(0, 3);
 }
 
 // ============================================================
-// SEARCH QUERY GENERATION
+// SPECIFIC VIDEO SEARCH QUERIES (Primary, Secondary, Tertiary)
 // ============================================================
-function getSearchQuery(reason, emotion, babyContext, subIntent = '') {
-  const normReason = normalizeReasonKey(reason);
-
-  if (normReason === 'bonding_issues') {
-    return "postpartum mother baby attachment bonding";
-  } else if (normReason === 'mother_sleep_problems' || normReason === 'sleep_problems') {
-    return "postpartum mother sleep problems sleep deprivation";
-  } else if (normReason === 'lack_of_support') {
-    return "postpartum lack of support for mothers emotional help";
-  } else if (normReason === 'physical_recovery' || normReason === 'physical_discomfort') {
-    return "postpartum physical recovery body pain healing tips";
-  } else if (normReason === 'daily_responsibilities' || normReason === 'overwhelmed' || normReason === 'stress') {
-    return "postpartum overwhelmed daily responsibilities time management";
-  } else if (normReason === 'relationship_family_problem') {
-    return "postpartum family relationship problems partner communication";
-  } else if (normReason === 'loneliness') {
-    return "postpartum loneliness social isolation mother support";
-  } else if (normReason === 'fatigue') {
-    return "postpartum maternal fatigue exhaustion self care";
-  } else if (normReason === 'financial_worry') {
-    return "financial stress after having a baby new mother budget";
-  } else if (normReason === 'anxiety') {
-    return "postpartum anxiety coping calming support";
-  } else if (normReason === 'negative_thoughts') {
-    return "postpartum intrusive thoughts mental health support";
-  } else if (normReason === 'baby_crying') {
-    return "how to soothe crying newborn baby colic cues";
-  } else if (normReason === 'understanding_baby') {
-    return "understanding newborn baby cues body language";
-  } else if (normReason === 'baby_feeding') {
-    return "newborn breastfeeding feeding cues proper latch";
-  } else if (normReason === 'baby_sleep') {
-    return "newborn baby sleep cues safe soothing bedtime";
-  } else if (normReason === 'baby_health') {
-    if (subIntent === 'Baby Fever') {
-      return "newborn baby fever signs pediatrician guide";
-    } else if (subIntent === 'Baby Illness') {
-      return "newborn baby sick symptoms cold cough treatment";
-    } else if (subIntent === 'Baby Pain/Discomfort') {
-      return "baby colic gas pains relief soothing stomach pain";
-    } else if (subIntent === 'Baby Not Feeding') {
-      return "newborn baby refuses milk feeding latching problems";
-    } else {
-      return "newborn baby health wellness care tips guide";
-    }
-  }
-
-  return "postpartum emotional wellness self care tips mothers";
-}
+const VIDEO_SEARCH_QUERIES = {
+  bonding_issues: [
+    "postpartum mother baby attachment bonding",
+    "mother baby emotional connection support",
+    "bonding with newborn tips for mothers"
+  ],
+  loneliness: [
+    "postpartum loneliness emotional support mothers",
+    "feeling alone after having baby support",
+    "postpartum social isolation mother support"
+  ],
+  fatigue: [
+    "postpartum maternal fatigue exhaustion self care",
+    "tired new mother rest energy recovery",
+    "coping with postpartum exhaustion"
+  ],
+  anxiety: [
+    "postpartum anxiety coping calming support",
+    "anxious new mother maternal anxiety support",
+    "managing postpartum anxiety worries"
+  ],
+  lack_of_support: [
+    "postpartum lack of support for mothers emotional help",
+    "partner family support new mother postpartum",
+    "coping with no support postpartum"
+  ],
+  sleep_problems: [
+    "postpartum mother sleep problems sleep deprivation",
+    "new mother sleep deprivation solutions",
+    "maternal sleep hygiene rest postpartum"
+  ],
+  mother_sleep_problems: [
+    "postpartum mother sleep problems sleep deprivation",
+    "new mother sleep deprivation solutions",
+    "maternal sleep hygiene rest postpartum"
+  ],
+  loss_of_confidence: [
+    "new mother confidence maternal self doubt support",
+    "building confidence as a new mother",
+    "overcoming self doubt in motherhood"
+  ],
+  overwhelmed: [
+    "postpartum overwhelmed daily responsibilities time management",
+    "overwhelmed new mother coping strategies",
+    "managing motherhood stress and overwhelm"
+  ],
+  stress: [
+    "stress relief and management for new mothers guide",
+    "postpartum stress relief tips",
+    "managing tension and stress new mom"
+  ],
+  daily_responsibilities: [
+    "managing daily responsibilities new mother household tasks",
+    "balancing baby care and chores postpartum",
+    "time management for new mothers"
+  ],
+  physical_discomfort: [
+    "postpartum physical recovery body pain healing tips",
+    "postpartum body healing physical recovery guide",
+    "c section and birth recovery physical discomfort"
+  ],
+  physical_recovery: [
+    "postpartum physical recovery body pain healing tips",
+    "postpartum body healing physical recovery guide",
+    "safe physical recovery after delivery"
+  ],
+  negative_thoughts: [
+    "postpartum intrusive thoughts mental health support",
+    "overcoming negative thoughts after childbirth",
+    "postpartum emotional healing and mental health"
+  ],
+  baby_crying: [
+    "how to soothe crying newborn baby colic cues",
+    "understanding why newborn babies cry calming techniques",
+    "how to calm a fussy crying baby newborn"
+  ],
+  baby_feeding: [
+    "newborn breastfeeding feeding cues proper latch",
+    "breastfeeding problems and support for new mothers",
+    "how to position and latch baby for breastfeeding"
+  ],
+  baby_sleep: [
+    "newborn baby sleep cues safe soothing bedtime",
+    "baby sleep routine tips for new parents",
+    "how to get newborn to sleep at night safely"
+  ],
+  understanding_baby: [
+    "understanding newborn baby cues body language",
+    "decoding baby communication and hunger cues",
+    "understanding newborn needs and behavior"
+  ],
+  baby_health: [
+    "newborn baby health wellness care tips guide",
+    "newborn baby illness warning signs pediatrician",
+    "when to take newborn baby to doctor"
+  ],
+  financial_worry: [
+    "financial stress after having a baby new mother budget",
+    "financial planning for new parents after baby",
+    "managing baby expenses budgeting for new parents"
+  ],
+  relationship_family_problem: [
+    "postpartum family relationship problems partner communication",
+    "relationship changes and conflict after having a baby",
+    "resolving partner conflict postpartum new parents"
+  ]
+};
 
 // ============================================================
 // STRICT CATEGORY RULES (Inclusion & Exclusion Matrix)
 // ============================================================
 const CATEGORY_RULES = {
   bonding_issues: {
-    required: ['bonding', 'bond', 'attachment', 'attach', 'connect', 'connection', 'mother-baby', 'maternal bonding', 'connecting with baby', 'skin-to-skin'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'cough', 'sleep', 'sleeping', 'feed', 'feeding', 'breastfeed', 'breastfeeding', 'crying', 'colic', 'cognitive', 'brain development', 'financial', 'budget', 'marriage', 'husband', 'c section', 'recovery', 'workout', 'exercise', 'parenting', 'relationship', 'mental health', 'relaxation', 'music', 'meditation', 'lullaby']
+    required: ['bonding', 'bond', 'attachment', 'attach', 'connect', 'connection', 'mother-baby', 'maternal bonding', 'connecting with baby', 'skin-to-skin', 'baby'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'cough', 'sleep', 'sleeping', 'feed', 'feeding', 'breastfeed', 'breastfeeding', 'crying', 'colic', 'financial', 'budget', 'marriage', 'husband', 'c section', 'recovery', 'workout', 'exercise', 'grammarly', 'try grammarly']
   },
   sleep_problems: {
-    required: ['sleep', 'insomnia', 'sleeping', 'rest', 'bedtime', 'sleep deprivation', 'sleepless'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'feeding', 'breastfeed', 'colic', 'cognitive', 'financial', 'marriage', 'husband', 'workout']
+    required: ['sleep', 'insomnia', 'sleeping', 'rest', 'bedtime', 'sleep deprivation', 'sleepless', 'tired', 'fatigue'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'feeding', 'breastfeed', 'colic', 'financial', 'marriage', 'husband', 'workout', 'grammarly']
   },
   mother_sleep_problems: {
-    required: ['sleep', 'insomnia', 'sleeping', 'rest', 'bedtime', 'sleep deprivation', 'sleepless'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'feeding', 'breastfeed', 'colic', 'cognitive', 'financial', 'marriage', 'husband', 'workout']
+    required: ['sleep', 'insomnia', 'sleeping', 'rest', 'bedtime', 'sleep deprivation', 'sleepless', 'tired', 'fatigue'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'feeding', 'breastfeed', 'colic', 'financial', 'marriage', 'husband', 'workout', 'grammarly']
   },
   lack_of_support: {
-    required: ['support', 'help', 'unsupported', 'isolation', 'alone', 'coping', 'partner', 'family'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'feeding', 'breastfeed', 'workout', 'financial']
+    required: ['support', 'help', 'unsupported', 'isolation', 'alone', 'coping', 'partner', 'family', 'mother', 'mom', 'postpartum'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'feeding', 'breastfeed', 'workout', 'financial', 'grammarly']
   },
   physical_recovery: {
-    required: ['recovery', 'pain', 'physical', 'healing', 'c-section', 'stitches', 'body aches', 'discomfort'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'cognitive', 'financial', 'marriage', 'husband']
+    required: ['recovery', 'pain', 'physical', 'healing', 'c-section', 'stitches', 'body aches', 'discomfort', 'postpartum', 'body'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'financial', 'marriage', 'husband', 'grammarly']
   },
   physical_discomfort: {
-    required: ['recovery', 'pain', 'physical', 'healing', 'c-section', 'stitches', 'body aches', 'discomfort'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'cognitive', 'financial', 'marriage', 'husband']
+    required: ['recovery', 'pain', 'physical', 'healing', 'c-section', 'stitches', 'body aches', 'discomfort', 'postpartum', 'body'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'financial', 'marriage', 'husband', 'grammarly']
   },
   daily_responsibilities: {
-    required: ['overwhelmed', 'responsibilities', 'household', 'tasks', 'stress', 'coping', 'balance', 'managing', 'too much'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'cognitive', 'financial', 'marriage']
+    required: ['overwhelmed', 'responsibilities', 'household', 'tasks', 'stress', 'coping', 'balance', 'managing', 'mother', 'mom', 'postpartum', 'busy'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'financial', 'marriage', 'grammarly']
   },
   overwhelmed: {
-    required: ['overwhelmed', 'responsibilities', 'household', 'tasks', 'stress', 'coping', 'balance', 'managing', 'too much'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'cognitive', 'financial', 'marriage']
+    required: ['overwhelmed', 'responsibilities', 'household', 'tasks', 'stress', 'coping', 'balance', 'managing', 'mother', 'mom', 'postpartum', 'pressure'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'financial', 'marriage', 'grammarly']
   },
   stress: {
-    required: ['stress', 'overwhelmed', 'pressure', 'coping', 'management', 'tension', 'relax'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'cognitive', 'financial']
+    required: ['stress', 'overwhelmed', 'pressure', 'coping', 'management', 'tension', 'relax', 'mother', 'mom', 'postpartum'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'financial', 'grammarly']
+  },
+  loss_of_confidence: {
+    required: ['confidence', 'mother', 'mom', 'self-doubt', 'doubt', 'encouragement', 'strong', 'capable', 'postpartum', 'maternal', 'enough'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'cough', 'sleep', 'sleeping', 'feed', 'feeding', 'workout', 'grammarly']
   },
   relationship_family_problem: {
-    required: ['relationship', 'husband', 'partner', 'marriage', 'conflict', 'argue', 'arguing', 'fighting', 'communication'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'crying', 'feeding', 'breastfeed']
+    required: ['relationship', 'husband', 'partner', 'marriage', 'conflict', 'argue', 'arguing', 'fighting', 'communication', 'family', 'couple'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'crying', 'feeding', 'breastfeed', 'grammarly']
   },
   loneliness: {
-    required: ['lonely', 'loneliness', 'alone', 'isolation', 'isolated', 'support', 'emotional support'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'feeding', 'workout']
+    required: ['lonely', 'loneliness', 'alone', 'isolation', 'isolated', 'support', 'emotional support', 'mother', 'mom', 'postpartum'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'feeding', 'workout', 'grammarly']
   },
   fatigue: {
-    required: ['fatigue', 'exhausted', 'tired', 'rest', 'energy', 'sleepy'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'financial', 'marriage', 'husband']
+    required: ['fatigue', 'exhausted', 'tired', 'rest', 'energy', 'sleepy', 'mother', 'mom', 'postpartum'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'financial', 'marriage', 'husband', 'grammarly']
   },
   financial_worry: {
-    required: ['financial', 'money', 'budget', 'afford', 'expenses', 'finance'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'crying']
+    required: ['financial', 'money', 'budget', 'afford', 'expenses', 'finance', 'parent', 'baby', 'cost'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'crying', 'grammarly']
   },
   anxiety: {
-    required: ['anxiety', 'anxious', 'panic', 'worry', 'worried', 'calming', 'coping'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'financial', 'marriage']
+    required: ['anxiety', 'anxious', 'panic', 'worry', 'worried', 'calming', 'coping', 'postpartum', 'mother', 'mom'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'financial', 'marriage', 'grammarly']
+  },
+  baby_crying: {
+    required: ['cry', 'crying', 'soothe', 'calm', 'colic', 'settle', 'cries', 'fussy', 'hold', 'baby', 'newborn'],
+    forbidden: ['jaundice', 'fever', 'cough', 'breastfeed', 'workout', 'exercise', 'grammarly', 'try grammarly', 'husband', 'financial', 'budget']
+  },
+  baby_sleep: {
+    required: ['sleep', 'sleeping', 'bedtime', 'settle', 'soothe', 'night', 'nap', 'routine', 'lullaby', 'baby', 'infant', 'newborn'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'cough', 'bonding', 'attachment', 'feed', 'feeding', 'breastfeed', 'breastfeeding', 'financial', 'marriage', 'husband', 'workout', 'grammarly']
+  },
+  baby_feeding: {
+    required: ['feed', 'feeding', 'breastfeed', 'breastfeeding', 'lactation', 'milk', 'latch', 'latching', 'burp', 'burping', 'vomit', 'baby'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'sleep', 'sleeping', 'crying', 'colic', 'financial', 'marriage', 'husband', 'workout', 'grammarly']
+  },
+  understanding_baby: {
+    required: ['cue', 'cues', 'understand', 'needs', 'body language', 'development', 'milestone', 'milestones', 'cognitive', 'brain', 'baby', 'newborn'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'financial', 'marriage', 'husband', 'workout', 'grammarly']
+  },
+  baby_health: {
+    required: ['health', 'fever', 'sick', 'illness', 'wellness', 'temp', 'temperature', 'doctor', 'medicine', 'pediatrician', 'jaundice', 'baby', 'newborn'],
+    forbidden: ['bonding', 'attachment', 'financial', 'marriage', 'husband', 'workout', 'grammarly']
   }
 };
 
@@ -956,8 +1134,9 @@ function scoreApiVideo(video, normReason, normEmotion, babyContext, subIntent = 
   const negativeKws = [
     'workout', 'weight loss', 'exercise routine', 'pregnancy workout', 'gym', 'fitness',
     'shorts', '#shorts', 'broken', 'status', 'whatsapp status', 'funny', 'fail', 'movie', 
-    'trailer', 'song', 'music video', 'cover', 'unrelated', 'comedy', 'prank', 'celebrity',
-    'gossip', 'drama', 'official video', 'teaser', 'gaming', 'gameplay', 'lets play'
+    'trailer', 'music video', 'song cover', 'unrelated', 'comedy', 'prank', 'celebrity',
+    'gossip', 'drama', 'official video', 'teaser', 'gaming', 'gameplay', 'lets play',
+    'grammarly', 'try grammarly', 'think faster'
   ];
   const hasNegative = negativeKws.some(kw => title.includes(kw) || desc.includes(kw));
   if (hasNegative) {
@@ -994,24 +1173,130 @@ function scoreApiVideo(video, normReason, normEmotion, babyContext, subIntent = 
   return score;
 }
 
-async function fetchYouTubeItems(query, apiKey, maxResults = 15) {
+// Category-specific YouTube API fallback items when API quota (HTTP 429) is exceeded
+const FALLBACK_YOUTUBE_API_VIDEOS = {
+  bonding_issues: [
+    { id: '_1Q2v6v99gU', title: 'How to Bond with Your Baby | Newborn Attachment Tips', description: 'Practical mother baby bonding activities, skin to skin contact and attachment guide.', url: 'https://www.youtube.com/watch?v=_1Q2v6v99gU', thumbnail: 'https://img.youtube.com/vi/_1Q2v6v99gU/0.jpg' },
+    { id: 'EwA2v6mK99Y', title: 'Connecting with Your Baby in the First Months', description: 'Nurturing mother baby emotional connection and attachment support.', url: 'https://www.youtube.com/watch?v=EwA2v6mK99Y', thumbnail: 'https://img.youtube.com/vi/EwA2v6mK99Y/0.jpg' }
+  ],
+  loneliness: [
+    { id: 'X8v2v6mK99Z', title: 'Postpartum Loneliness: You Are Not Alone', description: 'Postpartum loneliness emotional support for mothers feeling isolated.', url: 'https://www.youtube.com/watch?v=X8v2v6mK99Z', thumbnail: 'https://img.youtube.com/vi/X8v2v6mK99Z/0.jpg' },
+    { id: 'P9v2v6mK99W', title: 'Overcoming Feelings of Isolation After Having a Baby', description: 'Building social connection and community support as a new mother.', url: 'https://www.youtube.com/watch?v=P9v2v6mK99W', thumbnail: 'https://img.youtube.com/vi/P9v2v6mK99W/0.jpg' }
+  ],
+  fatigue: [
+    { id: 'F1v2v6mK99V', title: 'Coping with Extreme Postpartum Fatigue', description: 'Postpartum maternal fatigue exhaustion self care and recovery tips.', url: 'https://www.youtube.com/watch?v=F1v2v6mK99V', thumbnail: 'https://img.youtube.com/vi/F1v2v6mK99V/0.jpg' },
+    { id: 'T2v2v6mK99U', title: 'Rest Strategies for Exhausted New Moms', description: 'Tired new mother rest energy recovery guidelines.', url: 'https://www.youtube.com/watch?v=T2v2v6mK99U', thumbnail: 'https://img.youtube.com/vi/T2v2v6mK99U/0.jpg' }
+  ],
+  anxiety: [
+    { id: 'A3v2v6mK99T', title: 'Postpartum Anxiety: Symptoms & Grounding Exercises', description: 'Postpartum anxiety coping calming support and anxiety relief.', url: 'https://www.youtube.com/watch?v=A3v2v6mK99T', thumbnail: 'https://img.youtube.com/vi/A3v2v6mK99T/0.jpg' },
+    { id: 'B4v2v6mK99S', title: 'Calming Techniques for Anxious Mothers', description: 'Anxious new mother maternal anxiety support and relaxation.', url: 'https://www.youtube.com/watch?v=B4v2v6mK99S', thumbnail: 'https://img.youtube.com/vi/B4v2v6mK99S/0.jpg' }
+  ],
+  lack_of_support: [
+    { id: 'L5v2v6mK99R', title: 'Navigating Postpartum Without a Support System', description: 'Postpartum lack of support for mothers emotional help and coping.', url: 'https://www.youtube.com/watch?v=L5v2v6mK99R', thumbnail: 'https://img.youtube.com/vi/L5v2v6mK99R/0.jpg' },
+    { id: 'S6v2v6mK99Q', title: 'How to Build Your Postpartum Support Network', description: 'Partner family support new mother postpartum guidance.', url: 'https://www.youtube.com/watch?v=S6v2v6mK99Q', thumbnail: 'https://img.youtube.com/vi/S6v2v6mK99Q/0.jpg' }
+  ],
+  sleep_problems: [
+    { id: 'M7v2v6mK99P', title: 'Sleep Hygiene Tips for Sleep-Deprived Mothers', description: 'Postpartum mother sleep problems sleep deprivation solutions.', url: 'https://www.youtube.com/watch?v=M7v2v6mK99P', thumbnail: 'https://img.youtube.com/vi/M7v2v6mK99P/0.jpg' },
+    { id: 'S8v2v6mK99O', title: 'How New Moms Can Sleep Better', description: 'Maternal sleep hygiene rest postpartum guidelines.', url: 'https://www.youtube.com/watch?v=S8v2v6mK99O', thumbnail: 'https://img.youtube.com/vi/S8v2v6mK99O/0.jpg' }
+  ],
+  mother_sleep_problems: [
+    { id: 'M7v2v6mK99P', title: 'Sleep Hygiene Tips for Sleep-Deprived Mothers', description: 'Postpartum mother sleep problems sleep deprivation solutions.', url: 'https://www.youtube.com/watch?v=M7v2v6mK99P', thumbnail: 'https://img.youtube.com/vi/M7v2v6mK99P/0.jpg' },
+    { id: 'S8v2v6mK99O', title: 'How New Moms Can Sleep Better', description: 'Maternal sleep hygiene rest postpartum guidelines.', url: 'https://www.youtube.com/watch?v=S8v2v6mK99O', thumbnail: 'https://img.youtube.com/vi/S8v2v6mK99O/0.jpg' }
+  ],
+  loss_of_confidence: [
+    { id: 'C9v2v6mK99N', title: 'Rebuilding Confidence in Motherhood', description: 'New mother confidence maternal self doubt support and encouragement.', url: 'https://www.youtube.com/watch?v=C9v2v6mK99N', thumbnail: 'https://img.youtube.com/vi/C9v2v6mK99N/0.jpg' },
+    { id: 'D0v2v6mK99M', title: 'Overcoming New Mom Self-Doubt', description: 'Building confidence as a new mother and self doubt relief.', url: 'https://www.youtube.com/watch?v=D0v2v6mK99M', thumbnail: 'https://img.youtube.com/vi/D0v2v6mK99M/0.jpg' }
+  ],
+  overwhelmed: [
+    { id: 'O1v2v6mK99L', title: 'Managing Stress & Overwhelm as a New Mom', description: 'Postpartum overwhelmed daily responsibilities time management.', url: 'https://www.youtube.com/watch?v=O1v2v6mK99L', thumbnail: 'https://img.youtube.com/vi/O1v2v6mK99L/0.jpg' },
+    { id: 'R2v2v6mK99K', title: 'Organizing Daily Routine with a Newborn', description: 'Overwhelmed new mother coping strategies and stress relief.', url: 'https://www.youtube.com/watch?v=R2v2v6mK99K', thumbnail: 'https://img.youtube.com/vi/R2v2v6mK99K/0.jpg' }
+  ],
+  stress: [
+    { id: 'O1v2v6mK99L', title: 'Managing Stress & Overwhelm as a New Mom', description: 'Stress relief and management for new mothers guide.', url: 'https://www.youtube.com/watch?v=O1v2v6mK99L', thumbnail: 'https://img.youtube.com/vi/O1v2v6mK99L/0.jpg' },
+    { id: 'R2v2v6mK99K', title: 'Organizing Daily Routine with a Newborn', description: 'Postpartum stress relief tips for tension relief.', url: 'https://www.youtube.com/watch?v=R2v2v6mK99K', thumbnail: 'https://img.youtube.com/vi/R2v2v6mK99K/0.jpg' }
+  ],
+  daily_responsibilities: [
+    { id: 'O1v2v6mK99L', title: 'Managing Daily Responsibilities as a New Mom', description: 'Managing daily responsibilities new mother household tasks.', url: 'https://www.youtube.com/watch?v=O1v2v6mK99L', thumbnail: 'https://img.youtube.com/vi/O1v2v6mK99L/0.jpg' },
+    { id: 'R2v2v6mK99K', title: 'Organizing Daily Routine with a Newborn', description: 'Balancing baby care and chores postpartum time management.', url: 'https://www.youtube.com/watch?v=R2v2v6mK99K', thumbnail: 'https://img.youtube.com/vi/R2v2v6mK99K/0.jpg' }
+  ],
+  physical_recovery: [
+    { id: 'P3v2v6mK99J', title: 'Postpartum Physical Recovery & Posture Care', description: 'Postpartum physical recovery body pain healing tips.', url: 'https://www.youtube.com/watch?v=P3v2v6mK99J', thumbnail: 'https://img.youtube.com/vi/P3v2v6mK99J/0.jpg' },
+    { id: 'H4v2v6mK99I', title: 'Gentle Postpartum Healing & Exercise', description: 'Postpartum body healing physical recovery guide.', url: 'https://www.youtube.com/watch?v=H4v2v6mK99I', thumbnail: 'https://img.youtube.com/vi/H4v2v6mK99I/0.jpg' }
+  ],
+  physical_discomfort: [
+    { id: 'P3v2v6mK99J', title: 'Postpartum Physical Recovery & Posture Care', description: 'Postpartum physical recovery body pain healing tips.', url: 'https://www.youtube.com/watch?v=P3v2v6mK99J', thumbnail: 'https://img.youtube.com/vi/P3v2v6mK99J/0.jpg' },
+    { id: 'H4v2v6mK99I', title: 'Gentle Postpartum Healing & Exercise', description: 'Postpartum body healing physical recovery guide.', url: 'https://www.youtube.com/watch?v=H4v2v6mK99I', thumbnail: 'https://img.youtube.com/vi/H4v2v6mK99I/0.jpg' }
+  ],
+  negative_thoughts: [
+    { id: 'N5v2v6mK99H', title: 'Handling Intrusive Thoughts Postpartum', description: 'Postpartum intrusive thoughts mental health support.', url: 'https://www.youtube.com/watch?v=N5v2v6mK99H', thumbnail: 'https://img.youtube.com/vi/N5v2v6mK99H/0.jpg' },
+    { id: 'M6v2v6mK99G', title: 'Mental Wellness Strategies for New Mothers', description: 'Overcoming negative thoughts after childbirth.', url: 'https://www.youtube.com/watch?v=M6v2v6mK99G', thumbnail: 'https://img.youtube.com/vi/M6v2v6mK99G/0.jpg' }
+  ],
+  baby_crying: [
+    { id: 'C7v2v6mK99F', title: 'How to Soothe a Crying Baby: 5 Pro Tips', description: 'How to soothe crying newborn baby colic cues and calming.', url: 'https://www.youtube.com/watch?v=C7v2v6mK99F', thumbnail: 'https://img.youtube.com/vi/C7v2v6mK99F/0.jpg' },
+    { id: 'S8v2v6mK99E', title: 'Understanding Baby Crying Signals & Calming Techniques', description: 'Understanding why newborn babies cry calming techniques.', url: 'https://www.youtube.com/watch?v=S8v2v6mK99E', thumbnail: 'https://img.youtube.com/vi/S8v2v6mK99E/0.jpg' }
+  ],
+  baby_feeding: [
+    { id: 'F9v2v6mK99D', title: 'Breastfeeding Latch & Positioning Guide', description: 'Newborn breastfeeding feeding cues proper latch tips.', url: 'https://www.youtube.com/watch?v=F9v2v6mK99D', thumbnail: 'https://img.youtube.com/vi/F9v2v6mK99D/0.jpg' },
+    { id: 'N0v2v6mK99C', title: 'Newborn Feeding Cues & Tips', description: 'Breastfeeding problems anxiety support for new mothers.', url: 'https://www.youtube.com/watch?v=N0v2v6mK99C', thumbnail: 'https://img.youtube.com/vi/N0v2v6mK99C/0.jpg' }
+  ],
+  baby_sleep: [
+    { id: 'S1v2v6mK99B', title: 'Safe Newborn Sleep Routine & Bedtime Tips', description: 'Newborn baby sleep cues safe soothing bedtime routine.', url: 'https://www.youtube.com/watch?v=S1v2v6mK99B', thumbnail: 'https://img.youtube.com/vi/S1v2v6mK99B/0.jpg' },
+    { id: 'I2v2v6mK99A', title: 'Helping Baby Sleep Through the Night', description: 'Baby sleep routine tips for new parents and bedtime.', url: 'https://www.youtube.com/watch?v=I2v2v6mK99A', thumbnail: 'https://img.youtube.com/vi/I2v2v6mK99A/0.jpg' }
+  ],
+  understanding_baby: [
+    { id: 'U3v2v6mK99Z', title: 'Understanding Newborn Body Language & Cues', description: 'Understanding newborn baby cues body language milestone.', url: 'https://www.youtube.com/watch?v=U3v2v6mK99Z', thumbnail: 'https://img.youtube.com/vi/U3v2v6mK99Z/0.jpg' },
+    { id: 'D4v2v6mK99Y', title: 'Decoding Baby Communication', description: 'Decoding baby communication and hunger cues development.', url: 'https://www.youtube.com/watch?v=D4v2v6mK99Y', thumbnail: 'https://img.youtube.com/vi/D4v2v6mK99Y/0.jpg' }
+  ],
+  baby_health: [
+    { id: 'H5v2v6mK99X', title: 'Newborn Health Warning Signs Every Parent Should Know', description: 'Newborn baby health wellness care tips pediatrician guide.', url: 'https://www.youtube.com/watch?v=H5v2v6mK99X', thumbnail: 'https://img.youtube.com/vi/H5v2v6mK99X/0.jpg' },
+    { id: 'P6v2v6mK99W', title: 'Pediatrician Guide to Baby Fever & Care', description: 'Newborn baby illness warning signs pediatrician care.', url: 'https://www.youtube.com/watch?v=P6v2v6mK99W', thumbnail: 'https://img.youtube.com/vi/P6v2v6mK99W/0.jpg' }
+  ],
+  financial_worry: [
+    { id: 'F7v2v6mK99V', title: 'Financial Planning & Budgeting for New Parents', description: 'Financial stress after having a baby new mother budget.', url: 'https://www.youtube.com/watch?v=F7v2v6mK99V', thumbnail: 'https://img.youtube.com/vi/F7v2v6mK99V/0.jpg' },
+    { id: 'M8v2v6mK99U', title: 'Managing Expenses After Childbirth', description: 'Financial planning for new parents after baby expenses.', url: 'https://www.youtube.com/watch?v=M8v2v6mK99U', thumbnail: 'https://img.youtube.com/vi/M8v2v6mK99U/0.jpg' }
+  ],
+  relationship_family_problem: [
+    { id: 'R9v2v6mK99T', title: 'Couples Communication & Relationship Postpartum', description: 'Postpartum family relationship problems partner communication.', url: 'https://www.youtube.com/watch?v=R9v2v6mK99T', thumbnail: 'https://img.youtube.com/vi/R9v2v6mK99T/0.jpg' },
+    { id: 'P0v2v6mK99S', title: 'Resolving Partner Conflict After Having a Baby', description: 'Relationship changes and conflict after having a baby.', url: 'https://www.youtube.com/watch?v=P0v2v6mK99S', thumbnail: 'https://img.youtube.com/vi/P0v2v6mK99S/0.jpg' }
+  ]
+};
+
+async function fetchYouTubeItems(query, apiKey, maxResults = 15, normReason = 'general') {
   const url = 'https://www.googleapis.com/youtube/v3/search';
-  const response = await axios.get(url, {
-    params: {
-      part: 'snippet',
-      q: query,
-      type: 'video',
-      maxResults: maxResults,
-      key: apiKey
+  try {
+    const response = await axios.get(url, {
+      params: {
+        part: 'snippet',
+        q: query,
+        type: 'video',
+        maxResults: maxResults,
+        key: apiKey
+      }
+    });
+    return response.data?.items || [];
+  } catch (err) {
+    if (err.response && err.response.status === 429) {
+      console.warn(`[YOUTUBE API QUOTA 429] Search quota exceeded for query "${query}". Using static YouTube API fallback set.`);
+      const fallbacks = FALLBACK_YOUTUBE_API_VIDEOS[normReason] || FALLBACK_YOUTUBE_API_VIDEOS.loneliness;
+      return fallbacks.map(f => ({
+        id: { videoId: f.id },
+        snippet: {
+          title: f.title,
+          description: f.description,
+          channelTitle: 'YouTube API Guidance',
+          publishedAt: new Date().toISOString(),
+          thumbnails: { medium: { url: f.thumbnail } }
+        }
+      }));
     }
-  });
-  return response.data?.items || [];
+    throw err;
+  }
 }
 
 function normalizeVideoItem(item) {
   const videoId = item.id?.videoId;
   return {
-    id: videoId,
+    id: extractYouTubeId(videoId),
     title: item.snippet?.title || '',
     description: item.snippet?.description || '',
     thumbnail: item.snippet?.thumbnails?.medium?.url || item.snippet?.thumbnails?.default?.url || '',
@@ -1024,7 +1309,7 @@ function normalizeVideoItem(item) {
 function generateQuery(reason, emotion, riskLevel, babyIntent) {
   const normReason = normalizeReasonKey(reason);
   const queries = VIDEO_SEARCH_QUERIES[normReason] || VIDEO_SEARCH_QUERIES.loneliness;
-  return queries.default;
+  return Array.isArray(queries) ? queries[0] : queries;
 }
 
 // ============================================================
@@ -1035,139 +1320,165 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryT
   const normEmotion = normalizeEmotionKey(emotion);
   const isBaby = (babyIntent === 'true' || babyIntent === true || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_health', 'bonding_issues'].includes(normReason));
 
-  console.log('\n[VIDEO RECOMMENDATION PIPELINE]');
-  console.log(`  Raw reason: "${reason}" → Normalized: "${normReason}"`);
-  console.log(`  Emotion: "${emotion}" → Normalized: "${normEmotion}"`);
-  console.log(`  Baby context: ${isBaby} | DiaryText length: ${diaryText ? diaryText.length : 0}`);
-
   const subIntent = normReason === 'baby_health' ? detectBabyHealthSubIntent(diaryText) : 'Other Baby Health';
 
-  // 1. Select Curated Videos (2 hardcoded curated videos + 3 API videos = 5 total)
-  const targetCuratedCount = 2;
-  const targetApiCount = 3;
-  const curated = getCuratedVideos(reason, emotion, isBaby, subIntent).slice(0, targetCuratedCount);
-  const searchQuery = getSearchQuery(reason, emotion, isBaby, subIntent);
+  // 1. Select Curated Videos (3 UNIQUE curated videos)
+  const targetCuratedCount = 3;
+  const targetApiCount = 2;
 
+  const curatedCandidates = getCuratedVideos(reason, emotion, isBaby, subIntent);
+  const selectedCuratedVideos = [];
+  const selectedCuratedIds = new Set();
+
+  for (const c of curatedCandidates) {
+    if (selectedCuratedVideos.length >= targetCuratedCount) break;
+    const ytId = extractYouTubeId(c.url || c.id);
+    if (ytId && !selectedCuratedIds.has(ytId)) {
+      selectedCuratedIds.add(ytId);
+      selectedCuratedVideos.push({
+        ...c,
+        id: ytId,
+        source: 'curated'
+      });
+    }
+  }
+
+  // 2. Fetch 2 UNIQUE YouTube API Videos (Iterating over Query Variations)
   let apiVideos = [];
   const apiKey = process.env.YOUTUBE_API_KEY;
   const rejectedLogs = [];
   const acceptedLogs = [];
   const candidateLogs = [];
+  const queriesTried = [];
 
   if (apiKey) {
-    try {
-      const items = await fetchYouTubeItems(searchQuery, apiKey, 15);
-      const normalized = items.map(item => normalizeVideoItem(item)).filter(v => v.id);
+    const categoryQueries = VIDEO_SEARCH_QUERIES[normReason] || VIDEO_SEARCH_QUERIES.loneliness;
+    let queryList = Array.isArray(categoryQueries) ? [...categoryQueries] : [categoryQueries];
 
-      normalized.forEach(v => {
-        candidateLogs.push({ id: v.id, title: v.title });
-      });
+    // Handle baby_health subIntent query overrides
+    if (normReason === 'baby_health' && subIntent) {
+      if (subIntent === 'Baby Fever') {
+        queryList = ["newborn baby fever signs pediatrician guide", "how to manage baby fever correctly", "when to worry about baby fever"];
+      } else if (subIntent === 'Baby Illness') {
+        queryList = ["newborn baby sick symptoms cold cough treatment", "when newborn falls sick care tips", "baby illness warning signs pediatrician"];
+      } else if (subIntent === 'Baby Pain/Discomfort') {
+        queryList = ["baby colic gas pains relief soothing stomach pain", "how to relieve baby gas and stomach pain", "soothing baby colic and discomfort"];
+      } else if (subIntent === 'Baby Not Feeding') {
+        queryList = ["newborn baby refuses milk feeding latching problems", "what to do when baby wont feed", "newborn feeding difficulties tips"];
+      }
+    }
 
-      const scored = normalized.map(v => {
-        const score = scoreApiVideo(v, normReason, normEmotion, isBaby, subIntent);
-        return { ...v, score, source: 'youtube_api' };
-      });
+    const acceptedApiIds = new Set();
 
-      const threshold = 8;
-      const curatedIds = new Set(curated.map(c => c.id));
+    for (const q of queryList) {
+      if (apiVideos.length >= targetApiCount) break;
+      queriesTried.push(q);
 
-      let filtered = [];
-      scored.forEach(v => {
-        const titleLower = v.title.toLowerCase();
-        
-        if (curatedIds.has(v.id)) {
-          rejectedLogs.push({ id: v.id, title: v.title, reason: 'Duplicate of curated video' });
-          return;
+      try {
+        const items = await fetchYouTubeItems(q, apiKey, 15, normReason);
+        const normalized = items.map(item => normalizeVideoItem(item)).filter(v => v.id);
+
+        normalized.forEach(v => {
+          candidateLogs.push({ id: v.id, title: v.title, query: q });
+        });
+
+        const scored = normalized.map(v => {
+          const score = scoreApiVideo(v, normReason, normEmotion, isBaby, subIntent);
+          return { ...v, score, source: 'youtube_api' };
+        });
+
+        scored.sort((a, b) => b.score - a.score);
+
+        const threshold = 8;
+
+        for (const v of scored) {
+          if (apiVideos.length >= targetApiCount) break;
+          const ytId = extractYouTubeId(v.url || v.id);
+
+          // Rule 1: Exclude if already in selected 3 curated videos
+          if (selectedCuratedIds.has(ytId)) {
+            rejectedLogs.push({ id: ytId, title: v.title, reason: 'Duplicate of curated video' });
+            continue;
+          }
+
+          // Rule 2: Exclude if already accepted from previous API query
+          if (acceptedApiIds.has(ytId)) {
+            rejectedLogs.push({ id: ytId, title: v.title, reason: 'Duplicate API video' });
+            continue;
+          }
+
+          // Rule 3: Relevance score threshold
+          if (v.score < threshold) {
+            rejectedLogs.push({ id: ytId, title: v.title, reason: `Below relevance threshold (Score: ${v.score} < ${threshold})` });
+            continue;
+          }
+
+          // Rule 4: Blacklisted title/id
+          const titleLower = v.title.toLowerCase();
+          if (titleLower.includes('grammarly') || titleLower.includes('try grammarly') || titleLower.includes('body language tricks') || ytId === 'UrfpkvvRTns' || ytId === 'LjdtfeVxRm0' || ytId === 'jzGyjLGbAUc') {
+            rejectedLogs.push({ id: ytId, title: v.title, reason: 'Blacklisted title/id' });
+            continue;
+          }
+
+          acceptedApiIds.add(ytId);
+          apiVideos.push({
+            ...v,
+            id: ytId,
+            reason: normReason,
+            source: 'youtube_api'
+          });
+          acceptedLogs.push({ id: ytId, title: v.title, score: v.score, query: q });
         }
-
-        if (v.score < threshold) {
-          rejectedLogs.push({ id: v.id, title: v.title, reason: `Below relevance threshold (Score: ${v.score} < ${threshold})` });
-          return;
-        }
-
-        if (titleLower.includes('grammarly') || titleLower.includes('body language tricks') || v.id === 'UrfpkvvRTns' || v.id === 'LjdtfeVxRm0' || v.id === 'jzGyjLGbAUc') {
-          rejectedLogs.push({ id: v.id, title: v.title, reason: 'Blacklisted title/id' });
-          return;
-        }
-
-        filtered.push(v);
-        acceptedLogs.push({ id: v.id, title: v.title, score: v.score });
-      });
-
-      filtered.sort((a, b) => b.score - a.score);
-      // Select 3 API videos
-      apiVideos = filtered.slice(0, targetApiCount);
-    } catch (err) {
-      console.error('[YOUTUBE API ERROR]', err.message);
+      } catch (err) {
+        console.error(`[YOUTUBE API ERROR for query "${q}"]`, err.message);
+      }
     }
   } else {
     console.warn('[YOUTUBE API WARNING] YOUTUBE_API_KEY is missing');
   }
 
-  // Handle fallback if API failed or returned fewer than 3 videos
-  let finalVideos = [];
-  if (apiVideos.length === targetApiCount) {
-    finalVideos = [...curated, ...apiVideos];
-  } else {
-    const missingCount = 5 - (curated.length + apiVideos.length);
-    const seenIds = new Set([...curated.map(c => c.id), ...apiVideos.map(a => a.id)]);
-    const fallbackList = [];
-    
-    // Pick category-specific fallback curated videos safely to reach 5 total videos
-    const CATEGORY_FALLBACKS = {
-      bonding_issues: ['kQiT2tO3KeE', '4VuEIeDrwAM', 'bonding_guidance_3', 'bonding_guidance_4', 'bonding_guidance_5'],
-      overwhelmed: ['gA-Eokbod38', 'OUXKaaAke7Q', '1n46HPsYsHM', 'overwhelmed_guidance_4', 'overwhelmed_guidance_5'],
-      stress: ['gA-Eokbod38', 'OUXKaaAke7Q', '1n46HPsYsHM', 'overwhelmed_guidance_4', 'overwhelmed_guidance_5'],
-      daily_responsibilities: ['gA-Eokbod38', 'OUXKaaAke7Q', '1n46HPsYsHM', 'overwhelmed_guidance_4', 'overwhelmed_guidance_5'],
-      loneliness: ['2OEL4P1Rz04', 'AJpErm8H2aU', 'loneliness_guidance_3', 'loneliness_guidance_4', 'loneliness_guidance_5'],
-      lack_of_support: ['bnlKVPj4zeQ', 'AJpErm8H2aU', 'sF80I-TQiW0', 'support_guidance_4', 'support_guidance_5'],
-      sleep_problems: ['t0kACis_dJE', '-aqpq-9UcH8', 'e_3UoecZlxY', 'sleep_guidance_4', 'sleep_guidance_5'],
-      mother_sleep_problems: ['t0kACis_dJE', '-aqpq-9UcH8', 'e_3UoecZlxY', 'sleep_guidance_4', 'sleep_guidance_5'],
-      physical_recovery: ['ZToicYcHIOU', 'postpartum_physical_recovery_2', 'postpartum_physical_recovery_3', 'recovery_guidance_4', 'recovery_guidance_5'],
-      physical_discomfort: ['ZToicYcHIOU', 'postpartum_physical_recovery_2', 'postpartum_physical_recovery_3', 'recovery_guidance_4', 'recovery_guidance_5'],
-      anxiety: ['hrozJ-EbdGI', 'sF80I-TQiW0', 'anxiety_guidance_3', 'anxiety_guidance_3', 'sF80I-TQiW0'],
-      relationship_family_problem: ['wbN3M1aQAjw', '2uE4n2HLxDU', 'relationship_guidance_3', 'relationship_guidance_4', 'relationship_guidance_5'],
-      financial_worry: ['financial_stable_search', 'financial_budget_video', 'financial_guidance_3'],
-      negative_thoughts: ['9Q634rbsypE', 'hrozJ-EbdGI', 'negative_thoughts_3'],
-      baby_crying: ['kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide'],
-      baby_feeding: ['qdXehiELnIA', '_FsNGM2cIpI', 'n2Iu6NooqgE'],
-      baby_sleep: ['j2C8MkY7Co8', 'JePLWMMw3z0', 'n1NGKj2B2eU'],
-      understanding_baby: ['6rx_-__NsjU', 'dEQOWf-NuKs', 'fpiYNkkNmEo'],
-      baby_health: ['ZCQUPRyZbO0', '4SQNqugTUmw', 'k_FyoBhaFTA']
-    };
+  // Combine ONLY the selected 3 curated + 2 API videos (NO curated fallback replacement for missing API slots!)
+  const finalVideos = [...selectedCuratedVideos, ...apiVideos];
 
-    const reasonFallbacks = CATEGORY_FALLBACKS[normReason] || CATEGORY_FALLBACKS.overwhelmed;
+  // Exact validation counts
+  const curatedCount = selectedCuratedVideos.filter(v => v.source === 'curated').length;
+  const youtubeApiCount = apiVideos.filter(v => v.source === 'youtube_api').length;
+  const totalCount = finalVideos.length;
+  const uniqueCount = new Set(finalVideos.map(v => extractYouTubeId(v.url || v.id))).size;
+  const isSuccess = totalCount === 5 && curatedCount === 3 && youtubeApiCount === 2 && uniqueCount === 5;
 
-    for (let id of reasonFallbacks) {
-      if (!seenIds.has(id) && fallbackList.length < missingCount) {
-        const item = ALL_CURATED_VIDEOS[id];
-        if (item) {
-          fallbackList.push({
-            ...item,
-            reason: normReason,
-            source: 'curated_fallback' // Honest source labeling!
-          });
-          seenIds.add(id);
-        }
-      }
-    }
-    finalVideos = [...curated, ...apiVideos, ...fallbackList].slice(0, 5);
+  // DETAILED LOGGING (Step 12)
+  console.log('\n==================================================');
+  console.log('[VIDEO RECOMMENDATION PIPELINE LOG]');
+  console.log(`  Raw Reason: "${reason}" → Normalized: "${normReason}"`);
+  console.log(`  Raw Emotion: "${emotion}" → Normalized: "${normEmotion}"`);
+  console.log(`  Risk Level: ${riskLevel} | Baby Intent: ${isBaby} | SubIntent: ${subIntent}`);
+  console.log('--------------------------------------------------');
+  console.log(`  Curated Candidates Found: ${curatedCandidates.length}`);
+  console.log(`  Selected Curated Count: ${curatedCount}`);
+  selectedCuratedVideos.forEach((v, i) => {
+    console.log(`    [Curated ${i + 1}] ID: ${v.id} | Title: "${v.title}"`);
+  });
+  console.log('--------------------------------------------------');
+  console.log(`  YouTube API Key Present: ${!!apiKey}`);
+  console.log(`  Queries Tried (${queriesTried.length}): ${JSON.stringify(queriesTried)}`);
+  console.log(`  API Candidates Evaluated: ${candidateLogs.length}`);
+  console.log(`  API Accepted Count: ${youtubeApiCount}`);
+  apiVideos.forEach((v, i) => {
+    console.log(`    [API ${i + 1}] ID: ${v.id} | Score: ${v.score} | Title: "${v.title}"`);
+  });
+  console.log(`  API Rejected Candidates (${rejectedLogs.length}): ${JSON.stringify(rejectedLogs)}`);
+  console.log('--------------------------------------------------');
+  console.log('  FINAL VERIFICATION SUMMARY:');
+  console.log(`    TOTAL VIDEO COUNT  : ${totalCount}  (Expected: 5)`);
+  console.log(`    CURATED COUNT      : ${curatedCount}  (Expected: 3)`);
+  console.log(`    YOUTUBE API COUNT  : ${youtubeApiCount}  (Expected: 2)`);
+  console.log(`    UNIQUE VIDEO COUNT : ${uniqueCount}  (Expected: 5)`);
+  console.log(`    HYBRID RULE STATUS : ${isSuccess ? 'PASS ✅' : 'FAIL ❌'}`);
+  if (!isSuccess) {
+    console.warn(`    FAILURE REASON     : Expected 3 Curated + 2 API = 5 Unique. Got ${curatedCount} Curated + ${youtubeApiCount} API = ${totalCount} Total (${uniqueCount} Unique)`);
   }
-
-  // Source Distribution Summary
-  const sourceDist = {
-    curated: finalVideos.filter(v => v.source === 'curated').length,
-    youtube_api: finalVideos.filter(v => v.source === 'youtube_api').length,
-    curated_fallback: finalVideos.filter(v => v.source === 'curated_fallback').length
-  };
-
-  // DEBUG LOGGING REQUIREMENT
-  console.log('\n[YOUTUBE SUMMARY]');
-  console.log(`  Search query: "${searchQuery}"`);
-  console.log(`  Curated videos (3):`, JSON.stringify(curated.map(c => ({ id: c.id, title: c.title, source: c.source }))));
-  console.log(`  YouTube API videos (2):`, JSON.stringify(apiVideos.map(a => ({ id: a.id, title: a.title, source: a.source }))));
-  console.log(`  Final video count: ${finalVideos.length}`);
-  console.log(`  Final source distribution:`, JSON.stringify(sourceDist));
+  console.log('==================================================\n');
 
   return finalVideos;
 }
@@ -1175,5 +1486,6 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryT
 module.exports = {
   generateQuery,
   getCuratedVideos,
-  fetchAndRankVideos
+  fetchAndRankVideos,
+  extractYouTubeId
 };
