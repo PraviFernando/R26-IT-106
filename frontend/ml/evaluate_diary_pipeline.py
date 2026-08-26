@@ -172,10 +172,10 @@ REASON_KEYWORDS = {
     ],
     "bonding_issues": [
         "bonding", "bond with my baby", "bonding with baby", "feel close to my baby", "not close to my baby",
-        "distant", "emotionally distant", "emotionally distant from my baby", "don't feel connected to my baby", "can't connect with my baby",
+        "distant", "emotionally distant", "emotionally distant from my baby", "don't feel connected to my baby", "do not feel connected to my baby", "can't connect with my baby", "cannot connect with my baby", "cannot connect with my newborn", "connect with my newborn", "how to connect with my newborn",
         "connection with my baby", "attachment to my baby", "not attached to my baby", "feel disconnected from my baby",
-        "not bonding with my baby", "don't feel the connection", "don't feel close",
-        "don't know how to connect", "building a bond", "build a bond", "close to my baby", "cannot feel a real connection",
+        "not bonding with my baby", "don't feel the connection", "do not feel the connection", "don't feel close", "do not feel close",
+        "don't know how to connect", "do not know how to connect", "building a bond", "build a bond", "close to my baby", "cannot feel a real connection",
         "detached from my child", "feel empty instead of love", "like a caregiver not a mother", "baby feels like a stranger",
         " disconnected", "attachment", "maternal instinct", "guilt", "guilty",
         "මගේ බබාට ලං වෙලා නැහැ", "බබා එක්ක බැඳීමක් නැහැ", "බබා එක්ක සම්බන්ධ වෙන්න බැහැ", "බබා එක්ක connection එකක් නැහැ",
