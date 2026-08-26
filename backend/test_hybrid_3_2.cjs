@@ -37,14 +37,6 @@ const testCases = [
   },
   {
     caseNo: 5,
-    diaryText: "මට බබා එක්ක ලොකු බැඳීමක් දැනෙන්නේ නැහැ.",
-    expectedReason: "bonding_issues",
-    emotion: "sad",
-    riskLevel: 0,
-    babyIntent: true
-  },
-  {
-    caseNo: 6,
     diaryText: "මට උදව් කරන්න කවුරුත් නැහැ. බබාගේ වැඩ ඔක්කොම මට තනියම කරන්න වෙලා.",
     expectedReason: "lack_of_support",
     emotion: "stressed",
@@ -52,7 +44,7 @@ const testCases = [
     babyIntent: false
   },
   {
-    caseNo: 7,
+    caseNo: 6,
     diaryText: "රෑ මුලුල්ලේම බබා අඬනවා, මට නිදාගන්න හම්බුනේ නැහැ.",
     expectedReason: "sleep_problems",
     emotion: "fatigue",
@@ -60,7 +52,7 @@ const testCases = [
     babyIntent: true
   },
   {
-    caseNo: 8,
+    caseNo: 7,
     diaryText: "මට මේ ඔක්කොම වැඩ දරාගන්න බැහැ.",
     expectedReason: "overwhelmed",
     emotion: "stressed",
@@ -68,10 +60,18 @@ const testCases = [
     babyIntent: false
   },
   {
+    caseNo: 8,
+    diaryText: "ප්‍රසූතියෙන් පසු ඇඟට පණ නැහැ, ශාරීරික සුවතාවය අවශ්‍යයි.",
+    expectedReason: "physical_recovery",
+    emotion: "fatigue",
+    riskLevel: 0,
+    babyIntent: false
+  },
+  {
     caseNo: 9,
-    diaryText: "මගේ husband එක්කත් family එකත් එක්කත් ප්රශ්න තියෙනවා.",
-    expectedReason: "relationship_family_problem",
-    emotion: "stressed",
+    diaryText: "හිතට නරක අඳුරු සිතුවිලි එනවා, මට හරිම බයයි.",
+    expectedReason: "negative_thoughts",
+    emotion: "anxious",
     riskLevel: 0,
     babyIntent: false
   },
@@ -82,12 +82,60 @@ const testCases = [
     emotion: "stressed",
     riskLevel: 0,
     babyIntent: true
+  },
+  {
+    caseNo: 11,
+    diaryText: "බබා කිරි බොන්නේ නැහැ, කිරි දෙනකොට අපහසුයි.",
+    expectedReason: "baby_feeding",
+    emotion: "anxious",
+    riskLevel: 0,
+    babyIntent: true
+  },
+  {
+    caseNo: 12,
+    diaryText: "බබා රෑට නිදාගන්නේ නැහැ, නින්ද සන්සුන් කරන්න ඕනේ.",
+    expectedReason: "baby_sleep",
+    emotion: "fatigue",
+    riskLevel: 0,
+    babyIntent: true
+  },
+  {
+    caseNo: 13,
+    diaryText: "බබාගේ සංඥා සහ අවශ්‍යතා තේරුම් ගන්න අමාරුයි.",
+    expectedReason: "understanding_baby",
+    emotion: "anxious",
+    riskLevel: 0,
+    babyIntent: true
+  },
+  {
+    caseNo: 14,
+    diaryText: "බබාට අසනීපයි වගේ, උණ ගැන බයයි.",
+    expectedReason: "baby_health",
+    emotion: "anxious",
+    riskLevel: 0,
+    babyIntent: true
+  },
+  {
+    caseNo: 15,
+    diaryText: "වියදම් වැඩි වී මුදල් ප්‍රශ්න නිසා ලොකු බයක් දැනෙනවා.",
+    expectedReason: "financial_worry",
+    emotion: "stressed",
+    riskLevel: 0,
+    babyIntent: false
+  },
+  {
+    caseNo: 16,
+    diaryText: "මගේ husband එක්කත් family එකත් එක්කත් ප්රශ්න තියෙනවා.",
+    expectedReason: "relationship_family_problem",
+    emotion: "stressed",
+    riskLevel: 0,
+    babyIntent: false
   }
 ];
 
 async function runTests() {
   console.log('========================================================================================');
-  console.log('                 PERICARE HYBRID VIDEO RECOMMENDATION TEST SUITE                        ');
+  console.log('                 PERICARE HYBRID VIDEO RECOMMENDATION TEST SUITE (16 CATEGORIES)         ');
   console.log('========================================================================================\n');
 
   const results = [];
@@ -138,6 +186,4 @@ async function runTests() {
   console.log('========================================================================================\n');
 }
 
-runTests().catch(err => {
-  console.error('Test execution error:', err);
-});
+runTests().catch(console.error);

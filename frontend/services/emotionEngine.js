@@ -151,11 +151,18 @@ const REASON_KW = {
     'husband', 'partner', 'no help', 'unsupported', 'nobody helps', 'no family', 'doing it alone',
     'no one help me', 'no one helps me', 'no one help', 'no one helps', 'do everything alone',
     'do everything alone now', 'have to do everything alone', 'doing everything alone',
-    'everything alone', 'all alone',
+    'everything alone', 'all alone', 'no one to help me', 'do all the baby work and household work',
     'සැමියා උදව් කරන්නේ නැහැ', 'සැමියා උදව් කරන්නේ නෑ', 'උදව්වක් නෑ', 'කාගෙවත් සහයක් නෑ', 'උදව් නෑ',
     'කවුරුත් උදව් කරන්නේ නැහැ', 'කවුරුත් උදව් කරන්නේ නෑ', 'උදව් කරන්නේ නැහැ', 'උදව් කරන්නේ නෑ', 'කවුරුත් උදව්',
     'කිසිම උදව්වක්', 'උදව්වක් කරන්නේ නැහැ', 'උදව්වක් කරන්නේ නෑ', 'උදව්වක්', 'තනියම කරනවා',
-    'husband udaw naha', 'udawwak naha', 'kagegenwat support naha'
+    'මට උදව් කරන්න කවුරුත් නැහැ', 'මට උදව් කරන්න කවුරුත් නෑ', 'උදව් කරන්න කවුරුත් නැහැ', 'උදව් කරන්න කවුරුත් නෑ',
+    'බබාගේ වැඩ සහ ගෙදර වැඩ ඔක්කොම මට තනියම කරන්න වෙලා තියෙන්නේ',
+    'බබාගේ වැඩ සහ ගෙදර වැඩ ඔක්කොම මට තනියම කරන්න වෙලා',
+    'ගෙදර වැඩ ඔක්කොම මට තනියම කරන්න වෙලා', 'වැඩ ඔක්කොම මට තනියම කරන්න වෙලා',
+    'තනියම කරන්න වෙලා තියෙන්නේ', 'තනියම කරන්න වෙලා', 'මට තනියම කරන්න වෙලා',
+    'husband udaw naha', 'udawwak naha', 'kagegenwat support naha',
+    'mata udaw karanna kauruth naha', 'udaw karanna kauruth naha',
+    'babage wada saha gedara wada okkoma mata thaniyama karanna wela'
   ],
   sleep_problems: [
     'sleep', 'insomnia', 'awake all night', 'sleep deprived', 'cant sleep', 'no sleep',

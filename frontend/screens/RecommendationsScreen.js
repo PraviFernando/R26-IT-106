@@ -23,6 +23,21 @@ import { openYouTubeLink } from '../utils/openYouTube';
 
 const { width } = Dimensions.get('window');
 
+function extractYouTubeId(urlOrId) {
+  if (!urlOrId) return '';
+  const str = String(urlOrId).trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(str)) return str;
+  const watchMatch = str.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (watchMatch && watchMatch[1]) return watchMatch[1];
+  const shortMatch = str.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  if (shortMatch && shortMatch[1]) return shortMatch[1];
+  const shortsMatch = str.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/);
+  if (shortsMatch && shortsMatch[1]) return shortsMatch[1];
+  const embedMatch = str.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+  if (embedMatch && embedMatch[1]) return embedMatch[1];
+  return str;
+}
+
 const TABS = [
   { id: 'activities', icon: '🧘', label: 'ක්‍රියාකාරකම්' },
   { id: 'games', icon: '🎮', label: 'ක්‍රීඩා' },
@@ -985,7 +1000,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                         const badgeCol = isCurated ? '#6A1B9A' : isApi ? '#C62828' : '#0369A1';
 
                         return (
-                          <TouchableOpacity key={video.id || idx} style={s.mediaCard} onPress={() => openYouTube(video.url)}>
+                          <TouchableOpacity key={extractYouTubeId(video.url) || video.id || `v-${idx}`} style={s.mediaCard} onPress={() => openYouTube(video.url)}>
                             {video.thumbnail ? (
                               <Image source={{ uri: video.thumbnail }} style={s.videoThumb} />
                             ) : (

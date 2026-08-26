@@ -642,9 +642,15 @@ def analyze():
                 "lack_of_support": [
                     "support", "help", "සහයෝගය", "උදව්වක් නෑ", "udawwak naha", "doing everything myself", "left to handle everything",
                     "my partner does not help", "my family does not help", "no emotional support", "feel unsupported", "I need help",
-                    "need someone to help me", "wish my family supported me",
+                    "need someone to help me", "wish my family supported me", "no one to help me", "do all the baby work and household work",
                     "හැමදේම මම තනියම කරනවා", "මට සහාය නැහැ", "පවුලෙන් උදව් නැහැ", "මට උදව් කරන්නේ නැහැ",
-                    "mama thaniyama karanawa", "hamadema mama thaniyama karanawa", "pawulen udaw naha", "gedarin udaw naha", "support ekak naha"
+                    "මට උදව් කරන්න කවුරුත් නැහැ", "මට උදව් කරන්න කවුරුත් නෑ", "උදව් කරන්න කවුරුත් නැහැ", "උදව් කරන්න කවුරුත් නෑ",
+                    "බබාගේ වැඩ සහ ගෙදර වැඩ ඔක්කොම මට තනියම කරන්න වෙලා තියෙන්නේ",
+                    "බබාගේ වැඩ සහ ගෙදර වැඩ ඔක්කොම මට තනියම කරන්න වෙලා",
+                    "ගෙදර වැඩ ඔක්කොම මට තනියම කරන්න වෙලා", "වැඩ ඔක්කොම මට තනියම කරන්න වෙලා",
+                    "තනියම කරන්න වෙලා තියෙන්නේ", "තනියම කරන්න වෙලා", "මට තනියම කරන්න වෙලා",
+                    "mama thaniyama karanawa", "hamadema mama thaniyama karanawa", "pawulen udaw naha", "gedarin udaw naha", "support ekak naha",
+                    "mata udaw karanna kauruth naha", "udaw karanna kauruth naha", "babage wada saha gedara wada okkoma mata thaniyama karanna wela"
                 ],
                 "sleep_problems": [
                     "sleep", "insomnia", "awake", "නින්ද", "නිදාගන්නේ නැහැ", "can't sleep", "cannot sleep", "cannot fall asleep", "unable to sleep",

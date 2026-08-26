@@ -272,6 +272,22 @@ const ALL_CURATED_VIDEOS = {
     url: 'https://www.youtube.com/watch?v=2OEL4P1Rz04',
     thumbnail: 'https://img.youtube.com/vi/2OEL4P1Rz04/0.jpg'
   },
+  '1oanOmN83fw': {
+    id: '1oanOmN83fw',
+    title: 'Overcoming Postpartum Loneliness & Isolation Guidance',
+    description: 'Practical emotional support and coping strategies for new mothers feeling lonely.',
+    channelTitle: 'PeriCare Support',
+    url: 'https://www.youtube.com/watch?v=1oanOmN83fw',
+    thumbnail: 'https://img.youtube.com/vi/1oanOmN83fw/0.jpg'
+  },
+  'iLUk7xB0BVw': {
+    id: 'iLUk7xB0BVw',
+    title: 'Finding Connection & Mental Wellbeing in Motherhood',
+    description: 'Building emotional connection, support networks, and overcoming maternal isolation.',
+    channelTitle: 'PeriCare Support',
+    url: 'https://www.youtube.com/watch?v=iLUk7xB0BVw',
+    thumbnail: 'https://img.youtube.com/vi/iLUk7xB0BVw/0.jpg'
+  },
   '1n46HPsYsHM': {
     id: '1n46HPsYsHM',
     title: 'දරාගත නොහැකි පීඩනය කළමනාකරණය (Coping with Overwhelm)',
@@ -856,18 +872,20 @@ function detectBabyHealthSubIntent(text = '') {
   return 'Other Baby Health';
 }
 
-function getCuratedVideos(reason, emotion, babyContext, subIntent = '') {
+function getCuratedVideos(reason, emotion, babyContext, subIntent = '', requestSeenVideoIds = null) {
   const normReason = normalizeReasonKey(reason);
 
   const curatedList = [];
-  const seenYtIds = new Set();
+  const localSeenYtIds = new Set();
 
   const addVideo = (vId) => {
     if (!vId) return;
     const details = ALL_CURATED_VIDEOS[vId];
     if (!details) return;
     const ytId = extractYouTubeId(details.url || details.id);
-    if (seenYtIds.has(ytId)) return;
+    if (!ytId) return;
+    if (localSeenYtIds.has(ytId)) return;
+    if (requestSeenVideoIds && requestSeenVideoIds.has(ytId)) return;
 
     curatedList.push({
       ...details,
@@ -875,7 +893,10 @@ function getCuratedVideos(reason, emotion, babyContext, subIntent = '') {
       reason: normReason,
       source: 'curated'
     });
-    seenYtIds.add(ytId);
+    localSeenYtIds.add(ytId);
+    if (requestSeenVideoIds) {
+      requestSeenVideoIds.add(ytId);
+    }
   };
 
   const MAPPING = {
@@ -889,7 +910,7 @@ function getCuratedVideos(reason, emotion, babyContext, subIntent = '') {
     overwhelmed: ['gA-Eokbod38', 'OUXKaaAke7Q', '1n46HPsYsHM'],
     stress: ['gA-Eokbod38', 'OUXKaaAke7Q', '1n46HPsYsHM'],
     relationship_family_problem: ['wbN3M1aQAjw', '2uE4n2HLxDU', 'AJpErm8H2aU'],
-    loneliness: ['2OEL4P1Rz04', 'AJpErm8H2aU', 'bnlKVPj4zeQ'],
+    loneliness: ['2OEL4P1Rz04', '1oanOmN83fw', 'iLUk7xB0BVw', 'AJpErm8H2aU', 'bnlKVPj4zeQ'],
     fatigue: ['fm5ZnhqWkO8', 't0kACis_dJE', '-aqpq-9UcH8'],
     loss_of_confidence: ['9Q634rbsypE', 'hrozJ-EbdGI', '2OEL4P1Rz04'],
     financial_worry: ['6m9sCmDIlL0', 'AJpErm8H2aU', 'gA-Eokbod38'],
@@ -1085,7 +1106,7 @@ const CATEGORY_RULES = {
   },
   loneliness: {
     required: ['lonely', 'loneliness', 'alone', 'isolation', 'isolated', 'support', 'emotional support', 'mother', 'mom', 'postpartum'],
-    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'feeding', 'workout', 'grammarly']
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'sleep', 'sleeping', 'feeding', 'workout', 'grammarly', 'crying', 'cry', 'colic', 'soothe']
   },
   fatigue: {
     required: ['fatigue', 'exhausted', 'tired', 'rest', 'energy', 'sleepy', 'mother', 'mom', 'postpartum'],
@@ -1097,6 +1118,10 @@ const CATEGORY_RULES = {
   },
   anxiety: {
     required: ['anxiety', 'anxious', 'panic', 'worry', 'worried', 'calming', 'coping', 'postpartum', 'mother', 'mom'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'financial', 'marriage', 'grammarly']
+  },
+  negative_thoughts: {
+    required: ['negative', 'thoughts', 'intrusive', 'mental', 'mind', 'coping', 'healing', 'overcoming', 'wellness', 'mother', 'mom', 'postpartum'],
     forbidden: ['jaundice', 'fever', 'sick', 'illness', 'bonding', 'attachment', 'financial', 'marriage', 'grammarly']
   },
   baby_crying: {
@@ -1322,26 +1347,15 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryT
 
   const subIntent = normReason === 'baby_health' ? detectBabyHealthSubIntent(diaryText) : 'Other Baby Health';
 
+  // Single request-scoped Set for ALL video IDs in this request
+  const seenVideoIds = new Set();
+
   // 1. Select Curated Videos (3 UNIQUE curated videos)
   const targetCuratedCount = 3;
   const targetApiCount = 2;
 
-  const curatedCandidates = getCuratedVideos(reason, emotion, isBaby, subIntent);
-  const selectedCuratedVideos = [];
-  const selectedCuratedIds = new Set();
-
-  for (const c of curatedCandidates) {
-    if (selectedCuratedVideos.length >= targetCuratedCount) break;
-    const ytId = extractYouTubeId(c.url || c.id);
-    if (ytId && !selectedCuratedIds.has(ytId)) {
-      selectedCuratedIds.add(ytId);
-      selectedCuratedVideos.push({
-        ...c,
-        id: ytId,
-        source: 'curated'
-      });
-    }
-  }
+  const curatedCandidates = getCuratedVideos(reason, emotion, isBaby, subIntent, seenVideoIds);
+  const selectedCuratedVideos = curatedCandidates.slice(0, targetCuratedCount);
 
   // 2. Fetch 2 UNIQUE YouTube API Videos (Iterating over Query Variations)
   let apiVideos = [];
@@ -1368,8 +1382,6 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryT
       }
     }
 
-    const acceptedApiIds = new Set();
-
     for (const q of queryList) {
       if (apiVideos.length >= targetApiCount) break;
       queriesTried.push(q);
@@ -1395,32 +1407,27 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryT
           if (apiVideos.length >= targetApiCount) break;
           const ytId = extractYouTubeId(v.url || v.id);
 
-          // Rule 1: Exclude if already in selected 3 curated videos
-          if (selectedCuratedIds.has(ytId)) {
-            rejectedLogs.push({ id: ytId, title: v.title, reason: 'Duplicate of curated video' });
+          // Central Duplicate Check: Exclude if ID already seen (in curated or earlier API query)
+          if (!ytId || seenVideoIds.has(ytId)) {
+            console.log(`[DUPLICATE VIDEO REJECTED] Title: "${v.title}" | ID: "${ytId}" | Reason: Already seen in request`);
+            rejectedLogs.push({ id: ytId, title: v.title, reason: 'Duplicate YouTube Video ID (already seen)' });
             continue;
           }
 
-          // Rule 2: Exclude if already accepted from previous API query
-          if (acceptedApiIds.has(ytId)) {
-            rejectedLogs.push({ id: ytId, title: v.title, reason: 'Duplicate API video' });
-            continue;
-          }
-
-          // Rule 3: Relevance score threshold
+          // Rule: Relevance score threshold
           if (v.score < threshold) {
             rejectedLogs.push({ id: ytId, title: v.title, reason: `Below relevance threshold (Score: ${v.score} < ${threshold})` });
             continue;
           }
 
-          // Rule 4: Blacklisted title/id
+          // Rule: Blacklisted title/id
           const titleLower = v.title.toLowerCase();
           if (titleLower.includes('grammarly') || titleLower.includes('try grammarly') || titleLower.includes('body language tricks') || ytId === 'UrfpkvvRTns' || ytId === 'LjdtfeVxRm0' || ytId === 'jzGyjLGbAUc') {
             rejectedLogs.push({ id: ytId, title: v.title, reason: 'Blacklisted title/id' });
             continue;
           }
 
-          acceptedApiIds.add(ytId);
+          seenVideoIds.add(ytId);
           apiVideos.push({
             ...v,
             id: ytId,
