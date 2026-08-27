@@ -15,6 +15,7 @@ import exerciseService from '../services/exerciseService';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -251,9 +252,27 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
 
+    const getNormalizedDeliveryType = (type) => {
+        if (!type) return 'normal';
+        const lower = type.toLowerCase();
+        if (lower.includes('c-section')) return 'c-section';
+        return 'normal';
+    };
+
     const [deliveryDate, setDeliveryDate] = useState(user?.deliveryDate || '');
     const [weeks, setWeeks] = useState(initialData?.weeksAfterDelivery || '');
-    const [deliveryType, setDeliveryType] = useState(initialData?.deliveryType || 'normal');
+    const [deliveryType, setDeliveryType] = useState(initialData?.deliveryType || getNormalizedDeliveryType(user?.deliveryType));
+
+    useEffect(() => {
+        if (user) {
+            if (user.deliveryDate) {
+                setDeliveryDate(user.deliveryDate);
+            }
+            if (user.deliveryType) {
+                setDeliveryType(getNormalizedDeliveryType(user.deliveryType));
+            }
+        }
+    }, [user]);
 
     useEffect(() => {
         if (deliveryDate && deliveryDate.length === 10) {
@@ -372,16 +391,26 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                     <Text style={styles.label}>{isSinhala ? 'දරු ප්‍රසූති ක්‍රමය' : 'Delivery Method'}</Text>
                     <View style={styles.rowButtons}>
                         <TouchableOpacity
-                            style={[styles.optionBtn, deliveryType === 'normal' && styles.optionBtnActive]}
+                            style={[
+                                styles.optionBtn, 
+                                deliveryType === 'normal' && styles.optionBtnActive,
+                                !!user?.deliveryType && { opacity: 0.65 }
+                            ]}
                             onPress={() => setDeliveryType('normal')}
+                            disabled={!!user?.deliveryType}
                         >
                             <Text style={[styles.optionText, deliveryType === 'normal' && styles.optionTextActive]}>
-                                {isSinhala ? '🤱 සාමාන්‍ය' : '🤱 Normal'}
+                                {isSinhala ? '🤱 සාමාන්ූය' : '🤱 Normal'}
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={[styles.optionBtn, deliveryType === 'c-section' && styles.optionBtnActive]}
+                            style={[
+                                styles.optionBtn, 
+                                deliveryType === 'c-section' && styles.optionBtnActive,
+                                !!user?.deliveryType && { opacity: 0.65 }
+                            ]}
                             onPress={() => setDeliveryType('c-section')}
+                            disabled={!!user?.deliveryType}
                         >
                             <Text style={[styles.optionText, deliveryType === 'c-section' && styles.optionTextActive]}>
                                 {isSinhala ? '🏥 සිසේරියන්' : '🏥 C-Section'}
@@ -1117,11 +1146,24 @@ export default function ExerciseScreen({ navigation }) {
     const [progress, setProgress] = useState(null);
     const [showForm, setShowForm] = useState(true);
     const [activeTab, setActiveTab] = useState('todo');
+    const [latestUser, setLatestUser] = useState(null);
 
     useEffect(() => {
         loadProgress();
         checkTodayData();
+        fetchLatestUser();
     }, []);
+
+    const fetchLatestUser = async () => {
+        try {
+            const response = await api.get('/user/me');
+            if (response.data) {
+                setLatestUser(response.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch user me:', err);
+        }
+    };
 
     const loadProgress = async () => {
         try {
@@ -1368,7 +1410,7 @@ export default function ExerciseScreen({ navigation }) {
                         <HealthDataForm
                             onSubmit={handleSubmitHealthData}
                             loading={loading}
-                            user={user}
+                            user={latestUser || user}
                             initialData={initialHealthData}
                         />
                     )}
