@@ -129,17 +129,6 @@ const DashboardScreenCopy = ({ navigation }) => {
               <Text style={s.systemNoteText}>{SI.systemNote}</Text>
             </View>
 
-            {/* Detected Mood Card */}
-            <LinearGradient colors={ec.gradient} style={s.moodCard}>
-              <Text style={s.moodCardLabel}>{SI.detectedMood}</Text>
-              <View style={s.moodRow}>
-                <Text style={s.moodEmojiBig}>{selectedEmoji}</Text>
-                <View>
-                  <Text style={[s.moodName, { color: ec.color }]}>{selectedFeeling}</Text>
-                  <Text style={s.moodSub}>{SI.diaryProcessed}</Text>
-                </View>
-              </View>
-            </LinearGradient>
 
             {/* Risk Level Card */}
             <View style={[s.riskCard, { backgroundColor: riskBg }]}>

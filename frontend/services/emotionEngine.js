@@ -137,15 +137,18 @@ const REASON_KW = {
     ' struggle to feel', 'feel that motherly affection', 'not close to my baby', 'not close', 'feel close to my baby', 'feel close',
     'connection with my baby', 'attachment to my baby', 'can\'t connect with my baby',
     'cant connect with my baby', 'can\'t connect', 'cant connect', 'don\'t feel connected', 'dont feel connected', 'not attached to my baby',
+    'not emotionally connected', 'emotionally connected', 'not connected', 'emotional connection',
     'බැඳීමක් නෑ', 'බැඳීමක් නැහැ', 'ආදරයක් දැනෙන්නේ නෑ', 'ආදරයක් දැනෙන්නේ නැහැ', 'සම්බන්ධයක් නෑ', 'සම්බන්ධයක් නැහැ',
     'කිසිම හැඟීමක් නෑ', 'හැඟීමක් නැහැ', 'හැඟීමක් නෑ', 'ලං වෙලා නැහැ', 'ලං වෙලා නෑ', 'ලං වෙලා නැහැ වගේ',
     'ලොකු බැඳීමක්', 'බැඳීමක් දැනෙන්නේ නැහැ', 'බැඳීමක් දැනෙන්නේ නෑ', 'දැනෙන්නේ නැහැ', 'හොඳ අම්මා කෙනෙක් නෙවෙයිද',
     'අම්මා කෙනෙක් නෙවෙයිද', 'බැඳීමක් දැනෙන්නෙ නැහැ', 'බැඳීමක් දැනෙන්නෙ නෑ', 'බබා එක්ක ලොකු බැඳීමක්', 'බැඳීමක්',
     'සම්බන්ධ වෙන්න බැහැ', 'සම්බන්ධ වෙන්න බෑ', 'connection එකක් නැහැ', 'connection එකක් නෑ', 'ඈත් වෙලා වගේ', 'ඈත් වෙලා',
+    'විශේෂ ලංවීමක්', 'ලංවීමක්', 'ලංවීම', 'ලංවීමක් දැනෙන්න',
     'bandimak naha', 'danenne naha', 'connection ekak naha', 'connection ekak na', 'connection na', 'emotional connection na', 'emotional connection', 'bandeemak', 'bandeemak danenne na', 'bandeemak danenne naha',
     'bandimak danenne na', 'bandimak danenne naha', 'loku bandeemak', 'loku bandimak', 'danenne na',
     'wenas feeling', 'wenas feeling ekak', 'feeling ekak enne', 'baby langa hitiyath', 'loku bandeemak danenne na',
-    'bond wenna amarui', 'bond wenna', 'baba ekka close na', 'close na', 'baba ekka sambandha wenna ba', 'sambandha wenna ba'
+    'bond wenna amarui', 'bond wenna', 'baba ekka close na', 'close na', 'baba ekka sambandha wenna ba', 'sambandha wenna ba',
+    'special close feeling', 'special close feeling ekak', 'close feeling', 'close feeling ekak', 'lanweemak', 'langweemak'
   ],
   lack_of_support: [
     'husband', 'partner', 'no help', 'unsupported', 'nobody helps', 'no family', 'doing it alone',
@@ -257,8 +260,9 @@ const EMOTION_KW = {
   sad: [
     'sad', 'cry', 'unhappy', 'depressed', 'hopeless', 'hurt', 'empty', 'down', 'devastated',
     'empty feeling', 'no point', 'nothing matters', 'karaganna ba', 'wadak na', 'godak dukai',
-    'දුකයි', 'කඳුළු', 'අඬනවා', 'කනගාටුයි', 'වේදනාව', 'ගොඩක් දුකයි',
-    'dukai', 'dukayi', 'godak dukai', 'andana', 'kandulu', 'daneo', 'daneno'
+    'not emotionally connected', 'close feeling', 'special close feeling',
+    'දුකයි', 'කඳුළු', 'අඬනවා', 'කනගාටුයි', 'වේදනාව', 'ගොඩක් දුකයි', 'විශේෂ ලංවීමක්', 'ලංවීමක්',
+    'dukai', 'dukayi', 'godak dukai', 'andana', 'kandulu', 'daneo', 'daneno', 'lanweemak'
   ],
   stressed: [
     'stress', 'overwhelmed', 'tense', 'frustrated', 'on edge', 'pressure', 'anxious', 'irritated',
