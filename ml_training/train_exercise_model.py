@@ -15,10 +15,13 @@ df = pd.read_excel('new_dataset.xlsx')
 print(f"Dataset shape: {df.shape}")
 
 # Define column groups
+epds_map = {'low': 0, 'medium': 1, 'moderate': 1, 'high': 2}
+df['epds_encoded'] = df['epds_risk_level'].str.lower().map(epds_map).fillna(0).astype(int)
+
 feature_cols = [
     'weeks_after_delivery', 'delivery_type', 'pelvic_pain', 'back_pain', 
     'abdominal_pain', 'bleeding', 'doctor_restrictions', 'muscle_weakness', 
-    'fatigue_level', 'mobility_level', 'willingness'
+    'fatigue_level', 'mobility_level', 'willingness', 'epds_encoded'
 ]
 target_cols = ['target_risk_score', 'target_exercise_category']
 

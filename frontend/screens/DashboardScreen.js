@@ -674,68 +674,7 @@ export default function DashboardScreen({ navigation }) {
                         />
                     </View>
                 </View>
-                {/* ── Suggested Exercises ── */}
-                {!loadingExercises && suggestedExercises.length > 0 && (
-                    <View style={{ marginTop: 20 }}>
-                        <View style={styles.sectionHeader}>
-                            <Text style={styles.sectionTitle}>
-                                {t('Suggested Exercises')}
-                            </Text>
-                            <TouchableOpacity onPress={() => navigation.navigate('Exercise')}>
-                                <Text style={styles.viewAllText}>{t('View All')}</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.exerciseGrid}>
-                            {suggestedExercises.map((rec, index) => {
-                                const details = rec.exerciseDetails || {};
-                                const videoUrl = details.videoUrl || (details.videos && details.videos[0]?.url);
-                                const youtubeId = getYouTubeId(videoUrl);
 
-                                return (
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={styles.exerciseDashCard}
-                                        onPress={() => {
-                                            if (videoUrl) {
-                                                setSelectedVideoUrl(videoUrl);
-                                                setVideoModalVisible(true);
-                                            } else {
-                                                navigation.navigate('Exercise');
-                                            }
-                                        }}
-                                    >
-                                        <View style={styles.exerciseDashThumbnailContainer}>
-                                            {youtubeId ? (
-                                                <Image
-                                                    source={{ uri: `https://img.youtube.com/vi/${youtubeId}/0.jpg` }}
-                                                    style={styles.exerciseDashThumbnail}
-                                                    resizeMode="cover"
-                                                />
-                                            ) : (
-                                                <View style={styles.exerciseDashIconFallback}>
-                                                    <Text style={styles.exerciseDashIcon}>
-                                                        {details.type === 'walking' ? '🚶' : details.type === 'breathing' ? '🌬️' : '🏋️'}
-                                                    </Text>
-                                                </View>
-                                            )}
-                                            <View style={styles.playIconOverlay}>
-                                                <Text style={styles.playIcon}>▶</Text>
-                                            </View>
-                                        </View>
-                                        <View style={styles.exerciseDashInfo}>
-                                            <Text style={styles.exerciseDashName} numberOfLines={1}>
-                                                {details.nameSi || details.name}
-                                            </Text>
-                                            <Text style={styles.exerciseDashMeta}>
-                                                {details.duration || rec.duration} {t('min')} • {t(details.intensity)}
-                                            </Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-                    </View>
-                )}
 
                 {/* ── Recent Activity ── */}
                 <View style={styles.sectionHeader}>

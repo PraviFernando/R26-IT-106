@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Diary = require('../models/Diary');
 const Feedback = require('../models/Feedback');
 const ExerciseMovementSession = require('../models/ExerciseMovementSession');
+const EPDSScreening = require('../models/EPDSScreening');
 const MLPredictionService = require('../services/mlPredictionService');
 const axios = require('axios');
 
@@ -107,13 +108,13 @@ const evaluateSafetyStatus = (weeks, deliveryType, bleeding, doctorRestrictions)
         safetyMessage = 'Doctor has restricted exercise. Please follow medical advice.';
         safetyMessageSi = 'වෛද්‍යවරයා ව්‍යායාම සීමා කර ඇත. කරුණාකර වෛද්‍ය උපදෙස් අනුගමනය කරන්න.';
     } else if (bleeding) {
-        safetyStatus = 'blocked';
-        safetyMessage = 'Exercise is not recommended due to bleeding complications. Please consult your doctor.';
-        safetyMessageSi = 'රුධිර වහනය හේතුවෙන් ව්‍යායාම නිර්දේශ නොකෙරේ. කරුණාකර ඔබේ වෛද්‍යවරයා හමුවන්න.';
+        safetyStatus = 'limited';
+        safetyMessage = 'Only breathing exercises are recommended due to bleeding complications. Please consult your doctor.';
+        safetyMessageSi = 'රුධිර වහනය හේතුවෙන් මෘදු ශ්වසන ව්‍යායාම පමණක් නිර්දේශ කෙරේ. කරුණාකර ඔබේ වෛද්‍යවරයා හමුවන්න.';
     } else if (deliveryType === 'c-section' && weeks < 6) {
-        safetyStatus = 'blocked';
-        safetyMessage = 'C-section requires at least 6 weeks of recovery before exercise. Please consult your doctor.';
-        safetyMessageSi = 'සිසේරියන් සැත්කමකින් පසු ව්‍යායාම සඳහා අවම වශයෙන් සති 6ක් ගතවිය යුතුය. කරුණාකර ඔබේ වෛද්‍යවරයා හමුවන්න.';
+        safetyStatus = 'limited';
+        safetyMessage = 'Only breathing, gentle mobility, and light walking exercises are recommended within the first 6 weeks of a C-section. Please consult your doctor.';
+        safetyMessageSi = 'සිසේරියන් සැත්කමකින් පසු පළමු සති 6 තුළ ශ්වසන ව්‍යායාම, මෘදු චලන සහ සැහැල්ලු ඇවිදීමේ ව්‍යායාම පමණක් නිර්දේශ කෙරේ. කරුණාකර ඔබේ වෛද්‍යවරයා හමුවන්න.';
     }
 
     return { safetyStatus, safetyMessage, safetyMessageSi };
@@ -172,15 +173,24 @@ const submitHealthData = async (req, res, next) => {
 
         let finalWeeks = weeksAfterDelivery;
         let finalDeliveryDate = deliveryDate;
+        let finalDeliveryType = deliveryType;
+
+        const user = await User.findById(userId);
 
         if (deliveryDate) {
             await User.findByIdAndUpdate(userId, { deliveryDate });
             finalDeliveryDate = deliveryDate;
+        } else if (user && user.deliveryDate) {
+            finalDeliveryDate = user.deliveryDate;
+        }
+
+        if (deliveryType) {
+            await User.findByIdAndUpdate(userId, { deliveryType });
+            finalDeliveryType = deliveryType;
+        } else if (user && user.deliveryType) {
+            finalDeliveryType = user.deliveryType;
         } else {
-            const user = await User.findById(userId);
-            if (user && user.deliveryDate) {
-                finalDeliveryDate = user.deliveryDate;
-            }
+            finalDeliveryType = 'normal';
         }
 
         // Only calculate weeks from deliveryDate if weeksAfterDelivery was not explicitly provided by the user
@@ -196,7 +206,7 @@ const submitHealthData = async (req, res, next) => {
             date,
             deliveryDate: finalDeliveryDate,
             weeksAfterDelivery: finalWeeks || weeksAfterDelivery || 0,
-            deliveryType: deliveryType || 'normal',
+            deliveryType: finalDeliveryType,
             pelvicPain: pelvicPain === true || pelvicPain === 'true',
             backPain: backPain === true || backPain === 'true',
             abdominalPain: abdominalPain === true || abdominalPain === 'true',
@@ -211,20 +221,24 @@ const submitHealthData = async (req, res, next) => {
             stressKeywords: stressKeywords || []
         };
 
-        // 1. Get ML risk prediction and exercise category
+        // 1. Get EPDS risk screening, inject it to healthData, and get ML prediction
         let riskScore = 1;
         let exerciseCategory = 3;
         let mlPredictionData = null;
 
         try {
+            const latestEpds = await EPDSScreening.findOne({ userId }).sort({ createdAt: -1 });
+            const epdsRisk = latestEpds ? latestEpds.riskLevel : 'low';
+            healthData.epdsRiskLevel = epdsRisk;
+
             mlPredictionData = await MLPredictionService.predictRisk(healthData);
             if (mlPredictionData.success) {
                 riskScore = mlPredictionData.riskLevel;
                 exerciseCategory = mlPredictionData.exerciseCategory;
             }
         } catch (err) {
-            console.error('ML API prediction failed:', err.message);
-            // Fallback automatically sets fallback parameters
+            console.error('Failed to get ML prediction with EPDS risk level:', err.message);
+            // Fallback automatically sets parameters using healthData (which now includes epdsRiskLevel)
             const fallback = MLPredictionService.fallbackPrediction(healthData);
             riskScore = fallback.riskLevel;
             exerciseCategory = fallback.exerciseCategory;
@@ -256,7 +270,13 @@ const submitHealthData = async (req, res, next) => {
             (healthData.abdominalPain ? 1 : 0) +
             (healthData.muscleWeakness ? 1 : 0);
 
-        if (symptomsCount >= 3) {
+        if (healthData.bleedingComplications) {
+            exerciseCategory = 1; // Cap at Category 1 (Bedrest/Breathing) due to bleeding
+            isOverridden = true;
+        } else if (healthData.deliveryType === 'c-section' && healthData.weeksAfterDelivery < 6) {
+            exerciseCategory = Math.min(exerciseCategory, 2); // Cap at Category 2 (Gentle Mobility) for C-section under 6 weeks
+            isOverridden = true;
+        } else if (symptomsCount >= 3) {
             exerciseCategory = 1; // Cap at Category 1 (Bedrest/Breathing)
             isOverridden = true;
         } else if (healthData.mobilityLevel === 'very_limited' || healthData.fatigueLevel === 'high' || symptomsCount === 2) {
