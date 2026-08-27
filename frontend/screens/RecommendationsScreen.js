@@ -930,7 +930,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                     )}
 
                     {/* Render backend hybrid 5 videos directly with clear source badges */}
-                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬 (නිර්දේශිත වීඩියෝ 5 — 3 Curated + 2 YouTube API)</Text>
+                    <Text style={s.tabIntro}>උපදේශාත්මක වීඩියෝ 🎬</Text>
                     {loadingVideos ? (
                       <ActivityIndicator size="large" color={colors.lavenderDark} style={{ marginVertical: 20 }} />
                     ) : videoError ? (
@@ -1009,11 +1009,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                               </View>
                             )}
                             <View style={s.mediaInfo}>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                                <View style={[s.typeTag, { backgroundColor: badgeBg }]}>
-                                  <Text style={[s.typeTagText, { color: badgeCol }]}>{sourceLabel}</Text>
-                                </View>
-                              </View>
+
                               <Text style={s.mediaTitle} numberOfLines={2}>{video.title}</Text>
                               <Text style={s.mediaSub} numberOfLines={1}>{video.channelTitle || 'YouTube'}</Text>
                               <Text style={s.videoDesc} numberOfLines={2}>{video.description}</Text>

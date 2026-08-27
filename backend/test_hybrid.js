@@ -70,7 +70,7 @@ async function runTests() {
     console.log('Videos:', results.map(r => ({ title: r.title, id: r.id, source: r.source })));
 
     // Verifications
-    const hasBabyCare = results.some(r => r.id === 'qdXehiELnIA' || r.id === 'kmbKaSRyZ-c' || r.id === 'j2C8MkY7Co8');
+    const hasBabyCare = results.some(r => r.id === 'qdXehiELnIA' || r.id === 'kmbKaSRyZ-c' || r.id === 'j2C8MkY7Co8' || r.id === 'TWHOFDQHOUA' || r.id === '3G5aAQL3R_g');
     console.log('No breastfeeding or baby sleep/crying videos included:', !hasBabyCare ? '✅' : '❌');
     console.log('Passed Cap Check (<= 5):', results.length <= 5 ? '✅' : '❌');
   } catch (err) {

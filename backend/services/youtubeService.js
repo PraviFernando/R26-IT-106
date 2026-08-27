@@ -31,21 +31,21 @@ const ALL_CURATED_VIDEOS = {
   },
 
   // Baby Crying
-  'j2C8MkY7Co8': {
-    id: 'j2C8MkY7Co8',
-    title: 'How To Calm A Crying Baby - Dr. Robert Hamilton Demonstrates "The Hold" (Official)',
-    description: 'Dr. Robert Hamilton demonstrates "The Hold" technique to calm a crying baby.',
-    channelTitle: 'Dr. Robert Hamilton',
-    url: 'https://www.youtube.com/watch?v=j2C8MkY7Co8',
-    thumbnail: 'https://img.youtube.com/vi/j2C8MkY7Co8/0.jpg'
+  'TWHOFDQHOUA': {
+    id: 'TWHOFDQHOUA',
+    title: 'Don’t Mistake Pain With Purple Crying',
+    description: 'Understanding newborn purple crying and distinguishing pain from normal crying cues.',
+    channelTitle: 'Emma Hubbard',
+    url: 'https://www.youtube.com/watch?v=TWHOFDQHOUA',
+    thumbnail: 'https://img.youtube.com/vi/TWHOFDQHOUA/0.jpg'
   },
-  'JePLWMMw3z0': {
-    id: 'JePLWMMw3z0',
-    title: 'Instantly Calm a Crying Baby (4 Little-Known Techniques That Work When Nothing Else Does)',
-    description: '4 little-known techniques to calm a crying baby when nothing else works.',
-    channelTitle: 'Pediatric Care Guidance',
-    url: 'https://www.youtube.com/watch?v=JePLWMMw3z0',
-    thumbnail: 'https://img.youtube.com/vi/JePLWMMw3z0/0.jpg'
+  '3G5aAQL3R_g': {
+    id: '3G5aAQL3R_g',
+    title: 'Every Type of Baby Cry Explained',
+    description: 'Decodable baby cry sounds and types explained for new parents.',
+    channelTitle: 'Emma Hubbard',
+    url: 'https://www.youtube.com/watch?v=3G5aAQL3R_g',
+    thumbnail: 'https://img.youtube.com/vi/3G5aAQL3R_g/0.jpg'
   },
   'kmbKaSRyZ-c': {
     id: 'kmbKaSRyZ-c',
@@ -673,9 +673,9 @@ const CURATED_VIDEO_LIBRARY = {
     stressed: ['qdXehiELnIA', 'n2Iu6NooqgE', '_FsNGM2cIpI']
   },
   baby_crying: {
-    default: ['j2C8MkY7Co8', 'JePLWMMw3z0', 'kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide'],
-    stressed: ['j2C8MkY7Co8', 'JePLWMMw3z0', 'kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide'],
-    anxious: ['j2C8MkY7Co8', 'JePLWMMw3z0', 'kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide']
+    default: ['TWHOFDQHOUA', '3G5aAQL3R_g', 'kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide'],
+    stressed: ['TWHOFDQHOUA', '3G5aAQL3R_g', 'kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide'],
+    anxious: ['TWHOFDQHOUA', '3G5aAQL3R_g', 'kmbKaSRyZ-c', 'n1NGKj2B2eU', 'bonding_cries_guide']
   },
   baby_sleep: {
     default: ['SfCxUG1nE84', 'pJYWRlTQ9s8', 'n1NGKj2B2eU'],
@@ -916,7 +916,7 @@ function getCuratedVideos(reason, emotion, babyContext, subIntent = '', requestS
     financial_worry: ['6m9sCmDIlL0', 'AJpErm8H2aU', 'gA-Eokbod38'],
     negative_thoughts: ['9Q634rbsypE', 'hrozJ-EbdGI', '2OEL4P1Rz04'],
     anxiety: ['hrozJ-EbdGI', 'sF80I-TQiW0', '9Q634rbsypE'],
-    baby_crying: ['j2C8MkY7Co8', 'JePLWMMw3z0', 'kmbKaSRyZ-c'],
+    baby_crying: ['TWHOFDQHOUA', '3G5aAQL3R_g', 'kmbKaSRyZ-c'],
     baby_feeding: ['qdXehiELnIA', '_FsNGM2cIpI', 'n2Iu6NooqgE'],
     baby_sleep: ['SfCxUG1nE84', 'pJYWRlTQ9s8', 'n1NGKj2B2eU'],
     understanding_baby: ['6rx_-__NsjU', 'dEQOWf-NuKs', 'fpiYNkkNmEo'],

@@ -172,19 +172,21 @@ REASON_KEYWORDS = {
     "bonding_issues": [
         "bonding", "bond with my baby", "bonding with baby", "feel close to my baby", "not close to my baby",
         "distant", "emotionally distant", "emotionally distant from my baby", "don't feel connected to my baby", "do not feel connected to my baby", "can't connect with my baby", "cannot connect with my baby", "cannot connect with my newborn", "connect with my newborn", "how to connect with my newborn",
-        "connection with my baby", "attachment to my baby", "not attached to my baby", "feel disconnected from my baby",
+        "connection with my baby", "attachment to my baby", "not attached to my baby", "feel disconnected from my baby", "not emotionally connected", "emotionally connected",
         "not bonding with my baby", "don't feel the connection", "do not feel the connection", "don't feel close", "do not feel close",
         "don't know how to connect", "do not know how to connect", "building a bond", "build a bond", "close to my baby", "cannot feel a real connection",
         "detached from my child", "feel empty instead of love", "like a caregiver not a mother", "baby feels like a stranger",
-        " disconnected", "attachment", "maternal instinct", "guilt", "guilty",
+        " disconnected", "attachment", "maternal instinct", "guilt", "guilty", "special close feeling", "close feeling",
         "මගේ බබාට ලං වෙලා නැහැ", "බබා එක්ක බැඳීමක් නැහැ", "බබා එක්ක සම්බන්ධ වෙන්න බැහැ", "බබා එක්ක connection එකක් නැහැ",
         "බබාගෙන් ඈත් වෙලා වගේ", "මගේ බබාට මම ලං වෙලා නැහැ වගේ දැනෙනවා", "මට මගේ බබා එක්ක කලින් හිතුවා වගේ බැඳීමක් දැනෙන්නේ නැහැ",
         "මගේ බබා එක්ක සම්බන්ධ වෙන්න බැරි වගේ මට දැනෙනවා", "හොඳ අම්මා කෙනෙක් නෙමෙයි වගේ", "ආදරයක් දැනෙන්නේ නැහැ", "බැඳීමක් නැහැ", "සම්බන්ධයක් නැහැ",
+        "විශේෂ ලංවීමක්", "ලංවීමක්", "ලංවීම",
         "mage baba ekka bond wenna amarui", "mage baba ekka connection ekak na", "baba ekka close na", "baba ekka emotional connection na",
         "baba ekka sambandha wenna ba", "mata mage baba ekka bond wenna amarui wage danenawa", "mage baba langa innakotath mata eya ekka emotional connection ekak danenne na",
         "mata hithenawa mama mage babata hariyata adare pennanne na wage mata eka gana guilt ekak thiyenawa",
         "baba wa balagena innakota mata sathutu wenna one wage hithenawa habai mata ehema feeling ekak enne na",
-        "mata mage baba ekka bond ekak danenne naha", "mata baba ekka adarayak danenne naha", "mage babata mama langa wela naha wage danenawa"
+        "mata mage baba ekka bond ekak danenne naha", "mata baba ekka adarayak danenne naha", "mage babata mama langa wela naha wage danenawa",
+        "special close feeling ekak", "lanweemak", "langweemak"
     ],
     "financial_worry": [
         "financial", "finance", "money", "money problems", "financial worry", "financial stability", "expenses", "costs", "afford", "can't afford",
