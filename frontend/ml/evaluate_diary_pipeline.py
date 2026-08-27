@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import LinearSVC
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 import matplotlib.pyplot as plt
 
@@ -75,9 +76,7 @@ X_train_r, X_test_r, y_train_r, y_test_r = train_test_split(
 def build_rf_pipeline():
     return Pipeline([
         ("tfidf", TfidfVectorizer(ngram_range=(1, 2), max_features=5000, sublinear_tf=True)),
-        ("clf", RandomForestClassifier(
-            n_estimators=200, max_depth=25, min_samples_split=4, class_weight='balanced', random_state=42, n_jobs=-1
-        ))
+        ("clf", LinearSVC(C=1.0, class_weight='balanced', max_iter=3000, random_state=42))
     ])
 
 emotion_pipeline = build_rf_pipeline()

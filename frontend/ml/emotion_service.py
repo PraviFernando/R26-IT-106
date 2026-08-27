@@ -57,7 +57,7 @@ from training_data import (
 # MODEL CONFIGURATION
 # ============================================================
 # Possible values: "svm", "decision_tree", "random_forest"
-MODEL_TYPE = "random_forest"
+MODEL_TYPE = "svm"
 
 # ============================================================
 # FLASK APP
@@ -172,9 +172,9 @@ def build_pipeline():
         )
     elif MODEL_TYPE == "random_forest":
         clf = RandomForestClassifier(
-            n_estimators=200,
-            max_depth=25,
-            min_samples_split=4,
+            n_estimators=300,
+            max_depth=None,
+            min_samples_split=2,
             random_state=42,
             class_weight="balanced",
             n_jobs=-1
