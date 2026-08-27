@@ -242,7 +242,22 @@ export const detectBabyTopics = (text = '') => {
   });
 
   // Return top matching topics (up to top 3 matching categories)
-  const detectedTopics = categoryScores.slice(0, 3).map(item => item.category);
+  let detectedTopics = categoryScores.slice(0, 3).map(item => item.category);
+
+  // Refine Baby Health if detected as primary topic
+  let primaryTopic = detectedTopics[0] || null;
+  if (primaryTopic === 'Baby Health') {
+    const textLower = cleanText.toLowerCase();
+    const hasFever = ['fever', 'temperature', 'hot', 'feverish', 'උණ', 'una', 'temperature eka', 'ඇඟ රුක් වෙලා', 'ඇඟ රත් වෙලා'].some(kw => textLower.includes(kw));
+    const hasIllness = ['sick', 'ill', 'cold', 'cough', 'vomit', 'vomiting', 'diarrhea', 'flu', 'අසනීප', 'ලෙඩ', 'leda', 'asanipa', 'una gasila', 'වමනය'].some(kw => textLower.includes(kw));
+    if (hasFever) {
+      primaryTopic = 'Baby Health & Fever';
+      detectedTopics[0] = 'Baby Health & Fever';
+    } else if (hasIllness) {
+      primaryTopic = 'Baby Health & Illness';
+      detectedTopics[0] = 'Baby Health & Illness';
+    }
+  }
 
   // Extract baby age (1-12 months)
   let detectedAge = null;
@@ -254,7 +269,7 @@ export const detectBabyTopics = (text = '') => {
 
   return {
     topics: detectedTopics,
-    topic: detectedTopics[0] || null,
+    topic: primaryTopic,
     isEmergency,
     age: detectedAge,
     scores: categoryScores
