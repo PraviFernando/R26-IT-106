@@ -115,7 +115,7 @@ export default function LoginScreen({ navigation }) {
                     {/* Image Section using User's Added Asset */}
                     <View style={styles.imageContainer}>
                         <Image
-                            source={require('../assets/image 7.png')}
+                            source={require('../assets/screening_system/image 7.png')}
                             style={styles.image}
                             resizeMode="contain"
                         />

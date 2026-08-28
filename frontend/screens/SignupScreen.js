@@ -31,11 +31,11 @@ function Dropdown({ label, placeholder, value, options, onSelect, disabled }) {
 
     const toggle = () => {
         if (disabled) return;
-        Animated.timing(rotateAnim, { toValue: open ? 0 : 1, duration: 200, useNativeDriver: true }).start();
+        Animated.timing(rotateAnim, { toValue: open ? 0 : 1, duration: 200, useNativeDriver: false }).start();
         setOpen(prev => !prev);
     };
     const close = () => {
-        Animated.timing(rotateAnim, { toValue: 0, duration: 150, useNativeDriver: true }).start();
+        Animated.timing(rotateAnim, { toValue: 0, duration: 150, useNativeDriver: false }).start();
         setOpen(false);
     };
     const rotate = rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
