@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
     ScrollView, Animated, Dimensions, Platform, KeyboardAvoidingView,
-    ActivityIndicator, Modal,
+    ActivityIndicator, Modal, Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar } from 'react-native-calendars';
@@ -79,8 +79,8 @@ export default function OnboardingScreen({ navigation }) {
     // ── Animated transition between steps
     const goToStep = (next) => {
         Animated.sequence([
-            Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
-            Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
+            Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: false }),
+            Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: false }),
         ]).start();
         setTimeout(() => setStep(next), 150);
     };
@@ -197,6 +197,17 @@ export default function OnboardingScreen({ navigation }) {
                         {/* ══════════════════ STEP 1 ══════════════════ */}
                         {step === 1 && (
                             <View style={styles.card}>
+                                {/* Step 1 Hero Image */}
+                                <View style={styles.stepHeroCard}>
+                                    <Image source={require('../assets/screening_system/image 9.jpg')} style={styles.stepHeroImg} resizeMode="cover" />
+                                    <View style={styles.stepHeroOverlay} />
+                                    <View style={styles.stepHeroContent}>
+                                        <Text style={styles.stepHeroBadge}>Step 1 of 3</Text>
+                                        <Text style={styles.stepHeroTitle}>🤱 Delivery Information</Text>
+                                        <Text style={styles.stepHeroSub}>Tell us about your birth experience</Text>
+                                    </View>
+                                </View>
+
                                 <Text style={styles.stepIcon}>🤱</Text>
                                 <Text style={styles.title}>Delivery Information</Text>
                                 <Text style={styles.subtitle}>Tell us about your birth experience</Text>
@@ -312,6 +323,17 @@ export default function OnboardingScreen({ navigation }) {
                         {/* ══════════════════ STEP 2 ══════════════════ */}
                         {step === 2 && (
                             <View style={styles.card}>
+                                {/* Step 2 Hero Image */}
+                                <View style={styles.stepHeroCard}>
+                                    <Image source={require('../assets/screening_system/image 8.jpg')} style={styles.stepHeroImg} resizeMode="cover" />
+                                    <View style={styles.stepHeroOverlay} />
+                                    <View style={styles.stepHeroContent}>
+                                        <Text style={styles.stepHeroBadge}>Step 2 of 3</Text>
+                                        <Text style={styles.stepHeroTitle}>👶 Baby Details</Text>
+                                        <Text style={styles.stepHeroSub}>Help us personalise your experience</Text>
+                                    </View>
+                                </View>
+
                                 <Text style={styles.stepIcon}>👶</Text>
                                 <Text style={styles.title}>Baby Details</Text>
                                 <Text style={styles.subtitle}>Help us personalise your experience</Text>
@@ -404,6 +426,17 @@ export default function OnboardingScreen({ navigation }) {
                         {/* ══════════════════ STEP 3 ══════════════════ */}
                         {step === 3 && (
                             <View style={styles.card}>
+                                {/* Step 3 Hero Image */}
+                                <View style={styles.stepHeroCard}>
+                                    <Image source={require('../assets/screening_system/image 10.jpg')} style={styles.stepHeroImg} resizeMode="cover" />
+                                    <View style={styles.stepHeroOverlay} />
+                                    <View style={styles.stepHeroContent}>
+                                        <Text style={styles.stepHeroBadge}>Step 3 of 3</Text>
+                                        <Text style={styles.stepHeroTitle}>🍼 Feeding Method</Text>
+                                        <Text style={styles.stepHeroSub}>How are you planning to feed your baby?</Text>
+                                    </View>
+                                </View>
+
                                 <Text style={styles.stepIcon}>🍼</Text>
                                 <Text style={styles.title}>Feeding Method</Text>
                                 <Text style={styles.subtitle}>How are you planning to feed your baby?</Text>
@@ -519,6 +552,35 @@ const styles = StyleSheet.create({
     stepDotTextActive: { color: '#fff' },
 
     scroll: { padding: 20, paddingBottom: 40 },
+
+    // Step Hero Image (for onboarding steps)
+    stepHeroCard: {
+        height: 150,
+        borderRadius: 16,
+        overflow: 'hidden',
+        marginBottom: 16,
+        marginHorizontal: -4,
+    },
+    stepHeroImg: { width: '100%', height: '100%', position: 'absolute' },
+    stepHeroOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(124, 58, 237, 0.52)',
+    },
+    stepHeroContent: { flex: 1, padding: 14, justifyContent: 'flex-end' },
+    stepHeroBadge: {
+        backgroundColor: 'rgba(255,255,255,0.25)',
+        color: '#fff',
+        fontSize: 11,
+        fontWeight: '700',
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        marginBottom: 4,
+        overflow: 'hidden',
+    },
+    stepHeroTitle: { fontSize: 18, fontWeight: '800', color: '#fff', marginBottom: 2 },
+    stepHeroSub: { fontSize: 12, color: 'rgba(255,255,255,0.85)' },
 
     // Card
     card: {

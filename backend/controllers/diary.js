@@ -1,6 +1,5 @@
 const Diary = require('../models/Diary');
 const User = require('../models/User');
-
 const getDiary = async (req, res, next) => {
     try {
         const { date } = req.params;
@@ -18,10 +17,16 @@ const saveDiary = async (req, res, next) => {
         const { date, content, isLocked, theme, media, mood, sentiment } = req.body;
         const userId = req.user.id;
 
-        // Validation: Only allow diary entry for today
-        const todayStr = new Date().toISOString().split('T')[0];
-        if (date !== todayStr) {
-            return res.status(400).json({ message: 'Can only edit diary for today' });
+        // Validation: Block future dates while supporting both local and UTC timezone dates
+        const now = new Date();
+        const utcToday = now.toISOString().split('T')[0];
+        const localY = now.getFullYear();
+        const localM = String(now.getMonth() + 1).padStart(2, '0');
+        const localD = String(now.getDate()).padStart(2, '0');
+        const localToday = `${localY}-${localM}-${localD}`;
+
+        if (date > localToday && date > utcToday) {
+            return res.status(400).json({ message: 'Cannot edit diary for future dates' });
         }
 
         const updateData = { content };

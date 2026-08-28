@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -6,72 +6,94 @@ import {
     TouchableOpacity,
     StyleSheet,
     Dimensions,
-    Image,
     Modal,
-    Animated,
+    Image,
+    Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import { useTranslation } from 'react-i18next';
+import { Video, ResizeMode } from 'expo-av';
+import { WebView } from 'react-native-webview';
+import exerciseService from '../services/exerciseService';
+const getYouTubeId = (url) => {
+    if (!url) return null;
+    if (url.includes('youtube.com/embed/'))
+        return url.split('embed/')[1]?.split('?')[0];
+    if (url.includes('youtu.be/'))
+        return url.split('youtu.be/')[1]?.split('?')[0];
+    if (url.includes('youtube.com/watch')) {
+        const parts = url.split('v=');
+        return parts.length > 1 ? parts[1].split('&')[0] : null;
+    }
+    return null;
+};
 
+const getEmbedUrl = (url) => {
+    const id = getYouTubeId(url);
+    return id
+        ? `https://www.youtube.com/embed/${id}?rel=0&autoplay=1&modestbranding=1&playsinline=1`
+        : url;
+};
 const { width } = Dimensions.get('window');
 
 // ─────────────────────────────────────────────
 // MOCK DATA
 // ─────────────────────────────────────────────
 const mockUser = {
-    name: 'Sarah Johnson',
-    role: 'Patient',
+    name: 'සාරා ජොන්සන්',
+    role: 'රෝගියා',
     avatar: null,
-    lastVisit: '28 Feb 2026',
+    lastVisit: '2026 පෙබරවාරි 28',
 };
 
-const mockStats = [
-    { label: 'Screenings Done', value: 12, icon: '📋', color: '#7C3AED' },
-    { label: 'Risk Score', value: '34%', icon: '📊', color: '#0EA5E9' },
-    { label: 'Sessions Left', value: 5, icon: '🕐', color: '#10B981' },
-    { label: 'Mood Streak', value: '7 days', icon: '🌟', color: '#F59E0B' },
+const mockStats = (t) => [
+    { label: t('Screenings Done'), value: 12, icon: '📋', color: '#7C3AED' },
+    { label: t('Risk Score'), value: '34%', icon: '📊', color: '#0EA5E9' },
+    { label: t('Sessions Left'), value: 5, icon: '🕐', color: '#10B981' },
+    { label: t('Mood Streak'), value: '7 ' + t('days'), icon: '🌟', color: '#F59E0B' },
 ];
 
-const barChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+const barChartData = (t) => ({
+    labels: [t('Jan'), t('Feb'), t('Mar'), t('Apr'), t('May'), t('Jun')],
     datasets: [
         {
             data: [30, 45, 28, 60, 40, 55],
         },
     ],
-};
+});
 
-const pieChartData = [
-    { name: 'Mild', population: 35, color: '#10B981', legendFontColor: '#374151', legendFontSize: 13 },
-    { name: 'Moderate', population: 40, color: '#F59E0B', legendFontColor: '#374151', legendFontSize: 13 },
-    { name: 'Severe', population: 15, color: '#EF4444', legendFontColor: '#374151', legendFontSize: 13 },
-    { name: 'None', population: 10, color: '#7C3AED', legendFontColor: '#374151', legendFontSize: 13 },
+const pieChartData = (t) => [
+    { name: t('Low'), population: 35, color: '#10B981', legendFontColor: '#374151', legendFontSize: 13 },
+    { name: t('Medium'), population: 40, color: '#F59E0B', legendFontColor: '#374151', legendFontSize: 13 },
+    { name: t('High'), population: 15, color: '#EF4444', legendFontColor: '#374151', legendFontSize: 13 },
+    { name: t('None'), population: 10, color: '#7C3AED', legendFontColor: '#374151', legendFontSize: 13 },
 ];
 
-const progressData = [
-    { label: 'Anxiety Level', progress: 0.62, color: '#EF4444' },
-    { label: 'Sleep Quality', progress: 0.75, color: '#10B981' },
-    { label: 'Social Support', progress: 0.48, color: '#0EA5E9' },
-    { label: 'Emotional Balance', progress: 0.83, color: '#7C3AED' },
+const progressData = (t) => [
+    { label: t('Anxiety Level'), progress: 0.62, color: '#EF4444' },
+    { label: t('Sleep Quality'), progress: 0.75, color: '#10B981' },
+    { label: t('Social Support'), progress: 0.48, color: '#0EA5E9' },
+    { label: t('Emotional Balance'), progress: 0.83, color: '#7C3AED' },
 ];
 
-const recentActivities = [
-    { id: 1, title: 'Maternal Wellness Check Completed', time: '2 hours ago', icon: '✅', color: '#10B981' },
-    { id: 2, title: 'Therapy Session Scheduled', time: 'Yesterday', icon: '📅', color: '#0EA5E9' },
-    { id: 3, title: 'Mood Log Updated', time: '2 days ago', icon: '😊', color: '#F59E0B' },
-    { id: 4, title: 'Doctor Note Added', time: '3 days ago', icon: '📝', color: '#7C3AED' },
+const recentActivities = (t) => [
+    { id: 1, title: t('EPDS Screening Completed'), time: t('2 hours ago'), icon: '✅', color: '#10B981' },
+    { id: 2, title: t('Therapy Session Scheduled'), time: t('Yesterday'), icon: '📅', color: '#0EA5E9' },
+    { id: 3, title: t('Mood Log Updated'), time: t('2 days ago'), icon: '😊', color: '#F59E0B' },
+    { id: 4, title: t('Doctor Note Added'), time: t('3 days ago'), icon: '📝', color: '#7C3AED' },
 ];
 
-const navItems = [
-    { key: 'home', label: 'Dashboard', icon: '🏠' },
-    { key: 'screening', label: 'Screening', icon: '📋' },
-    { key: 'diary', label: 'My Diary', icon: '📔' },
-    { key: 'plan', label: 'My Plans', icon: '📅' },
-    { key: 'profile', label: 'Profile', icon: '👤' },
-    { key: 'care_overview', label: 'Care Overview', icon: '⭐' },
-    { key: 'settings', label: 'Settings', icon: '⚙️' },
+const navItems = (t) => [
+    { key: 'home', label: t('Dashboard'), icon: '🏠' },
+    { key: 'screening', label: t('Screening'), icon: '📋' },
+    { key: 'diary', label: t('My Diary'), icon: '📔' },
+    { key: 'plan', label: t('My Plans'), icon: '📅' },
+    { key: 'profile', label: t('Profile'), icon: '👤' },
+    { key: 'settings', label: t('Settings'), icon: '⚙️' },
+    { key: 'exercise', label: t('Exercise'), icon: '🏃‍♀️' },
+    { key: 'baby', label: t('Baby Dev'), icon: '👶' },
 ];
 
 // ─────────────────────────────────────────────
@@ -83,10 +105,21 @@ function ProgressBar({ label, progress, color }) {
         <View style={styles.progressRow}>
             <View style={styles.progressLabelRow}>
                 <Text style={styles.progressLabel}>{label}</Text>
-                <Text style={[styles.progressPercent, { color }]}>{percent}%</Text>
+                <Text style={[styles.progressPercent, { color }]}>
+                    {percent}%
+                </Text>
             </View>
+
             <View style={styles.progressTrack}>
-                <View style={[styles.progressFill, { width: `${percent}%`, backgroundColor: color }]} />
+                <View
+                    style={[
+                        styles.progressFill,
+                        {
+                            width: `${percent}%`,
+                            backgroundColor: color,
+                        },
+                    ]}
+                />
             </View>
         </View>
     );
@@ -109,6 +142,8 @@ function StatCard({ icon, label, value, color }) {
 // SIDEBAR COMPONENT
 // ─────────────────────────────────────────────
 function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
+    const { t } = useTranslation();
+
     return (
         <Modal
             transparent
@@ -117,18 +152,32 @@ function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
             onRequestClose={onClose}
         >
             <View style={styles.sidebarOverlay}>
-                <TouchableOpacity style={styles.sidebarBackdrop} onPress={onClose} />
+                <TouchableOpacity
+                    style={styles.sidebarBackdrop}
+                    onPress={onClose}
+                />
+
                 <View style={styles.sidebarContainer}>
                     {/* Sidebar Header */}
                     <View style={styles.sidebarHeader}>
                         <View style={styles.sidebarAvatar}>
                             <Text style={styles.sidebarAvatarText}>SJ</Text>
                         </View>
+
                         <View style={styles.sidebarUserInfo}>
-                            <Text style={styles.sidebarUserName}>{mockUser.name}</Text>
-                            <Text style={styles.sidebarUserRole}>{mockUser.role}</Text>
+                            <Text style={styles.sidebarUserName}>
+                                {mockUser.name}
+                            </Text>
+
+                            <Text style={styles.sidebarUserRole}>
+                                {mockUser.role}
+                            </Text>
                         </View>
-                        <TouchableOpacity onPress={onClose} style={styles.sidebarCloseBtn}>
+
+                        <TouchableOpacity
+                            onPress={onClose}
+                            style={styles.sidebarCloseBtn}
+                        >
                             <Text style={styles.sidebarCloseText}>✕</Text>
                         </TouchableOpacity>
                     </View>
@@ -137,28 +186,40 @@ function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
 
                     {/* Nav Items */}
                     <ScrollView style={styles.sidebarNav}>
-                        {navItems.map((item) => (
+                        {navItems(t).map((item) => (
                             <TouchableOpacity
                                 key={item.key}
                                 style={[
                                     styles.sidebarNavItem,
-                                    activeTab === item.key && styles.sidebarNavItemActive,
+                                    activeTab === item.key &&
+                                    styles.sidebarNavItemActive,
                                 ]}
                                 onPress={() => {
                                     onTabPress(item.key);
                                     onClose();
                                 }}
                             >
-                                <Text style={styles.sidebarNavIcon}>{item.icon}</Text>
+                                <Text style={styles.sidebarNavIcon}>
+                                    {item.icon}
+                                </Text>
+
                                 <Text
                                     style={[
                                         styles.sidebarNavLabel,
-                                        activeTab === item.key && styles.sidebarNavLabelActive,
+                                        activeTab === item.key &&
+                                        styles.sidebarNavLabelActive,
                                     ]}
                                 >
                                     {item.label}
                                 </Text>
-                                {activeTab === item.key && <View style={styles.sidebarActiveIndicator} />}
+
+                                {activeTab === item.key && (
+                                    <View
+                                        style={
+                                            styles.sidebarActiveIndicator
+                                        }
+                                    />
+                                )}
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
@@ -166,9 +227,15 @@ function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
                     <View style={styles.sidebarDivider} />
 
                     {/* Logout */}
-                    <TouchableOpacity style={styles.sidebarLogout} onPress={onLogout}>
+                    <TouchableOpacity
+                        style={styles.sidebarLogout}
+                        onPress={onLogout}
+                    >
                         <Text style={styles.sidebarLogoutIcon}>🚪</Text>
-                        <Text style={styles.sidebarLogoutText}>Sign Out</Text>
+
+                        <Text style={styles.sidebarLogoutText}>
+                            {t('Sign Out')}
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -180,10 +247,14 @@ function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
 // HEADER COMPONENT
 // ─────────────────────────────────────────────
 function Header({ onMenuPress, onNotifPress }) {
-    const { i18n } = useTranslation();
+    const { t, i18n } = useTranslation();
+
     return (
         <View style={styles.header}>
-            <TouchableOpacity onPress={onMenuPress} style={styles.menuBtn}>
+            <TouchableOpacity
+                onPress={onMenuPress}
+                style={styles.menuBtn}
+            >
                 <View style={styles.menuLine} />
                 <View style={[styles.menuLine, { width: 20 }]} />
                 <View style={styles.menuLine} />
@@ -191,18 +262,42 @@ function Header({ onMenuPress, onNotifPress }) {
 
             <View style={styles.headerCenter}>
                 <Text style={styles.headerLogo}>🌸</Text>
-                <Text style={styles.headerTitle}>PeriCare</Text>
+
+                <Text style={styles.headerTitle}>
+                    {t('PeriCare')}
+                </Text>
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <TouchableOpacity onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')} style={{ marginRight: 15 }}>
-                    <Text style={{ fontWeight: '700', fontSize: 13, color: '#7C3AED', backgroundColor: '#EDE9FE', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+                <TouchableOpacity
+                    onPress={() =>
+                        i18n.changeLanguage(
+                            i18n.language === 'en' ? 'si' : 'en'
+                        )
+                    }
+                    style={{ marginRight: 15 }}
+                >
+                    <Text
+                        style={{
+                            fontWeight: '700',
+                            fontSize: 13,
+                            color: '#7C3AED',
+                            backgroundColor: '#EDE9FE',
+                            paddingHorizontal: 10,
+                            paddingVertical: 4,
+                            borderRadius: 12,
+                        }}
+                    >
                         {i18n.language === 'en' ? 'සිං' : 'EN'}
                     </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={onNotifPress} style={styles.notifBtn}>
+                <TouchableOpacity
+                    onPress={onNotifPress}
+                    style={styles.notifBtn}
+                >
                     <Text style={styles.notifIcon}>🔔</Text>
+
                     <View style={styles.notifBadge}>
                         <Text style={styles.notifBadgeText}>3</Text>
                     </View>
@@ -216,7 +311,15 @@ function Header({ onMenuPress, onNotifPress }) {
 // FOOTER COMPONENT
 // ─────────────────────────────────────────────
 function Footer({ activeTab, onTabPress }) {
-    const footerItems = navItems.slice(0, 5);
+    const { t } = useTranslation();
+
+    const footerItems = [
+        ...navItems(t).slice(0, 3), // home, screening, diary
+        navItems(t).find((i) => i.key === 'exercise'),
+        navItems(t).find((i) => i.key === 'baby'),
+        ...navItems(t).slice(3, 5), // plan, profile
+    ];
+
     return (
         <View style={styles.footer}>
             {footerItems.map((item) => (
@@ -225,16 +328,23 @@ function Footer({ activeTab, onTabPress }) {
                     style={styles.footerTab}
                     onPress={() => onTabPress(item.key)}
                 >
-                    <Text style={styles.footerTabIcon}>{item.icon}</Text>
+                    <Text style={styles.footerTabIcon}>
+                        {item.icon}
+                    </Text>
+
                     <Text
                         style={[
                             styles.footerTabLabel,
-                            activeTab === item.key && styles.footerTabLabelActive,
+                            activeTab === item.key &&
+                            styles.footerTabLabelActive,
                         ]}
                     >
                         {item.label}
                     </Text>
-                    {activeTab === item.key && <View style={styles.footerActiveBar} />}
+
+                    {activeTab === item.key && (
+                        <View style={styles.footerActiveBar} />
+                    )}
                 </TouchableOpacity>
             ))}
         </View>
@@ -246,17 +356,53 @@ function Footer({ activeTab, onTabPress }) {
 // ─────────────────────────────────────────────
 export default function DashboardScreen({ navigation }) {
     const { t } = useTranslation();
-    const [sidebarVisible, setSidebarVisible] = useState(false);
+
     const [activeTab, setActiveTab] = useState('home');
+    const [sidebarVisible, setSidebarVisible] = useState(false);
+    const [suggestedExercises, setSuggestedExercises] = useState([]);
+    const [loadingExercises, setLoadingExercises] = useState(true);
+    const [videoModalVisible, setVideoModalVisible] = useState(false);
+    const [selectedVideoUrl, setSelectedVideoUrl] = useState(null);
+    const [progressStats, setProgressStats] = useState(null);
+
+    useEffect(() => {
+        const fetchExercises = async () => {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const data = await exerciseService.getRecommendations(today);
+                if (data.hasData && data.recommendations) {
+                    setSuggestedExercises(data.recommendations.slice(0, 2));
+                }
+            } catch (err) {
+                console.log('Failed to fetch suggested exercises', err);
+            } finally {
+                setLoadingExercises(false);
+            }
+        };
+
+        const fetchProgress = async () => {
+            try {
+                const data = await exerciseService.getProgress(30);
+                setProgressStats(data);
+            } catch (err) {
+                console.log('Failed to fetch progress stats', err);
+            }
+        };
+
+        fetchExercises();
+        fetchProgress();
+    }, []);
 
     const handleLogout = () => {
         setSidebarVisible(false);
+
         Toast.show({
             type: 'success',
-            text1: 'Signed Out',
-            text2: 'You have been signed out successfully.',
+            text1: t('Signed Out'),
+            text2: t('You have been signed out successfully.'),
             position: 'top',
         });
+
         setTimeout(() => {
             navigation.replace('Login');
         }, 1500);
@@ -265,8 +411,8 @@ export default function DashboardScreen({ navigation }) {
     const handleNotifPress = () => {
         Toast.show({
             type: 'info',
-            text1: '🔔 Notifications',
-            text2: 'You have 3 new notifications.',
+            text1: `🔔 ${t('Notifications')}`,
+            text2: t('You have 3 new notifications.'),
             position: 'top',
         });
     };
@@ -277,17 +423,17 @@ export default function DashboardScreen({ navigation }) {
             navigation.navigate('Diary');
         } else if (tab === 'plan') {
             navigation.navigate('Plan');
-        } else if (tab === 'screening') {
-            navigation.navigate('EPDSScreening');
-        } else if (tab === 'profile') {
-            navigation.navigate('Profile');
-        } else if (tab === 'care_overview') {
-            navigation.navigate('CareOverview');
+        } else if (tab === 'exercise') {
+            navigation.navigate('Exercise');
+        } else if (tab === 'baby') {
+            navigation.navigate('BabyDevelopment');
         } else if (tab !== 'home') {
             Toast.show({
                 type: 'info',
-                text1: navItems.find(n => n.key === tab)?.label || tab,
-                text2: 'This section is coming soon!',
+                text1:
+                    navItems(t).find((n) => n.key === tab)?.label ||
+                    tab,
+                text2: t('This section is coming soon!'),
                 position: 'bottom',
             });
         }
@@ -297,10 +443,16 @@ export default function DashboardScreen({ navigation }) {
         backgroundGradientFrom: '#fff',
         backgroundGradientTo: '#fff',
         decimalPlaces: 0,
-        color: (opacity = 1) => `rgba(124, 58, 237, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(55, 65, 81, ${opacity})`,
+        color: (opacity = 1) =>
+            `rgba(124, 58, 237, ${opacity})`,
+        labelColor: (opacity = 1) =>
+            `rgba(55, 65, 81, ${opacity})`,
         style: { borderRadius: 16 },
-        propsForDots: { r: '5', strokeWidth: '2', stroke: '#7C3AED' },
+        propsForDots: {
+            r: '5',
+            strokeWidth: '2',
+            stroke: '#7C3AED',
+        },
         barPercentage: 0.6,
     };
 
@@ -314,6 +466,67 @@ export default function DashboardScreen({ navigation }) {
                 onClose={() => setSidebarVisible(false)}
                 onLogout={handleLogout}
             />
+
+            {/* ── Video Player Modal ── */}
+            <Modal
+                visible={videoModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setVideoModalVisible(false)}
+            >
+                <View style={styles.videoModalOverlay}>
+                    <View style={styles.videoModalContainer}>
+                        <TouchableOpacity
+                            style={styles.videoModalClose}
+                            onPress={() => setVideoModalVisible(false)}
+                        >
+                            <Text style={styles.videoModalCloseText}>✕</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.dashboardVideoWrapper}>
+                            {selectedVideoUrl &&
+                                (getYouTubeId(selectedVideoUrl) ? (
+                                    Platform.OS === 'web' ? (
+                                        <iframe
+                                            src={getEmbedUrl(selectedVideoUrl)}
+                                            style={{
+                                                flex: 1,
+                                                border: 'none',
+                                                width: '100%',
+                                                height: '100%',
+                                            }}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    ) : (
+                                        <WebView
+                                            source={{
+                                                uri: getEmbedUrl(selectedVideoUrl),
+                                            }}
+                                            style={styles.dashboardWebView}
+                                            allowsFullscreenVideo={true}
+                                            allowsInlineMediaPlayback={true}
+                                            mediaPlaybackRequiresUserAction={false}
+                                            javaScriptEnabled={true}
+                                            domStorageEnabled={true}
+                                            startInLoadingState={true}
+                                        />
+                                    )
+                                ) : (
+                                    <Video
+                                        source={{
+                                            uri: selectedVideoUrl,
+                                        }}
+                                        style={styles.dashboardVideo}
+                                        useNativeControls
+                                        resizeMode={ResizeMode.CONTAIN}
+                                        shouldPlay
+                                    />
+                                ))}
+                        </View>
+                    </View>
+                </View>
+            </Modal>
 
             {/* ── Header ── */}
             <Header
@@ -330,118 +543,295 @@ export default function DashboardScreen({ navigation }) {
                 {/* Greeting Banner */}
                 <View style={styles.greetingBanner}>
                     <View style={styles.greetingTextContainer}>
-                        <Text style={styles.greetingHello}>{t('Hello')}, {mockUser.name.split(' ')[0]} 👋</Text>
-                        <Text style={styles.greetingSubtitle}>{t("Here's your health overview")}</Text>
-                        <Text style={styles.greetingDate}>{t('Last visit')}: {mockUser.lastVisit}</Text>
+                        <Text style={styles.greetingHello}>
+                            {t('Hello')},{' '}
+                            {mockUser.name.split(' ')[0]} 👋
+                        </Text>
+
+                        <Text style={styles.greetingSubtitle}>
+                            {t("Here's your health overview")}
+                        </Text>
+
+                        <Text style={styles.greetingDate}>
+                            {t('Last visit')}: {mockUser.lastVisit}
+                        </Text>
                     </View>
+
                     <View style={styles.greetingAvatarLarge}>
-                        <Text style={styles.greetingAvatarText}>SJ</Text>
+                        <Text style={styles.greetingAvatarText}>
+                            SJ
+                        </Text>
                     </View>
                 </View>
 
-                {/* Stat Cards */}
-                <Text style={styles.sectionTitle}>{t('Overview')}</Text>
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>
+                        {t('Overview')}
+                    </Text>
+
+                    <Text style={styles.lastVisit}>
+                        {t('Last visit')}: {mockUser.lastVisit}
+                    </Text>
+                </View>
+
                 <View style={styles.statsGrid}>
-                    {mockStats.map((stat, i) => (
-                        <StatCard key={i} {...stat} label={t(stat.label)} />
+                    {mockStats(t).map((stat, i) => (
+                        <StatCard key={i} {...stat} />
                     ))}
                 </View>
 
-                {/* Bar Chart */}
-                <Text style={styles.sectionTitle}>{t('Monthly Screening Activity')}</Text>
-                <View style={styles.chartCard}>
+                {/* ── Progress Chart ── */}
+                <View style={styles.card}>
+                    <Text style={styles.cardTitle}>
+                        {t('Monthly Progress')}
+                    </Text>
+
                     <BarChart
-                        data={barChartData}
-                        width={width - 48}
-                        height={200}
+                        data={barChartData(t)}
+                        width={width - 64}
+                        height={180}
+                        yAxisLabel=""
                         chartConfig={chartConfig}
+                        verticalLabelRotation={0}
                         style={styles.chart}
                         showValuesOnTopOfBars
                         fromZero
                     />
                 </View>
 
-                {/* Pie Chart */}
-                <Text style={styles.sectionTitle}>{t('Depression Risk Breakdown')}</Text>
-                <View style={styles.chartCard}>
-                    <PieChart
-                        data={pieChartData}
-                        width={width - 48}
-                        height={200}
-                        chartConfig={chartConfig}
-                        accessor="population"
-                        backgroundColor="transparent"
-                        paddingLeft="15"
-                        absolute={false}
-                    />
-                </View>
-
-                {/* Progress Bars */}
-                <Text style={styles.sectionTitle}>{t('Wellness Indicators')}</Text>
-                <View style={styles.progressCard}>
-                    {progressData.map((item, i) => (
-                        <ProgressBar key={i} {...item} />
-                    ))}
-                </View>
-
-                {/* Recent Activity */}
-                <Text style={styles.sectionTitle}>{t('Recent Activity')}</Text>
-                <View style={styles.activityCard}>
-                    {recentActivities.map((item) => (
-                        <View key={item.id} style={styles.activityRow}>
-                            <View style={[styles.activityIconBox, { backgroundColor: item.color + '22' }]}>
-                                <Text style={styles.activityIcon}>{item.icon}</Text>
+                {/* ── Consistency & Recovery Trends ── */}
+                {progressStats && (
+                    <View style={styles.card}>
+                        <Text style={styles.cardTitle}>🏃‍♀️ {t('Consistency & Recovery Trends')}</Text>
+                        <View style={[styles.statsGrid, { marginVertical: 8 }]}>
+                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#FF9A9E' }]}>
+                                <Text style={styles.dashboardMetricVal}>{progressStats.currentStreak} {t('Days')}</Text>
+                                <Text style={styles.dashboardMetricLabel}>🔥 {t('Current Streak')}</Text>
                             </View>
+                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#F59E0B' }]}>
+                                <Text style={styles.dashboardMetricVal}>{progressStats.missedSessions ?? 0}</Text>
+                                <Text style={styles.dashboardMetricLabel}>⚠️ {t('Missed Sessions')}</Text>
+                            </View>
+                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#10B981' }]}>
+                                <Text style={styles.dashboardMetricVal}>{progressStats.weeklyCompletionRate ?? 0}%</Text>
+                                <Text style={styles.dashboardMetricLabel}>📊 {t('Weekly Rate')}</Text>
+                            </View>
+                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#7C3AED' }]}>
+                                <Text style={styles.dashboardMetricVal}>{progressStats.averageDuration ?? 0}m</Text>
+                                <Text style={styles.dashboardMetricLabel}>⏱️ {t('Avg Duration')}</Text>
+                            </View>
+                        </View>
+
+                        {progressStats.recoveryTrend && (
+                            <View style={styles.trendContainer}>
+                                <Text style={styles.trendTitle}>🩺 {t('Recovery Trend Analysis')}</Text>
+                                <Text style={styles.trendText}>{t(progressStats.recoveryTrend)}</Text>
+                            </View>
+                        )}
+                    </View>
+                )}
+
+                {/* ── Health Indicators ── */}
+                <View style={styles.indicatorRow}>
+                    <View
+                        style={[
+                            styles.card,
+                            { flex: 1, marginBottom: 0 },
+                        ]}
+                    >
+                        <Text style={styles.cardTitle}>
+                            {t('Health Scores')}
+                        </Text>
+
+                        {progressData(t).map((p, i) => (
+                            <ProgressBar key={i} {...p} />
+                        ))}
+                    </View>
+
+                    <View
+                        style={[
+                            styles.card,
+                            {
+                                flex: 0.9,
+                                marginBottom: 0,
+                                marginLeft: 12,
+                            },
+                        ]}
+                    >
+                        <Text style={styles.cardTitle}>
+                            {t('Risk Level')}
+                        </Text>
+
+                        <PieChart
+                            data={pieChartData(t)}
+                            width={width * 0.4}
+                            height={160}
+                            chartConfig={chartConfig}
+                            accessor="population"
+                            backgroundColor="transparent"
+                            paddingLeft="10"
+                            absolute
+                        />
+                    </View>
+                </View>
+
+
+                {/* ── Recent Activity ── */}
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>
+                        {t('Recent Activities')}
+                    </Text>
+
+                    <TouchableOpacity>
+                        <Text style={styles.viewAllText}>
+                            {t('View All')}
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.activityList}>
+                    {recentActivities(t).map((item) => (
+                        <View
+                            key={item.id}
+                            style={styles.activityItem}
+                        >
+                            <View
+                                style={[
+                                    styles.activityIconBox,
+                                    {
+                                        backgroundColor:
+                                            item.color + '22',
+                                    },
+                                ]}
+                            >
+                                <Text style={{ fontSize: 16 }}>
+                                    {item.icon}
+                                </Text>
+                            </View>
+
                             <View style={styles.activityInfo}>
-                                <Text style={styles.activityTitle}>{t(item.title)}</Text>
-                                <Text style={styles.activityTime}>{t(item.time)}</Text>
+                                <Text style={styles.activityTitle}>
+                                    {item.title}
+                                </Text>
+
+                                <Text style={styles.activityTime}>
+                                    {item.time}
+                                </Text>
                             </View>
-                            <View style={[styles.activityDot, { backgroundColor: item.color }]} />
+
+                            <View
+                                style={[
+                                    styles.activityDot,
+                                    {
+                                        backgroundColor: item.color,
+                                    },
+                                ]}
+                            />
                         </View>
                     ))}
                 </View>
 
                 {/* Quick Action Buttons */}
-                <Text style={styles.sectionTitle}>{t('Quick Actions')}</Text>
+                <Text style={styles.sectionTitle}>
+                    {t('Quick Actions')}
+                </Text>
+
                 <View style={styles.quickActions}>
                     <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#7C3AED' }]}
-                        onPress={() => navigation.navigate('EPDSScreening')}
+                        style={[
+                            styles.quickActionBtn,
+                            { backgroundColor: '#7C3AED' },
+                        ]}
+                        onPress={() =>
+                            navigation.navigate('Diary')
+                        }
                     >
-                        <Text style={styles.quickActionIcon}>📋</Text>
-                        <Text style={styles.quickActionText}>{t('Screening')}</Text>
+                        <Text style={styles.quickActionIcon}>
+                            📔
+                        </Text>
+
+                        <Text style={styles.quickActionText}>
+                            {t('My Diary')}
+                        </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#F59E0B' }]}
-                        onPress={() => navigation.navigate('CareOverview')}
+                        style={[
+                            styles.quickActionBtn,
+                            { backgroundColor: '#0EA5E9' },
+                        ]}
+                        onPress={() =>
+                            navigation.navigate('Plan')
+                        }
                     >
-                        <Text style={styles.quickActionIcon}>⭐</Text>
-                        <Text style={styles.quickActionText}>{t('Care Overview')}</Text>
+                        <Text style={styles.quickActionIcon}>
+                            📅
+                        </Text>
+
+                        <Text style={styles.quickActionText}>
+                            {t('My Plans')}
+                        </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#10B981' }]}
-                        onPress={() => navigation.navigate('GrowthChart')}
+                        style={[
+                            styles.quickActionBtn,
+                            { backgroundColor: '#10B981' },
+                        ]}
+                        onPress={() =>
+                            Toast.show({
+                                type: 'success',
+                                text1: `😊 ${t('Mood')}`,
+                                text2: t(
+                                    'Mood log updated!'
+                                ),
+                                position: 'top',
+                            })
+                        }
                     >
-                        <Text style={styles.quickActionIcon}>📈</Text>
-                        <Text style={styles.quickActionText}>{t('Growth Chart')}</Text>
+                        <Text style={styles.quickActionIcon}>
+                            😊
+                        </Text>
+
+                        <Text style={styles.quickActionText}>
+                            {t('Log Mood')}
+                        </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#EC4899' }]}
-                        onPress={() => navigation.navigate('Diary')}
+                        style={[
+                            styles.quickActionBtn,
+                            { backgroundColor: '#10B981' },
+                        ]}
+                        onPress={() =>
+                            navigation.navigate('Exercise')
+                        }
                     >
-                        <Text style={styles.quickActionIcon}>📔</Text>
-                        <Text style={styles.quickActionText}>{t('My Diary')}</Text>
+                        <Text style={styles.quickActionIcon}>
+                            🏃‍♀️
+                        </Text>
+
+                        <Text style={styles.quickActionText}>
+                            {t('Postpartum Exercise')}
+                        </Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#0EA5E9' }]}
-                        onPress={() => navigation.navigate('Plan')}
+                        style={[
+                            styles.quickActionBtn,
+                            { backgroundColor: '#F59E0B' },
+                        ]}
+                        onPress={() =>
+                            navigation.navigate('DashboardCopy')
+                        }
                     >
-                        <Text style={styles.quickActionIcon}>📅</Text>
-                        <Text style={styles.quickActionText}>{t('My Plans')}</Text>
+                        <Text style={styles.quickActionIcon}>
+                            ✨
+                        </Text>
+
+                        <Text style={styles.quickActionText}>
+                            {t('Recommend')}
+                        </Text>
                     </TouchableOpacity>
                 </View>
 
@@ -449,17 +839,17 @@ export default function DashboardScreen({ navigation }) {
             </ScrollView>
 
             {/* ── Footer ── */}
-            <Footer activeTab={activeTab} onTabPress={handleTabPress} />
+            <Footer
+                activeTab={activeTab}
+                onTabPress={handleTabPress}
+            />
 
-            {/* Toast must be the last child */}
+            {/* Toast */}
             <Toast />
         </SafeAreaView>
     );
 }
 
-// ─────────────────────────────────────────────
-// STYLES
-// ─────────────────────────────────────────────
 const PURPLE = '#7C3AED';
 const PURPLE_LIGHT = '#EDE9FE';
 const BG = '#F3F4F6';
@@ -471,7 +861,6 @@ const styles = StyleSheet.create({
         backgroundColor: BG,
     },
 
-    // ── Header ──
     header: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -480,11 +869,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 12,
         elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
     },
+
     menuBtn: {
         padding: 8,
         gap: 4,
@@ -501,22 +887,26 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 6,
     },
+
     headerLogo: {
         fontSize: 22,
     },
+
     headerTitle: {
         fontSize: 20,
         fontWeight: '800',
         color: PURPLE,
-        letterSpacing: 0.5,
     },
+
     notifBtn: {
         padding: 8,
         position: 'relative',
     },
+
     notifIcon: {
         fontSize: 22,
     },
+
     notifBadge: {
         position: 'absolute',
         top: 4,
@@ -534,7 +924,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
 
-    // ── Sidebar ──
     sidebarOverlay: {
         flex: 1,
         flexDirection: 'row',
@@ -548,12 +937,8 @@ const styles = StyleSheet.create({
         backgroundColor: WHITE,
         paddingTop: 40,
         paddingBottom: 24,
-        elevation: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: -4, height: 0 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
     },
+
     sidebarHeader: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -574,22 +959,26 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 16,
     },
+
     sidebarUserInfo: {
         flex: 1,
     },
+
     sidebarUserName: {
         fontWeight: '700',
         fontSize: 15,
         color: '#111827',
     },
+
     sidebarUserRole: {
         fontSize: 12,
         color: '#6B7280',
-        marginTop: 2,
     },
+
     sidebarCloseBtn: {
         padding: 6,
     },
+
     sidebarCloseText: {
         fontSize: 18,
         color: '#374151',
@@ -599,9 +988,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#E5E7EB',
         marginVertical: 8,
     },
+
     sidebarNav: {
         flex: 1,
     },
+
     sidebarNavItem: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -609,10 +1000,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         position: 'relative',
     },
+
     sidebarNavItemActive: {
         backgroundColor: PURPLE_LIGHT,
-        borderRadius: 0,
     },
+
     sidebarNavIcon: {
         fontSize: 20,
         marginRight: 14,
@@ -633,9 +1025,8 @@ const styles = StyleSheet.create({
         bottom: 0,
         width: 4,
         backgroundColor: PURPLE,
-        borderTopLeftRadius: 4,
-        borderBottomLeftRadius: 4,
     },
+
     sidebarLogout: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -652,16 +1043,15 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
 
-    // ── Scroll ──
     scrollView: {
         flex: 1,
     },
+
     scrollContent: {
         paddingHorizontal: 16,
         paddingTop: 16,
     },
 
-    // ── Greeting ──
     greetingBanner: {
         backgroundColor: PURPLE,
         borderRadius: 20,
@@ -669,11 +1059,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 20,
-        overflow: 'hidden',
     },
+
     greetingTextContainer: {
         flex: 1,
     },
+
     greetingHello: {
         color: WHITE,
         fontSize: 20,
@@ -696,25 +1087,38 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.25)',
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 2,
-        borderColor: 'rgba(255,255,255,0.5)',
     },
+
     greetingAvatarText: {
         color: WHITE,
         fontWeight: 'bold',
         fontSize: 22,
     },
 
-    // ── Section Title ──
     sectionTitle: {
         fontSize: 16,
         fontWeight: '700',
         color: '#111827',
-        marginBottom: 12,
-        marginTop: 4,
     },
 
-    // ── Stats ──
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+
+    lastVisit: {
+        fontSize: 11,
+        color: '#6B7280',
+    },
+
+    viewAllText: {
+        fontSize: 12,
+        color: PURPLE,
+        fontWeight: '600',
+    },
+
     statsGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -727,59 +1131,51 @@ const styles = StyleSheet.create({
         padding: 14,
         width: (width - 48) / 2,
         borderLeftWidth: 4,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07,
-        shadowRadius: 4,
     },
+
     statIcon: {
         fontSize: 24,
         marginBottom: 6,
     },
+
     statValue: {
         fontSize: 22,
         fontWeight: '800',
-        marginBottom: 2,
     },
+
     statLabel: {
         fontSize: 12,
         color: '#6B7280',
-        fontWeight: '500',
     },
 
-    // ── Chart Card ──
-    chartCard: {
+    card: {
         backgroundColor: WHITE,
         borderRadius: 16,
         padding: 16,
         marginBottom: 20,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07,
-        shadowRadius: 4,
-        alignItems: 'center',
     },
+
+    cardTitle: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#374151',
+        marginBottom: 12,
+    },
+
+    indicatorRow: {
+        flexDirection: 'row',
+        marginBottom: 20,
+    },
+
     chart: {
         borderRadius: 12,
+        marginVertical: 8,
     },
 
-    // ── Progress ──
-    progressCard: {
-        backgroundColor: WHITE,
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 20,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07,
-        shadowRadius: 4,
-    },
     progressRow: {
         marginBottom: 16,
     },
+
     progressLabelRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -805,25 +1201,21 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
 
-    // ── Activity ──
-    activityCard: {
+    activityList: {
         backgroundColor: WHITE,
         borderRadius: 16,
-        padding: 16,
+        padding: 8,
         marginBottom: 20,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07,
-        shadowRadius: 4,
     },
-    activityRow: {
+
+    activityItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 10,
+        padding: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#F3F4F6',
     },
+
     activityIconBox: {
         width: 42,
         height: 42,
@@ -832,18 +1224,17 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginRight: 12,
     },
-    activityIcon: {
-        fontSize: 20,
-    },
+
     activityInfo: {
         flex: 1,
     },
+
     activityTitle: {
         fontSize: 14,
         fontWeight: '600',
         color: '#111827',
-        marginBottom: 2,
     },
+
     activityTime: {
         fontSize: 12,
         color: '#9CA3AF',
@@ -854,25 +1245,20 @@ const styles = StyleSheet.create({
         borderRadius: 4,
     },
 
-    // ── Quick Actions ──
     quickActions: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 10,
         marginBottom: 10,
     },
+
     quickActionBtn: {
+        width: (width - 58) / 2,
         borderRadius: 14,
         padding: 14,
         alignItems: 'center',
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        minWidth: (width - 58) / 2,
-        flex: 1,
     },
+
     quickActionIcon: {
         fontSize: 24,
         marginBottom: 6,
@@ -884,7 +1270,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
 
-    // ── Footer ──
     footer: {
         flexDirection: 'row',
         backgroundColor: WHITE,
@@ -892,12 +1277,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         borderTopWidth: 1,
         borderTopColor: '#E5E7EB',
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
     },
+
     footerTab: {
         flex: 1,
         alignItems: 'center',
@@ -924,5 +1305,158 @@ const styles = StyleSheet.create({
         height: 3,
         backgroundColor: PURPLE,
         borderRadius: 2,
+    },
+    exerciseGrid: {
+        flexDirection: 'row',
+        gap: 12,
+        marginTop: 8,
+    },
+    exerciseDashCard: {
+        flex: 1,
+        backgroundColor: WHITE,
+        borderRadius: 16,
+        overflow: 'hidden',
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    exerciseDashThumbnailContainer: {
+        width: '100%',
+        height: 100,
+        backgroundColor: '#F3F4F6',
+        position: 'relative',
+    },
+    exerciseDashThumbnail: {
+        width: '100%',
+        height: '100%',
+    },
+    exerciseDashIconFallback: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#F3F4F6',
+    },
+    playIconOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0,0,0,0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    playIcon: {
+        color: WHITE,
+        fontSize: 28,
+        textShadowColor: 'rgba(0, 0, 0, 0.5)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 4,
+    },
+    exerciseDashIcon: {
+        fontSize: 32,
+    },
+    exerciseDashInfo: {
+        padding: 10,
+    },
+    exerciseDashName: {
+        fontSize: 13,
+        fontWeight: '700',
+        color: '#1F2937',
+    },
+    exerciseDashMeta: {
+        fontSize: 11,
+        color: '#6B7280',
+        marginTop: 2,
+    },
+    videoModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.85)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    videoModalContainer: {
+        width: '100%',
+        maxWidth: 600,
+        backgroundColor: '#000',
+        borderRadius: 16,
+        overflow: 'hidden',
+        position: 'relative',
+    },
+    videoModalClose: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        zIndex: 10,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        width: 34,
+        height: 34,
+        borderRadius: 17,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    videoModalCloseText: {
+        color: WHITE,
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    dashboardVideoWrapper: {
+        width: '100%',
+        aspectRatio: 16 / 9,
+        height: Platform.OS === 'web' ? 337 : undefined, // 600 * 9/16 = 337.5
+        backgroundColor: '#000',
+    },
+    dashboardWebView: {
+        flex: 1,
+        backgroundColor: '#000',
+    },
+    dashboardVideo: {
+        flex: 1,
+    },
+    dashboardMetricBox: {
+        flex: 1,
+        minWidth: '45%',
+        backgroundColor: '#F8FAFC',
+        borderLeftWidth: 4,
+        borderRadius: 12,
+        padding: 12,
+        margin: 4,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
+    },
+    dashboardMetricVal: {
+        fontSize: 16,
+        fontWeight: '800',
+        color: '#1E293B',
+    },
+    dashboardMetricLabel: {
+        fontSize: 11,
+        color: '#64748B',
+        marginTop: 2,
+    },
+    trendContainer: {
+        marginTop: 14,
+        backgroundColor: '#F8FAFC',
+        padding: 12,
+        borderRadius: 16,
+        borderLeftWidth: 4,
+        borderLeftColor: '#7C3AED',
+    },
+    trendTitle: {
+        fontSize: 13,
+        fontWeight: '800',
+        color: '#1E293B',
+        marginBottom: 2,
+    },
+    trendText: {
+        fontSize: 12,
+        color: '#475569',
+        lineHeight: 16,
     },
 });

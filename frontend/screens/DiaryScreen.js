@@ -20,6 +20,7 @@ import api from '../services/api';
 import { transliterate } from '../services/sinhalaTransliteration';
 import SinhalaKeyboard from '../components/SinhalaKeyboard';
 import { useTranslation } from 'react-i18next';
+import { useApp } from '../services/AppContext';
 
 const { width } = Dimensions.get('window');
 
@@ -88,7 +89,7 @@ const today = toDateString(new Date());
 
 export default function DiaryScreen({ navigation }) {
     const { t, i18n } = useTranslation();
-
+    const { processDiary } = useApp();
     const [selectedDate, setSelectedDate] = useState(today);
     const [content, setContent] = useState('');
     const [isLocked, setIsLocked] = useState(false);
@@ -122,6 +123,17 @@ export default function DiaryScreen({ navigation }) {
     const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 
     const debounceRef = useRef(null);
+
+    const handleViewRecommendations = async () => {
+        if (content && content.trim().length > 0) {
+            try {
+                await processDiary(content);
+            } catch (err) {
+                console.error('Error processing recommendations:', err);
+            }
+        }
+        navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Recommendations' } });
+    };
     const recognitionRef = useRef(null);
     const contentRef = useRef('');
 
@@ -266,7 +278,6 @@ export default function DiaryScreen({ navigation }) {
                 saveDiary(content, isLocked, currentTheme, newMedia, mood, sentiment);
                 return;
             }
-
             let mimeType = '*/*';
             if (type === 'image') mimeType = 'image/*';
             else if (type === 'video') mimeType = 'video/*';
@@ -275,7 +286,6 @@ export default function DiaryScreen({ navigation }) {
 
             const result = await DocumentPicker.getDocumentAsync({ type: mimeType, copyToCacheDirectory: true });
             if (result.canceled) return;
-
             const asset = result.assets[0];
             const newMedia = [...media, { type, url: asset.uri, name: asset.name }];
             setMedia(newMedia);
@@ -364,7 +374,6 @@ export default function DiaryScreen({ navigation }) {
                 handleContentChange(newContent);
             }
         };
-
         recognition.start();
     }, [sinhalaMode]);
 
@@ -614,6 +623,16 @@ export default function DiaryScreen({ navigation }) {
                                     textAlignVertical="top"
                                 />
 
+                                <TouchableOpacity 
+                                    style={[s.recBtn, { backgroundColor: tc.accent }]} 
+                                    onPress={handleViewRecommendations}
+                                    activeOpacity={0.8}
+                                >
+                                    <Text style={s.recBtnText}>
+                                        {i18n.language === 'si' ? 'නිර්දේශිත සහන බලන්න 💜' : 'View Recommendations 💜'}
+                                    </Text>
+                                </TouchableOpacity>
+
                                 {isListening && (
                                     <View style={[s.listeningBar, { borderColor: tc.accent }]}>
                                         <Text style={[s.listeningText, { color: tc.accent }]}>Listening... {interimTranscript}</Text>
@@ -786,6 +805,26 @@ const s = StyleSheet.create({
     mediaRemoveText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
 
     textArea: { flex: 1, fontSize: 16, lineHeight: 26, minHeight: 200 },
+    recBtn: {
+        paddingVertical: 14,
+        paddingHorizontal: 20,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 16,
+        marginBottom: 8,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 2 }
+    },
+    recBtnText: {
+        color: '#FFF',
+        fontWeight: '800',
+        fontSize: 15,
+        letterSpacing: 0.5
+    },
     listeningBar: { backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, marginBottom: 16 },
     listeningText: { fontSize: 14, fontWeight: '600', fontStyle: 'italic' },
 

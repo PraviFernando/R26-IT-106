@@ -44,14 +44,27 @@ const diaryValidationRules = [
         }),
 ];
 
-// Check if date is today
+// Check if date is valid (today or past date, not future)
 const isTodayValidation = (req, res, next) => {
     const { date } = req.body || req.params;
-    const today = new Date().toISOString().split('T')[0];
+    if (!date) return next();
 
-    if (date && date !== today) {
+    const now = new Date();
+    const utcToday = now.toISOString().split('T')[0];
+    const localY = now.getFullYear();
+    const localM = String(now.getMonth() + 1).padStart(2, '0');
+    const localD = String(now.getDate()).padStart(2, '0');
+    const localToday = `${localY}-${localM}-${localD}`;
+
+    // If date matches local today or UTC today, allow
+    if (date === utcToday || date === localToday) {
+        return next();
+    }
+
+    // Only reject if the date is strictly in the future relative to both local and UTC
+    if (date > localToday && date > utcToday) {
         return res.status(400).json({
-            message: 'You can only create or edit diary entry for today'
+            message: 'You cannot create or edit diary entries for future dates'
         });
     }
     next();

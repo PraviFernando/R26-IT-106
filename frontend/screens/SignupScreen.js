@@ -22,7 +22,7 @@ import { SRI_LANKA_DISTRICTS, SRI_LANKA_VILLAGES_BY_DISTRICT } from '../data/sri
 
 // Lazy-load expo-image-picker so it doesn't crash if not installed
 let ImagePicker = null;
-try { ImagePicker = require('expo-image-picker'); } catch (_) {}
+try { ImagePicker = require('expo-image-picker'); } catch (_) { }
 
 // ─── Dropdown Component ───────────────────────────────────────────────────────
 function Dropdown({ label, placeholder, value, options, onSelect, disabled }) {
