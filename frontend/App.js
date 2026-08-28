@@ -25,6 +25,9 @@ import BabyActivityDetailScreen from './screens/BabyActivityDetailScreen';
 import BabyCategoryScreen from './screens/BabyCategoryScreen';
 import MovementTrackingScreen from './screens/MovementTrackingScreen';
 import OnboardingScreen from './screens/OnboardingScreen';
+import CareOverviewScreen from './screens/CareOverviewScreen';
+import GrowthChartScreen from './screens/GrowthChartScreen';
+import EPDSScreeningScreen from './screens/EPDSScreeningScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -49,6 +52,20 @@ export default function App() {
               <Stack.Screen
                 name="Onboarding"
                 component={OnboardingScreen}
+              />
+
+              <Stack.Screen
+                name="EPDSScreening"
+                component={EPDSScreeningScreen}
+              />
+              <Stack.Screen
+                name="CareOverview"
+                component={CareOverviewScreen}
+              />
+
+              <Stack.Screen
+                name="GrowthChart"
+                component={GrowthChartScreen}
               />
               <Stack.Screen name="Progress" component={ProgressScreen} options={{ headerShown: false }} />
               <Stack.Screen name="ExerciseProgress" component={ExerciseProgressScreen} options={{ headerShown: false }} />
