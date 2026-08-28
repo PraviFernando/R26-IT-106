@@ -33,12 +33,9 @@ import GrowthChartScreen from './screens/GrowthChartScreen';
 import EPDSScreeningScreen from './screens/EPDSScreeningScreen';
 import ProfileScreen from './screens/ProfileScreen';
 
-
 const Stack = createNativeStackNavigator();
 
-
 export default function App() {
-
   return (
 
     <AppProvider>
