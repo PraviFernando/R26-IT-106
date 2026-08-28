@@ -62,6 +62,8 @@ export default function PlanScreen({ navigation }) {
     const [selectedDate, setSelectedDate] = useState(todayStr);
     const [showFullCalendar, setShowFullCalendar] = useState(false);
 
+    const isPastDate = selectedDate < todayStr;
+
     const [monthRecords, setMonthRecords] = useState([]);
     const [dayRecords, setDayRecords] = useState([]);
     const [loadingDay, setLoadingDay] = useState(false);
@@ -78,12 +80,18 @@ export default function PlanScreen({ navigation }) {
     // Custom activity modal
     const [showCustomModal, setShowCustomModal] = useState(false);
     const [customForm, setCustomForm] = useState({
-        name: '', nameDesc: '', icon: '🌟', timeOfDay: 'Morning', useTimer: false,
+        name: '', nameDesc: '', icon: '🌟', timeOfDay: 'Morning', useTimer: false, scheduledTime: '',
     });
     const [savingCustom, setSavingCustom] = useState(false);
     const [customNameSinhalaMode, setCustomNameSinhalaMode] = useState(false);
     const [customDescSinhalaMode, setCustomDescSinhalaMode] = useState(false);
     const [activeField, setActiveField] = useState(null); // 'name' | 'desc'
+
+    // ── Notification Popup ────────────────────────────────────────────────────
+    const [notification, setNotification] = useState(null); // { activity, countdown }
+    const notifCountdownRef = useRef(null);
+    const notifCheckRef = useRef(null);
+    const firedNotifs = useRef(new Set()); // track which activity IDs already fired today
 
     // ── Load month data (for calendar colors) ────────────────────────────────
     const loadMonthData = useCallback(async () => {
@@ -111,6 +119,71 @@ export default function PlanScreen({ navigation }) {
 
     // Cleanup timer on unmount
     useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+
+    // ── Notification checker: polls every 30 seconds ───────────────────────────
+    useEffect(() => {
+        const checkNotifications = () => {
+            const now = new Date();
+            const nowDate = toDateStr(now.getFullYear(), now.getMonth() + 1, now.getDate());
+            const nowHH = String(now.getHours()).padStart(2, '0');
+            const nowMM = String(now.getMinutes()).padStart(2, '0');
+            const nowTime = `${nowHH}:${nowMM}`;
+
+            // Only fire notifications for today's records
+            dayRecords.forEach(record => {
+                if (!record.scheduledTime || record.completed) return;
+                if (record.date !== nowDate) return;
+                const fireKey = `${record.activityId}_${record.date}_${record.scheduledTime}`;
+                if (firedNotifs.current.has(fireKey)) return;
+                if (record.scheduledTime === nowTime) {
+                    firedNotifs.current.add(fireKey);
+                    // Find the merged activity for this record
+                    const activity = {
+                        id: record.activityId,
+                        name: record.activityName || record.activityId,
+                        icon: record.icon || '🌟',
+                        timeOfDay: record.timeOfDay,
+                        isCustom: record.isCustom,
+                        _recId: record._id,
+                        completed: record.completed,
+                        timerSeconds: record.timerSeconds || 0,
+                        description: record.note || '',
+                        color: '#9C27B0',
+                    };
+                    showNotificationPopup(activity);
+                }
+            });
+        };
+
+        notifCheckRef.current = setInterval(checkNotifications, 30000); // every 30s
+        checkNotifications(); // also check immediately when day records load
+        return () => clearInterval(notifCheckRef.current);
+    }, [dayRecords]);
+
+    const showNotificationPopup = (activity) => {
+        setNotification({ activity, countdown: 5 });
+        let count = 5;
+        notifCountdownRef.current = setInterval(() => {
+            count -= 1;
+            setNotification(prev => prev ? { ...prev, countdown: count } : null);
+            if (count <= 0) {
+                clearInterval(notifCountdownRef.current);
+                setNotification(null);
+            }
+        }, 1000);
+    };
+
+    const dismissNotification = () => {
+        clearInterval(notifCountdownRef.current);
+        setNotification(null);
+    };
+
+    const markDoneFromNotification = async () => {
+        if (!notification?.activity) return;
+        clearInterval(notifCountdownRef.current);
+        setNotification(null);
+        await toggleActivity(notification.activity);
+    };
 
     // ── Merged activities (defaults + saved records) ─────────────────
     const mergedActivities = useMemo(() => {
@@ -206,7 +279,7 @@ export default function PlanScreen({ navigation }) {
         }
     };
 
-    // ── Save custom activity ─────────────────────────────────────────────────
+    // ── Save custom activity ────────────────────────────────────────────────
     const saveCustomActivity = async () => {
         if (!customForm.name.trim()) {
             Toast.show({ type: 'error', text1: t('Name Required'), text2: t('Please enter an activity name.'), position: 'top' });
@@ -225,10 +298,11 @@ export default function PlanScreen({ navigation }) {
                 timerSeconds: 0,
                 isCustom: true,
                 note: customForm.nameDesc.trim(),
+                scheduledTime: customForm.scheduledTime.trim() || null,
             });
             await loadDayData(selectedDate);
             setShowCustomModal(false);
-            setCustomForm({ name: '', nameDesc: '', icon: '🌟', timeOfDay: 'Morning', useTimer: false });
+            setCustomForm({ name: '', nameDesc: '', icon: '🌟', timeOfDay: 'Morning', useTimer: false, scheduledTime: '' });
             setActiveField(null);
             Toast.show({ type: 'success', text1: t('Activity Added'), text2: `"${customForm.name.trim()}" ${t('added to your plan.')}`, position: 'top' });
         } catch (_) {
@@ -390,10 +464,10 @@ export default function PlanScreen({ navigation }) {
                 )}
 
                 {/* Checkbox */}
-                <TouchableOpacity onPress={() => toggleActivity(activity)} style={s.checkbox} disabled={isSaving}>
+                <TouchableOpacity onPress={() => toggleActivity(activity)} style={s.checkbox} disabled={isSaving || isPastDate}>
                     {isSaving
                         ? <ActivityIndicator size="small" color={PURPLE} />
-                        : <View style={[s.checkboxInner, activity.completed && { backgroundColor: activity.color || PURPLE, borderColor: activity.color || PURPLE }]}>
+                        : <View style={[s.checkboxInner, activity.completed && { backgroundColor: activity.color || PURPLE, borderColor: activity.color || PURPLE }, isPastDate && { opacity: 0.5 }]}>
                             {activity.completed && <Text style={s.checkmark}>✓</Text>}
                         </View>
                     }
@@ -559,6 +633,21 @@ export default function PlanScreen({ navigation }) {
                         ? <ActivityIndicator color={PURPLE} size="large" style={{ marginTop: 40 }} />
                         : TIME_SECTIONS.map(renderSection)
                     }
+
+                    {/* Add Custom Activity Button */}
+                    {!loadingDay && !isPastDate && (
+                        <TouchableOpacity
+                            style={s.addCustomBtn}
+                            onPress={() => setShowCustomModal(true)}
+                        >
+                            <Text style={s.addCustomIcon}>+</Text>
+                            <View>
+                                <Text style={s.addCustomText}>{t('Add My Own Activity')}</Text>
+                                <Text style={s.addCustomSub}>{t('Create a custom plan step')}</Text>
+                            </View>
+                        </TouchableOpacity>
+                    )}
+
 
 
                     <View style={{ height: 32 }} />
