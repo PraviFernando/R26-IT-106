@@ -259,10 +259,145 @@ const addGrowthRecord = async (req, res, next) => {
 
     await user.save();
     const updatedUser = await User.findById(req.user.id).select('-password');
-    res.status(200).json({ message: 'Growth measurement added successfully', user: updatedUser });
+    res.status(200).json({ message: 'Growth record added successfully', user: updatedUser });
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = { signup, signin, signOut, getUser, updateUser, deleteUser, saveOnboarding, addGrowthRecord };
+/**
+ * POST /user/social-login
+ * Authenticates or creates user profile using Google/Facebook social login.
+ */
+const socialLogin = async (req, res, next) => {
+  const { provider, email, fullName, phoneNumber, district, village } = req.body;
+
+  if (!email || !provider) {
+    return res.status(400).json({ message: 'Email and provider are required' });
+  }
+
+  try {
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      const randomPassword = await bcrypt.hash(Math.random().toString(36) + Date.now(), 12);
+      const baseName = fullName || email.split('@')[0];
+      user = new User({
+        username: baseName,
+        fullName: baseName,
+        email,
+        password: randomPassword,
+        phoneNumber: phoneNumber || '',
+        district: district || '',
+        village: village || '',
+        role: 'patient',
+        onboardingCompleted: false,
+      });
+      await user.save();
+    } else {
+      if (fullName) user.fullName = fullName;
+      if (phoneNumber) user.phoneNumber = phoneNumber;
+      if (district) user.district = district;
+      if (village) user.village = village;
+    }
+
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    user.isOnline = true;
+    user.lastLogin = Date.now();
+    await user.save();
+
+    const { password: pass, ...rest } = user._doc;
+    res.status(200).json({ ...rest, token });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const forgotPassword = async (req, res, next) => {
+  const { identity } = req.body;
+
+  if (!identity) {
+    return res.status(400).json({ message: 'Email or username is required' });
+  }
+
+  try {
+    const user = await User.findOne({
+      $or: [
+        { email: identity.toLowerCase().trim() },
+        { username: identity.trim() }
+      ]
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email or username' });
+    }
+
+    // Generate a 6-digit verification reset code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordCode = resetCode;
+    user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+    await user.save();
+
+    return res.status(200).json({
+      message: 'Reset verification code generated successfully!',
+      email: user.email,
+      resetCode,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  const { identity, newPassword } = req.body;
+
+  if (!identity || !newPassword) {
+    return res.status(400).json({ message: 'Email/Username and new password are required' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+  }
+
+  try {
+    const user = await User.findOne({
+      $or: [
+        { email: identity.toLowerCase().trim() },
+        { username: identity.trim() }
+      ]
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email or username' });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 12);
+    user.resetPasswordCode = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    return res.status(200).json({ message: 'Password reset successful! You can now log in.' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  signup,
+  signin,
+  signOut,
+  getUser,
+  updateUser,
+  deleteUser,
+  saveOnboarding,
+  addGrowthRecord,
+  socialLogin,
+  forgotPassword,
+  resetPassword,
+};
+
