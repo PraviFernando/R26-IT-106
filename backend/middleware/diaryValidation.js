@@ -26,7 +26,7 @@ const diaryValidationRules = [
 
     body('mood')
         .optional()
-        .isIn(['😊', '😌', '😔', '😪', '😠', '🌈', '🌟', '☁️'])
+        .isString()
         .withMessage('Invalid mood'),
 
     body('sentiment')

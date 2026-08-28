@@ -21,6 +21,7 @@ import { transliterate } from '../services/sinhalaTransliteration';
 import SinhalaKeyboard from '../components/SinhalaKeyboard';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../services/AppContext';
+import { EMOTION_OPTIONS } from '../constants/emotions';
 
 const { width } = Dimensions.get('window');
 
@@ -75,8 +76,6 @@ const getGreeting = () => {
     return "Good Evening 🌙";
 };
 
-const MOODS = ['😊', '😌', '😔', '😪', '😠', '🌈', '🌟', '☁️'];
-
 const THEMES = {
     'default': { bg1: '#F4F0FB', bg2: '#FDFCFE', card: '#FFFFFF', text: '#334155', accent: '#a18cd1' },
     'pastel-pink': { bg1: '#FDF2F8', bg2: '#FFF0F5', card: '#FFFFFF', text: '#831843', accent: '#fbc2eb' },
@@ -95,7 +94,7 @@ export default function DiaryScreen({ navigation }) {
     const [isLocked, setIsLocked] = useState(false);
     const [currentTheme, setCurrentTheme] = useState('default');
     const [media, setMedia] = useState([]);
-    const [mood, setMood] = useState('😊');
+    const [mood, setMood] = useState('happy');
     const [sentiment, setSentiment] = useState('Skipped');
 
     const [saveStatus, setSaveStatus] = useState('idle');
@@ -127,12 +126,18 @@ export default function DiaryScreen({ navigation }) {
     const handleViewRecommendations = async () => {
         if (content && content.trim().length > 0) {
             try {
-                await processDiary(content);
+                await processDiary(content, mood);
             } catch (err) {
                 console.error('Error processing recommendations:', err);
             }
         }
-        navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Recommendations' } });
+        navigation.navigate('Main', {
+            screen: 'Tabs',
+            params: {
+                screen: 'Recommendations',
+                params: { selectedEmoji: mood }
+            }
+        });
     };
     const recognitionRef = useRef(null);
     const contentRef = useRef('');
@@ -168,7 +173,9 @@ export default function DiaryScreen({ navigation }) {
             setIsLocked(data.isLocked || false);
             setCurrentTheme(data.theme || 'default');
             setMedia(data.media || []);
-            setMood(data.mood || '😊');
+            const loadedMood = data.mood || 'happy';
+            const resolvedMoodKey = EMOTION_OPTIONS.find(o => o.key === loadedMood || o.emoji === loadedMood)?.key || 'happy';
+            setMood(resolvedMoodKey);
             setSentiment(data.sentiment || analyzeSentiment(data.content || ''));
             setIsUnlocked(!data.isLocked);
         } catch (err) {
@@ -176,7 +183,7 @@ export default function DiaryScreen({ navigation }) {
             setIsLocked(false);
             setCurrentTheme('default');
             setMedia([]);
-            setMood('😊');
+            setMood('happy');
             setSentiment('Skipped');
             setIsUnlocked(true);
         } finally {
@@ -194,15 +201,28 @@ export default function DiaryScreen({ navigation }) {
         } catch (_) { }
     };
 
+    const LEGACY_MOOD_MAP = {
+        happy: '😊',
+        calm: '😌',
+        sad: '😔',
+        crying: '😔',
+        anxious: '😔',
+        frustrated: '😔',
+        tired: '😪',
+        sleepy: '😪',
+        angry: '😠',
+    };
+
     const saveDiary = async (text, locked = isLocked, theme = currentTheme, mediaList = media, m = mood, s = sentiment) => {
         try {
+            const backendMood = LEGACY_MOOD_MAP[m] || m;
             await api.post('/diary', {
                 date: selectedDate,
                 content: text,
                 isLocked: locked,
                 theme,
                 media: mediaList,
-                mood: m,
+                mood: backendMood,
                 sentiment: s
             });
             setSaveStatus('saved');
@@ -534,13 +554,13 @@ export default function DiaryScreen({ navigation }) {
                         <Text style={[s.moodTitle, { color: tc.text }]}>{t('Emotional Landscape')}</Text>
                         <Text style={[s.moodSub, { color: tc.text }]}>{t('How are you feeling today? Tap to log it.')}</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.moodScroll}>
-                            {MOODS.map(m => (
+                            {EMOTION_OPTIONS.map(opt => (
                                 <TouchableOpacity
-                                    key={m}
-                                    onPress={() => changeMood(m)}
-                                    style={[s.moodIconBox, mood === m && { backgroundColor: tc.bg1, borderColor: tc.accent, borderWidth: 2 }]}
+                                    key={opt.key}
+                                    onPress={() => changeMood(opt.key)}
+                                    style={[s.moodIconBox, mood === opt.key && { backgroundColor: tc.bg1, borderColor: tc.accent, borderWidth: 2 }]}
                                 >
-                                    <Text style={s.moodEmoji}>{m}</Text>
+                                    <Text style={s.moodEmoji}>{opt.emoji}</Text>
                                 </TouchableOpacity>
                             ))}
                         </ScrollView>

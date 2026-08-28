@@ -942,11 +942,12 @@ export const getRecommendationRule = (reason, riskLevel, preferredActivities = [
   };
 };
 
-export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, preferredActivities = [], preferredGames = [], diaryText = '', completedActivities = []) => {
+export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, preferredActivities = [], preferredGames = [], diaryText = '', completedActivities = [], selectedEmoji = null) => {
   const existingRecommendations = getRecommendationRule(reason, riskLevel, preferredActivities, preferredGames);
-  const newActivities = getRankedActivities(emotion, reason, riskLevel, diaryText, preferredActivities, completedActivities);
+  const effectiveEmotion = selectedEmoji || emotion;
+  const newActivities = getRankedActivities(effectiveEmotion, reason, riskLevel, diaryText, preferredActivities, completedActivities, selectedEmoji);
 
-  const games = getRecommendedGames({}, diaryText, reason, 4, riskLevel, emotion);
+  const games = getRecommendedGames({}, diaryText, reason, 4, riskLevel, effectiveEmotion);
   const game = games[0] || existingRecommendations.game;
 
   return {
@@ -1024,9 +1025,13 @@ const REASON_ACTIVITY_MAP = {
 
 const EMOTION_ACTIVITY_MAP = {
   sad: ['new_positive_affirmations', 'new_gratitude_journal', 'new_relaxing_music', 'new_smile_challenge', 'write_positive', 'journaling'],
+  crying: ['new_positive_affirmations', 'new_gratitude_journal', 'new_relaxing_music', 'new_worry_box', 'write_positive', 'journaling', 'new_calm_coloring'],
   anxious: ['new_478_breathing', 'new_box_breathing', 'new_guided_meditation', 'new_five_senses_grounding', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321'],
   stressed: ['new_deep_breathing', 'new_guided_meditation', 'new_bubble_pop', 'new_worry_box', 'deep_breathing', 'guided_meditation', 'short_breathing'],
-  happy: ['new_gratitude_journal', 'new_smile_challenge', 'new_drink_water', 'new_self_care_checklist', 'write_positive']
+  happy: ['new_gratitude_journal', 'new_smile_challenge', 'new_drink_water', 'new_self_care_checklist', 'write_positive'],
+  sleepy: ['new_sleep_reflection', 'new_relaxing_music', 'night_breathing', 'rest_meditation', 'short_breathing'],
+  fatigue: ['new_sleep_reflection', 'new_drink_water', 'new_gentle_stretch', 'short_breathing', 'rest_meditation'],
+  calm: ['new_gratitude_journal', 'new_relaxing_music', 'new_self_care_checklist', 'write_positive']
 };
 
 const normalizeReasonKey = (reason) => {
@@ -1047,12 +1052,15 @@ const normalizeReasonKey = (reason) => {
 
 const normalizeEmotionKey = (emotion) => {
   if (!emotion) return 'stressed';
-  const e = emotion.toLowerCase();
-  if (e === 'crying') return 'sad';
+  const e = emotion.toLowerCase().trim();
+  if (e === 'crying') return 'crying';
+  if (e === 'sleepy') return 'sleepy';
+  if (e === 'happy') return 'happy';
+  if (e === 'calm') return 'calm';
+  if (e === 'sad') return 'sad';
   if (e === 'tired') return 'fatigue';
   if (e === 'angry' || e === 'frustrated') return 'stressed';
-  if (e === 'sleepy') return 'fatigue';
-  if (e === 'calm') return 'happy';
+  if (e === 'anxious' || e === 'worried') return 'anxious';
   return e;
 };
 
@@ -1068,9 +1076,10 @@ const getCandidatesPool = () => {
   return pool;
 };
 
-export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', preferredActivities = [], completedActivities = []) => {
+export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', preferredActivities = [], completedActivities = [], selectedEmoji = null) => {
+  const activeEmotion = selectedEmoji || emotion;
   const normReason = normalizeReasonKey(reason);
-  const normEmotion = normalizeEmotionKey(emotion);
+  const normEmotion = normalizeEmotionKey(activeEmotion);
   const normRisk = (riskLevel || 'low').toLowerCase();
 
   const isBabyActive = isBabyRelatedReason(reason) || isBabyRelatedContent(diaryText);
@@ -1091,10 +1100,10 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
       score += 20;
     }
 
-    // 3. EMOTION MATCH
+    // 3. EMOTION MATCH (Boosted for selected emoji differentiation)
     const emotionList = EMOTION_ACTIVITY_MAP[normEmotion] || EMOTION_ACTIVITY_MAP.stressed;
     if (emotionList.includes(act.id)) {
-      score += 5;
+      score += 10;
     }
 
     // 4. RISK LEVEL MATCH

@@ -178,19 +178,29 @@ export const AppProvider = ({ children }) => {
     });
   };
 
-  const processDiary = (diaryText) => {
+  const processDiary = (diaryText, selectedEmoji = null) => {
     try {
       // Trigger background updates
       fetchCompletedActivities();
       fetchProgressData();
       const analysis = analyzeDiary(diaryText);
       analysis.diaryText = diaryText;
+      analysis.selectedEmoji = selectedEmoji || null;
       const defaultEmotionEmojis = {
         happy: '😊',
         sad: '😔',
+        crying: '😢',
+        anxious: '😰',
+        tired: '😪',
+        angry: '😡',
+        frustrated: '😞',
+        sleepy: '😴',
+        calm: '😌',
         stressed: '😟'
       };
-      analysis.mood = defaultEmotionEmojis[analysis.detectedEmotion] || '😊';
+      analysis.mood = selectedEmoji
+        ? (defaultEmotionEmojis[selectedEmoji] || selectedEmoji)
+        : (defaultEmotionEmojis[analysis.detectedEmotion] || '😊');
 
       // Detect Baby Care Topic using independent babyCareService
       const babyTopicRes = detectBabyTopic(diaryText);
