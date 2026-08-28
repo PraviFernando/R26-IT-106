@@ -86,6 +86,13 @@ export const normalizeMultilingualText = (text = '') => {
     .replace(/nidimathai/g, 'mata nidimathai')
     .replace(/hariyata\s*nindak/g, 'hariyata nindak naha')
     // Bonding Issues Singlish normalizations
+    .replace(/adrae/g, 'adare')
+    .replace(/adara/g, 'adare')
+    .replace(/huratal/g, 'hurathal')
+    .replace(/hithenne\s*na\b/g, 'hithenne naha')
+    .replace(/hithenne\s*nehe/g, 'hithenne naha')
+    .replace(/udaw\s*na\b/g, 'udaw naha')
+    .replace(/udaw\s*nehe/g, 'udaw naha')
     .replace(/bandeemak/g, 'bandimak')
     .replace(/bandeema/g, 'bandima')
     .replace(/danenne\s*na\b/g, 'danenne naha')
@@ -104,7 +111,7 @@ const REASON_KW = {
     'alone', 'lonely', 'isolated', 'nobody', 'no one', 'miss', 'empty', 'no friends', 'left out',
     'empty feeling', 'loku thanikamak', 'mukuth wadak', 'mukuth na', 'nobody cares', 'no one cares',
     'kauruth mata kohomada kiyala ahanne na', 'baby kohomada kiyala witharai ahanne', 'kauruth mata',
-    'kohomada kiyala ahanne na', 'witharai ahanne', 'taniyama karagena yanawa', 'ath wela wage',
+    'kohomada kiyala ahanne na', 'witharai ahanne', 'taniyama karagena yanawa',
     'ain wela wage', 'amma kenek widihata witharai', 'hiskamak', 'viswasa karanna kenek na',
     'තනිවෙලා', 'පාළුයි', 'පාළුවක්', 'කවුරුත් නෑ', 'කවුරුත් නැහැ', 'තනියම', 'පාළු', 'පාලුයි', 'පාලු', 'එන්නේ නැහැ', 'එන්නේ නෑ',
     'paluyi', 'taniyen', 'taniwela', 'kugewat na', 'kawuruth naha', 'palu',
@@ -113,14 +120,20 @@ const REASON_KW = {
   ],
   fatigue: [
     'tired', 'exhausted', 'drained', 'no energy', 'worn out', 'sleepy', 'burnt out', 'sluggish',
+    'shakthiya enne naha', 'shakthiyak naha', 'shakthiya', 'durwalai', 'angata aapahu shakthiya',
+    'ඇඟට ආපහු ශක්තිය එන්නේ නැහැ', 'ශක්තිය එන්නේ නැහැ', 'ශක්තිය', 'ඇඟ දුර්වලයි',
     'මහන්සියි', 'වෙහෙසයි', 'වෙහෙස', 'ශක්තියක් නෑ',
     'mahansiyi', 'wehesayi', 'mahansi', 'shakthiyak naha', 'hondata mahansiyi'
   ],
   anxiety: [
     'anxious', 'worried', 'panic', 'scared', 'nervous', 'overthinking', 'heart racing', 'restless',
     'worrying', 'terrible will happen', 'chest feels tight', 'chest tight', 'can\'t stop worrying', 'cant stop worrying',
-    'something terrible', 'heart is racing',
+    'something terrible', 'heart is racing', 'prepared for something bad', 'cannot immediately reach',
+    'whether my baby is okay', 'responsible for something important', 'could go wrong', 'warning me that something',
+    'frightened by situations', 'difficult to calm my thoughts', 'plans change unexpectedly', 'wrong choice for my baby',
+    'frightened', 'uneasy', 'narakadeyak wei', 'kanasallaten',
     'බයයි', 'කාංසාව', 'ලොකු බයක්', 'කනස්සල්ල', 'බියක්', 'බය හිතෙනවා', 'පපුවේ ගැස්මක්', 'නරක දෙයක් වෙයි',
+    'කනස්සල්ලෙන්', 'බය වෙනවා', 'බයක් දැනෙනවා', 'නරක දෙයක් වෙයි කියලා', 'සිතුවිලි පාලනය',
     'baye', 'baya', 'baya hithenawa', 'bayaයි', 'kansawa', 'bayak thiyenawa', 'anxious wela', 'kisima shanthiyak na', 'monawa hari wei'
   ],
   bonding_issues: [
@@ -128,7 +141,7 @@ const REASON_KW = {
     'cannot feel a real connection', 'emotionally distant', 'try to love my baby but feel nothing',
     'detached and disconnected', 'do not feel the bond', 'feel empty instead of love',
     'guilty because i am not attached', 'expected to feel overwhelming love', 'bond between me and my baby feels broken',
-    'like a caregiver not a mother', 'scared i will never feel connected', 'baby feels like a stranger',
+    'like a caregiver not a mother', 'scared i will never feel connected', 'never feel connected', 'baby feels like a stranger',
     'feel no instinct', 'care for my baby but do not feel', 'lack of bond makes me feel',
     'going through the motions with no feeling', 'feel emotionally numb', 'ashamed to admit i do not feel attached',
     'distant from my baby even when', 'do not enjoy holding my baby', 'no connection and it breaks my heart',
@@ -138,6 +151,14 @@ const REASON_KW = {
     'connection with my baby', 'attachment to my baby', 'can\'t connect with my baby',
     'cant connect with my baby', 'can\'t connect', 'cant connect', 'don\'t feel connected', 'dont feel connected', 'not attached to my baby',
     'not emotionally connected', 'emotionally connected', 'not connected', 'emotional connection',
+    'special close feeling', 'emotional connection ekak naha', 'mokak hari aduwak', 'strong emotional attachment',
+    'hithen ath wela', 'ath wela wage', 'close feeling eka enne naha', 'adara feeling eka adui', 'adare feeling', 'feeling eka adui', 'kalaya gathath adara feeling', 'feel empty instead of love',
+    'adare hithenne na', 'adrae hithenne na', 'adare hithenne naha', 'adrae hithenne naha', 'magemai kiyala hithenne na',
+    'magemai kiyala hithenne naha', 'hurathal karanna hithenne na', 'hurathal karanna hithenne naha', 'huratal karanna hithenne na',
+    'adare danenne na', 'adare danenne naha', 'babata adare na', 'babata adare naha', 'babata adrae', 'babata adare',
+    'ආදරයක් හිතෙන්නේ නැහැ', 'ආදරයක් හිතෙන්නේ නෑ', 'ආදරයක් හිතෙන්නෙ නැහැ', 'ආදරයක් හිතෙන්නෙ නෑ',
+    'මගේමයි කියලා හිතෙන්නේ නැහැ', 'මගේමයි කියලා හිතෙන්නේ නෑ', 'මගේමයි කියලා හිතෙන්නෙ නැහැ', 'මගේමයි කියලා හිතෙන්නෙ නෑ',
+    'හුරතල් කරන්න හිතෙන්නේ නැහැ', 'හුරතල් කරන්න හිතෙන්නේ නෑ', 'හුරතල් කරන්න හිතෙන්නෙ නැහැ', 'හුරතල් කරන්න හිතෙන්නෙ නෑ',
     'බැඳීමක් නෑ', 'බැඳීමක් නැහැ', 'ආදරයක් දැනෙන්නේ නෑ', 'ආදරයක් දැනෙන්නේ නැහැ', 'සම්බන්ධයක් නෑ', 'සම්බන්ධයක් නැහැ',
     'කිසිම හැඟීමක් නෑ', 'හැඟීමක් නැහැ', 'හැඟීමක් නෑ', 'ලං වෙලා නැහැ', 'ලං වෙලා නෑ', 'ලං වෙලා නැහැ වගේ',
     'ලොකු බැඳීමක්', 'බැඳීමක් දැනෙන්නේ නැහැ', 'බැඳීමක් දැනෙන්නේ නෑ', 'දැනෙන්නේ නැහැ', 'හොඳ අම්මා කෙනෙක් නෙවෙයිද',
@@ -151,7 +172,14 @@ const REASON_KW = {
     'special close feeling', 'special close feeling ekak', 'close feeling', 'close feeling ekak', 'lanweemak', 'langweemak'
   ],
   lack_of_support: [
-    'husband', 'partner', 'no help', 'unsupported', 'nobody helps', 'no family', 'doing it alone',
+    'nobody i can depend on', 'take care of the baby for a while so i could rest', 'nobody to share', 'make every decision alone',
+    'help with meals', 'household chores', 'partner does not share', 'nobody i can depend on when i become overwhelmed',
+    'family would check on me', 'expect me to cope without offering any help', 'take over some of the baby care',
+    'need practical help', 'manage the baby without assistance', 'partner does not share enough',
+    'help me with ordinary things', 'nobody notices how much work', 'without assistance', 'no assistance',
+    'difficult parts of parenting with', 'every decision alone', 'nobody notices how much work i am doing',
+    'take over some of the baby care when i am exhausted',
+    'husband udaw karanne naha', 'husband udaw naha', 'partner udaw naha', 'no help', 'unsupported', 'nobody helps', 'no family', 'doing it alone',
     'no one help me', 'no one helps me', 'no one help', 'no one helps', 'do everything alone',
     'do everything alone now', 'have to do everything alone', 'doing everything alone',
     'everything alone', 'all alone', 'no one to help me', 'do all the baby work and household work',
@@ -241,11 +269,11 @@ const REASON_KW = {
     'සල්ලි', 'මුදල්', "සල්ලි ප්‍රශ්න", "වියදම්"
   ],
   relationship_family_problem: [
-    'husband', 'partner', 'relationship', 'marriage', 'argue', 'arguing', 'fighting', 'fight', 'distant from partner',
+    'partner', 'relationship', 'marriage', 'argue', 'arguing', 'fighting', 'fight', 'distant from partner',
     'relationship with my husband', 'argue all the time', 'husband and i are becoming distant', 'problems in our relationship',
     'husband and i are constantly fighting', 'disconnected from my partner', 'conflict with my in-laws', 'family conflict',
     'husband ekka prashna', 'relationship eka hari naha', 'husband ekka nitharama prashna', 'husband ekka randu',
-    'husband ekka', 'relationship eka', 'husband', 'රණ්ඩු', 'ආරවුල්', 'සැමියා එක්ක ප්‍රශ්න', 'පවුලේ අය එක්ක ප්‍රශ්න',
+    'husband ekka', 'relationship eka', 'රණ්ඩු', 'ආරවුල්', 'සැමියා එක්ක ප්‍රශ්න', 'පවුලේ අය එක්ක ප්‍රශ්න',
     'සැමියාත් එක්ක', 'සැමියා එක්ක', 'සම්බන්ධය ගොඩක් නරක', 'සම්බන්ධය', 'සැමියාටයි', 'ප්රශ්න ඇති වෙනවා', 'ප්‍රශ්න ඇති වෙනවා',
     'සම්බන්ධතාවය', 'සම්බන්ධතාවය ගොඩක් වෙනස්', 'අපි දෙන්නා අතර'
   ],

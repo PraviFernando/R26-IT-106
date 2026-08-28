@@ -758,6 +758,29 @@ BONDING_TEXTS = [
     "I feel grief over the bond I thought I would have",
     "I am desperate to feel connected but it just will not come",
     "I feel no maternal instinct and I am terrified",
+    # Singlish & Sinhala Unicode & English expanded natural variations
+    "mata babata adrae hithenne na magemai kiyala hithenne na babava hurathal karanna hithenne na",
+    "mata babata adare hithenne naha magemai kiyala hithenne naha babawa hurathal karanna hithenne naha",
+    "mata babata adare hithenne na",
+    "baba magemai kiyala hithenne na",
+    "babawa hurathal karanna hithenne na",
+    "babawa huratal karanna hithenne na",
+    "mata babata adare danenne naha",
+    "baba mage kiyala hithenne naha",
+    "mata baba ekka bond wenna amarui",
+    "baba ekka emotional connection ekak naha",
+    "මගේ බබාට මට ආදරයක් හිතෙන්නේ නැහැ මගේමයි කියලා හිතෙන්නේ නැහැ බබාව හුරතල් කරන්න හිතෙන්නේ නැහැ",
+    "මගේ බබාට ආදරයක් හිතෙන්නේ නැහැ",
+    "මගේමයි කියලා හිතෙන්නේ නැහැ",
+    "බබාව හුරතල් කරන්න හිතෙන්නේ නැහැ",
+    "බබාට ආදරයක් හිතෙන්නේ නෑ",
+    "බබාව හුරතල් කරන්න ආස හිතෙන්නේ නෑ",
+    "I struggle to feel maternal affection when holding my baby",
+    "I feel emotionally disconnected from my newborn",
+    "I try to love my baby but feel empty inside",
+    "I feel like a caregiver rather than a mother to my child",
+    "My baby feels like a stranger and I don't feel a bond",
+
     "I look at my baby and do not feel what mothers describe",
     "I feel numb when I hold my baby and I hate myself for it",
     "The disconnection makes me feel like I am failing",
@@ -2159,6 +2182,18 @@ HAPPY_TEXTS = [
     "ada mama mama wage danenawa harima hoda",
     "mage baba suwa nisa mata loku santhosak",
     "ada dawasa hoda welak thibba mama santhosayi",
+    # Minority expansion
+    "ada dawasa harima lassanaයි baba hina unama mata loku sathutak",
+    "feeling joyful and blessed to see my baby grow happy today",
+    "baba ekka hitapu kale ada harima sathutudayak",
+    "ada mage hithata loku sahanayak saha sathutak danenawa",
+    "බබා අද සිනාසුණු විට මගේ සිත සතුටින් පිරී ගියේය",
+    "අද දිනය හරිම සුන්දරයි මගේ පැටියා හොඳින් ඉන්නවා",
+    "grateful for this peaceful and happy day with my baby",
+    "ada hoda dawasak mama godak sathutini inne",
+    "baba ekka hoda connection ekak danunu dawasak ada",
+    "feeling wonderful and content with motherhood today",
+
 ]
 HAPPY_REASONS = ["loneliness"] * len(HAPPY_TEXTS)   # fallback reason for happy
 HAPPY_EMOTIONS = ["happy"] * len(HAPPY_TEXTS)
