@@ -1,13 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middleware/authMiddleware');
-const { signup, signin, signOut, getUser, updateUser, deleteUser, saveOnboarding, addGrowthRecord } = require('../controllers/user');
+const { signup, signin, signOut, getUser, updateUser, deleteUser, saveOnboarding, addGrowthRecord, socialLogin, forgotPassword, resetPassword } = require('../controllers/user');
 
 // POST /user/signup
 router.post('/signup', signup);
 
 // POST /user/signin
 router.post('/signin', signin);
+
+// POST /user/forgot-password
+router.post('/forgot-password', forgotPassword);
+
+// POST /user/reset-password
+router.post('/reset-password', resetPassword);
+
+// POST /user/social-login
+router.post('/social-login', socialLogin);
 
 // POST /user/signout   (using POST is common with cookies)
 router.post('/signout', verifyToken, signOut);

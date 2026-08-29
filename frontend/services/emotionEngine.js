@@ -496,12 +496,12 @@ export const analyzeDiary = (text) => {
 };
 
 // ── GET RECOMMENDATIONS ───────────────────────────────────────
-export const getRecommendations = (analysisResult, preferredActivities = [], preferredGames = [], diaryText = '') => {
-  const { detectedEmotion, primaryReason, riskLevel } = analysisResult;
+export const getRecommendations = (analysisResult, preferredActivities = [], preferredGames = [], diaryText = '', completedActivities = []) => {
+  const { detectedEmotion, primaryReason, riskLevel, selectedEmoji } = analysisResult;
 
-  const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames, diaryText);
+  const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames, diaryText, completedActivities, selectedEmoji);
 
-  const { category: musicCategory, music: cappedMusic } = getMusicForReason(primaryReason, detectedEmotion);
+  const { category: musicCategory, music: cappedMusic } = getMusicForReason(primaryReason, detectedEmotion, selectedEmoji);
   const videoKey = rule.videoKey || (primaryReason.includes('baby') ? 'bonding_issues' : primaryReason);
 
   const videos = VIDEO_LIBRARY[videoKey] || VIDEO_LIBRARY.loneliness;
@@ -522,6 +522,7 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
 
   return {
     detectedEmotion,
+    selectedEmoji: selectedEmoji || null,
     riskLevel,
     musicCategory,
     music: cappedMusic,

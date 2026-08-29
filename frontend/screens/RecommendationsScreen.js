@@ -20,6 +20,7 @@ import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibra
 import { KNOWLEDGE_CATEGORIES, KNOWLEDGE_RESOURCES } from '../services/knowledgeLibrary';
 import api from '../services/api';
 import { openYouTubeLink } from '../utils/openYouTube';
+import { EMOTION_OPTIONS, EMOTION_CFG } from '../constants/emotions';
 
 const { width } = Dimensions.get('window');
 
@@ -44,32 +45,6 @@ const TABS = [
   { id: 'music', icon: '🎵', label: 'සංගීතය' },
   { id: 'videos', icon: '🎬', label: 'වීඩියෝ' },
   { id: 'knowledge', icon: '📚', label: 'දැනුම එකතුව' },
-];
-
-const EMOTION_CFG = {
-  happy: { emoji: '😊', label: 'සතුටුයි', badge: ['#FFF9C4', '#FFF3A0'], col: '#E65100' },
-  sad: { emoji: '😔', label: 'දුකයි', badge: ['#EDE7F6', '#D1C4E9'], col: '#6A1B9A' },
-  crying: { emoji: '😢', label: 'අඬන්න හිතෙනවා', badge: ['#EDE7F6', '#D1C4E9'], col: '#4A148C' },
-  stressed: { emoji: '😟', label: 'ආතතියයි', badge: ['#FCE4EC', '#F8BBD9'], col: '#C2185B' },
-  anxious: { emoji: '😰', label: 'කනස්සල්ල', badge: ['#FCE4EC', '#F8BBD9'], col: '#C2185B' },
-  tired: { emoji: '😪', label: 'මහන්සියි', badge: ['#E0F7FA', '#B2EBF2'], col: '#00838F' },
-  angry: { emoji: '😡', label: 'කේන්තියි', badge: ['#FFEBEE', '#FFCDD2'], col: '#C62828' },
-  frustrated: { emoji: '😞', label: 'කලකිරීමෙන්', badge: ['#F3E5F5', '#E1BEE7'], col: '#4A148C' },
-  lonely: { emoji: '😞', label: 'තනිකම', badge: ['#F3E5F5', '#E1BEE7'], col: '#4A148C' },
-  sleepy: { emoji: '😴', label: 'නිදිමතයි', badge: ['#ECEFF1', '#CFD8DC'], col: '#37474F' },
-  calm: { emoji: '😌', label: 'සන්සුන්', badge: ['#E8F5E9', '#C8E6C9'], col: '#2E7D32' },
-};
-
-const EMOTION_OPTIONS = [
-  { key: 'happy', emoji: '😊', label: 'සතුටින් — Happy' },
-  { key: 'sad', emoji: '😔', label: 'දුකින් — Sad' },
-  { key: 'crying', emoji: '😢', label: 'අඬන්න හිතෙනවා — Feeling like crying' },
-  { key: 'anxious', emoji: '😰', label: 'කනස්සල්ලෙන් — Anxious' },
-  { key: 'tired', emoji: '😪', label: 'මහන්සියි — Tired' },
-  { key: 'angry', emoji: '😡', label: 'කෝපයෙන් — Angry' },
-  { key: 'frustrated', emoji: '😞', label: 'කලකිරීමෙන් — Frustrated' },
-  { key: 'sleepy', emoji: '😴', label: 'නිදිමතයි — Sleepy' },
-  { key: 'calm', emoji: '😌', label: 'සන්සුන් — Calm' },
 ];
 
 const REASON_OPTIONS = [
@@ -123,7 +98,12 @@ const openYouTube = async (itemOrUrl, title, titleEn) => {
   }
 
   try {
-    await Linking.openURL(url);
+    const canOpen = await Linking.canOpenURL(url).catch(() => false);
+    if (canOpen || url.startsWith('http') || url.startsWith('tel:')) {
+      await Linking.openURL(url);
+    } else {
+      Alert.alert('සබැඳිය', `තොරතුරු: ${url}`);
+    }
   } catch (e) {
     console.error('Error opening URL:', e);
     Alert.alert('දෝෂයක්', 'සබැඳිය විවෘත කළ නොහැකි විය.');
@@ -364,7 +344,10 @@ const RecommendationsScreen = ({ navigation, route }) => {
           )
       );
 
-  const emotion = activeAnalysis?.detectedEmotion || selEmotion || 'stressed';
+  const selectedEmojiKey = activeAnalysis?.selectedEmoji || route?.params?.selectedEmoji || null;
+  const rawEmotion = selectedEmojiKey || activeAnalysis?.detectedEmotion || selEmotion || 'stressed';
+  const resolvedEmotionKey = EMOTION_OPTIONS.find(o => o.key === rawEmotion || o.emoji === rawEmotion)?.key || rawEmotion;
+  const emotion = resolvedEmotionKey;
   const risk = epdsRiskLevel || activeAnalysis?.riskLevel || 'low';
   const ec = EMOTION_CFG[emotion] || EMOTION_CFG.stressed;
   const rc = risk ? (RISK_CFG[risk] || RISK_CFG.low) : null;
@@ -644,15 +627,21 @@ const RecommendationsScreen = ({ navigation, route }) => {
           diaryText: activeDiaryText
         }
       });
-      if (response.data && Array.isArray(response.data)) {
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
         setDynamicVideos(response.data);
       } else {
-        setDynamicVideos([]);
+        const fallback = (latestRecommendations?.videos && latestRecommendations.videos.length > 0)
+          ? latestRecommendations.videos
+          : getAllBabyVideos().slice(0, 4);
+        setDynamicVideos(fallback);
       }
     } catch (err) {
-      console.error('Error fetching dynamic YouTube videos:', err.message);
-      setVideoError(err.message || 'Failed to fetch videos');
-      setDynamicVideos([]);
+      console.warn('Backend dynamic videos endpoint unavailable, using curated videos fallback:', err.message);
+      const fallback = (latestRecommendations?.videos && latestRecommendations.videos.length > 0)
+        ? latestRecommendations.videos
+        : getAllBabyVideos().slice(0, 4);
+      setDynamicVideos(fallback);
+      setVideoError(null);
     } finally {
       setLoadingVideos(false);
     }

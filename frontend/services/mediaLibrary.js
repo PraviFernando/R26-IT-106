@@ -367,7 +367,7 @@ export const SUPPORTED_MUSIC_REASONS = [
  * Resolves music from MUSIC_LIBRARY strictly using the detected final reason.
  * Final reason has priority over emotion.
  */
-export const getMusicForReason = (finalReason = '', emotion = '') => {
+export const getMusicForReason = (finalReason = '', emotion = '', selectedEmoji = null) => {
   let targetCategory = (finalReason || '').toLowerCase().trim();
 
   // Handle known aliases or baby intents safely
@@ -397,19 +397,56 @@ export const getMusicForReason = (finalReason = '', emotion = '') => {
     : 'loneliness';
 
   const fullLibrary = MUSIC_LIBRARY[selectedCategory] || MUSIC_LIBRARY.loneliness;
-  const cappedMusic = fullLibrary.slice(0, 4);
+  
+  // Personalize music ranking based on selectedEmoji / emotion
+  const effectiveEmotion = (selectedEmoji || emotion || '').toLowerCase().trim();
+  let sortedLibrary = [...fullLibrary];
+
+  if (effectiveEmotion) {
+    sortedLibrary.sort((a, b) => {
+      const aText = ((a.titleEn || '') + ' ' + (a.title || '') + ' ' + (a.url || '')).toLowerCase();
+      const bText = ((b.titleEn || '') + ' ' + (b.title || '') + ' ' + (b.url || '')).toLowerCase();
+      
+      let aScore = 0;
+      let bScore = 0;
+
+      if (effectiveEmotion.includes('sleep') || effectiveEmotion.includes('tired') || effectiveEmotion.includes('fatig')) {
+        const sleepKws = ['sleep', 'rest', 'night', 'wave', 'rain', 'gentle', 'calm', 'piano'];
+        sleepKws.forEach(k => {
+          if (aText.includes(k)) aScore += 2;
+          if (bText.includes(k)) bScore += 2;
+        });
+      } else if (effectiveEmotion.includes('happ') || effectiveEmotion.includes('calm')) {
+        const happyKws = ['light', 'smile', 'rise', 'joy', 'melody', 'beautiful', 'warmth'];
+        happyKws.forEach(k => {
+          if (aText.includes(k)) aScore += 2;
+          if (bText.includes(k)) bScore += 2;
+        });
+      } else if (effectiveEmotion.includes('cry') || effectiveEmotion.includes('sad') || effectiveEmotion.includes('anxi')) {
+        const cryKws = ['healing', 'comfort', 'alone', 'brave', 'warmth', 'serenity', 'heart', 'hug'];
+        cryKws.forEach(k => {
+          if (aText.includes(k)) aScore += 2;
+          if (bText.includes(k)) bScore += 2;
+        });
+      }
+
+      return bScore - aScore;
+    });
+  }
+
+  const cappedMusic = sortedLibrary.slice(0, 4);
 
   // DEVELOPMENT DEBUG LOGGING
   console.log('[MusicRecommendation]');
   console.log(`Diary Reason: ${finalReason}`);
   console.log(`Emotion: ${emotion}`);
+  console.log(`Selected Emoji: ${selectedEmoji}`);
   console.log(`Selected Music Category: ${selectedCategory}`);
-  console.log(`Music Library Count: ${fullLibrary.length}`);
   console.log(`Selected Music IDs: ${cappedMusic.map(m => m.id).join(', ')}`);
 
   return {
     category: selectedCategory,
-    musicList: fullLibrary,
+    musicList: sortedLibrary,
     music: cappedMusic
   };
 };

@@ -14,27 +14,47 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import api, { setAuthToken } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { COLORS, SHADOWS } from '../constants/theme';
 
 const { width, height } = Dimensions.get('window');
 
-export default function LoginScreen({ navigation }) {
+export default function ForgotPasswordScreen({ navigation }) {
     const { t, i18n } = useTranslation();
-    const { login } = useAuth();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [identity, setIdentity] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const handleLogin = async () => {
-        if (!email || !password) {
+    const handleResetPassword = async () => {
+        if (!identity.trim() || !newPassword || !confirmPassword) {
             Toast.show({
                 type: 'error',
                 text1: t('⚠️ Incomplete'),
-                text2: t('Please fill in your email and password.'),
+                text2: t('Please fill in all fields.'),
+                position: 'top',
+            });
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            Toast.show({
+                type: 'error',
+                text1: t('⚠️ Mismatch'),
+                text2: t('Passwords do not match.'),
+                position: 'top',
+            });
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            Toast.show({
+                type: 'error',
+                text1: t('⚠️ Weak Password'),
+                text2: t('Password must be at least 6 characters long.'),
                 position: 'top',
             });
             return;
@@ -42,41 +62,27 @@ export default function LoginScreen({ navigation }) {
 
         setLoading(true);
         try {
-            const response = await api.post('/user/signin', { email, password });
-            const { token, ...userData } = response.data;
-
-            setAuthToken(token);
-            login(userData, token);
+            const response = await api.post('/user/reset-password', {
+                identity,
+                newPassword,
+            });
 
             Toast.show({
                 type: 'success',
-                text1: `✅ ${t('Welcome Back')}`,
-                text2: `${t('Sign in to continue')} ${userData?.username || email}`,
+                text1: `🎉 ${t('Success')}`,
+                text2: response.data.message || t('Password reset successfully! Please sign in.'),
                 position: 'top',
             });
 
-            const role = userData?.role || 'patient';
             setTimeout(() => {
-                if (role === 'admin') {
-                    navigation.replace('AdminDashboard');
-                } else if (role === 'midwife') {
-                    navigation.replace('MidwifeDashboard');
-                } else {
-                    if (!userData?.onboardingCompleted) {
-                        navigation.replace('Onboarding');
-                    } else {
-                        navigation.replace('Dashboard');
-                    }
-                }
-            }, 1000);
+                navigation.replace('Login');
+            }, 1200);
         } catch (error) {
             console.error(error);
-            const message =
-                error.response?.data?.message || t('Submission failed. Please try again.');
             Toast.show({
                 type: 'error',
-                text1: `❌ ${t('Save Failed')}`,
-                text2: message,
+                text1: `❌ ${t('Error')}`,
+                text2: error.response?.data?.message || t('Failed to reset password. Check your email or username.'),
                 position: 'top',
             });
         } finally {
@@ -100,8 +106,15 @@ export default function LoginScreen({ navigation }) {
                     showsVerticalScrollIndicator={false}
                 >
                     <View style={styles.innerWrapper}>
-                        {/* Language Toggle Header */}
-                        <View style={styles.languageToggle}>
+                        {/* Header Navigation */}
+                        <View style={styles.headerRow}>
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('Login')}
+                                style={styles.backBtn}
+                            >
+                                <Text style={styles.backBtnTxt}>← {t('Back to Login')}</Text>
+                            </TouchableOpacity>
+
                             <TouchableOpacity
                                 onPress={toggleLanguage}
                                 style={styles.langButton}
@@ -113,48 +126,49 @@ export default function LoginScreen({ navigation }) {
                             </TouchableOpacity>
                         </View>
 
-                        {/* Image Section using User's Added Asset */}
+                        {/* Visual Banner Image */}
                         <View style={styles.imageContainer}>
                             <Image
-                                source={require('../assets/screening_system/image 7.png')}
+                                source={require('../assets/screening_system/image 8.jpg')}
                                 style={styles.image}
                                 resizeMode="contain"
                             />
                         </View>
 
-                        {/* Welcome Text translated */}
+                        {/* Title Section */}
                         <View style={styles.welcomeContainer}>
-                            <Text style={styles.welcomeTitle}>{t('Welcome Back')}</Text>
-                            <Text style={styles.welcomeSubtitle}>{t('Login your account')}</Text>
+                            <Text style={styles.welcomeTitle}>{t('Reset Password')}</Text>
+                            <Text style={styles.welcomeSubtitle}>
+                                {t('Enter your registered email or username and your new password to reset.')}
+                            </Text>
                         </View>
 
-                        {/* Login Form Card */}
+                        {/* Main Card */}
                         <View style={styles.card}>
-                            {/* Username/Email */}
+                            {/* Identity Input */}
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>{t('Username')}</Text>
+                                <Text style={styles.label}>📧 {t('Email or Username')}</Text>
                                 <TextInput
                                     style={styles.input}
-                                    placeholder={t('Enter your username or email')}
+                                    placeholder={t('Enter your email or username')}
                                     placeholderTextColor={COLORS.textMuted}
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    keyboardType="email-address"
+                                    value={identity}
+                                    onChangeText={setIdentity}
                                     autoCapitalize="none"
                                     autoCorrect={false}
                                 />
                             </View>
 
-                            {/* Password */}
+                            {/* New Password */}
                             <View style={styles.inputContainer}>
-                                <Text style={styles.label}>{t('Password')}</Text>
+                                <Text style={styles.label}>🔒 {t('New Password')}</Text>
                                 <View style={styles.passwordRow}>
                                     <TextInput
                                         style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: 'transparent' }]}
-                                        placeholder={t('Enter your password')}
+                                        placeholder={t('Enter new password')}
                                         placeholderTextColor={COLORS.textMuted}
-                                        value={password}
-                                        onChangeText={setPassword}
+                                        value={newPassword}
+                                        onChangeText={setNewPassword}
                                         secureTextEntry={!showPassword}
                                     />
                                     <TouchableOpacity
@@ -168,29 +182,46 @@ export default function LoginScreen({ navigation }) {
                                 </View>
                             </View>
 
-                            {/* Login Button */}
+                            {/* Confirm New Password */}
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>🔒 {t('Confirm New Password')}</Text>
+                                <View style={styles.passwordRow}>
+                                    <TextInput
+                                        style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: 'transparent' }]}
+                                        placeholder={t('Confirm new password')}
+                                        placeholderTextColor={COLORS.textMuted}
+                                        value={confirmPassword}
+                                        onChangeText={setConfirmPassword}
+                                        secureTextEntry={!showConfirmPassword}
+                                    />
+                                    <TouchableOpacity
+                                        onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        style={styles.eyeBtn}
+                                    >
+                                        <Text style={styles.eyeIcon}>
+                                            {showConfirmPassword ? '🙈' : '👁️'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            {/* Submit Reset Button */}
                             <TouchableOpacity
                                 style={[styles.button, loading && styles.buttonDisabled]}
-                                onPress={handleLogin}
+                                onPress={handleResetPassword}
                                 disabled={loading}
                             >
                                 {loading ? (
                                     <ActivityIndicator color={COLORS.textWhite} />
                                 ) : (
-                                    <Text style={styles.buttonText}>{t('Login')}</Text>
+                                    <Text style={styles.buttonText}>✨ {t('Reset Password')}</Text>
                                 )}
                             </TouchableOpacity>
 
-                            {/* Footer Links */}
+                            {/* Footer Navigation */}
                             <View style={styles.footer}>
-                                <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                                    <Text style={styles.footerLink}>{t('Create Account')}</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    onPress={() => navigation.navigate('ForgotPassword')}
-                                >
-                                    <Text style={styles.footerLink}>{t('Forgot Password?')}</Text>
+                                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                                    <Text style={styles.footerLink}>{t('Remember your password? Sign In')}</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -206,23 +237,33 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.background, // Light Purple Screen Background
+        backgroundColor: COLORS.background,
     },
     scrollContent: {
         flexGrow: 1,
         paddingHorizontal: 20,
         paddingTop: 12,
         paddingBottom: 32,
-        alignItems: 'center', // Center layout horizontally for web
+        alignItems: 'center',
     },
     innerWrapper: {
         width: '100%',
-        maxWidth: 460, // Ensures single card layout on desktop web & tablet screens
+        maxWidth: 460,
         alignSelf: 'center',
     },
-    languageToggle: {
-        alignItems: 'flex-end',
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
         marginBottom: 8,
+    },
+    backBtn: {
+        paddingVertical: 6,
+    },
+    backBtnTxt: {
+        color: COLORS.primary,
+        fontSize: 14,
+        fontWeight: '700',
     },
     langButton: {
         paddingHorizontal: 14,
@@ -244,24 +285,26 @@ const styles = StyleSheet.create({
     },
     image: {
         width: width * 0.7,
-        maxWidth: 260,
-        height: height * 0.23,
-        maxHeight: 180,
+        maxWidth: 240,
+        height: height * 0.2,
+        maxHeight: 160,
     },
     welcomeContainer: {
-        marginBottom: 20,
+        marginBottom: 18,
         alignItems: 'center',
     },
     welcomeTitle: {
-        fontSize: 28,
+        fontSize: 26,
         fontWeight: '800',
         color: COLORS.textPrimary,
-        marginBottom: 4,
+        marginBottom: 6,
     },
     welcomeSubtitle: {
-        fontSize: 15,
+        fontSize: 14,
         color: COLORS.textMuted,
         fontWeight: '500',
+        textAlign: 'center',
+        paddingHorizontal: 10,
     },
     card: {
         backgroundColor: COLORS.cardBg,
@@ -313,7 +356,7 @@ const styles = StyleSheet.create({
         padding: 16,
         borderRadius: 14,
         alignItems: 'center',
-        marginTop: 4,
+        marginTop: 6,
         ...SHADOWS.button,
     },
     buttonDisabled: {
@@ -326,9 +369,8 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
     },
     footer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 22,
+        alignItems: 'center',
+        marginTop: 20,
         paddingTop: 16,
         borderTopWidth: 1,
         borderTopColor: COLORS.borderLight,

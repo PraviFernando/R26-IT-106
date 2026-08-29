@@ -1,0 +1,32 @@
+[
+    {
+        "id": 1,
+        "sinhala": "මම අද ගොඩක් සතුටින් ඉන්නේ",
+        "english": "I am very happy today",
+        "category": "mood"
+    },
+    {
+        "id": 2,
+        "sinhala": "මට නින්ද යන්නේ නැහැ",
+        "english": "I can't sleep",
+        "category": "symptom"
+    },
+    {
+        "id": 3,
+        "sinhala": "මගේ බබාට දැන් මාස තුනයි",
+        "english": "My baby is three months old now",
+        "category": "general"
+    },
+    {
+        "id": 4,
+        "sinhala": "මට ගොඩක් තෙහෙට්ටුයි",
+        "english": "I am very tired",
+        "category": "symptom"
+    },
+    {
+        "id": 5,
+        "sinhala": "අද කාලගුණය හොඳයි",
+        "english": "The weather is good today",
+        "category": "general"
+    }
+]

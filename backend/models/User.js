@@ -76,10 +76,9 @@ const userSchema = new mongoose.Schema({
   isOnline: { type: Boolean, default: false },
   lastLogin: { type: Date },
   deviceType: { type: String, trim: true },
-  deliveryDate: {
-    type: String, // YYYY-MM-DD
-    default: null,
-  },
+  // ── Password Reset ─────────────────────────────────────────────────────────
+  resetPasswordCode: { type: String },
+  resetPasswordExpires: { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);
