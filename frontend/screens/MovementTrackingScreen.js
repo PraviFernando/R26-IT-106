@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     View, Text, StyleSheet, TouchableOpacity, Modal,
-    Alert, Dimensions, ActivityIndicator, Platform
+    Alert, Dimensions, ActivityIndicator, Platform,
+    useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
@@ -18,6 +19,8 @@ const generateSessionId = () => {
 };
 
 export default function MovementTrackingScreen({ route, navigation }) {
+    const { width: currentWidth } = useWindowDimensions();
+    const isLargeScreen = currentWidth > 768;
     const { exerciseId, exerciseName, videoUrl } = route.params;
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
@@ -339,7 +342,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
             });
 
             setShowSummaryModal(false);
-            navigation.navigate('Exercise'); // go back to Recommendations
+            navigation.goBack(); // go back to Recommendations
         } catch (err) {
             console.error('Failed to save workout session:', err);
             Alert.alert('Error', 'Failed to save workout session. Please try again.');
@@ -1192,14 +1195,14 @@ export default function MovementTrackingScreen({ route, navigation }) {
             </View>
 
             {/* Split Screen Container */}
-            <View style={styles.splitScreenContainer}>
+            <View style={[styles.splitScreenContainer, { flexDirection: isLargeScreen ? 'row' : 'column' }]}>
                 {/* Side 1: Exercise Demo Video */}
-                <View style={styles.videoHalf}>
+                <View style={styles.videoHalf} pointerEvents={Platform.OS === 'web' ? 'none' : 'auto'}>
                     {videoUrl ? (
                         Platform.OS === 'web' ? (
                             <iframe
                                 src={getEmbedUrl(videoUrl)}
-                                style={{ width: '100%', height: '100%', border: 'none', borderRadius: 28 }}
+                                style={{ width: '100%', height: '100%', border: 'none', borderRadius: 28, pointerEvents: 'auto' }}
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
                             />
@@ -1289,15 +1292,23 @@ export default function MovementTrackingScreen({ route, navigation }) {
 
             {/* Controls */}
             <View style={styles.controlsRow}>
-                <TouchableOpacity style={[styles.controlBtn, styles.pauseBtn]} onPress={togglePause}>
-                    <Text style={styles.controlBtnText}>
+                <TouchableOpacity 
+                    style={[
+                        styles.controlBtn, 
+                        isPaused 
+                            ? { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0', borderWidth: 1.5 } 
+                            : { backgroundColor: '#FAF5FF', borderColor: '#E9D5FF', borderWidth: 1.5 }
+                    ]} 
+                    onPress={togglePause}
+                >
+                    <Text style={[styles.controlBtnText, isPaused ? { color: '#059669' } : { color: '#7C3AED' }]}>
                         {isPaused 
                             ? (isSinhala ? '▶️ නැවත අරඹන්න' : '▶ Resume') 
                             : (isSinhala ? '⏸️ විරාමය' : '⏸ Pause')}
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.controlBtn, styles.finishBtn]} onPress={handleFinish}>
-                    <Text style={styles.controlBtnText}>{isSinhala ? '🏁 අවසන් කරන්න' : '🏁 Finish'}</Text>
+                    <Text style={[styles.controlBtnText, styles.finishBtnText]}>{isSinhala ? '⏹️ අවසන් කරන්න' : '⏹️ Finish'}</Text>
                 </TouchableOpacity>
             </View>
 

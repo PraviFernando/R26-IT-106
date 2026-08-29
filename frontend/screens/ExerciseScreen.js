@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     View, Text, ScrollView, TouchableOpacity, StyleSheet,
     ActivityIndicator, Alert, Modal, TextInput, Switch,
-    Dimensions, Image, FlatList, Platform, Linking
+    Dimensions, Image, FlatList, Platform, Linking,
+    useWindowDimensions
 } from 'react-native';
 import { Camera } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,8 +38,9 @@ const getTranslatedFeedback = (feedback, isSinhala) => {
     return translations[feedback.trim()] || feedback;
 };
 
-// YouTube Player Component
 const YouTubePlayer = ({ url, duration, style, onProgress }) => {
+    const { width: currentWidth } = useWindowDimensions();
+    const isLargeScreen = currentWidth > 768;
     const { t } = useTranslation();
     const [error, setError] = useState(false);
     const webViewRef = useRef(null);
@@ -104,7 +106,7 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
 
     if (!embedUrl.includes('youtube.com/embed/')) {
         return (
-            <View style={[styles.videoPlayer, styles.videoPlayerCentered]}>
+            <View style={[styles.videoPlayer, styles.videoPlayerCentered, { height: isLargeScreen ? 420 : 250 }]}>
                 <Text style={{ color: '#fff', textAlign: 'center' }}>
                     {t('Failed to load video')}
                 </Text>
@@ -194,7 +196,7 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
     };
 
     return (
-        <View style={[styles.videoPlayer, { overflow: 'hidden' }]}>
+        <View style={[styles.videoPlayer, { overflow: 'hidden', height: isLargeScreen ? 420 : 250, marginBottom: isLargeScreen ? 16 : 6 }]}>
             {error && (
                 <View style={styles.webViewErrorContainer}>
                     <Text style={styles.webViewErrorText}>
@@ -559,6 +561,8 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
 // Exercise Recommendation Card Component
 const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProgressUpdate, navigation }) => {
+    const { width: currentWidth } = useWindowDimensions();
+    const isLargeScreen = currentWidth > 768;
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
     const [videoModal, setVideoModal] = useState(false);
@@ -822,8 +826,8 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                             </View>
 
                             {selectedVideo && (
-                                <View style={styles.modalSplitRow}>
-                                    <View style={styles.modalLeftColumn}>
+                                <View style={[styles.modalSplitRow, { flexDirection: isLargeScreen ? 'row' : 'column', gap: isLargeScreen ? 16 : 8 }]}>
+                                    <View style={[styles.modalLeftColumn, { flex: isLargeScreen ? 1.2 : undefined }]}>
                                         {(selectedVideo.url.includes('youtube') || selectedVideo.url.includes('youtu.be')) ? (
                                             <YouTubePlayer
                                                 url={selectedVideo.url}
@@ -846,14 +850,14 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                                 shouldPlay={videoPlaying}
                                                 useNativeControls
                                                 resizeMode={ResizeMode.CONTAIN}
-                                                style={styles.videoPlayer}
+                                                style={[styles.videoPlayer, { height: isLargeScreen ? 420 : 250, marginBottom: isLargeScreen ? 16 : 6 }]}
                                             />
                                         )}
                                     </View>
 
-                                    <View style={styles.modalRightColumn}>
+                                    <View style={[styles.modalRightColumn, { flex: isLargeScreen ? 0.8 : undefined }]}>
                                         {/* Stopwatch UI */}
-                                        <View style={styles.stopwatchContainer}>
+                                        <View style={[styles.stopwatchContainer, !isLargeScreen && { marginVertical: 6, padding: 14 }]}>
                                             <Text style={styles.stopwatchLabel}>{isSinhala ? '⏱️ කාල ගණකය' : '⏱️ Stopwatch'}</Text>
                                             <Text style={styles.stopwatchDisplay}>{formatTime(stopwatchTime)}</Text>
                                             <View style={styles.stopwatchRow}>
@@ -901,7 +905,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                         </View>
                                         {isSupportedForTracking(title) && (
                                             <TouchableOpacity
-                                                style={styles.aiTrackingBtn}
+                                                style={[styles.aiTrackingBtn, !isLargeScreen && { marginTop: 8 }]}
                                                 onPress={handleStartTracking}
                                             >
                                                 <Text style={styles.aiTrackingBtnText}>
@@ -909,13 +913,20 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                                 </Text>
                                             </TouchableOpacity>
                                         )}
+                                        {!isLargeScreen && (
+                                            <TouchableOpacity style={[styles.modalCloseBtn, { marginTop: 8 }]} onPress={handleCloseVideoModal}>
+                                                <Text style={styles.modalCloseText}>{t('Close')}</Text>
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                 </View>
                             )}
 
-                            <TouchableOpacity style={styles.modalCloseBtn} onPress={handleCloseVideoModal}>
-                                <Text style={styles.modalCloseText}>{t('Close')}</Text>
-                            </TouchableOpacity>
+                            {isLargeScreen && (
+                                <TouchableOpacity style={styles.modalCloseBtn} onPress={handleCloseVideoModal}>
+                                    <Text style={styles.modalCloseText}>{t('Close')}</Text>
+                                </TouchableOpacity>
+                            )}
                         </ScrollView>
                     </View>
                 </View>
@@ -2131,18 +2142,18 @@ const styles = StyleSheet.create({
         fontSize: 13,
     },
     modalSplitRow: {
-        flexDirection: width > 500 ? 'row' : 'column',
+        flexDirection: width > 768 ? 'row' : 'column',
         width: '100%',
         gap: 16,
         alignItems: 'center',
         justifyContent: 'center',
     },
     modalLeftColumn: {
-        flex: width > 500 ? 1.2 : 0,
+        flex: width > 768 ? 1.2 : undefined,
         width: '100%',
     },
     modalRightColumn: {
-        flex: width > 500 ? 0.8 : 0,
+        flex: width > 768 ? 0.8 : undefined,
         width: '100%',
     },
     aiTrackingBtn: {
