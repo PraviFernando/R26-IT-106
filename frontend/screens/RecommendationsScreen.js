@@ -1030,7 +1030,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                         const badgeCol = isCurated ? '#6A1B9A' : isApi ? '#C62828' : '#0369A1';
 
                         return (
-                          <TouchableOpacity key={extractYouTubeId(video.url) || video.id || `v-${idx}`} style={s.mediaCard} onPress={() => openYouTube(video.url)}>
+                          <TouchableOpacity key={extractYouTubeId(video.url) || video.id || `v-${idx}`} style={s.mediaCard} onPress={() => openYouTube(video)}>
                             {video.thumbnail ? (
                               <Image source={{ uri: video.thumbnail }} style={s.videoThumb} />
                             ) : (

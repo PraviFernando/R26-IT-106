@@ -13,11 +13,15 @@ const getVideos = async (req, res, next) => {
     const { reason, emotion, babyIntent, diaryText } = req.query;
     
     // Retrieve actual stored EPDS risk level from the database for the user
-    let epdsRiskLevel = 'low';
+    let epdsRiskLevel = req.query.riskLevel ? req.query.riskLevel.toLowerCase() : 'low';
     if (req.user && req.user.id) {
-      const latestEpds = await EPDSScreening.findOne({ userId: req.user.id }).sort({ month: -1 });
-      if (latestEpds && latestEpds.riskLevel) {
-        epdsRiskLevel = latestEpds.riskLevel.toLowerCase();
+      try {
+        const latestEpds = await EPDSScreening.findOne({ userId: req.user.id }).sort({ month: -1 });
+        if (latestEpds && latestEpds.riskLevel) {
+          epdsRiskLevel = latestEpds.riskLevel.toLowerCase();
+        }
+      } catch (epdsErr) {
+        console.warn('[DEBUG getVideos] Could not query EPDS risk level, using default:', epdsErr.message);
       }
     }
 
