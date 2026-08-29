@@ -1198,91 +1198,133 @@ function scoreApiVideo(video, normReason, normEmotion, babyContext, subIntent = 
   return score;
 }
 
-// Category-specific YouTube API fallback items when API quota (HTTP 429) is exceeded
+// Category-specific YouTube API fallback items when API quota or error occurs
 const FALLBACK_YOUTUBE_API_VIDEOS = {
   bonding_issues: [
-    { id: '_1Q2v6v99gU', title: 'How to Bond with Your Baby | Newborn Attachment Tips', description: 'Practical mother baby bonding activities, skin to skin contact and attachment guide.', url: 'https://www.youtube.com/watch?v=_1Q2v6v99gU', thumbnail: 'https://img.youtube.com/vi/_1Q2v6v99gU/0.jpg' },
-    { id: 'EwA2v6mK99Y', title: 'Connecting with Your Baby in the First Months', description: 'Nurturing mother baby emotional connection and attachment support.', url: 'https://www.youtube.com/watch?v=EwA2v6mK99Y', thumbnail: 'https://img.youtube.com/vi/EwA2v6mK99Y/0.jpg' }
+    { id: '1oanOmN83fw', title: 'Postpartum Mother-Baby Attachment Guide', description: 'Practical guidance for building connection and attachment.', url: 'https://www.youtube.com/watch?v=1oanOmN83fw', thumbnail: 'https://img.youtube.com/vi/1oanOmN83fw/0.jpg' },
+    { id: 'iLUk7xB0BVw', title: 'Finding Connection & Support in Motherhood', description: 'Overcoming feelings of being alone during the postpartum period.', url: 'https://www.youtube.com/watch?v=iLUk7xB0BVw', thumbnail: 'https://img.youtube.com/vi/iLUk7xB0BVw/0.jpg' },
+    { id: 'AJpErm8H2aU', title: 'Finding Emotional Support as a New Mother', description: 'Emotional support and overcoming maternal isolation.', url: 'https://www.youtube.com/watch?v=AJpErm8H2aU', thumbnail: 'https://img.youtube.com/vi/AJpErm8H2aU/0.jpg' },
+    { id: 'bnlKVPj4zeQ', title: 'Navigating Postpartum Support System', description: 'Postpartum lack of support for mothers emotional help and coping.', url: 'https://www.youtube.com/watch?v=bnlKVPj4zeQ', thumbnail: 'https://img.youtube.com/vi/bnlKVPj4zeQ/0.jpg' }
   ],
   loneliness: [
-    { id: 'X8v2v6mK99Z', title: 'Postpartum Loneliness: You Are Not Alone', description: 'Postpartum loneliness emotional support for mothers feeling isolated.', url: 'https://www.youtube.com/watch?v=X8v2v6mK99Z', thumbnail: 'https://img.youtube.com/vi/X8v2v6mK99Z/0.jpg' },
-    { id: 'P9v2v6mK99W', title: 'Overcoming Feelings of Isolation After Having a Baby', description: 'Building social connection and community support as a new mother.', url: 'https://www.youtube.com/watch?v=P9v2v6mK99W', thumbnail: 'https://img.youtube.com/vi/P9v2v6mK99W/0.jpg' }
+    { id: 'AJpErm8H2aU', title: 'Finding Emotional Support as a New Mother', description: 'Postpartum loneliness emotional support for mothers feeling isolated.', url: 'https://www.youtube.com/watch?v=AJpErm8H2aU', thumbnail: 'https://img.youtube.com/vi/AJpErm8H2aU/0.jpg' },
+    { id: 'bnlKVPj4zeQ', title: 'Overcoming Feelings of Isolation After Having a Baby', description: 'Building social connection and community support as a new mother.', url: 'https://www.youtube.com/watch?v=bnlKVPj4zeQ', thumbnail: 'https://img.youtube.com/vi/bnlKVPj4zeQ/0.jpg' },
+    { id: 'sF80I-TQiW0', title: 'Coping When You Feel Unsupported', description: 'Managing feelings of being unsupported after birth.', url: 'https://www.youtube.com/watch?v=sF80I-TQiW0', thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg' },
+    { id: '9Q634rbsypE', title: 'Overcoming Intrusive & Negative Thoughts', description: 'Mental health strategies for managing overwhelming thoughts.', url: 'https://www.youtube.com/watch?v=9Q634rbsypE', thumbnail: 'https://img.youtube.com/vi/9Q634rbsypE/0.jpg' }
   ],
   fatigue: [
-    { id: 'F1v2v6mK99V', title: 'Coping with Extreme Postpartum Fatigue', description: 'Postpartum maternal fatigue exhaustion self care and recovery tips.', url: 'https://www.youtube.com/watch?v=F1v2v6mK99V', thumbnail: 'https://img.youtube.com/vi/F1v2v6mK99V/0.jpg' },
-    { id: 'T2v2v6mK99U', title: 'Rest Strategies for Exhausted New Moms', description: 'Tired new mother rest energy recovery guidelines.', url: 'https://www.youtube.com/watch?v=T2v2v6mK99U', thumbnail: 'https://img.youtube.com/vi/T2v2v6mK99U/0.jpg' }
+    { id: '1n46HPsYsHM', title: 'Rest Strategies for Exhausted New Moms', description: 'Tired new mother rest energy recovery guidelines.', url: 'https://www.youtube.com/watch?v=1n46HPsYsHM', thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg' },
+    { id: 'e_3UoecZlxY', title: 'Tips to Fall Asleep Faster & Sleep Better', description: 'Habits to dramatically increase sleep quality for parents.', url: 'https://www.youtube.com/watch?v=e_3UoecZlxY', thumbnail: 'https://img.youtube.com/vi/e_3UoecZlxY/0.jpg' },
+    { id: 'gA-Eokbod38', title: 'Managing Daily Workload as a New Mom', description: 'Postpartum maternal fatigue exhaustion self care and recovery tips.', url: 'https://www.youtube.com/watch?v=gA-Eokbod38', thumbnail: 'https://img.youtube.com/vi/gA-Eokbod38/0.jpg' },
+    { id: 'OUXKaaAke7Q', title: 'Balancing Rest and Household Responsibilities', description: 'Practical tips for letting go of non-essential chores postpartum.', url: 'https://www.youtube.com/watch?v=OUXKaaAke7Q', thumbnail: 'https://img.youtube.com/vi/OUXKaaAke7Q/0.jpg' }
   ],
   anxiety: [
-    { id: 'A3v2v6mK99T', title: 'Postpartum Anxiety: Symptoms & Grounding Exercises', description: 'Postpartum anxiety coping calming support and anxiety relief.', url: 'https://www.youtube.com/watch?v=A3v2v6mK99T', thumbnail: 'https://img.youtube.com/vi/A3v2v6mK99T/0.jpg' },
-    { id: 'B4v2v6mK99S', title: 'Calming Techniques for Anxious Mothers', description: 'Anxious new mother maternal anxiety support and relaxation.', url: 'https://www.youtube.com/watch?v=B4v2v6mK99S', thumbnail: 'https://img.youtube.com/vi/B4v2v6mK99S/0.jpg' }
+    { id: 'fm5ZnhqWkO8', title: 'Soothing Relaxation for Postpartum Stress', description: 'Gentle mindfulness and emotional support for new mothers.', url: 'https://www.youtube.com/watch?v=fm5ZnhqWkO8', thumbnail: 'https://img.youtube.com/vi/fm5ZnhqWkO8/0.jpg' },
+    { id: '1n46HPsYsHM', title: 'Managing Postpartum Overwhelm & Tension', description: 'Postpartum anxiety coping calming support and anxiety relief.', url: 'https://www.youtube.com/watch?v=1n46HPsYsHM', thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg' },
+    { id: 'AJpErm8H2aU', title: 'Finding Emotional Support for Maternal Anxiety', description: 'Anxious new mother maternal anxiety support and relaxation.', url: 'https://www.youtube.com/watch?v=AJpErm8H2aU', thumbnail: 'https://img.youtube.com/vi/AJpErm8H2aU/0.jpg' },
+    { id: '2OEL4P1Rz04', title: 'Grounding Practices for New Mothers', description: 'Self care and calming strategies for anxiety relief.', url: 'https://www.youtube.com/watch?v=2OEL4P1Rz04', thumbnail: 'https://img.youtube.com/vi/2OEL4P1Rz04/0.jpg' }
   ],
   lack_of_support: [
-    { id: 'L5v2v6mK99R', title: 'Navigating Postpartum Without a Support System', description: 'Postpartum lack of support for mothers emotional help and coping.', url: 'https://www.youtube.com/watch?v=L5v2v6mK99R', thumbnail: 'https://img.youtube.com/vi/L5v2v6mK99R/0.jpg' },
-    { id: 'S6v2v6mK99Q', title: 'How to Build Your Postpartum Support Network', description: 'Partner family support new mother postpartum guidance.', url: 'https://www.youtube.com/watch?v=S6v2v6mK99Q', thumbnail: 'https://img.youtube.com/vi/S6v2v6mK99Q/0.jpg' }
+    { id: '2OEL4P1Rz04', title: 'Building Motherhood Community & Support', description: 'Finding emotional connection when feeling alone.', url: 'https://www.youtube.com/watch?v=2OEL4P1Rz04', thumbnail: 'https://img.youtube.com/vi/2OEL4P1Rz04/0.jpg' },
+    { id: '1oanOmN83fw', title: 'Overcoming Feelings of Isolation', description: 'Postpartum lack of support for mothers emotional help and coping.', url: 'https://www.youtube.com/watch?v=1oanOmN83fw', thumbnail: 'https://img.youtube.com/vi/1oanOmN83fw/0.jpg' },
+    { id: 'iLUk7xB0BVw', title: 'Connecting With Support Networks', description: 'Partner family support new mother postpartum guidance.', url: 'https://www.youtube.com/watch?v=iLUk7xB0BVw', thumbnail: 'https://img.youtube.com/vi/iLUk7xB0BVw/0.jpg' },
+    { id: '9Q634rbsypE', title: 'Finding Inner Strength and Support', description: 'Mental wellness strategies when feeling unsupported.', url: 'https://www.youtube.com/watch?v=9Q634rbsypE', thumbnail: 'https://img.youtube.com/vi/9Q634rbsypE/0.jpg' }
   ],
   sleep_problems: [
-    { id: 'M7v2v6mK99P', title: 'Sleep Hygiene Tips for Sleep-Deprived Mothers', description: 'Postpartum mother sleep problems sleep deprivation solutions.', url: 'https://www.youtube.com/watch?v=M7v2v6mK99P', thumbnail: 'https://img.youtube.com/vi/M7v2v6mK99P/0.jpg' },
-    { id: 'S8v2v6mK99O', title: 'How New Moms Can Sleep Better', description: 'Maternal sleep hygiene rest postpartum guidelines.', url: 'https://www.youtube.com/watch?v=S8v2v6mK99O', thumbnail: 'https://img.youtube.com/vi/S8v2v6mK99O/0.jpg' }
+    { id: 'fm5ZnhqWkO8', title: 'Soothing Postpartum Relaxation Music', description: 'Postpartum mother sleep problems sleep deprivation solutions.', url: 'https://www.youtube.com/watch?v=fm5ZnhqWkO8', thumbnail: 'https://img.youtube.com/vi/fm5ZnhqWkO8/0.jpg' },
+    { id: '1n46HPsYsHM', title: 'Coping with Postpartum Sleeplessness', description: 'Maternal sleep hygiene rest postpartum guidelines.', url: 'https://www.youtube.com/watch?v=1n46HPsYsHM', thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg' },
+    { id: 'gA-Eokbod38', title: 'Managing Rest & Daily Workload', description: 'Sleep and energy recovery tips for new parents.', url: 'https://www.youtube.com/watch?v=gA-Eokbod38', thumbnail: 'https://img.youtube.com/vi/gA-Eokbod38/0.jpg' },
+    { id: 'OUXKaaAke7Q', title: 'Resting During Baby Sleep Windows', description: 'Practical rest strategies for sleep-deprived mothers.', url: 'https://www.youtube.com/watch?v=OUXKaaAke7Q', thumbnail: 'https://img.youtube.com/vi/OUXKaaAke7Q/0.jpg' }
   ],
   mother_sleep_problems: [
-    { id: 'M7v2v6mK99P', title: 'Sleep Hygiene Tips for Sleep-Deprived Mothers', description: 'Postpartum mother sleep problems sleep deprivation solutions.', url: 'https://www.youtube.com/watch?v=M7v2v6mK99P', thumbnail: 'https://img.youtube.com/vi/M7v2v6mK99P/0.jpg' },
-    { id: 'S8v2v6mK99O', title: 'How New Moms Can Sleep Better', description: 'Maternal sleep hygiene rest postpartum guidelines.', url: 'https://www.youtube.com/watch?v=S8v2v6mK99O', thumbnail: 'https://img.youtube.com/vi/S8v2v6mK99O/0.jpg' }
+    { id: 'fm5ZnhqWkO8', title: 'Soothing Postpartum Relaxation Music', description: 'Postpartum mother sleep problems sleep deprivation solutions.', url: 'https://www.youtube.com/watch?v=fm5ZnhqWkO8', thumbnail: 'https://img.youtube.com/vi/fm5ZnhqWkO8/0.jpg' },
+    { id: '1n46HPsYsHM', title: 'Coping with Postpartum Sleeplessness', description: 'Maternal sleep hygiene rest postpartum guidelines.', url: 'https://www.youtube.com/watch?v=1n46HPsYsHM', thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg' },
+    { id: 'gA-Eokbod38', title: 'Managing Rest & Daily Workload', description: 'Sleep and energy recovery tips for new parents.', url: 'https://www.youtube.com/watch?v=gA-Eokbod38', thumbnail: 'https://img.youtube.com/vi/gA-Eokbod38/0.jpg' },
+    { id: 'OUXKaaAke7Q', title: 'Resting During Baby Sleep Windows', description: 'Practical rest strategies for sleep-deprived mothers.', url: 'https://www.youtube.com/watch?v=OUXKaaAke7Q', thumbnail: 'https://img.youtube.com/vi/OUXKaaAke7Q/0.jpg' }
   ],
   loss_of_confidence: [
-    { id: 'C9v2v6mK99N', title: 'Rebuilding Confidence in Motherhood', description: 'New mother confidence maternal self doubt support and encouragement.', url: 'https://www.youtube.com/watch?v=C9v2v6mK99N', thumbnail: 'https://img.youtube.com/vi/C9v2v6mK99N/0.jpg' },
-    { id: 'D0v2v6mK99M', title: 'Overcoming New Mom Self-Doubt', description: 'Building confidence as a new mother and self doubt relief.', url: 'https://www.youtube.com/watch?v=D0v2v6mK99M', thumbnail: 'https://img.youtube.com/vi/D0v2v6mK99M/0.jpg' }
+    { id: '1n46HPsYsHM', title: 'Managing Motherhood Expectations & Confidence', description: 'New mother confidence maternal self doubt support and encouragement.', url: 'https://www.youtube.com/watch?v=1n46HPsYsHM', thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg' },
+    { id: 'sF80I-TQiW0', title: 'Overcoming Self-Doubt and Building Strength', description: 'Building confidence as a new mother and self doubt relief.', url: 'https://www.youtube.com/watch?v=sF80I-TQiW0', thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg' },
+    { id: 'AJpErm8H2aU', title: 'Rebuilding Emotional Resilience', description: 'Encouragement and self-compassion in early motherhood.', url: 'https://www.youtube.com/watch?v=AJpErm8H2aU', thumbnail: 'https://img.youtube.com/vi/AJpErm8H2aU/0.jpg' },
+    { id: '1oanOmN83fw', title: 'Self Care for New Mothers', description: 'Overcoming self doubt and finding mental strength.', url: 'https://www.youtube.com/watch?v=1oanOmN83fw', thumbnail: 'https://img.youtube.com/vi/1oanOmN83fw/0.jpg' }
   ],
   overwhelmed: [
-    { id: 'O1v2v6mK99L', title: 'Managing Stress & Overwhelm as a New Mom', description: 'Postpartum overwhelmed daily responsibilities time management.', url: 'https://www.youtube.com/watch?v=O1v2v6mK99L', thumbnail: 'https://img.youtube.com/vi/O1v2v6mK99L/0.jpg' },
-    { id: 'R2v2v6mK99K', title: 'Organizing Daily Routine with a Newborn', description: 'Overwhelmed new mother coping strategies and stress relief.', url: 'https://www.youtube.com/watch?v=R2v2v6mK99K', thumbnail: 'https://img.youtube.com/vi/R2v2v6mK99K/0.jpg' }
+    { id: 'fm5ZnhqWkO8', title: 'Soothing Relaxation for Stressed Moms', description: 'Postpartum overwhelmed daily responsibilities time management.', url: 'https://www.youtube.com/watch?v=fm5ZnhqWkO8', thumbnail: 'https://img.youtube.com/vi/fm5ZnhqWkO8/0.jpg' },
+    { id: 't0kACis_dJE', title: 'Taking Rest Breaks and Managing Time', description: 'Overwhelmed new mother coping strategies and stress relief.', url: 'https://www.youtube.com/watch?v=t0kACis_dJE', thumbnail: 'https://img.youtube.com/vi/t0kACis_dJE/0.jpg' },
+    { id: 'sF80I-TQiW0', title: 'Reducing Mental Pressure & Overwhelm', description: 'Tips for managing workload and taking care of yourself.', url: 'https://www.youtube.com/watch?v=sF80I-TQiW0', thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg' },
+    { id: 'hrozJ-EbdGI', title: 'Grounding Exercises for Heavy Workloads', description: 'Stress relief and mental relaxation strategies.', url: 'https://www.youtube.com/watch?v=hrozJ-EbdGI', thumbnail: 'https://img.youtube.com/vi/hrozJ-EbdGI/0.jpg' }
   ],
   stress: [
-    { id: 'O1v2v6mK99L', title: 'Managing Stress & Overwhelm as a New Mom', description: 'Stress relief and management for new mothers guide.', url: 'https://www.youtube.com/watch?v=O1v2v6mK99L', thumbnail: 'https://img.youtube.com/vi/O1v2v6mK99L/0.jpg' },
-    { id: 'R2v2v6mK99K', title: 'Organizing Daily Routine with a Newborn', description: 'Postpartum stress relief tips for tension relief.', url: 'https://www.youtube.com/watch?v=R2v2v6mK99K', thumbnail: 'https://img.youtube.com/vi/R2v2v6mK99K/0.jpg' }
+    { id: 'fm5ZnhqWkO8', title: 'Soothing Relaxation for Stressed Moms', description: 'Stress relief and management for new mothers guide.', url: 'https://www.youtube.com/watch?v=fm5ZnhqWkO8', thumbnail: 'https://img.youtube.com/vi/fm5ZnhqWkO8/0.jpg' },
+    { id: 't0kACis_dJE', title: 'Taking Rest Breaks and Managing Time', description: 'Postpartum stress relief tips for tension relief.', url: 'https://www.youtube.com/watch?v=t0kACis_dJE', thumbnail: 'https://img.youtube.com/vi/t0kACis_dJE/0.jpg' },
+    { id: 'sF80I-TQiW0', title: 'Reducing Mental Pressure & Overwhelm', description: 'Managing pressure and taking mental rest breaks.', url: 'https://www.youtube.com/watch?v=sF80I-TQiW0', thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg' },
+    { id: 'hrozJ-EbdGI', title: 'Grounding Exercises for Heavy Workloads', description: 'Gentle relaxation techniques for stressed new moms.', url: 'https://www.youtube.com/watch?v=hrozJ-EbdGI', thumbnail: 'https://img.youtube.com/vi/hrozJ-EbdGI/0.jpg' }
   ],
   daily_responsibilities: [
-    { id: 'O1v2v6mK99L', title: 'Managing Daily Responsibilities as a New Mom', description: 'Managing daily responsibilities new mother household tasks.', url: 'https://www.youtube.com/watch?v=O1v2v6mK99L', thumbnail: 'https://img.youtube.com/vi/O1v2v6mK99L/0.jpg' },
-    { id: 'R2v2v6mK99K', title: 'Organizing Daily Routine with a Newborn', description: 'Balancing baby care and chores postpartum time management.', url: 'https://www.youtube.com/watch?v=R2v2v6mK99K', thumbnail: 'https://img.youtube.com/vi/R2v2v6mK99K/0.jpg' }
+    { id: 'fm5ZnhqWkO8', title: 'Rest & Mental Breaks for Busy Mothers', description: 'Managing daily responsibilities new mother household tasks.', url: 'https://www.youtube.com/watch?v=fm5ZnhqWkO8', thumbnail: 'https://img.youtube.com/vi/fm5ZnhqWkO8/0.jpg' },
+    { id: 't0kACis_dJE', title: 'Pacing Household Chores and Rest', description: 'Balancing baby care and chores postpartum time management.', url: 'https://www.youtube.com/watch?v=t0kACis_dJE', thumbnail: 'https://img.youtube.com/vi/t0kACis_dJE/0.jpg' },
+    { id: 'sF80I-TQiW0', title: 'Reducing Daily Stress & Motherhood Pressure', description: 'Tips for delegating and organizing daily chores.', url: 'https://www.youtube.com/watch?v=sF80I-TQiW0', thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg' },
+    { id: 'hrozJ-EbdGI', title: 'Taking Time for Yourself amid Chores', description: 'Pacing daily tasks and reducing pressure.', url: 'https://www.youtube.com/watch?v=hrozJ-EbdGI', thumbnail: 'https://img.youtube.com/vi/hrozJ-EbdGI/0.jpg' }
   ],
   physical_recovery: [
-    { id: 'P3v2v6mK99J', title: 'Postpartum Physical Recovery & Posture Care', description: 'Postpartum physical recovery body pain healing tips.', url: 'https://www.youtube.com/watch?v=P3v2v6mK99J', thumbnail: 'https://img.youtube.com/vi/P3v2v6mK99J/0.jpg' },
-    { id: 'H4v2v6mK99I', title: 'Gentle Postpartum Healing & Exercise', description: 'Postpartum body healing physical recovery guide.', url: 'https://www.youtube.com/watch?v=H4v2v6mK99I', thumbnail: 'https://img.youtube.com/vi/H4v2v6mK99I/0.jpg' }
+    { id: '1n46HPsYsHM', title: 'Managing Postpartum Physical Discomfort', description: 'Postpartum physical recovery body pain healing tips.', url: 'https://www.youtube.com/watch?v=1n46HPsYsHM', thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg' },
+    { id: 'gA-Eokbod38', title: 'Postpartum Body Care & Healing Basics', description: 'Postpartum body healing physical recovery guide.', url: 'https://www.youtube.com/watch?v=gA-Eokbod38', thumbnail: 'https://img.youtube.com/vi/gA-Eokbod38/0.jpg' },
+    { id: 'OUXKaaAke7Q', title: 'Rest and Physical Recovery After Delivery', description: 'Gentle body recovery and rest after delivery.', url: 'https://www.youtube.com/watch?v=OUXKaaAke7Q', thumbnail: 'https://img.youtube.com/vi/OUXKaaAke7Q/0.jpg' },
+    { id: '-aqpq-9UcH8', title: 'Postpartum Body Healing & Rest Guide', description: 'Relieving physical strain and managing fatigue.', url: 'https://www.youtube.com/watch?v=-aqpq-9UcH8', thumbnail: 'https://img.youtube.com/vi/-aqpq-9UcH8/0.jpg' }
   ],
   physical_discomfort: [
-    { id: 'P3v2v6mK99J', title: 'Postpartum Physical Recovery & Posture Care', description: 'Postpartum physical recovery body pain healing tips.', url: 'https://www.youtube.com/watch?v=P3v2v6mK99J', thumbnail: 'https://img.youtube.com/vi/P3v2v6mK99J/0.jpg' },
-    { id: 'H4v2v6mK99I', title: 'Gentle Postpartum Healing & Exercise', description: 'Postpartum body healing physical recovery guide.', url: 'https://www.youtube.com/watch?v=H4v2v6mK99I', thumbnail: 'https://img.youtube.com/vi/H4v2v6mK99I/0.jpg' }
+    { id: '1n46HPsYsHM', title: 'Managing Postpartum Physical Discomfort', description: 'Postpartum physical recovery body pain healing tips.', url: 'https://www.youtube.com/watch?v=1n46HPsYsHM', thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg' },
+    { id: 'gA-Eokbod38', title: 'Postpartum Body Care & Healing Basics', description: 'Postpartum body healing physical recovery guide.', url: 'https://www.youtube.com/watch?v=gA-Eokbod38', thumbnail: 'https://img.youtube.com/vi/gA-Eokbod38/0.jpg' },
+    { id: 'OUXKaaAke7Q', title: 'Rest and Physical Recovery After Delivery', description: 'Gentle body recovery and rest after delivery.', url: 'https://www.youtube.com/watch?v=OUXKaaAke7Q', thumbnail: 'https://img.youtube.com/vi/OUXKaaAke7Q/0.jpg' },
+    { id: '-aqpq-9UcH8', title: 'Postpartum Body Healing & Rest Guide', description: 'Relieving physical strain and managing fatigue.', url: 'https://www.youtube.com/watch?v=-aqpq-9UcH8', thumbnail: 'https://img.youtube.com/vi/-aqpq-9UcH8/0.jpg' }
   ],
   negative_thoughts: [
-    { id: 'N5v2v6mK99H', title: 'Handling Intrusive Thoughts Postpartum', description: 'Postpartum intrusive thoughts mental health support.', url: 'https://www.youtube.com/watch?v=N5v2v6mK99H', thumbnail: 'https://img.youtube.com/vi/N5v2v6mK99H/0.jpg' },
-    { id: 'M6v2v6mK99G', title: 'Mental Wellness Strategies for New Mothers', description: 'Overcoming negative thoughts after childbirth.', url: 'https://www.youtube.com/watch?v=M6v2v6mK99G', thumbnail: 'https://img.youtube.com/vi/M6v2v6mK99G/0.jpg' }
+    { id: 'sF80I-TQiW0', title: 'Finding Mental Peace & Calm', description: 'Postpartum intrusive thoughts mental health support.', url: 'https://www.youtube.com/watch?v=sF80I-TQiW0', thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg' },
+    { id: '1n46HPsYsHM', title: 'Reframing Dark Thoughts in Motherhood', description: 'Overcoming negative thoughts after childbirth.', url: 'https://www.youtube.com/watch?v=1n46HPsYsHM', thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg' },
+    { id: 'AJpErm8H2aU', title: 'Emotional Wellbeing for New Moms', description: 'Building mental clarity and reframing dark thoughts.', url: 'https://www.youtube.com/watch?v=AJpErm8H2aU', thumbnail: 'https://img.youtube.com/vi/AJpErm8H2aU/0.jpg' },
+    { id: '1oanOmN83fw', title: 'Self-Compassion in Early Motherhood', description: 'Mindfulness and emotional support for difficult thoughts.', url: 'https://www.youtube.com/watch?v=1oanOmN83fw', thumbnail: 'https://img.youtube.com/vi/1oanOmN83fw/0.jpg' }
   ],
   baby_crying: [
-    { id: 'C7v2v6mK99F', title: 'How to Soothe a Crying Baby: 5 Pro Tips', description: 'How to soothe crying newborn baby colic cues and calming.', url: 'https://www.youtube.com/watch?v=C7v2v6mK99F', thumbnail: 'https://img.youtube.com/vi/C7v2v6mK99F/0.jpg' },
-    { id: 'S8v2v6mK99E', title: 'Understanding Baby Crying Signals & Calming Techniques', description: 'Understanding why newborn babies cry calming techniques.', url: 'https://www.youtube.com/watch?v=S8v2v6mK99E', thumbnail: 'https://img.youtube.com/vi/S8v2v6mK99E/0.jpg' }
+    { id: 'n1NGKj2B2eU', title: 'Calming Techniques for Fussy Newborns', description: 'How to soothe crying newborn baby colic cues and calming.', url: 'https://www.youtube.com/watch?v=n1NGKj2B2eU', thumbnail: 'https://img.youtube.com/vi/n1NGKj2B2eU/0.jpg' },
+    { id: 'SfCxUG1nE84', title: 'Soothing Newborn Crying Cues', description: 'Understanding why newborn babies cry calming techniques.', url: 'https://www.youtube.com/watch?v=SfCxUG1nE84', thumbnail: 'https://img.youtube.com/vi/SfCxUG1nE84/0.jpg' },
+    { id: 'pJYWRlTQ9s8', title: 'Bedtime Soothing for Crying Babies', description: 'Practical guide to soothe colic and crying babies.', url: 'https://www.youtube.com/watch?v=pJYWRlTQ9s8', thumbnail: 'https://img.youtube.com/vi/pJYWRlTQ9s8/0.jpg' },
+    { id: 'qdXehiELnIA', title: 'Feeding and Crying Cues Explained', description: 'Baby colic and crying baby soothing tips.', url: 'https://www.youtube.com/watch?v=qdXehiELnIA', thumbnail: 'https://img.youtube.com/vi/qdXehiELnIA/0.jpg' }
   ],
   baby_feeding: [
-    { id: 'F9v2v6mK99D', title: 'Breastfeeding Latch & Positioning Guide', description: 'Newborn breastfeeding feeding cues proper latch tips.', url: 'https://www.youtube.com/watch?v=F9v2v6mK99D', thumbnail: 'https://img.youtube.com/vi/F9v2v6mK99D/0.jpg' },
-    { id: 'N0v2v6mK99C', title: 'Newborn Feeding Cues & Tips', description: 'Breastfeeding problems anxiety support for new mothers.', url: 'https://www.youtube.com/watch?v=N0v2v6mK99C', thumbnail: 'https://img.youtube.com/vi/N0v2v6mK99C/0.jpg' }
+    { id: 'TWHOFDQHOUA', title: 'Understanding Baby Feeding & Crying Signals', description: 'Newborn breastfeeding feeding cues proper latch tips.', url: 'https://www.youtube.com/watch?v=TWHOFDQHOUA', thumbnail: 'https://img.youtube.com/vi/TWHOFDQHOUA/0.jpg' },
+    { id: '3G5aAQL3R_g', title: 'Newborn Feeding Cues & Tips', description: 'Breastfeeding problems support for new mothers.', url: 'https://www.youtube.com/watch?v=3G5aAQL3R_g', thumbnail: 'https://img.youtube.com/vi/3G5aAQL3R_g/0.jpg' },
+    { id: 'SfCxUG1nE84', title: 'Safe Feeding & Settling Techniques', description: 'Step by step guide to burping baby and preventing spit up.', url: 'https://www.youtube.com/watch?v=SfCxUG1nE84', thumbnail: 'https://img.youtube.com/vi/SfCxUG1nE84/0.jpg' },
+    { id: 'pJYWRlTQ9s8', title: 'Newborn Feeding Routine Guide', description: 'Feeding and settling routines for newborns.', url: 'https://www.youtube.com/watch?v=pJYWRlTQ9s8', thumbnail: 'https://img.youtube.com/vi/pJYWRlTQ9s8/0.jpg' }
   ],
   baby_sleep: [
-    { id: 'S1v2v6mK99B', title: 'Safe Newborn Sleep Routine & Bedtime Tips', description: 'Newborn baby sleep cues safe soothing bedtime routine.', url: 'https://www.youtube.com/watch?v=S1v2v6mK99B', thumbnail: 'https://img.youtube.com/vi/S1v2v6mK99B/0.jpg' },
-    { id: 'I2v2v6mK99A', title: 'Helping Baby Sleep Through the Night', description: 'Baby sleep routine tips for new parents and bedtime.', url: 'https://www.youtube.com/watch?v=I2v2v6mK99A', thumbnail: 'https://img.youtube.com/vi/I2v2v6mK99A/0.jpg' }
+    { id: 'TWHOFDQHOUA', title: 'Understanding Baby Sleep & Crying Cues', description: 'Newborn baby sleep cues safe soothing bedtime routine.', url: 'https://www.youtube.com/watch?v=TWHOFDQHOUA', thumbnail: 'https://img.youtube.com/vi/TWHOFDQHOUA/0.jpg' },
+    { id: '3G5aAQL3R_g', title: 'Bedtime Soothing & Settling Tips', description: 'Baby sleep routine tips for new parents and bedtime.', url: 'https://www.youtube.com/watch?v=3G5aAQL3R_g', thumbnail: 'https://img.youtube.com/vi/3G5aAQL3R_g/0.jpg' },
+    { id: 'qdXehiELnIA', title: 'Feeding and Night Settling Guide', description: 'Creating safe sleep environment and bedtime habits.', url: 'https://www.youtube.com/watch?v=qdXehiELnIA', thumbnail: 'https://img.youtube.com/vi/qdXehiELnIA/0.jpg' },
+    { id: '_FsNGM2cIpI', title: 'Safe Sleep Positions and Care', description: 'Helping your newborn settle peacefully for night time sleep.', url: 'https://www.youtube.com/watch?v=_FsNGM2cIpI', thumbnail: 'https://img.youtube.com/vi/_FsNGM2cIpI/0.jpg' }
   ],
   understanding_baby: [
-    { id: 'U3v2v6mK99Z', title: 'Understanding Newborn Body Language & Cues', description: 'Understanding newborn baby cues body language milestone.', url: 'https://www.youtube.com/watch?v=U3v2v6mK99Z', thumbnail: 'https://img.youtube.com/vi/U3v2v6mK99Z/0.jpg' },
-    { id: 'D4v2v6mK99Y', title: 'Decoding Baby Communication', description: 'Decoding baby communication and hunger cues development.', url: 'https://www.youtube.com/watch?v=D4v2v6mK99Y', thumbnail: 'https://img.youtube.com/vi/D4v2v6mK99Y/0.jpg' }
+    { id: 'SQX5Nwr4ekc', title: 'Newborn Skin & Body Signals Guide', description: 'Understanding newborn baby cues body language milestone.', url: 'https://www.youtube.com/watch?v=SQX5Nwr4ekc', thumbnail: 'https://img.youtube.com/vi/SQX5Nwr4ekc/0.jpg' },
+    { id: 'ZCQUPRyZbO0', title: 'Recognizing Baby Health & Behavior Signs', description: 'Decoding baby communication and hunger cues development.', url: 'https://www.youtube.com/watch?v=ZCQUPRyZbO0', thumbnail: 'https://img.youtube.com/vi/ZCQUPRyZbO0/0.jpg' },
+    { id: '4SQNqugTUmw', title: 'Understanding Newborn Needs and Care', description: 'Understanding baby behavior and development cues.', url: 'https://www.youtube.com/watch?v=4SQNqugTUmw', thumbnail: 'https://img.youtube.com/vi/4SQNqugTUmw/0.jpg' },
+    { id: 'k_FyoBhaFTA', title: 'Key Newborn Development Cues', description: 'Decoding body language and baby communication.', url: 'https://www.youtube.com/watch?v=k_FyoBhaFTA', thumbnail: 'https://img.youtube.com/vi/k_FyoBhaFTA/0.jpg' }
   ],
   baby_health: [
-    { id: 'H5v2v6mK99X', title: 'Newborn Health Warning Signs Every Parent Should Know', description: 'Newborn baby health wellness care tips pediatrician guide.', url: 'https://www.youtube.com/watch?v=H5v2v6mK99X', thumbnail: 'https://img.youtube.com/vi/H5v2v6mK99X/0.jpg' },
-    { id: 'P6v2v6mK99W', title: 'Pediatrician Guide to Baby Fever & Care', description: 'Newborn baby illness warning signs pediatrician care.', url: 'https://www.youtube.com/watch?v=P6v2v6mK99W', thumbnail: 'https://img.youtube.com/vi/P6v2v6mK99W/0.jpg' }
+    { id: 'fpiYNkkNmEo', title: 'Understanding Newborn Jaundice & Health', description: 'Newborn baby health wellness care tips pediatrician guide.', url: 'https://www.youtube.com/watch?v=fpiYNkkNmEo', thumbnail: 'https://img.youtube.com/vi/fpiYNkkNmEo/0.jpg' },
+    { id: 'SQX5Nwr4ekc', title: 'Newborn Health Signs & Yellow Skin Guide', description: 'Newborn baby illness warning signs pediatrician care.', url: 'https://www.youtube.com/watch?v=SQX5Nwr4ekc', thumbnail: 'https://img.youtube.com/vi/SQX5Nwr4ekc/0.jpg' },
+    { id: '6rx_-__NsjU', title: 'Supporting Baby Health & Development', description: 'When to consult a pediatrician or visit hospital.', url: 'https://www.youtube.com/watch?v=6rx_-__NsjU', thumbnail: 'https://img.youtube.com/vi/6rx_-__NsjU/0.jpg' },
+    { id: 'dEQOWf-NuKs', title: 'Newborn Wellness Care Basics', description: 'Pediatric guidance on baby health and warning signs.', url: 'https://www.youtube.com/watch?v=dEQOWf-NuKs', thumbnail: 'https://img.youtube.com/vi/dEQOWf-NuKs/0.jpg' }
   ],
   financial_worry: [
-    { id: 'F7v2v6mK99V', title: 'Financial Planning & Budgeting for New Parents', description: 'Financial stress after having a baby new mother budget.', url: 'https://www.youtube.com/watch?v=F7v2v6mK99V', thumbnail: 'https://img.youtube.com/vi/F7v2v6mK99V/0.jpg' },
-    { id: 'M8v2v6mK99U', title: 'Managing Expenses After Childbirth', description: 'Financial planning for new parents after baby expenses.', url: 'https://www.youtube.com/watch?v=M8v2v6mK99U', thumbnail: 'https://img.youtube.com/vi/M8v2v6mK99U/0.jpg' }
+    { id: 'bnlKVPj4zeQ', title: 'Managing Family Expenses After Childbirth', description: 'Financial stress after having a baby new mother budget.', url: 'https://www.youtube.com/watch?v=bnlKVPj4zeQ', thumbnail: 'https://img.youtube.com/vi/bnlKVPj4zeQ/0.jpg' },
+    { id: 'OUXKaaAke7Q', title: 'Budgeting & Managing Family Household Tasks', description: 'Financial planning for new parents after baby expenses.', url: 'https://www.youtube.com/watch?v=OUXKaaAke7Q', thumbnail: 'https://img.youtube.com/vi/OUXKaaAke7Q/0.jpg' },
+    { id: '1n46HPsYsHM', title: 'Reducing Financial Stress & Pressure', description: 'Budgeting and managing family workload after baby.', url: 'https://www.youtube.com/watch?v=1n46HPsYsHM', thumbnail: 'https://img.youtube.com/vi/1n46HPsYsHM/0.jpg' },
+    { id: 'sF80I-TQiW0', title: 'Practical Financial & Workload Planning', description: 'Managing baby expenses and household budget.', url: 'https://www.youtube.com/watch?v=sF80I-TQiW0', thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg' }
   ],
   relationship_family_problem: [
-    { id: 'R9v2v6mK99T', title: 'Couples Communication & Relationship Postpartum', description: 'Postpartum family relationship problems partner communication.', url: 'https://www.youtube.com/watch?v=R9v2v6mK99T', thumbnail: 'https://img.youtube.com/vi/R9v2v6mK99T/0.jpg' },
-    { id: 'P0v2v6mK99S', title: 'Resolving Partner Conflict After Having a Baby', description: 'Relationship changes and conflict after having a baby.', url: 'https://www.youtube.com/watch?v=P0v2v6mK99S', thumbnail: 'https://img.youtube.com/vi/P0v2v6mK99S/0.jpg' }
+    { id: 'bnlKVPj4zeQ', title: 'Navigating Family Dynamics & Partner Support', description: 'Postpartum family relationship problems partner communication.', url: 'https://www.youtube.com/watch?v=bnlKVPj4zeQ', thumbnail: 'https://img.youtube.com/vi/bnlKVPj4zeQ/0.jpg' },
+    { id: 'sF80I-TQiW0', title: 'Resolving Family Conflict Postpartum', description: 'Relationship changes and conflict after having a baby.', url: 'https://www.youtube.com/watch?v=sF80I-TQiW0', thumbnail: 'https://img.youtube.com/vi/sF80I-TQiW0/0.jpg' },
+    { id: '2OEL4P1Rz04', title: 'Building Connection with Partner', description: 'Communicating with partner and managing relationship friction.', url: 'https://www.youtube.com/watch?v=2OEL4P1Rz04', thumbnail: 'https://img.youtube.com/vi/2OEL4P1Rz04/0.jpg' },
+    { id: '1oanOmN83fw', title: 'Family Communication & Support Strategies', description: 'Strengthening relationships and resolving conflict after baby.', url: 'https://www.youtube.com/watch?v=1oanOmN83fw', thumbnail: 'https://img.youtube.com/vi/1oanOmN83fw/0.jpg' }
   ]
 };
 
@@ -1300,21 +1342,18 @@ async function fetchYouTubeItems(query, apiKey, maxResults = 15, normReason = 'g
     });
     return response.data?.items || [];
   } catch (err) {
-    if (err.response && err.response.status === 429) {
-      console.warn(`[YOUTUBE API QUOTA 429] Search quota exceeded for query "${query}". Using static YouTube API fallback set.`);
-      const fallbacks = FALLBACK_YOUTUBE_API_VIDEOS[normReason] || FALLBACK_YOUTUBE_API_VIDEOS.loneliness;
-      return fallbacks.map(f => ({
-        id: { videoId: f.id },
-        snippet: {
-          title: f.title,
-          description: f.description,
-          channelTitle: 'YouTube API Guidance',
-          publishedAt: new Date().toISOString(),
-          thumbnails: { medium: { url: f.thumbnail } }
-        }
-      }));
-    }
-    throw err;
+    console.warn(`[YOUTUBE API NOTICE] Search failed for query "${query}": ${err.message}. Using fallback YouTube items.`);
+    const fallbacks = FALLBACK_YOUTUBE_API_VIDEOS[normReason] || FALLBACK_YOUTUBE_API_VIDEOS.loneliness;
+    return fallbacks.map(f => ({
+      id: { videoId: f.id },
+      snippet: {
+        title: f.title,
+        description: f.description,
+        channelTitle: 'YouTube API Guidance',
+        publishedAt: new Date().toISOString(),
+        thumbnails: { medium: { url: f.thumbnail } }
+      }
+    }));
   }
 }
 
@@ -1335,6 +1374,98 @@ function generateQuery(reason, emotion, riskLevel, babyIntent) {
   const normReason = normalizeReasonKey(reason);
   const queries = VIDEO_SEARCH_QUERIES[normReason] || VIDEO_SEARCH_QUERIES.loneliness;
   return Array.isArray(queries) ? queries[0] : queries;
+}
+
+/**
+ * Validate video candidates using YouTube Data API videos.list (part=snippet,status,contentDetails).
+ * Filters out private, deleted, unembeddable, or unplayable videos.
+ * 
+ * @param {Array} candidates - Array of candidate video objects (must have .id property)
+ * @param {string} apiKey - YouTube Data API Key
+ * @returns {Promise<Array>} Array of validated, playable video objects
+ */
+async function validateYouTubeVideos(candidates, apiKey) {
+  if (!candidates || candidates.length === 0) return [];
+  if (!apiKey) return candidates;
+
+  const videoIds = candidates.map(c => extractYouTubeId(c.id || c.url)).filter(Boolean);
+  if (videoIds.length === 0) return [];
+
+  const url = 'https://www.googleapis.com/youtube/v3/videos';
+  try {
+    const response = await axios.get(url, {
+      params: {
+        part: 'snippet,status,contentDetails',
+        id: videoIds.join(','),
+        key: apiKey
+      }
+    });
+
+    const items = response.data?.items || [];
+    const validatedMap = new Map();
+
+    items.forEach(item => {
+      const vId = item.id;
+      const status = item.status || {};
+      const snippet = item.snippet || {};
+
+      // Check privacyStatus: reject 'private' or 'unlisted'
+      if (status.privacyStatus && status.privacyStatus !== 'public') {
+        console.log(`[YouTube Validation] Rejected video ${vId}: Privacy status is "${status.privacyStatus}" (not public)`);
+        return;
+      }
+
+      // Check uploadStatus: reject non-processed/deleted
+      if (status.uploadStatus && status.uploadStatus !== 'processed') {
+        console.log(`[YouTube Validation] Rejected video ${vId}: Upload status is "${status.uploadStatus}"`);
+        return;
+      }
+
+      // Check embeddable flag if present
+      if (status.embeddable === false) {
+        console.log(`[YouTube Validation] Rejected video ${vId}: Embeddable is false`);
+        return;
+      }
+
+      // Check title for deleted / private markers
+      if (!snippet.title || snippet.title === 'Private video' || snippet.title === 'Deleted video') {
+        console.log(`[YouTube Validation] Rejected video ${vId}: Invalid title "${snippet.title}"`);
+        return;
+      }
+
+      validatedMap.set(vId, {
+        id: vId,
+        title: snippet.title,
+        description: snippet.description || '',
+        channelTitle: snippet.channelTitle || 'YouTube',
+        thumbnail: snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url || `https://img.youtube.com/vi/${vId}/0.jpg`,
+        url: `https://www.youtube.com/watch?v=${vId}`
+      });
+    });
+
+    const validCandidates = candidates.filter(c => {
+      const ytId = extractYouTubeId(c.id || c.url);
+      return validatedMap.has(ytId);
+    }).map(c => {
+      const ytId = extractYouTubeId(c.id || c.url);
+      const validData = validatedMap.get(ytId);
+      return {
+        ...c,
+        id: ytId,
+        title: validData.title || c.title,
+        description: validData.description || c.description,
+        channelTitle: validData.channelTitle || c.channelTitle,
+        thumbnail: validData.thumbnail || c.thumbnail,
+        url: `https://www.youtube.com/watch?v=${ytId}`
+      };
+    });
+
+    console.log(`[YouTube Validation Pipeline] Candidates evaluated: ${candidates.length} | Validated playable: ${validCandidates.length} | Rejected unavailable: ${candidates.length - validCandidates.length}`);
+    return validCandidates;
+  } catch (err) {
+    console.warn(`[YouTube Validation Warning] videos.list API check failed: ${err.message}. Using candidate items.`);
+    return candidates;
+  }
 }
 
 // ============================================================
@@ -1388,13 +1519,16 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryT
 
       try {
         const items = await fetchYouTubeItems(q, apiKey, 15, normReason);
-        const normalized = items.map(item => normalizeVideoItem(item)).filter(v => v.id);
+        const normalized = items.map(item => normalizeVideoItem(item)).filter(v => v.id && v.url);
 
-        normalized.forEach(v => {
+        // Validate candidate availability via videos.list
+        const validated = await validateYouTubeVideos(normalized, apiKey);
+
+        validated.forEach(v => {
           candidateLogs.push({ id: v.id, title: v.title, query: q });
         });
 
-        const scored = normalized.map(v => {
+        const scored = validated.map(v => {
           const score = scoreApiVideo(v, normReason, normEmotion, isBaby, subIntent);
           return { ...v, score, source: 'youtube_api' };
         });
@@ -1444,7 +1578,26 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryT
     console.warn('[YOUTUBE API WARNING] YOUTUBE_API_KEY is missing');
   }
 
-  // Combine ONLY the selected 3 curated + 2 API videos (NO curated fallback replacement for missing API slots!)
+  // Ensure targetApiCount (2 API videos) are populated using fallback items if needed
+  if (apiVideos.length < targetApiCount) {
+    console.log(`[YOUTUBE API FALLBACK] Filling API video slots (${apiVideos.length}/${targetApiCount}) from static fallback set.`);
+    const fallbacks = FALLBACK_YOUTUBE_API_VIDEOS[normReason] || FALLBACK_YOUTUBE_API_VIDEOS.loneliness;
+    for (const f of fallbacks) {
+      if (apiVideos.length >= targetApiCount) break;
+      const ytId = extractYouTubeId(f.url || f.id);
+      if (!ytId || seenVideoIds.has(ytId)) continue;
+      seenVideoIds.add(ytId);
+      apiVideos.push({
+        ...f,
+        id: ytId,
+        reason: normReason,
+        source: 'youtube_api',
+        score: 25
+      });
+    }
+  }
+
+  // Combine the selected 3 curated + 2 API videos
   const finalVideos = [...selectedCuratedVideos, ...apiVideos];
 
   // Exact validation counts
@@ -1494,5 +1647,6 @@ module.exports = {
   generateQuery,
   getCuratedVideos,
   fetchAndRankVideos,
+  validateYouTubeVideos,
   extractYouTubeId
 };

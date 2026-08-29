@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 import { colors, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
 import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames, getRankedActivities } from '../services/activitiesLibrary';
@@ -245,6 +246,17 @@ const HARDCODED_VIDEO_MAP = {
 };
 
 const RecommendationsScreen = ({ navigation, route }) => {
+  const { t, i18n } = useTranslation();
+  const isSinhala = i18n.language === 'si';
+
+  const categoryTabs = [
+    { id: 'activities', icon: '🧘', label: isSinhala ? 'ක්‍රියාකාරකම්' : 'Activities' },
+    { id: 'games', icon: '🎮', label: isSinhala ? 'ක්‍රීඩා' : 'Games' },
+    { id: 'music', icon: '🎵', label: isSinhala ? 'සංගීතය' : 'Music' },
+    { id: 'videos', icon: '🎬', label: isSinhala ? 'වීඩියෝ' : 'Videos' },
+    { id: 'knowledge', icon: '📚', label: isSinhala ? 'දැනුම එකතුව' : 'Knowledge Hub' },
+  ];
+
   const { 
     latestRecommendations, 
     latestAnalysis, 
@@ -697,19 +709,29 @@ const RecommendationsScreen = ({ navigation, route }) => {
       <LinearGradient colors={['#F8F4FF', '#FFF0F8']} style={s.gradient}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
-          {/* Top Bar */}
-          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-            <Text style={s.backText}>← ආපසු</Text>
-          </TouchableOpacity>
+          {/* Top Header Row with Back Button and Language Toggle Button */}
+          <View style={s.topBarRow}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+              <Text style={s.backText}>{isSinhala ? '← ආපසු' : '← Back'}</Text>
+            </TouchableOpacity>
 
-          <Text style={s.title}>නිර්දේශිත සහන & දැනුම එකතුව 💜</Text>
+            <TouchableOpacity
+              onPress={() => i18n.changeLanguage(isSinhala ? 'en' : 'si')}
+              style={s.langToggleBtn}
+              activeOpacity={0.7}
+            >
+              <Text style={s.langToggleText}>{isSinhala ? 'EN' : 'සිං'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={s.title}>{isSinhala ? 'නිර්දේශිත සහන & දැනුම එකතුව 💜' : 'Recommended Relief & Knowledge Collection 💜'}</Text>
 
           {/* Search Bar */}
           <View style={s.searchWrap}>
             <Text style={s.searchIcon}>🔍</Text>
             <TextInput
               style={s.searchInput}
-              placeholder="ඔබට අවශ්‍ය දේ සොයන්න... (Search videos, guides, sleep, feeding)"
+              placeholder={isSinhala ? "ඔබට අවශ්‍ය දේ සොයන්න... (Search videos, guides, sleep, feeding)" : "Search videos, guides, sleep, feeding..."}
               placeholderTextColor={colors.textMuted}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -726,9 +748,13 @@ const RecommendationsScreen = ({ navigation, route }) => {
             <View style={s.emergencyBanner}>
               <Text style={s.emergencyIcon}>🆘</Text>
               <View style={{ flex: 1 }}>
-                <Text style={s.emergencyTitle}>ක්ෂණික වෛද්‍ය හා වෘත්තීය සහාය (Immediate Professional Support):</Text>
+                <Text style={s.emergencyTitle}>
+                  {isSinhala ? 'ක්ෂණික වෛද්‍ය හා වෘත්තීය සහාය (Immediate Professional Support):' : 'Immediate Professional Support:'}
+                </Text>
                 <Text style={s.emergencyText}>
-                  ඔබ අධික පීඩනයකින් හෝ බලාපොරොත්තු රහිත ස්වභාවයකින් පෙළෙන්නේ නම්, කරුණාකර වහාම නොමිලේ උපදේශන සේවාව හමුවන්න (හදිසි ඇමතුම් 1926) හෝ ආසන්නතම සෞඛ්‍ය නිලධාරී / පවුල් සෞඛ්‍ය සේවිකා මුණගැසෙන්න.
+                  {isSinhala
+                    ? 'ඔබ අධික පීඩනයකින් හෝ බලාපොරොත්තු රහිත ස්වභාවයකින් පෙළෙන්නේ නම්, කරුණාකර වහාම නොමිලේ උපදේශන සේවාව හමුවන්න (හදිසි ඇමතුම් 1926) හෝ ආසන්නතම සෞඛ්‍ය නිලධාරී / පවුල් සෞඛ්‍ය සේවිකා මුණගැසෙන්න.'
+                    : 'If you are experiencing severe distress or feeling hopeless, please contact the free helpline (1926) or visit your nearest midwife or healthcare professional immediately.'}
                 </Text>
               </View>
             </View>
@@ -737,11 +763,11 @@ const RecommendationsScreen = ({ navigation, route }) => {
           {/* SEARCH RESULTS DISPLAY */}
           {searchResults ? (
             <View style={s.searchResultsCont}>
-              <Text style={s.searchTitle}>සොයාගත් ප්‍රතිඵල ({searchResults.length}):</Text>
+              <Text style={s.searchTitle}>{isSinhala ? `සොයාගත් ප්‍රතිඵල (${searchResults.length}):` : `Search Results (${searchResults.length}):`}</Text>
               {searchResults.length === 0 ? (
                 <View style={s.emptyBox}>
                   <Text style={s.emptyEmoji}>🔎</Text>
-                  <Text style={s.emptyText}>සොයන ලද වචනයට අදාළ අන්තර්ගතයන් හමු නොවීය.</Text>
+                  <Text style={s.emptyText}>{isSinhala ? 'සොයන ලද වචනයට අදාළ අන්තර්ගතයන් හමු නොවීය.' : 'No matching results found.'}</Text>
                 </View>
               ) : (
                 searchResults.map((item, idx) => (
@@ -765,8 +791,8 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       <View style={s.typeTag}>
                         <Text style={s.typeTagText}>{item.itemType}</Text>
                       </View>
-                      <Text style={s.mediaTitle}>{item.title || item.label}</Text>
-                      <Text style={s.mediaSub}>{item.description || item.category || 'තොරතුරු මූලාශ්‍රය'}</Text>
+                      <Text style={s.mediaTitle}>{isSinhala ? (item.title || item.label) : (item.titleEn || item.labelEn || item.title || item.label)}</Text>
+                      <Text style={s.mediaSub}>{isSinhala ? (item.description || item.category || 'තොරතුරු මූලාශ්‍රය') : (item.descriptionEn || item.category || 'Information Resource')}</Text>
                     </View>
                   </TouchableOpacity>
                 ))
@@ -777,24 +803,29 @@ const RecommendationsScreen = ({ navigation, route }) => {
               {/* Badges Row */}
               <View style={s.badgesRow}>
                 <LinearGradient colors={ec.badge} style={s.badge}>
-                  <Text style={[s.badgeText, { color: ec.col }]}>{ec.emoji} {ec.label}</Text>
+                  <Text style={[s.badgeText, { color: ec.col }]}>{ec.emoji} {isSinhala ? ec.label : (ec.labelEn || ec.label)}</Text>
                 </LinearGradient>
                 {rc && (
                   <View style={[s.badge, { backgroundColor: rc.bg }]}>
-                    <Text style={[s.badgeText, { color: rc.col }]}>{rc.label}</Text>
+                    <Text style={[s.badgeText, { color: rc.col }]}>
+                      {isSinhala ? rc.label : (risk === 'high' ? '🔴 High Risk' : risk === 'medium' ? '🟡 Medium Risk' : '🟢 Low Risk')}
+                    </Text>
                   </View>
                 )}
                 {!isSkipped && activeReason && (() => {
-                  const reasonLabel = REASON_OPTIONS.find(r => r.key === activeReason)?.label;
+                  const reasonObj = REASON_OPTIONS.find(r => r.key === activeReason);
+                  const reasonLabel = isSinhala
+                    ? (reasonObj?.label ? reasonObj.label.split('(')[0].trim() : activeReason.replace(/_/g, ' '))
+                    : (reasonObj?.label ? reasonObj.label.split('(')[0].trim() : activeReason.replace(/_/g, ' '));
                   return reasonLabel ? (
                     <View style={[s.badge, { backgroundColor: '#FFF3E0' }]}>
-                      <Text style={[s.badgeText, { color: '#E65100' }]}>📌 {reasonLabel.split('(')[0].trim()}</Text>
+                      <Text style={[s.badgeText, { color: '#E65100' }]}>📌 {reasonLabel}</Text>
                     </View>
                   ) : null;
                 })()}
                 {isSkipped && (
                   <View style={[s.badge, { backgroundColor: '#E0F2FE' }]}>
-                    <Text style={[s.badgeText, { color: '#0369A1' }]}>🌐 සියලු අන්තර්ගතයන්</Text>
+                    <Text style={[s.badgeText, { color: '#0369A1' }]}>{isSinhala ? '🌐 සියලු අන්තර්ගතයන්' : '🌐 All Content'}</Text>
                   </View>
                 )}
               </View>
@@ -803,21 +834,25 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 <View style={s.reasonNoticeCont}>
                   <Text style={s.reasonNoticeIcon}>📔</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={s.reasonNoticeTitle}>ඩයරි සටහන අනුව නිර්දේශ</Text>
+                    <Text style={s.reasonNoticeTitle}>{isSinhala ? 'ඩයරි සටහන අනුව නිර්දේශ' : 'Recommendations Based on Diary Entry'}</Text>
                     <Text style={s.reasonNoticeText}>
-                      ඔබ ලියූ ඩයරි සටහනෙහි හැඟීම් හා හේතු විශ්ලේෂණය කර, ඔබට වඩාත්ම ගැළපෙන සම්පත් නිර්දේශ කරන ලදී. 🌸
+                      {isSinhala
+                        ? 'ඔබ ලියූ ඩයරි සටහනෙහි හැඟීම් හා හේතු විශ්ලේෂණය කර, ඔබට වඩාත්ම ගැළපෙන සම්පත් නිර්දේශ කරන ලදී. 🌸'
+                        : 'Your diary entry feelings and reasons were analyzed to recommend the best resources for you. 🌸'}
                     </Text>
                   </View>
                 </View>
               ) : !isSkipped && (localRuleRecs || hasAnalysis) ? (
                 <Text style={s.supportiveNotice}>
-                  ඔබ තෝරාගත් කරුණු මත පදනම්ව, අද ඔබට උපකාරී විය හැකි ඇතැම් සම්පත් මෙන්න. 🌸
+                  {isSinhala
+                    ? 'ඔබ තෝරාගත් කරුණු මත පදනම්ව, අද ඔබට උපකාරී විය හැකි ඇතැම් සම්පත් මෙන්න. 🌸'
+                    : 'Based on your selected inputs, here are helpful resources for you today. 🌸'}
                 </Text>
               ) : null}
 
               {/* Main Category Tabs */}
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.tabsScroll} contentContainerStyle={s.tabsCont}>
-                {TABS.map(t => (
+                {categoryTabs.map(t => (
                   <TouchableOpacity key={t.id} onPress={() => setTab(t.id)} style={[s.tab, tab === t.id && s.tabActive]}>
                     <Text style={s.tabIcon}>{t.icon}</Text>
                     <Text style={[s.tabLabel, tab === t.id && s.tabLabelActive]}>{t.label}</Text>
@@ -830,9 +865,11 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 {/* 1. ACTIVITIES TAB */}
                 {tab === 'activities' && (
                   <View>
-                    <Text style={s.tabIntro}>ඔබ වෙනුවෙන් තෝරාගත් ක්‍රියාකාරකම් 🧘 (උපරිම 4)</Text>
+                    <Text style={s.tabIntro}>{isSinhala ? 'ඔබ වෙනුවෙන්ම තෝරාගත් ක්‍රියාකාරකම් 🧘 (උපරිම 4)' : 'Mindful Activities Selected for You 🧘 (Max 4)'}</Text>
                     {finalActivities.map((act, idx) => {
                       const actId = typeof act === 'string' ? act : act?.id;
+                      const actTitle = isSinhala ? (act.label || act) : (act.labelEn || act.label || act);
+                      const actDesc = isSinhala ? (act.purpose || act.desc || 'සන්සුන් ක්‍රියාකාරකමක්') : (act.purposeEn || act.descEn || act.purpose || act.desc || 'Calming activity');
                       return (
                         <TouchableOpacity
                           key={actId || idx}
@@ -850,8 +887,8 @@ const RecommendationsScreen = ({ navigation, route }) => {
                           <LinearGradient colors={act.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
                             <Text style={s.actIcon}>{act.icon || '🌸'}</Text>
                             <View style={s.actInfo}>
-                              <Text style={[s.actTitle, { color: act.accent || '#7E57C2' }]}>{act.label || act}</Text>
-                              <Text style={s.actDesc}>{act.purpose || act.desc || 'සන්සුන් ක්‍රියාකාරකමක්'}</Text>
+                              <Text style={[s.actTitle, { color: act.accent || '#7E57C2' }]}>{actTitle}</Text>
+                              <Text style={s.actDesc}>{actDesc}</Text>
                             </View>
                           </LinearGradient>
                         </TouchableOpacity>
@@ -863,9 +900,11 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 {/* 2. GAMES TAB */}
                 {tab === 'games' && (
                   <View>
-                    <Text style={s.tabIntro}>සන්සුන් ක්‍රීඩා 🎮 (උපරිම 3)</Text>
+                    <Text style={s.tabIntro}>{isSinhala ? 'සන්සුන් ක්‍රීඩා 🎮 (උපරිම 3)' : 'Calm Games 🎮 (Max 3)'}</Text>
                     {finalGames.map((game, idx) => {
                       const gId = typeof game === 'string' ? game : game?.id;
+                      const gTitle = isSinhala ? (game.label || game) : (game.labelEn || game.label || game);
+                      const gSub = isSinhala ? (game.purpose || 'සුවය ලබාදෙන ක්‍රීඩාව') : (game.purposeEn || 'Healing & Relaxing Game');
                       return (
                         <TouchableOpacity
                           key={gId || idx}
@@ -874,8 +913,8 @@ const RecommendationsScreen = ({ navigation, route }) => {
                           <LinearGradient colors={game.color || ['#EDE7F6', '#D1C4E9']} style={s.primaryGameCard}>
                             <Text style={s.primaryGameIcon}>{game.icon || '🎮'}</Text>
                             <View style={s.primaryGameInfo}>
-                              <Text style={[s.primaryGameName, { color: game.accent || '#7E57C2' }]}>{game.label || game}</Text>
-                              <Text style={s.primaryGameSub}>{game.labelEn || 'සුවය ලබාදෙන ක්‍රීඩාව'}</Text>
+                              <Text style={[s.primaryGameName, { color: game.accent || '#7E57C2' }]}>{gTitle}</Text>
+                              <Text style={s.primaryGameSub}>{gSub}</Text>
                             </View>
                           </LinearGradient>
                         </TouchableOpacity>
@@ -887,15 +926,15 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 {/* 3. MUSIC TAB */}
                 {tab === 'music' && (
                   <View>
-                    <Text style={s.tabIntro}>සන්සුන් සංගීතය 🎵 (උපරිම 4)</Text>
+                    <Text style={s.tabIntro}>{isSinhala ? 'සන්සුන් සංගීතය 🎵 (උපරිම 4)' : 'Calming Music 🎵 (Max 4)'}</Text>
                     {finalMusic.map((track, idx) => (
                       <TouchableOpacity key={track.id || idx} style={s.mediaCard} onPress={() => openYouTube(track)}>
                         <View style={[s.mediaIcon, { backgroundColor: colors.lavenderLight }]}>
                           <Text style={s.mediaEmoji}>{track.emoji || '🎵'}</Text>
                         </View>
                         <View style={s.mediaInfo}>
-                          <Text style={s.mediaTitle}>{track.title}</Text>
-                          <Text style={s.mediaSub}>{track.titleEn || 'සන්සුන් සංගීතය'}</Text>
+                          <Text style={s.mediaTitle}>{isSinhala ? track.title : (track.titleEn || track.title)}</Text>
+                          <Text style={s.mediaSub}>{isSinhala ? 'සන්සුන් සංගීතය' : 'Calming Music'}</Text>
                         </View>
                       </TouchableOpacity>
                     ))}
@@ -907,7 +946,9 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   <View>
                     {activeBabyTopics.length > 0 && (
                       <View style={s.detectedTopicsBanner}>
-                        <Text style={s.detectedTopicsTitle}>🍼 හඳුනාගත් ළදරු සාත්තු මාතෘකා ({activeBabyTopics.length}):</Text>
+                        <Text style={s.detectedTopicsTitle}>
+                          {isSinhala ? `🍼 හඳුනාගත් ළදරු සාත්තු මාතෘකා (${activeBabyTopics.length}):` : `🍼 Identified Baby Care Topics (${activeBabyTopics.length}):`}
+                        </Text>
                         <View style={s.topicBadgesRow}>
                           {activeBabyTopics.map((top, idx) => (
                             <View key={idx} style={s.topicBadgeItem}>
@@ -989,7 +1030,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                         const badgeCol = isCurated ? '#6A1B9A' : isApi ? '#C62828' : '#0369A1';
 
                         return (
-                          <TouchableOpacity key={extractYouTubeId(video.url) || video.id || `v-${idx}`} style={s.mediaCard} onPress={() => openYouTube(video.url)}>
+                          <TouchableOpacity key={extractYouTubeId(video.url) || video.id || `v-${idx}`} style={s.mediaCard} onPress={() => openYouTube(video)}>
                             {video.thumbnail ? (
                               <Image source={{ uri: video.thumbnail }} style={s.videoThumb} />
                             ) : (
@@ -1013,7 +1054,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 {/* 5. KNOWLEDGE HUB TAB */}
                 {tab === 'knowledge' && (
                   <View>
-                    <Text style={s.tabIntro}>කේන්ද්‍රීය දැනුම පියස 📚 (උපරිම 5)</Text>
+                    <Text style={s.tabIntro}>{isSinhala ? 'කේන්ද්‍රීය දැනුම පියස 📚 (උපරිම 5)' : 'Central Knowledge Hub 📚 (Max 5)'}</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.videoTabsScroll}>
                       {KNOWLEDGE_CATEGORIES.map(cat => (
                         <TouchableOpacity
@@ -1022,7 +1063,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                           style={[s.videoSubTab, kbCategory === cat.id && s.videoSubTabActive]}
                         >
                           <Text style={[s.videoSubTabLabel, kbCategory === cat.id && s.videoSubTabLabelActive]}>
-                            {cat.icon} {cat.label}
+                            {cat.icon} {isSinhala ? cat.label : (cat.labelEn || cat.label)}
                           </Text>
                         </TouchableOpacity>
                       ))}
@@ -1034,9 +1075,9 @@ const RecommendationsScreen = ({ navigation, route }) => {
                           <Text style={s.mediaEmoji}>{res.thumbnail}</Text>
                         </View>
                         <View style={s.mediaInfo}>
-                          <Text style={s.mediaTitle}>{res.title}</Text>
-                          <Text style={s.mediaSub}>{res.description}</Text>
-                          <Text style={s.sourceTag}>මූලාශ්‍රය: {res.source}</Text>
+                          <Text style={s.mediaTitle}>{isSinhala ? res.title : (res.titleEn || res.title)}</Text>
+                          <Text style={s.mediaSub}>{isSinhala ? res.description : (res.descriptionEn || res.description)}</Text>
+                          <Text style={s.sourceTag}>{isSinhala ? 'මූලාශ්‍රය: ' : 'Source: '}{res.source}</Text>
                         </View>
                       </TouchableOpacity>
                     ))}
@@ -1046,16 +1087,16 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
               {/* USER FEEDBACK SECTION */}
               <View style={s.feedbackCard}>
-                <Text style={s.feedbackTitle}>මෙම නිර්දේශ ඔබට උපකාරී වූවාද?</Text>
+                <Text style={s.feedbackTitle}>{isSinhala ? 'මෙම නිර්දේශ ඔබට උපකාරී වූවාද?' : 'Were these recommendations helpful to you?'}</Text>
                 {feedbackSaved ? (
-                  <Text style={s.feedbackSavedText}>✓ අදහස සටහන් කරගන්නා ලදී. ස්තූතියි!</Text>
+                  <Text style={s.feedbackSavedText}>{isSinhala ? '✓ අදහස සටහන් කරගන්නා ලදී. ස්තූතියි!' : '✓ Feedback saved. Thank you!'}</Text>
                 ) : (
                   <View style={s.feedbackBtnRow}>
                     <TouchableOpacity style={s.feedbackBtn} onPress={() => handleFeedback('positive')}>
-                      <Text style={s.feedbackBtnText}>👍 ඔව්, උපකාරී විය</Text>
+                      <Text style={s.feedbackBtnText}>{isSinhala ? '👍 ඔව්, උපකාරී විය' : '👍 Yes, helpful'}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={[s.feedbackBtn, s.feedbackBtnNo]} onPress={() => handleFeedback('negative')}>
-                      <Text style={s.feedbackBtnTextNo}>👎 නැත</Text>
+                      <Text style={s.feedbackBtnTextNo}>{isSinhala ? '👎 නැත' : '👎 No'}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -1073,7 +1114,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
           <View style={s.modalCard}>
             {/* Step Indicator */}
             <View style={s.stepIndicatorRow}>
-              <Text style={s.stepIndicatorText}>පියවර {step} / 3</Text>
+              <Text style={s.stepIndicatorText}>{isSinhala ? 'පියවර' : 'Step'} {step} / 3</Text>
               <TouchableOpacity onPress={handleAssessmentSkip}>
                 <Text style={s.closeModalText}>✕</Text>
               </TouchableOpacity>
@@ -1081,8 +1122,10 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
             {step === 1 && (
               <View>
-                <Text style={s.modalTitle}>ඔබට දැන් කොහොමද දැනෙන්නේ?</Text>
-                <Text style={s.modalSub}>ඔබට වඩාත්ම ගැළපෙන පුද්ගලික නිර්දේශ ලබාදීමට ඔබේ වත්මන් හැඟීම තෝරන්න.</Text>
+                <Text style={s.modalTitle}>{isSinhala ? 'ඔබට දැන් කොහොමද දැනෙන්නේ?' : 'How are you feeling right now?'}</Text>
+                <Text style={s.modalSub}>
+                  {isSinhala ? 'ඔබට වඩාත්ම ගැළපෙන පුද්ගලික නිර්දේශ ලබාදීමට ඔබේ වත්මන් හැඟීම තෝරන්න.' : 'Select your current feeling to receive personalized recommendations.'}
+                </Text>
                 <ScrollView style={{ maxHeight: 260 }} contentContainerStyle={s.emojiGrid}>
                   {EMOTION_OPTIONS.map(opt => (
                     <TouchableOpacity
@@ -1091,16 +1134,16 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       onPress={() => setSelEmotion(opt.key)}
                     >
                       <Text style={s.emojiCardText}>{opt.emoji}</Text>
-                      <Text style={s.emojiCardLabel}>{opt.label}</Text>
+                      <Text style={s.emojiCardLabel}>{isSinhala ? opt.label : (opt.labelEn || opt.label)}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
                 <View style={s.modalActionRow}>
                   <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentSkip}>
-                    <Text style={s.skipBtnText}>දැන් අවශ්‍ය නැහැ (Skip)</Text>
+                    <Text style={s.skipBtnText}>{isSinhala ? 'දැන් අවශ්‍ය නැහැ (Skip)' : 'Skip for now'}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={s.modalNextBtn} onPress={() => setStep(2)}>
-                    <Text style={s.modalNextBtnText}>ඊළඟ පියවර →</Text>
+                    <Text style={s.modalNextBtnText}>{isSinhala ? 'ඊළඟ පියවර →' : 'Next Step →'}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1108,8 +1151,8 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
             {step === 2 && (
               <View>
-                <Text style={s.modalTitle}>ඔබට මෙහෙම දැනෙන්න ප්‍රධාන හේතුව මොකක්ද?</Text>
-                <Text style={s.modalSub}>කරුණාකර ඔබට බලපාන ප්‍රධාන හේතුව තෝරන්න.</Text>
+                <Text style={s.modalTitle}>{isSinhala ? 'ඔබට මෙහෙම දැනෙන්න ප්‍රධාන හේතුව මොකක්ද?' : 'What is the main reason for feeling this way?'}</Text>
+                <Text style={s.modalSub}>{isSinhala ? 'කරුණාකර ඔබට බලපාන ප්‍රධාන හේතුව තෝරන්න.' : 'Please select the primary reason affecting you.'}</Text>
                 <ScrollView style={{ maxHeight: 240 }} showsVerticalScrollIndicator={true}>
                   {REASON_OPTIONS.map(r => (
                     <TouchableOpacity
@@ -1117,19 +1160,21 @@ const RecommendationsScreen = ({ navigation, route }) => {
                       style={[s.reasonOption, selReason === r.key && s.reasonOptionSel]}
                       onPress={() => setSelReason(r.key)}
                     >
-                      <Text style={[s.reasonText, selReason === r.key && s.reasonTextSel]}>{r.label}</Text>
+                      <Text style={[s.reasonText, selReason === r.key && s.reasonTextSel]}>
+                        {isSinhala ? r.label : (r.labelEn || r.label.split('(')[0].trim())}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
                 <View style={s.modalActionRow}>
                   <TouchableOpacity style={s.modalBackBtn} onPress={() => setStep(1)}>
-                    <Text style={s.modalBackBtnText}>← ආපසු</Text>
+                    <Text style={s.modalBackBtnText}>{isSinhala ? '← ආපසු' : '← Back'}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentSkip}>
                     <Text style={s.skipBtnText}>Skip</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={s.modalNextBtn} onPress={() => setStep(3)}>
-                    <Text style={s.modalNextBtnText}>ඊළඟ පියවර →</Text>
+                    <Text style={s.modalNextBtnText}>{isSinhala ? 'ඊළඟ පියවර →' : 'Next Step →'}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1137,8 +1182,8 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
             {step === 3 && (
               <View>
-                <Text style={s.modalTitle}>අද ඔබට අවශ්‍ය උදව් මොනවාද?</Text>
-                <Text style={s.modalSub}>ඔබ වඩාත්ම කැමති අංශ තෝරන්න (එකක් හෝ කිහිපයක්).</Text>
+                <Text style={s.modalTitle}>{isSinhala ? 'අද ඔබට අවශ්‍ය උදව් මොනවාද?' : 'What help do you need today?'}</Text>
+                <Text style={s.modalSub}>{isSinhala ? 'ඔබ වඩාත්ම කැමති අංශ තෝරන්න (එකක් හෝ කිහිපයක්).' : 'Select the areas you prefer (one or more).'}</Text>
                 <ScrollView style={{ maxHeight: 220 }}>
                   {HELP_NEEDED_OPTIONS.map(h => {
                     const isSel = selHelp.includes(h.key);
@@ -1152,20 +1197,20 @@ const RecommendationsScreen = ({ navigation, route }) => {
                         }}
                       >
                         <Text style={s.checkboxText}>{isSel ? '☑' : '☐'}</Text>
-                        <Text style={s.helpOptionLabel}>{h.label}</Text>
+                        <Text style={s.helpOptionLabel}>{isSinhala ? h.label : (h.labelEn || h.label.split('(')[0].trim())}</Text>
                       </TouchableOpacity>
                     );
                   })}
                 </ScrollView>
                 <View style={s.modalActionRow}>
                   <TouchableOpacity style={s.modalBackBtn} onPress={() => setStep(2)}>
-                    <Text style={s.modalBackBtnText}>← ආපසු</Text>
+                    <Text style={s.modalBackBtnText}>{isSinhala ? '← ආපසු' : '← Back'}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentSkip}>
                     <Text style={s.skipBtnText}>Skip</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={s.modalNextBtn} onPress={handleAssessmentContinue}>
-                    <Text style={s.modalNextBtnText}>පුද්ගලික නිර්දේශ බලන්න ✨</Text>
+                    <Text style={s.modalNextBtnText}>{isSinhala ? 'පුද්ගලික නිර්දේශ බලන්න ✨' : 'View Recommendations ✨'}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -1181,8 +1226,11 @@ const s = StyleSheet.create({
   container: { flex: 1 },
   gradient: { flex: 1 },
   scroll: { paddingHorizontal: spacing.md, paddingTop: 50 },
-  backBtn: { marginBottom: 12, alignSelf: 'flex-start' },
+  topBarRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  backBtn: { alignSelf: 'flex-start' },
   backText: { color: colors.lavenderDark, fontWeight: '700', fontSize: 16 },
+  langToggleBtn: { backgroundColor: '#F0E6FF', paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.full, borderWidth: 1, borderColor: colors.lavenderDark },
+  langToggleText: { fontSize: 13, fontWeight: '800', color: colors.lavenderDark },
   title: { fontSize: 22, fontWeight: '900', color: colors.textPrimary, marginBottom: 12 },
   searchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.white, borderRadius: radius.full, paddingHorizontal: 14, paddingVertical: 8, marginBottom: 14, ...shadows.soft },
   searchIcon: { fontSize: 16, marginRight: 8 },

@@ -461,7 +461,6 @@
   "Failed to reset password. Check your email or username.": "මුරපදය නැවත සැකසීමට නොහැකි විය. ඔබේ ඊමේල් හෝ පරිශීලක නාමය පරීක්ෂා කරන්න.",
   "Passwords do not match.": "මුරපද ගැලපෙන්නේ නැත.",
   "Password must be at least 6 characters long.": "මුරපදය අවම වශයෙන් අක්ෂර 6 ක් විය යුතුය.",
-  "⚠️ Incomplete": "⚠️ අපූර්ණයි",
   "Please fill in all fields.": "කරුණාකර සියලුම ක්ෂේත්‍ර පුරවන්න.",
   "⚠️ Mismatch": "⚠️ නොගැලපේ",
   "⚠️ Weak Password": "⚠️ දුර්වල මුරපදයකි"
