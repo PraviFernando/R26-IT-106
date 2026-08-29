@@ -7,6 +7,7 @@ import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useTranslation } from 'react-i18next';
 import { colors, shadows, radius } from '../theme';
 
 import DashboardScreen from '../screens/DashboardScreen copy';
@@ -20,39 +21,45 @@ const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 const TABS = [
-  { name: 'Home', icon: '🏠', label: 'ගෙදර', screen: DashboardScreen },
-  { name: 'Recommendations', icon: '💜', label: 'ආධාර', screen: RecommendationsScreen },
-  { name: 'Activity', icon: '🎮', label: 'ශ්‍රේෂ්ඨ', screen: ActivityScreen },
-  { name: 'Progress', icon: '📊', label: 'ශ්‍රේෂ්ඨ', screen: ProgressScreen },
+  { name: 'Home', icon: '🏠', labelSi: 'මුල් පිටුව', labelEn: 'Home', screen: DashboardScreen },
+  { name: 'Recommendations', icon: '💜', labelSi: 'ආධාර', labelEn: 'Relief', screen: RecommendationsScreen },
+  { name: 'Activity', icon: '🎮', labelSi: 'ක්‍රියාකාරකම්', labelEn: 'Activities', screen: ActivityScreen },
+  { name: 'Progress', icon: '📊', labelSi: 'ප්‍රගතිය', labelEn: 'Progress', screen: ProgressScreen },
 ];
 
-const CustomTabBar = ({ state, navigation }) => (
-  <View style={s.wrapper}>
-    <View style={s.bar}>
-      {state.routes.map((route, i) => {
-        const focused = state.index === i;
-        const tab = TABS.find(t => t.name === route.name);
-        if (!tab) return null;
-        return (
-          <TouchableOpacity key={route.key} style={s.tab} activeOpacity={0.75}
-            onPress={() => { if (!focused) navigation.navigate(route.name); }}>
-            {focused ? (
-              <LinearGradient colors={[colors.lavenderDark, colors.roseDark]} style={s.activeChip}>
-                <Text style={s.activeIcon}>{tab.icon}</Text>
-                <Text style={s.activeLabel}>{tab.label}</Text>
-              </LinearGradient>
-            ) : (
-              <View style={s.inactiveChip}>
-                <Text style={s.inactiveIcon}>{tab.icon}</Text>
-                <Text style={s.inactiveLabel}>{tab.label}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        );
-      })}
+const CustomTabBar = ({ state, navigation }) => {
+  const { i18n } = useTranslation();
+  const isSinhala = i18n.language === 'si';
+
+  return (
+    <View style={s.wrapper}>
+      <View style={s.bar}>
+        {state.routes.map((route, i) => {
+          const focused = state.index === i;
+          const tab = TABS.find(t => t.name === route.name);
+          if (!tab) return null;
+          const label = isSinhala ? tab.labelSi : tab.labelEn;
+          return (
+            <TouchableOpacity key={route.key} style={s.tab} activeOpacity={0.75}
+              onPress={() => { if (!focused) navigation.navigate(route.name); }}>
+              {focused ? (
+                <LinearGradient colors={[colors.lavenderDark, colors.roseDark]} style={s.activeChip}>
+                  <Text style={s.activeIcon}>{tab.icon}</Text>
+                  <Text style={s.activeLabel}>{label}</Text>
+                </LinearGradient>
+              ) : (
+                <View style={s.inactiveChip}>
+                  <Text style={s.inactiveIcon}>{tab.icon}</Text>
+                  <Text style={s.inactiveLabel}>{label}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const TabsNavigator = () => (
   <Tab.Navigator tabBar={props => <CustomTabBar {...props} />} screenOptions={{ headerShown: false }}>
