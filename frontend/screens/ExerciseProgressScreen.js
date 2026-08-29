@@ -17,14 +17,43 @@ export default function ExerciseProgressScreen({ navigation }) {
     const { width } = useWindowDimensions();
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
+
+    const filters = [
+        { key: 'weekly', label: isSinhala ? 'සතිපතා' : 'Weekly' },
+        { key: 'monthly', label: isSinhala ? 'මාසික' : 'Monthly' },
+        { key: 'last3months', label: isSinhala ? 'මාස 3' : '3 Months' },
+        { key: 'last6months', label: isSinhala ? 'මාස 6' : '6 Months' },
+        { key: 'yearly', label: isSinhala ? 'වාර්ෂික' : 'Yearly' }
+    ];
+
     const [progress, setProgress] = useState(null);
     const [detectedMood, setDetectedMood] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [selectedFilter, setSelectedFilter] = useState('weekly');
+    const [showDropdown, setShowDropdown] = useState(false);
+
+    const getChartData = (dataArray, filter) => {
+        if (!dataArray || dataArray.length === 0) return [];
+        const limit = filter === 'weekly' ? 7 : filter === 'monthly' ? 30 : filter === 'last3months' ? 90 : filter === 'last6months' ? 180 : 365;
+        const sliced = dataArray.slice(-limit);
+        
+        if (sliced.length <= 8) return sliced;
+        
+        const sampled = [];
+        const step = (sliced.length - 1) / 7;
+        for (let i = 0; i < 8; i++) {
+            const index = Math.round(i * step);
+            if (sliced[index]) {
+                sampled.push(sliced[index]);
+            }
+        }
+        return sampled;
+    };
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const progData = await exerciseService.getProgress(30);
+                const progData = await exerciseService.getProgress(365);
                 setProgress(progData);
 
                 const healthData = await exerciseService.getHealthData(todayStr());
@@ -101,16 +130,16 @@ export default function ExerciseProgressScreen({ navigation }) {
 
     const renderTrendline = () => {
         const trendData = (progress && progress.progressData && progress.progressData.length > 0)
-            ? progress.progressData.slice(-7)
+            ? getChartData(progress.progressData, selectedFilter)
             : [];
 
         if (trendData.length === 0) {
             return (
                 <View style={styles.trendlineCard}>
-                    <Text style={styles.trendlineTitle}>{isSinhala ? 'මවගේ ප්‍රගති ප්‍රවණතාවය' : "Mother's Progress Trendline"}</Text>
+                    <Text style={styles.trendlineTitle}>{isSinhala ? 'ප්‍රගති ප්‍රවණතාවය' : "Progress Trendline"}</Text>
                     <View style={styles.trendlinePlaceholder}>
                         <Text style={styles.trendlinePlaceholderText}>
-                            {isSinhala ? 'මවගේ ප්‍රගති ප්‍රවණතාවය පෙන්වීමට ප්‍රමාණවත් දත්ත නැත. ව්‍යායාම සම්පූර්ණ කරන්න!' : "Complete exercises to view the mother's progress trendline!"}
+                            {isSinhala ? 'ප්‍රගති ප්‍රවණතාවය පෙන්වීමට ප්‍රමාණවත් දත්ත නැත. ව්‍යායාම සම්පූර්ණ කරන්න!' : "Complete exercises to view the progress trendline!"}
                         </Text>
                     </View>
                 </View>
@@ -125,8 +154,9 @@ export default function ExerciseProgressScreen({ navigation }) {
 
         return (
             <View style={styles.trendlineCard}>
-                <Text style={styles.trendlineTitle}>{isSinhala ? 'මවගේ ප්‍රගති ප්‍රවණතාවය (පසුගිය සැසි)' : "Mother's Progress Trendline (Recent Sessions)"}</Text>
+                <Text style={styles.trendlineTitle}>{isSinhala ? 'ප්‍රගති ප්‍රවණතාවය (පසුගිය සැසි)' : "Progress Trendline (Recent Sessions)"}</Text>
                 <LineChart
+                    key={`mother-trend-${selectedFilter}`}
                     data={{
                         labels: chartLabels,
                         datasets: [
@@ -179,7 +209,7 @@ export default function ExerciseProgressScreen({ navigation }) {
         const correctReps = progress.totalCorrectRepetitions ?? 0;
 
         const trendData = (progress.movementTrendData && progress.movementTrendData.length > 0)
-            ? progress.movementTrendData.slice(-7)
+            ? getChartData(progress.movementTrendData, selectedFilter)
             : [];
 
         const accuracyTrendData = (progress.weeklyAccuracyTrendData && progress.weeklyAccuracyTrendData.length > 0)
@@ -190,30 +220,6 @@ export default function ExerciseProgressScreen({ navigation }) {
             <View style={styles.movementSection}>
                 <Text style={styles.movementTitle}>🤖 {isSinhala ? 'AI චලන කාර්ය සාධනය' : 'AI Movement Performance'}</Text>
                 
-                {/* Accuracy Stats */}
-                <View style={styles.statsGrid}>
-                    <LinearGradient colors={['#F0FDF4', '#DCFCE7']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                        <Text style={styles.statValue}>{avgAccuracy}%</Text>
-                        <Text style={styles.statLabel}>📊 {isSinhala ? 'සාමාන්‍ය නිරවද්‍යතාවය' : 'Avg Accuracy'}</Text>
-                    </LinearGradient>
-                    <LinearGradient colors={['#ECFDF5', '#D1FAE5']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                        <Text style={styles.statValue}>{bestAccuracy}%</Text>
-                        <Text style={styles.statLabel}>🏆 {isSinhala ? 'හොඳම නිරවද්‍යතාවය' : 'Best Accuracy'}</Text>
-                    </LinearGradient>
-                </View>
-
-                {/* Repetitions Stats */}
-                <View style={[styles.statsGrid, { marginTop: 12 }]}>
-                    <LinearGradient colors={['#EFF6FF', '#DBEAFE']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                        <Text style={styles.statValue}>{correctReps}</Text>
-                        <Text style={styles.statLabel}>🎯 {isSinhala ? 'නිවැරදි වාර' : 'Correct Reps'}</Text>
-                    </LinearGradient>
-                    <LinearGradient colors={['#FFF0F5', '#FFE4E1']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                        <Text style={styles.statValue}>{totalReps}</Text>
-                        <Text style={styles.statLabel}>🔄 {isSinhala ? 'මුළු වාර ගණන' : 'Total Reps'}</Text>
-                    </LinearGradient>
-                </View>
-
                 {/* Overall Score Stats */}
                 <View style={[styles.statsGrid, { marginTop: 12 }]}>
                     <LinearGradient colors={['#F5F3FF', '#EDE9FE']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
@@ -226,63 +232,15 @@ export default function ExerciseProgressScreen({ navigation }) {
                     </LinearGradient>
                 </View>
 
-                {/* Weekly Accuracy Trend Graph */}
-                <View style={[styles.trendlineCard, { marginTop: 16 }]}>
-                    <Text style={styles.trendlineTitle}>{isSinhala ? 'සතිපතා නිරවද්‍යතා ප්‍රවණතාවය' : 'Weekly Accuracy Trend'}</Text>
-                    {accuracyTrendData.length > 0 ? (
-                        <LineChart
-                            data={{
-                                labels: accuracyTrendData.map(d => {
-                                    const dateParts = d.date.split('-');
-                                    return dateParts.length >= 3 ? `${dateParts[1]}/${dateParts[2]}` : d.date;
-                                }),
-                                datasets: [
-                                    {
-                                        data: accuracyTrendData.map(d => d.avgAccuracy),
-                                        color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
-                                        strokeWidth: 3
-                                    }
-                                ]
-                            }}
-                            width={width > 500 ? width - 120 : width - 90}
-                            height={180}
-                            fromZero={true}
-                            chartConfig={{
-                                backgroundColor: '#FFF',
-                                backgroundGradientFrom: '#FFF',
-                                backgroundGradientTo: '#FFF',
-                                decimalPlaces: 0,
-                                color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
-                                labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
-                                style: {
-                                    borderRadius: 16
-                                },
-                                propsForDots: {
-                                    r: "5",
-                                    strokeWidth: "2",
-                                    stroke: "#10B981"
-                                }
-                            }}
-                            bezier
-                            style={{
-                                marginVertical: 8,
-                                borderRadius: 16
-                            }}
-                        />
-                    ) : (
-                        <View style={styles.trendlinePlaceholder}>
-                            <Text style={styles.trendlinePlaceholderText}>
-                                {isSinhala ? 'නිරවද්‍යතා ප්‍රවණතාවය පෙන්වීමට ප්‍රමාණවත් දත්ත නොමැත.' : 'Complete tracking exercises to view your accuracy trend!'}
-                            </Text>
-                        </View>
-                    )}
-                </View>
+                {/* Last 7 Days Activity Tracker */}
+                {renderWeeklyGrid()}
 
                 {/* Weekly Movement Score Trend Graph */}
                 <View style={[styles.trendlineCard, { marginTop: 16 }]}>
-                    <Text style={styles.trendlineTitle}>{isSinhala ? 'සතිපතා චලන ප්‍රවණතාවය' : 'Weekly Movement Trend'}</Text>
+                    <Text style={styles.trendlineTitle}>{isSinhala ? 'චලන ප්‍රවණතාවය' : 'Movement Trend'}</Text>
                     {trendData.length > 0 ? (
                         <LineChart
+                            key={`movement-trend-${selectedFilter}`}
                             data={{
                                 labels: trendData.map(d => {
                                     const dateParts = d.date.split('-');
@@ -359,6 +317,44 @@ export default function ExerciseProgressScreen({ navigation }) {
                         </View>
                     ) : progress ? (
                         <View style={styles.progressContainer}>
+                            {/* Dropdown Time Filter Selector at Top of Container */}
+                            <View style={{ position: 'relative', zIndex: 100, marginBottom: 16 }}>
+                                <TouchableOpacity 
+                                    style={styles.dropdownHeader} 
+                                    onPress={() => setShowDropdown(!showDropdown)}
+                                >
+                                    <Text style={styles.dropdownHeaderText}>
+                                        📅 {filters.find(f => f.key === selectedFilter)?.label}
+                                    </Text>
+                                    <Text style={styles.dropdownHeaderArrow}>{showDropdown ? '▲' : '▼'}</Text>
+                                </TouchableOpacity>
+                                
+                                {showDropdown && (
+                                    <View style={styles.dropdownList}>
+                                        {filters.map(item => (
+                                            <TouchableOpacity
+                                                key={item.key}
+                                                style={[
+                                                    styles.dropdownItem,
+                                                    selectedFilter === item.key && styles.dropdownItemActive
+                                                ]}
+                                                onPress={() => {
+                                                    setSelectedFilter(item.key);
+                                                    setShowDropdown(false);
+                                                }}
+                                            >
+                                                <Text style={[
+                                                    styles.dropdownItemText,
+                                                    selectedFilter === item.key && styles.dropdownItemTextActive
+                                                ]}>
+                                                    {item.label}
+                                                </Text>
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                )}
+                            </View>
+
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
                                 <Text style={styles.progressTitle}>
                                     {isSinhala ? 'ප්‍රගති උපකරණ පුවරුව' : 'Progress Dashboard'}
@@ -405,16 +401,13 @@ export default function ExerciseProgressScreen({ navigation }) {
                                 </LinearGradient>
                             </View>
 
-                            {/* Last 7 Days Activity Tracker */}
-                            {renderWeeklyGrid()}
 
-
-
-                            {/* Accuracy Trendline Chart */}
-                            {renderTrendline()}
 
                             {/* Movement Performance Section */}
                             {renderMovementPerformance()}
+
+                            {/* Accuracy Trendline Chart */}
+                            {renderTrendline()}
 
                             {/* Recovery Trend Section */}
                             {progress.recoveryTrend && (
@@ -463,7 +456,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.08, shadowRadius: 20, borderWidth: 1,
         borderColor: 'rgba(79,70,229,0.06)',
     },
-    progressTitle: { fontSize: 18, fontWeight: '900', color: '#0F172A' },
+    progressTitle: { fontSize: 16, fontWeight: '900', color: '#0F172A' },
     moodBadge: {
         backgroundColor: '#EEF2FF', paddingHorizontal: 12, paddingVertical: 6,
         borderRadius: 16, flexDirection: 'row', alignItems: 'center',
@@ -536,5 +529,60 @@ const styles = StyleSheet.create({
         fontWeight: '900',
         color: '#1E293B',
         marginBottom: 16
+    },
+    dropdownHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#F1F5F9',
+        borderWidth: 1.5,
+        borderColor: '#E2E8F0',
+        borderRadius: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        width: '100%',
+    },
+    dropdownHeaderText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#000',
+    },
+    dropdownHeaderArrow: {
+        fontSize: 10,
+        color: '#64748B',
+    },
+    dropdownList: {
+        position: 'absolute',
+        top: 50,
+        left: 0,
+        right: 0,
+        backgroundColor: '#FFF',
+        borderRadius: 16,
+        borderWidth: 1.5,
+        borderColor: '#E2E8F0',
+        elevation: 6,
+        shadowColor: '#4F46E5',
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 4 },
+        zIndex: 100,
+    },
+    dropdownItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F1F5F9',
+    },
+    dropdownItemActive: {
+        backgroundColor: '#EEF2FF',
+    },
+    dropdownItemText: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#475569',
+    },
+    dropdownItemTextActive: {
+        color: '#4F46E5',
+        fontWeight: '800',
     },
 });
