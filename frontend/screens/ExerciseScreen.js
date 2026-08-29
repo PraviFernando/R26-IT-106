@@ -394,7 +394,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                     <View style={styles.rowButtons}>
                         <TouchableOpacity
                             style={[
-                                styles.optionBtn, 
+                                styles.optionBtn,
                                 deliveryType === 'normal' && styles.optionBtnActive,
                                 !!user?.deliveryType && { opacity: 0.65 }
                             ]}
@@ -407,7 +407,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[
-                                styles.optionBtn, 
+                                styles.optionBtn,
                                 deliveryType === 'c-section' && styles.optionBtnActive,
                                 !!user?.deliveryType && { opacity: 0.65 }
                             ]}
