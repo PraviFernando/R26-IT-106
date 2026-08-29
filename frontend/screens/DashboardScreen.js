@@ -87,12 +87,13 @@ const recentActivities = (t) => [
 
 const navItems = (t) => [
     { key: 'home', label: t('Dashboard'), icon: '🏠' },
-    { key: 'screening', label: t('Screening'), icon: '📋' },
+    { key: 'screening', label: t('Maternal Wellness Check'), icon: '📋' },
     { key: 'diary', label: t('My Diary'), icon: '📔' },
     { key: 'plan', label: t('My Plans'), icon: '📅' },
     { key: 'profile', label: t('Profile'), icon: '👤' },
     { key: 'settings', label: t('Settings'), icon: '⚙️' },
     { key: 'exercise', label: t('Exercise'), icon: '🏃‍♀️' },
+    { key: 'care_overview', label: t('Care Overview'), icon: '⭐' },
     { key: 'baby', label: t('Baby Dev'), icon: '👶' },
 ];
 
@@ -427,6 +428,12 @@ export default function DashboardScreen({ navigation }) {
             navigation.navigate('Exercise');
         } else if (tab === 'baby') {
             navigation.navigate('BabyDevelopment');
+        } else if (tab === 'screening') {
+            navigation.navigate('EPDSScreening');
+        } else if (tab === 'care_overview') {
+            navigation.navigate('CareOverview');
+        } else if (tab === 'profile') {
+            navigation.navigate('Profile');
         } else if (tab !== 'home') {
             Toast.show({
                 type: 'info',
@@ -771,6 +778,14 @@ export default function DashboardScreen({ navigation }) {
                         <Text style={styles.quickActionText}>
                             {t('My Plans')}
                         </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={[styles.quickActionBtn, { backgroundColor: '#7C3AED' }]}
+                        onPress={() => navigation.navigate('EPDSScreening')}
+                    >
+                        <Text style={styles.quickActionIcon}>📋</Text>
+                        <Text style={styles.quickActionText}>{t('Maternal Wellness Check')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
