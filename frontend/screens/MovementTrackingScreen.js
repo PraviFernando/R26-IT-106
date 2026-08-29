@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     View, Text, StyleSheet, TouchableOpacity, Modal,
     Alert, Dimensions, ActivityIndicator, Platform,
-    useWindowDimensions
+    useWindowDimensions, Pressable, ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
@@ -10,6 +10,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import exerciseService from '../services/exerciseService';
 import { useTranslation } from 'react-i18next';
+import { colors } from '../theme';
 
 const { width, height } = Dimensions.get('window');
 
@@ -1277,11 +1278,11 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     </View>
                     <View style={styles.statBox}>
                         <Text style={styles.statLabel}>{isSinhala ? 'නිරවද්‍යතාවය' : 'Accuracy'}</Text>
-                        <Text style={[styles.statValue, { color: '#7C3AED' }]}>{liveScore}%</Text>
+                        <Text style={[styles.statValue, { color: colors.primary }]}>{liveScore}%</Text>
                     </View>
                     <View style={styles.statBox}>
                         <Text style={styles.statLabel}>{isSinhala ? 'වීඩියෝ ගැළපීම' : 'Video Match'}</Text>
-                        <Text style={[styles.statValue, { color: '#6366F1' }]}>{postureMatch}%</Text>
+                        <Text style={[styles.statValue, { color: colors.secondary }]}>{postureMatch}%</Text>
                     </View>
                 </View>
                 <View style={styles.statusRow}>
@@ -1292,128 +1293,137 @@ export default function MovementTrackingScreen({ route, navigation }) {
 
             {/* Controls */}
             <View style={styles.controlsRow}>
-                <TouchableOpacity 
-                    style={[
+                <Pressable 
+                    style={({ hovered }) => [
                         styles.controlBtn, 
                         isPaused 
                             ? { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0', borderWidth: 1.5 } 
-                            : { backgroundColor: '#FAF5FF', borderColor: '#E9D5FF', borderWidth: 1.5 }
+                            : { backgroundColor: colors.bgTint, borderColor: colors.accent, borderWidth: 1.5 },
+                        hovered && styles.controlBtnHover
                     ]} 
                     onPress={togglePause}
                 >
-                    <Text style={[styles.controlBtnText, isPaused ? { color: '#059669' } : { color: '#7C3AED' }]}>
+                    <Text style={[styles.controlBtnText, isPaused ? { color: '#059669' } : { color: colors.primary }]}>
                         {isPaused 
                             ? (isSinhala ? '▶️ නැවත අරඹන්න' : '▶ Resume') 
                             : (isSinhala ? '⏸️ විරාමය' : '⏸ Pause')}
                     </Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.controlBtn, styles.finishBtn]} onPress={handleFinish}>
+                </Pressable>
+                <Pressable 
+                    style={({ hovered }) => [
+                        styles.controlBtn, 
+                        styles.finishBtn,
+                        hovered && styles.controlBtnHover
+                    ]} 
+                    onPress={handleFinish}
+                >
                     <Text style={[styles.controlBtnText, styles.finishBtnText]}>{isSinhala ? '⏹️ අවසන් කරන්න' : '⏹️ Finish'}</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
-            {/* Post-Workout Summary & Survey Modal */}
             <Modal visible={showSummaryModal} transparent animationType="slide">
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
-                        <Text style={styles.summaryTitle}>{isSinhala ? 'ව්‍යායාම සාරාංශය' : 'Exercise Summary'}</Text>
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
+                            <Text style={styles.summaryTitle}>{isSinhala ? 'ව්‍යායාම සාරාංශය' : 'Exercise Summary'}</Text>
 
-                        {/* Stats Cards */}
-                        <View style={styles.summaryStatsRow}>
-                            <View style={styles.summaryStatBox}>
-                                <Text style={styles.summaryStatVal}>{liveScore}%</Text>
-                                <Text style={styles.summaryStatLbl}>{isSinhala ? 'ලකුණු' : 'Score'}</Text>
-                            </View>
-                            <View style={styles.summaryStatBox}>
-                                <Text style={styles.summaryStatVal}>{reps}</Text>
-                                <Text style={styles.summaryStatLbl}>{isSinhala ? 'වට' : 'Reps'}</Text>
-                            </View>
-                            <View style={styles.summaryStatBox}>
-                                <Text style={styles.summaryStatVal}>{formatTime(timeElapsed)}</Text>
-                                <Text style={styles.summaryStatLbl}>{isSinhala ? 'කාලය' : 'Duration'}</Text>
-                            </View>
-                            {(exerciseName === 'Bird Dog' || exerciseName.toLowerCase().includes('bird')) && (
+                            {/* Stats Cards */}
+                            <View style={styles.summaryStatsRow}>
                                 <View style={styles.summaryStatBox}>
-                                    <Text style={styles.summaryStatVal}>{stability}%</Text>
-                                    <Text style={styles.summaryStatLbl}>{isSinhala ? 'ස්ථායීතාවය' : 'Stability'}</Text>
+                                    <Text style={styles.summaryStatVal}>{liveScore}%</Text>
+                                    <Text style={styles.summaryStatLbl}>{isSinhala ? 'ලකුණු' : 'Score'}</Text>
                                 </View>
-                            )}
-                        </View>
-
-                        {/* Score Feedback adaptation */}
-                        <View style={styles.feedbackMsgBox}>
-                            <Text style={styles.feedbackMsgTitle}>{isSinhala ? 'කාර්ය සාධන මට්ටම' : 'Performance Rating'}</Text>
-                            <Text style={styles.feedbackMsgText}>"{getScoreFeedback(liveScore)}"</Text>
-                        </View>
-
-                        {/* Survey Questions */}
-                        <View style={styles.surveyContainer}>
-                            <Text style={styles.surveyHeader}>{isSinhala ? 'ව්‍යායාමයෙන් පසු ප්‍රතිපෝෂණය' : 'Post-Workout Feedback'}</Text>
-
-                            {/* Q1: Pain */}
-                            <Text style={styles.surveyQuestion}>{isSinhala ? '1. ව්‍යායාම අතරතුර ඔබට වේදනාකාරී බවක් දැනුණාද?' : '1. Did you feel pain during exercise?'}</Text>
-                            <View style={styles.surveyAnswersRow}>
-                                {['Yes', 'No'].map(ans => (
-                                    <TouchableOpacity
-                                        key={ans}
-                                        style={[styles.surveyAnsBtn, painRating === ans && styles.surveyAnsBtnActive]}
-                                        onPress={() => setPainRating(ans)}
-                                    >
-                                        <Text style={[styles.surveyAnsText, painRating === ans && styles.surveyAnsTextActive]}>
-                                            {isSinhala ? (ans === 'Yes' ? 'ඔව්' : 'නැත') : ans}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
+                                <View style={styles.summaryStatBox}>
+                                    <Text style={styles.summaryStatVal}>{reps}</Text>
+                                    <Text style={styles.summaryStatLbl}>{isSinhala ? 'වට' : 'Reps'}</Text>
+                                </View>
+                                <View style={styles.summaryStatBox}>
+                                    <Text style={styles.summaryStatVal}>{formatTime(timeElapsed)}</Text>
+                                    <Text style={styles.summaryStatLbl}>{isSinhala ? 'කාලය' : 'Duration'}</Text>
+                                </View>
+                                {(exerciseName === 'Bird Dog' || exerciseName.toLowerCase().includes('bird')) && (
+                                    <View style={styles.summaryStatBox}>
+                                        <Text style={styles.summaryStatVal}>{stability}%</Text>
+                                        <Text style={styles.summaryStatLbl}>{isSinhala ? 'ස්ථායීතාවය' : 'Stability'}</Text>
+                                    </View>
+                                )}
                             </View>
 
-                            {/* Q2: Difficulty */}
-                            <Text style={styles.surveyQuestion}>{isSinhala ? '2. ව්‍යායාමය කෙතරම් අපහසු වීද?' : '2. How difficult was the exercise?'}</Text>
-                            <View style={styles.surveyAnswersRow}>
-                                {['Easy', 'Moderate', 'Hard'].map(ans => (
-                                    <TouchableOpacity
-                                        key={ans}
-                                        style={[styles.surveyAnsBtn, difficultyRating === ans && styles.surveyAnsBtnActive]}
-                                        onPress={() => setDifficultyRating(ans)}
-                                    >
-                                        <Text style={[styles.surveyAnsText, difficultyRating === ans && styles.surveyAnsTextActive]}>
-                                            {isSinhala ? (ans === 'Easy' ? 'පහසුයි' : ans === 'Moderate' ? 'මධ්‍යම' : 'අපහසුයි') : ans}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
+                            {/* Score Feedback adaptation */}
+                            <View style={styles.feedbackMsgBox}>
+                                <Text style={styles.feedbackMsgTitle}>{isSinhala ? 'කාර්ය සාධන මට්ටම' : 'Performance Rating'}</Text>
+                                <Text style={styles.feedbackMsgText}>"{getScoreFeedback(liveScore)}"</Text>
                             </View>
 
-                            {/* Q3: Feeling */}
-                            <Text style={styles.surveyQuestion}>{isSinhala ? '3. ව්‍යායාමයෙන් පසු ඔබට දැනෙන්නේ කෙසේද?' : '3. How do you feel after exercise?'}</Text>
-                            <View style={styles.surveyAnswersRow}>
-                                {['Better', 'Same', 'Tired'].map(ans => (
-                                    <TouchableOpacity
-                                        key={ans}
-                                        style={[styles.surveyAnsBtn, feelingRating === ans && styles.surveyAnsBtnActive]}
-                                        onPress={() => setFeelingRating(ans)}
-                                    >
-                                        <Text style={[styles.surveyAnsText, feelingRating === ans && styles.surveyAnsTextActive]}>
-                                            {isSinhala ? (ans === 'Better' ? 'සුවදායකයි' : ans === 'Same' ? 'වෙනසක් නැත' : 'තෙහෙට්ටුයි') : ans}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
+                            {/* Survey Questions */}
+                            <View style={styles.surveyContainer}>
+                                <Text style={styles.surveyHeader}>{isSinhala ? 'ව්‍යායාමයෙන් පසු ප්‍රතිපෝෂණය' : 'Post-Workout Feedback'}</Text>
 
-                        {/* Submit Button */}
-                        <TouchableOpacity
-                            style={[
-                                styles.submitBtn,
-                                (!painRating || !difficultyRating || !feelingRating) && { opacity: 0.5 }
-                            ]}
-                            disabled={!painRating || !difficultyRating || !feelingRating || saving}
-                            onPress={submitWorkoutSession}
-                        >
-                            {saving ? (
-                                <ActivityIndicator color="#FFF" />
-                            ) : (
-                                <Text style={styles.submitBtnText}>{isSinhala ? 'ව්‍යායාම සැසිය සුරකින්න' : 'Save Workout Session'}</Text>
-                            )}
-                        </TouchableOpacity>
+                                {/* Q1: Pain */}
+                                <Text style={styles.surveyQuestion}>{isSinhala ? '1. ව්‍යායාම අතරතුර ඔබට වේදනාකාරී බවක් දැනුණාද?' : '1. Did you feel pain during exercise?'}</Text>
+                                <View style={styles.surveyAnswersRow}>
+                                    {['Yes', 'No'].map(ans => (
+                                        <TouchableOpacity
+                                            key={ans}
+                                            style={[styles.surveyAnsBtn, painRating === ans && styles.surveyAnsBtnActive]}
+                                            onPress={() => setPainRating(ans)}
+                                        >
+                                            <Text style={[styles.surveyAnsText, painRating === ans && styles.surveyAnsTextActive]}>
+                                                {isSinhala ? (ans === 'Yes' ? 'ඔව්' : 'නැත') : ans}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+
+                                {/* Q2: Difficulty */}
+                                <Text style={styles.surveyQuestion}>{isSinhala ? '2. ව්‍යායාමය කෙතරම් අපහසු වීද?' : '2. How difficult was the exercise?'}</Text>
+                                <View style={styles.surveyAnswersRow}>
+                                    {['Easy', 'Moderate', 'Hard'].map(ans => (
+                                        <TouchableOpacity
+                                            key={ans}
+                                            style={[styles.surveyAnsBtn, difficultyRating === ans && styles.surveyAnsBtnActive]}
+                                            onPress={() => setDifficultyRating(ans)}
+                                        >
+                                            <Text style={[styles.surveyAnsText, difficultyRating === ans && styles.surveyAnsTextActive]}>
+                                                {isSinhala ? (ans === 'Easy' ? 'පහසුයි' : ans === 'Moderate' ? 'මධ්‍යම' : 'අපහසුයි') : ans}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+
+                                {/* Q3: Feeling */}
+                                <Text style={styles.surveyQuestion}>{isSinhala ? '3. ව්‍යායාමයෙන් පසු ඔබට දැනෙන්නේ කෙසේද?' : '3. How do you feel after exercise?'}</Text>
+                                <View style={styles.surveyAnswersRow}>
+                                    {['Better', 'Same', 'Tired'].map(ans => (
+                                        <TouchableOpacity
+                                            key={ans}
+                                            style={[styles.surveyAnsBtn, feelingRating === ans && styles.surveyAnsBtnActive]}
+                                            onPress={() => setFeelingRating(ans)}
+                                        >
+                                            <Text style={[styles.surveyAnsText, feelingRating === ans && styles.surveyAnsTextActive]}>
+                                                {isSinhala ? (ans === 'Better' ? 'සුවදායකයි' : ans === 'Same' ? 'වෙනසක් නැත' : 'තෙහෙට්ටුයි') : ans}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                            </View>
+
+                            {/* Submit Button */}
+                            <TouchableOpacity
+                                style={[
+                                    styles.submitBtn,
+                                    (!painRating || !difficultyRating || !feelingRating) && { opacity: 0.5 }
+                                ]}
+                                disabled={!painRating || !difficultyRating || !feelingRating || saving}
+                                onPress={submitWorkoutSession}
+                            >
+                                {saving ? (
+                                    <ActivityIndicator color="#FFF" />
+                                ) : (
+                                    <Text style={styles.submitBtnText}>{isSinhala ? 'ව්‍යායාම සැසිය සුරකින්න' : 'Save Workout Session'}</Text>
+                                )}
+                            </TouchableOpacity>
+                        </ScrollView>
                     </View>
                 </View>
             </Modal>
@@ -1424,7 +1434,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F8F4FF'
+        backgroundColor: colors.screenBg
     },
     header: {
         flexDirection: 'row',
@@ -1432,22 +1442,22 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 16,
         paddingVertical: 14,
-        backgroundColor: '#FFF',
+        backgroundColor: colors.white,
         borderBottomWidth: 1,
-        borderBottomColor: '#EBE0FF'
+        borderBottomColor: colors.accent
     },
     backBtn: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#FAF5FF',
+        backgroundColor: colors.bgTint,
         alignItems: 'center',
         justifyContent: 'center'
     },
     backIcon: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#7C3AED'
+        color: colors.primary
     },
     headerTitle: {
         fontSize: 18,
@@ -1467,7 +1477,7 @@ const styles = StyleSheet.create({
         borderRadius: 28,
         overflow: 'hidden',
         borderWidth: 1,
-        borderColor: '#EBE0FF',
+        borderColor: colors.accent,
     },
     cameraHalf: {
         flex: 1,
@@ -1476,7 +1486,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         position: 'relative',
         borderWidth: 1,
-        borderColor: '#EBE0FF',
+        borderColor: colors.accent,
     },
     exerciseWebView: {
         flex: 1,
@@ -1504,7 +1514,7 @@ const styles = StyleSheet.create({
         zIndex: 5
     },
     loadingText: {
-        color: '#B39DDB',
+        color: colors.secondary,
         marginTop: 12,
         fontWeight: '600'
     },
@@ -1529,31 +1539,31 @@ const styles = StyleSheet.create({
         textAlign: 'center'
     },
     feedbackBanner: {
-        backgroundColor: '#F5F3FF',
+        backgroundColor: colors.bgTint,
         marginHorizontal: 16,
         marginTop: 12,
         paddingVertical: 10,
         paddingHorizontal: 16,
         borderRadius: 14,
         borderWidth: 1,
-        borderColor: '#EBE0FF',
+        borderColor: colors.accent,
         alignItems: 'center',
         justifyContent: 'center'
     },
     feedbackText: {
-        color: '#6D28D9',
+        color: colors.primaryDark,
         fontSize: 15,
         fontWeight: '700',
         textAlign: 'center'
     },
     statsCard: {
-        backgroundColor: '#FFF',
+        backgroundColor: colors.white,
         marginHorizontal: 16,
         marginTop: 16,
         borderRadius: 24,
         padding: 16,
         elevation: 2,
-        shadowColor: '#7C3AED',
+        shadowColor: colors.primary,
         shadowOpacity: 0.05,
         shadowRadius: 8,
         shadowOffset: { width: 0, height: 2 }
@@ -1611,27 +1621,40 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         elevation: 2,
-        shadowColor: '#7C3AED',
+        shadowColor: colors.primary,
         shadowOpacity: 0.1,
         shadowRadius: 6,
-        shadowOffset: { width: 0, height: 2 }
+        shadowOffset: { width: 0, height: 2 },
+        ...Platform.select({
+            web: {
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                cursor: 'pointer',
+            }
+        })
+    },
+    controlBtnHover: {
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.2,
+        shadowRadius: 16,
+        elevation: 5,
+        transform: [{ translateY: -2 }]
     },
     pauseBtn: {
-        backgroundColor: '#FAF5FF',
+        backgroundColor: colors.bgTint,
         borderWidth: 1.5,
-        borderColor: '#E9D5FF'
+        borderColor: colors.accent
     },
     finishBtn: {
-        backgroundColor: '#7C3AED'
+        backgroundColor: colors.primary
     },
     controlBtnText: {
         fontWeight: '800',
         fontSize: 15,
-        color: '#7C3AED'
+        color: colors.primary
     },
     // Finish overrides color to white
     finishBtnText: {
-        color: '#FFF'
+        color: colors.white
     },
     modalOverlay: {
         flex: 1,
@@ -1640,14 +1663,14 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     modalContent: {
-        backgroundColor: '#FFF',
+        backgroundColor: colors.white,
         borderRadius: 32,
         padding: 24,
         width: width - 32,
         maxHeight: '90%',
         alignItems: 'stretch',
         elevation: 6,
-        shadowColor: '#7C3AED',
+        shadowColor: colors.primary,
         shadowOpacity: 0.1,
         shadowRadius: 20
     },
@@ -1660,12 +1683,12 @@ const styles = StyleSheet.create({
     },
     summaryStatsRow: {
         flexDirection: 'row',
-        backgroundColor: '#FAF5FF',
+        backgroundColor: colors.bgTint,
         padding: 16,
         borderRadius: 24,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: '#E9D5FF'
+        borderColor: colors.accent
     },
     summaryStatBox: {
         flex: 1,
@@ -1674,32 +1697,32 @@ const styles = StyleSheet.create({
     summaryStatVal: {
         fontSize: 20,
         fontWeight: '900',
-        color: '#7C3AED'
+        color: colors.primary
     },
     summaryStatLbl: {
         fontSize: 10,
-        color: '#6D28D9',
+        color: colors.primaryDark,
         fontWeight: '600',
         marginTop: 2
     },
     feedbackMsgBox: {
-        backgroundColor: '#F5F3FF',
+        backgroundColor: colors.bgTint,
         padding: 12,
         borderRadius: 16,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: '#DDD6FE'
+        borderColor: colors.accent
     },
     feedbackMsgTitle: {
         fontSize: 12,
         fontWeight: '800',
-        color: '#6D28D9',
+        color: colors.primaryDark,
         marginBottom: 2,
         textAlign: 'center'
     },
     feedbackMsgText: {
         fontSize: 12,
-        color: '#4C1D95',
+        color: colors.primaryDark,
         textAlign: 'center',
         fontStyle: 'italic'
     },
@@ -1736,8 +1759,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#FAFAF9'
     },
     surveyAnsBtnActive: {
-        borderColor: '#7C3AED',
-        backgroundColor: '#F5F3FF'
+        borderColor: colors.primary,
+        backgroundColor: colors.bgTint
     },
     surveyAnsText: {
         fontSize: 11,
@@ -1745,18 +1768,18 @@ const styles = StyleSheet.create({
         color: '#64748B'
     },
     surveyAnsTextActive: {
-        color: '#7C3AED',
+        color: colors.primary,
         fontWeight: '800'
     },
     submitBtn: {
-        backgroundColor: '#7C3AED',
+        backgroundColor: colors.primary,
         paddingVertical: 14,
         borderRadius: 20,
         alignItems: 'center',
         marginTop: 18
     },
     submitBtnText: {
-        color: '#FFF',
+        color: colors.white,
         fontWeight: '800',
         fontSize: 15
     }

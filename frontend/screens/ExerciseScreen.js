@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    View, Text, ScrollView, TouchableOpacity, StyleSheet,
+    View, Text, ScrollView, TouchableOpacity, StyleSheet, Pressable,
     ActivityIndicator, Alert, Modal, TextInput, Switch,
     Dimensions, Image, FlatList, Platform, Linking,
     useWindowDimensions
@@ -17,6 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
+import { colors, typography, spacing, radius, shadows } from '../theme';
 
 const { width } = Dimensions.get('window');
 
@@ -237,7 +238,7 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
                     onMessage={handleMessage}
                     renderLoading={() => (
                         <View style={styles.webViewLoadingContainer}>
-                            <ActivityIndicator size="large" color="#7C3AED" />
+                            <ActivityIndicator size="large" color={colors.primary} />
                         </View>
                     )}
                     onError={() => {
@@ -301,6 +302,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
     const [mobility, setMobility] = useState(initialData?.mobilityLevel || 'normal');
     const [muscleWeakness, setMuscleWeakness] = useState(initialData?.muscleWeakness || false);
     const [willingness, setWillingness] = useState(initialData?.willingnessToExercise || 'medium');
+    const [isHovered, setIsHovered] = useState(false);
 
     useEffect(() => {
         if (initialData) {
@@ -341,7 +343,12 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
     };
 
     return (
-        <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
+        <ScrollView
+            style={[styles.formContainer, isHovered && styles.formContainerHover]}
+            showsVerticalScrollIndicator={false}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
             {/* Form header */}
             <View style={styles.formHeaderRow}>
                 <Text style={styles.formHeaderEmoji}>🩺</Text>
@@ -392,10 +399,11 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>{isSinhala ? 'දරු ප්‍රසූති ක්‍රමය' : 'Delivery Method'}</Text>
                     <View style={styles.rowButtons}>
-                        <TouchableOpacity
-                            style={[
+                        <Pressable
+                            style={({ hovered }) => [
                                 styles.optionBtn,
                                 deliveryType === 'normal' && styles.optionBtnActive,
+                                hovered && styles.optionBtnHover,
                                 !!user?.deliveryType && { opacity: 0.65 }
                             ]}
                             onPress={() => setDeliveryType('normal')}
@@ -404,11 +412,12 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                             <Text style={[styles.optionText, deliveryType === 'normal' && styles.optionTextActive]}>
                                 {isSinhala ? '🤱 සාමාන්ූය' : '🤱 Normal'}
                             </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[
+                        </Pressable>
+                        <Pressable
+                            style={({ hovered }) => [
                                 styles.optionBtn,
                                 deliveryType === 'c-section' && styles.optionBtnActive,
+                                hovered && styles.optionBtnHover,
                                 !!user?.deliveryType && { opacity: 0.65 }
                             ]}
                             onPress={() => setDeliveryType('c-section')}
@@ -417,7 +426,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                             <Text style={[styles.optionText, deliveryType === 'c-section' && styles.optionTextActive]}>
                                 {isSinhala ? '🏥 සිසේරියන්' : '🏥 C-Section'}
                             </Text>
-                        </TouchableOpacity>
+                        </Pressable>
                     </View>
                 </View>
             </View>
@@ -426,24 +435,24 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
             <View style={styles.formSection}>
                 <Text style={styles.formSectionLabel}>{isSinhala ? '⚡ වේදනා තත්ත්වයන්' : '⚡ Pain Conditions'}</Text>
                 <View style={styles.checkboxGroup}>
-                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setPelvicPain(!pelvicPain)}>
+                    <Pressable style={({ hovered }) => [styles.checkboxRow, hovered && styles.checkboxRowHover]} onPress={() => setPelvicPain(!pelvicPain)}>
                         <View style={[styles.checkbox, pelvicPain && styles.checkboxChecked]}>
                             {pelvicPain && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
                         <Text style={styles.checkboxLabel}>{isSinhala ? 'ශ්‍රෝණි වේදනාව (Pelvic Pain)' : 'Pelvic Pain'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setBackPain(!backPain)}>
+                    </Pressable>
+                    <Pressable style={({ hovered }) => [styles.checkboxRow, hovered && styles.checkboxRowHover]} onPress={() => setBackPain(!backPain)}>
                         <View style={[styles.checkbox, backPain && styles.checkboxChecked]}>
                             {backPain && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
                         <Text style={styles.checkboxLabel}>{isSinhala ? 'කොන්දේ අමාරුව (Back Pain)' : 'Back Pain'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setAbdominalPain(!abdominalPain)}>
+                    </Pressable>
+                    <Pressable style={({ hovered }) => [styles.checkboxRow, hovered && styles.checkboxRowHover]} onPress={() => setAbdominalPain(!abdominalPain)}>
                         <View style={[styles.checkbox, abdominalPain && styles.checkboxChecked]}>
                             {abdominalPain && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
                         <Text style={styles.checkboxLabel}>{isSinhala ? 'උදර වේදනාව (Abdominal Pain)' : 'Abdominal Pain'}</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
             </View>
 
@@ -451,24 +460,24 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
             <View style={styles.formSection}>
                 <Text style={styles.formSectionLabel}>{isSinhala ? '🚩 වෙනත් සෞඛ්‍ය ගැටළු' : '🚩 Other Health Conditions'}</Text>
                 <View style={styles.checkboxGroup}>
-                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setBleeding(!bleeding)}>
+                    <Pressable style={({ hovered }) => [styles.checkboxRow, hovered && styles.checkboxRowHover]} onPress={() => setBleeding(!bleeding)}>
                         <View style={[styles.checkbox, bleeding && styles.checkboxChecked]}>
                             {bleeding && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
                         <Text style={styles.checkboxLabel}>{isSinhala ? 'ලේ ගැලීමේ සංකූලතා' : 'Bleeding Complications'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setDoctorRestrictions(!doctorRestrictions)}>
+                    </Pressable>
+                    <Pressable style={({ hovered }) => [styles.checkboxRow, hovered && styles.checkboxRowHover]} onPress={() => setDoctorRestrictions(!doctorRestrictions)}>
                         <View style={[styles.checkbox, doctorRestrictions && styles.checkboxChecked]}>
                             {doctorRestrictions && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
                         <Text style={styles.checkboxLabel}>{isSinhala ? 'වෛද්‍ය සීමාවන්' : 'Medical Restrictions'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.checkboxRow} onPress={() => setMuscleWeakness(!muscleWeakness)}>
+                    </Pressable>
+                    <Pressable style={({ hovered }) => [styles.checkboxRow, hovered && styles.checkboxRowHover]} onPress={() => setMuscleWeakness(!muscleWeakness)}>
                         <View style={[styles.checkbox, muscleWeakness && styles.checkboxChecked]}>
                             {muscleWeakness && <Text style={styles.checkboxTick}>✓</Text>}
                         </View>
                         <Text style={styles.checkboxLabel}>{isSinhala ? 'මාංශ පේෂී දුර්වලතාවය' : 'Muscle Weakness'}</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
             </View>
 
@@ -480,15 +489,15 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                     <Text style={styles.label}>{isSinhala ? 'තෙහෙට්ටුව මට්ටම' : 'Fatigue Level'}</Text>
                     <View style={styles.rowButtons}>
                         {['low', 'medium', 'high'].map(level => (
-                            <TouchableOpacity
+                            <Pressable
                                 key={level}
-                                style={[styles.optionBtn, fatigue === level && styles.optionBtnActive]}
+                                style={({ hovered }) => [styles.optionBtn, fatigue === level && styles.optionBtnActive, hovered && styles.optionBtnHover]}
                                 onPress={() => setFatigue(level)}
                             >
                                 <Text style={[styles.optionText, fatigue === level && styles.optionTextActive]}>
                                     {level === 'low' ? (isSinhala ? '😊 අඩුයි' : '😊 Low') : level === 'medium' ? (isSinhala ? '😐 මධ්‍යම' : '😐 Medium') : (isSinhala ? '😩 වැඩියි' : '😩 High')}
                                 </Text>
-                            </TouchableOpacity>
+                            </Pressable>
                         ))}
                     </View>
                 </View>
@@ -497,15 +506,15 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                     <Text style={styles.label}>{isSinhala ? 'චලන හැකියාව' : 'Mobility Level'}</Text>
                     <View style={styles.columnButtons}>
                         {['very_limited', 'limited', 'normal'].map(level => (
-                            <TouchableOpacity
+                            <Pressable
                                 key={level}
-                                style={[styles.optionBtnWide, mobility === level && styles.optionBtnActive]}
+                                style={({ hovered }) => [styles.optionBtnWide, mobility === level && styles.optionBtnActive, hovered && styles.optionBtnHover]}
                                 onPress={() => setMobility(level)}
                             >
                                 <Text style={[styles.optionText, mobility === level && styles.optionTextActive]}>
                                     {level === 'very_limited' ? (isSinhala ? '🦽 ඉතා සීමිතයි' : '🦽 Very Limited') : level === 'limited' ? (isSinhala ? '🚶 සීමිතයි' : '🚶 Limited') : (isSinhala ? '🏃 සාමාන්‍යයි' : '🏃 Normal')}
                                 </Text>
-                            </TouchableOpacity>
+                            </Pressable>
                         ))}
                     </View>
                 </View>
@@ -514,29 +523,32 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                     <Text style={styles.label}>{isSinhala ? 'ව්‍යායාම කිරීමට ඇති කැමැත්ත' : 'Willingness to Exercise'}</Text>
                     <View style={styles.rowButtons}>
                         {['low', 'medium', 'high'].map(level => (
-                            <TouchableOpacity
+                            <Pressable
                                 key={level}
-                                style={[styles.optionBtn, willingness === level && styles.optionBtnActive]}
+                                style={({ hovered }) => [styles.optionBtn, willingness === level && styles.optionBtnActive, hovered && styles.optionBtnHover]}
                                 onPress={() => setWillingness(level)}
                             >
                                 <Text style={[styles.optionText, willingness === level && styles.optionTextActive]}>
                                     {level === 'low' ? (isSinhala ? '😴 අඩුයි' : '😴 Low') : level === 'medium' ? (isSinhala ? '🙂 මධ්‍යම' : '🙂 Medium') : (isSinhala ? '💪 වැඩියි' : '💪 High')}
                                 </Text>
-                            </TouchableOpacity>
+                            </Pressable>
                         ))}
                     </View>
                 </View>
             </View>
 
             {/* Submit button */}
-            <TouchableOpacity
-                style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
+            <Pressable
+                style={({ hovered }) => [
+                    styles.submitBtn,
+                    loading && styles.submitBtnDisabled,
+                    hovered && !loading && styles.submitBtnHover
+                ]}
                 onPress={handleSubmit}
                 disabled={loading}
-                activeOpacity={0.85}
             >
                 <LinearGradient
-                    colors={loading ? ['#F3E8FF', '#E9D5FF'] : ['#F3E8FF', '#E9D5FF']}
+                    colors={loading ? [colors.accent, colors.accent] : [colors.secondary, colors.secondary]}
                     style={styles.submitBtnGradient}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
@@ -552,7 +564,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                         </>
                     )}
                 </LinearGradient>
-            </TouchableOpacity>
+            </Pressable>
 
             <View style={{ height: 24 }} />
         </ScrollView>
@@ -904,14 +916,18 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                             </View>
                                         </View>
                                         {isSupportedForTracking(title) && (
-                                            <TouchableOpacity
-                                                style={[styles.aiTrackingBtn, !isLargeScreen && { marginTop: 8 }]}
+                                            <Pressable
+                                                style={({ hovered }) => [
+                                                    styles.aiTrackingBtn,
+                                                    !isLargeScreen && { marginTop: 8 },
+                                                    hovered && styles.aiTrackingBtnHover
+                                                ]}
                                                 onPress={handleStartTracking}
                                             >
                                                 <Text style={styles.aiTrackingBtnText}>
                                                     {isSinhala ? '🤖 AI චලන ලුහුබැඳීම ආරම්භ කරන්න' : '🤖 Start AI Movement Tracking'}
                                                 </Text>
-                                            </TouchableOpacity>
+                                            </Pressable>
                                         )}
                                         {!isLargeScreen && (
                                             <TouchableOpacity style={[styles.modalCloseBtn, { marginTop: 8 }]} onPress={handleCloseVideoModal}>
@@ -1018,7 +1034,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                 </Text>
                                 <Text style={styles.resultsRowText}>
                                     {isSinhala ? '📈 අනුකූලතා ලකුණු: ' : '📈 Adherence Score: '}
-                                    <Text style={{ fontWeight: '800', color: '#7C3AED' }}>{results.adherenceScore}%</Text>
+                                    <Text style={{ fontWeight: '800', color: colors.primary }}>{results.adherenceScore}%</Text>
                                 </Text>
 
                                 <View style={styles.dividerLine} />
@@ -1050,11 +1066,11 @@ const ProgressDashboard = ({ progress, detectedMood }) => {
                     {t('Your Progress')}
                 </Text>
                 {detectedMood && detectedMood !== 'happy' && detectedMood !== 'neutral' && (
-                    <View style={{ backgroundColor: 'rgba(161,140,209,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#a18cd1' }}>
+                    <View style={{ backgroundColor: 'rgba(161,140,209,0.1)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.secondary }}>
                         <Text style={{ fontSize: 14, marginRight: 6 }}>
                             {detectedMood === 'sad' ? '😔' : detectedMood === 'tired' ? '😪' : detectedMood === 'stressed' ? '😰' : detectedMood === 'angry' ? '😠' : '😌'}
                         </Text>
-                        <Text style={{ fontSize: 13, fontWeight: '800', color: '#a18cd1', textTransform: 'capitalize' }}>
+                        <Text style={{ fontSize: 13, fontWeight: '800', color: colors.secondary, textTransform: 'capitalize' }}>
                             {t(detectedMood)}
                         </Text>
                     </View>
@@ -1088,7 +1104,7 @@ const ProgressDashboard = ({ progress, detectedMood }) => {
             </View>
 
             {progress.recoveryTrend && (
-                <View style={{ marginTop: 14, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 18, borderLeftWidth: 4, borderLeftColor: '#7C3AED' }}>
+                <View style={{ marginTop: 14, backgroundColor: '#F8FAFC', padding: 12, borderRadius: 18, borderLeftWidth: 4, borderLeftColor: colors.primary }}>
                     <Text style={{ fontSize: 13, fontWeight: '800', color: '#1E293B', marginBottom: 2 }}>🩺 {t('Recovery Trend Analysis')}</Text>
                     <Text style={{ fontSize: 12, color: '#475569', lineHeight: 16 }}>{t(progress.recoveryTrend)}</Text>
                 </View>
@@ -1382,7 +1398,7 @@ export default function ExerciseScreen({ navigation }) {
 
     return (
         <SafeAreaView style={styles.safe}>
-            <LinearGradient colors={['#F7F3FF', '#FDFBFF', '#EBE0FF']} style={styles.gradient}>
+            <LinearGradient colors={['#EDE9FE', '#FDFBFF', '#EBE0FF']} style={styles.gradient}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                         <View style={styles.backCircle}>
@@ -1399,11 +1415,14 @@ export default function ExerciseScreen({ navigation }) {
                 </View>
                 <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                     {!(showForm || !hasData) && (
-                        <TouchableOpacity
-                            style={styles.viewProgressBtn}
-                            onPress={() => navigation.navigate('ExerciseProgress')}
+                        <Pressable
+                             style={({ hovered }) => [
+                                 styles.viewProgressBtn,
+                                 hovered && styles.viewProgressBtnHover
+                             ]}
+                             onPress={() => navigation.navigate('ExerciseProgress')}
                         >
-                            <LinearGradient colors={['#FAF5FF', '#F3E8FF']} style={styles.viewProgressBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                            <LinearGradient colors={[colors.white, colors.lavenderLight]} style={styles.viewProgressBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                                 <Text style={styles.viewProgressBtnEmoji}>📊</Text>
                                 <View style={{ flex: 1 }}>
                                     <Text style={styles.viewProgressBtnTitle}>{isSinhala ? 'ඔබේ ප්‍රගතිය' : 'Your Progress'}</Text>
@@ -1414,7 +1433,7 @@ export default function ExerciseScreen({ navigation }) {
                                     </Text>
                                 </View>
                             </LinearGradient>
-                        </TouchableOpacity>
+                        </Pressable>
                     )}
 
                     {(showForm || !hasData) && (
@@ -1524,14 +1543,21 @@ export default function ExerciseScreen({ navigation }) {
                     )}
 
                     {!showForm && hasData && (
-                        <TouchableOpacity
-                            style={styles.addDataBtn}
+                        <Pressable
+                            style={({ hovered }) => [styles.addDataBtn, hovered && styles.addDataBtnHover]}
                             onPress={() => setShowForm(true)}
                         >
-                            <Text style={styles.addDataBtnText}>
-                                {t('+ Enter New Health Data')}
-                            </Text>
-                        </TouchableOpacity>
+                            <LinearGradient
+                                colors={[colors.secondary, colors.primary]}
+                                style={styles.addDataBtnGradient}
+                                start={{ x: 0, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                            >
+                                <Text style={styles.addDataBtnText}>
+                                    {t('+ Enter New Health Data')}
+                                </Text>
+                            </LinearGradient>
+                        </Pressable>
                     )}
 
                     <View style={{ height: 40 }} />
@@ -1614,7 +1640,7 @@ export default function ExerciseScreen({ navigation }) {
 
 const styles = StyleSheet.create({
     // Layout
-    safe: { flex: 1, backgroundColor: '#F7F3FF' },
+    safe: { flex: 1, backgroundColor: '#EDE9FE' },
     gradient: { flex: 1 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -1626,10 +1652,10 @@ const styles = StyleSheet.create({
     backCircle: {
         width: 38, height: 38, borderRadius: 19,
         backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center',
-        elevation: 3, shadowColor: '#7C3AED', shadowOpacity: 0.1,
+        elevation: 3, shadowColor: colors.primary, shadowOpacity: 0.1,
         shadowRadius: 8, shadowOffset: { width: 0, height: 3 },
     },
-    backIcon: { fontSize: 20, color: '#7C3AED', fontWeight: '900' },
+    backIcon: { fontSize: 20, color: colors.primary, fontWeight: '900' },
     headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'center' },
     headerEmoji: { fontSize: 24 },
     headerTitle: { fontSize: 17, fontWeight: '800', color: '#1E293B', textAlign: 'center' },
@@ -1638,16 +1664,16 @@ const styles = StyleSheet.create({
     // Progress dashboard (inline on Exercise screen)
     progressContainer: {
         backgroundColor: '#FFF', borderRadius: 28, padding: 20, marginBottom: 16,
-        elevation: 3, shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 6 },
+        elevation: 3, shadowColor: colors.primary, shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.06, shadowRadius: 16, borderWidth: 1,
-        borderColor: 'rgba(124,58,237,0.05)',
+        borderColor: colors.accent,
     },
     progressTitle: { fontSize: 17, fontWeight: '900', color: '#1E293B', marginBottom: 14 },
     statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     statBox: {
         flex: 1, borderRadius: 20, paddingVertical: 18, paddingHorizontal: 10,
         alignItems: 'center', minWidth: (width - 60) / 3, elevation: 2,
-        shadowColor: '#7C3AED', shadowOpacity: 0.08, shadowRadius: 8,
+        shadowColor: colors.primary, shadowOpacity: 0.08, shadowRadius: 8,
         shadowOffset: { height: 3, width: 0 },
     },
     statValue: { fontSize: 24, fontWeight: '900', color: '#FFF' },
@@ -1699,28 +1725,36 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: '#EDE9FE',
+        borderColor: colors.accent,
         width: '70%',
         alignSelf: 'center',
+    },
+    formContainerHover: {
+        borderColor: colors.primary,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.1,
+        shadowRadius: 16,
+        elevation: 4,
     },
     formHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
     formHeaderEmoji: { fontSize: 24 },
     formTitle: { fontSize: 14, fontWeight: 'bold', color: '#1E293B', marginBottom: 2 },
     formSubtitle: { fontSize: 10, color: '#94A3B8', fontWeight: '500' },
     formSection: {
-        backgroundColor: '#FAF5FF',
+        backgroundColor: 'transparent',
         borderRadius: 14,
         padding: 10,
         marginBottom: 10,
         borderWidth: 1,
-        borderColor: '#EBE0FF',
+        borderColor: colors.secondary,
     },
-    formSectionLabel: { fontSize: 11, fontWeight: 'bold', color: '#7C3AED', marginBottom: 8, letterSpacing: 0.2 },
+    formSectionLabel: { fontSize: 11, fontWeight: 'bold', color: colors.primary, marginBottom: 8, letterSpacing: 0.2 },
 
     inputGroup: { marginBottom: 10 },
     label: { fontSize: 11, fontWeight: '700', color: '#334155', marginBottom: 4 },
     input: {
-        borderWidth: 1.2, borderColor: '#DDD6FE', borderRadius: 12,
+        borderWidth: 1.2, borderColor: colors.accent, borderRadius: 12,
         padding: 8, fontSize: 12, backgroundColor: '#FAFAF9', color: '#1E293B',
     },
     rowButtons: { flexDirection: 'row', gap: 6 },
@@ -1728,51 +1762,70 @@ const styles = StyleSheet.create({
     optionBtn: {
         flex: 1, paddingVertical: 7, borderRadius: 10,
         backgroundColor: '#FFF', alignItems: 'center',
-        borderWidth: 1.2, borderColor: '#EDE9FE',
+        borderWidth: 1.2, borderColor: colors.accent,
     },
     optionBtnWide: {
         paddingVertical: 7, borderRadius: 10,
         backgroundColor: '#FFF', alignItems: 'center',
-        borderWidth: 1.2, borderColor: '#EDE9FE',
+        borderWidth: 1.2, borderColor: colors.accent,
     },
-    optionBtnActive: { backgroundColor: '#E9D5FF', borderColor: '#D8B4FE' },
+    optionBtnActive: { backgroundColor: colors.accent, borderColor: colors.secondary },
+    optionBtnHover: {
+        borderColor: colors.primary,
+        elevation: 2,
+        shadowColor: colors.primary,
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+    },
     optionText: { fontSize: 11, color: '#475569', fontWeight: '600' },
-    optionTextActive: { color: '#5B21B6', fontWeight: '800' },
+    optionTextActive: { color: colors.primaryDark, fontWeight: '800' },
     checkboxGroup: { marginBottom: 6 },
     checkboxRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 4 },
+    checkboxRowHover: {
+        borderRadius: 8,
+        paddingHorizontal: 6,
+        marginHorizontal: -6,
+    },
     checkbox: {
         width: 18, height: 18, borderRadius: 5, borderWidth: 1.5,
-        borderColor: '#DDD6FE', marginRight: 8, backgroundColor: '#FFF',
+        borderColor: colors.accent, marginRight: 8, backgroundColor: '#FFF',
     },
-    checkboxChecked: { backgroundColor: '#E9D5FF', borderColor: '#D8B4FE', alignItems: 'center', justifyContent: 'center' },
-    checkboxTick: { color: '#5B21B6', fontSize: 10, fontWeight: '900' },
+    checkboxChecked: { backgroundColor: colors.accent, borderColor: colors.secondary, alignItems: 'center', justifyContent: 'center' },
+    checkboxTick: { color: colors.primaryDark, fontSize: 10, fontWeight: '900' },
     checkboxLabel: { fontSize: 11, color: '#475569', fontWeight: '600' },
     submitBtn: {
         borderRadius: 14,
-        overflow: 'hidden',
         marginTop: 4,
+    },
+    submitBtnHover: {
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        elevation: 5,
     },
     submitBtnDisabled: { opacity: 0.65 },
     submitBtnGradient: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10, borderRadius: 14 },
     submitBtnEmoji: { fontSize: 14 },
-    submitBtnText: { color: '#5B21B6', fontWeight: '800', fontSize: 12 },
+    submitBtnText: { color: colors.white, fontWeight: '800', fontSize: 12 },
 
     // Exercise plan banner
     planBanner: {
         borderRadius: 18, padding: 14, marginBottom: 14,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        borderWidth: 1, borderColor: '#DDD6FE',
+        borderWidth: 1, borderColor: colors.accent,
         width: '90%',
         alignSelf: 'center',
     },
-    planBannerTitle: { fontSize: 13, fontWeight: 'bold', color: '#4C1D95', marginBottom: 2 },
-    planBannerSub: { fontSize: 11, color: '#7C3AED', fontWeight: '600' },
+    planBannerTitle: { fontSize: 13, fontWeight: 'bold', color: colors.primaryDark, marginBottom: 2 },
+    planBannerSub: { fontSize: 11, color: colors.primary, fontWeight: '600' },
     planBannerBadge: {
-        backgroundColor: 'rgba(124, 58, 237, 0.08)', borderRadius: 12,
+        backgroundColor: colors.lavenderLight, borderRadius: 12,
         paddingHorizontal: 12, paddingVertical: 8, alignItems: 'center',
     },
-    planBannerBadgeText: { fontSize: 18, fontWeight: 'bold', color: '#4C1D95' },
-    planBannerBadgeLabel: { fontSize: 9, color: '#7C3AED', fontWeight: '700', marginTop: 1 },
+    planBannerBadgeText: { fontSize: 18, fontWeight: 'bold', color: colors.primaryDark },
+    planBannerBadgeLabel: { fontSize: 9, color: colors.primary, fontWeight: '700', marginTop: 1 },
 
     // Exercise cards
     recommendationsContainer: { marginBottom: 16 },
@@ -1800,7 +1853,7 @@ const styles = StyleSheet.create({
     thumbnailPlaceholder: {
         width: '100%',
         height: '100%',
-        backgroundColor: '#EDE9FE',
+        backgroundColor: colors.lavenderLight,
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -1837,12 +1890,12 @@ const styles = StyleSheet.create({
         width: 28,
         height: 28,
         borderRadius: 14,
-        backgroundColor: '#F5F3FF',
+        backgroundColor: colors.lavenderLight,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 8,
         borderWidth: 1.5,
-        borderColor: '#EDE9FE',
+        borderColor: colors.accent,
     },
     channelAvatarText: {
         fontSize: 14,
@@ -1886,7 +1939,7 @@ const styles = StyleSheet.create({
     videoModalContent: {
         backgroundColor: '#FFF', borderRadius: 0,
         width: '100%', height: '100%', maxHeight: '100%',
-        elevation: 8, shadowColor: '#7C3AED', shadowOpacity: 0.1,
+        elevation: 8, shadowColor: colors.primary, shadowOpacity: 0.1,
         shadowRadius: 24, shadowOffset: { width: 0, height: 12 },
     },
     modalScrollContent: {
@@ -1896,18 +1949,18 @@ const styles = StyleSheet.create({
         flexGrow: 1,
     },
     modalTitleContainer: {
-        backgroundColor: '#F5F3FF',
+        backgroundColor: colors.lavenderLight,
         borderRadius: 16,
         paddingVertical: 12,
         paddingHorizontal: 20,
         marginBottom: 20,
         borderWidth: 1.5,
-        borderColor: '#DDD6FE',
+        borderColor: colors.accent,
         width: '90%',
         alignSelf: 'center',
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#7C3AED',
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
@@ -1916,7 +1969,7 @@ const styles = StyleSheet.create({
     modalTitleText: {
         fontSize: 13,
         fontWeight: 'bold',
-        color: '#6D28D9',
+        color: colors.primaryDark,
         textAlign: 'center',
         lineHeight: 18,
     },
@@ -1935,41 +1988,50 @@ const styles = StyleSheet.create({
     },
     webViewErrorText: { color: '#FFF', fontSize: 14, marginBottom: 15, textAlign: 'center' },
     webViewRetryBtn: {
-        backgroundColor: '#7C3AED', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14,
+        backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 14,
     },
     webViewRetryBtnText: { color: '#FFF', fontWeight: '800' },
 
     // Empty states
     emptyContainer: {
         backgroundColor: '#FFF', borderRadius: 28, padding: 36, alignItems: 'center',
-        marginBottom: 16, elevation: 3, shadowColor: '#7C3AED', shadowOpacity: 0.05,
+        marginBottom: 16, elevation: 3, shadowColor: colors.primary, shadowOpacity: 0.05,
         shadowRadius: 16, shadowOffset: { height: 6, width: 0 }, borderWidth: 1,
-        borderColor: 'rgba(124,58,237,0.04)',
+        borderColor: colors.accent,
     },
     emptyEmoji: { fontSize: 52, marginBottom: 14 },
     emptyTitle: { fontSize: 20, fontWeight: '900', color: '#1E293B', marginBottom: 8 },
     emptyText: { fontSize: 13, color: '#64748B', textAlign: 'center', lineHeight: 20 },
     emptyContainerSmall: {
         alignItems: 'center', padding: 28, backgroundColor: '#FFF', borderRadius: 24,
-        borderWidth: 1, borderColor: 'rgba(124,58,237,0.04)', elevation: 2,
-        shadowColor: '#7C3AED', shadowOpacity: 0.04, shadowRadius: 10,
+        borderWidth: 1, borderColor: colors.accent, elevation: 2,
+        shadowColor: colors.primary, shadowOpacity: 0.04, shadowRadius: 10,
     },
     emptyTitleSmall: { fontSize: 15, fontWeight: '900', color: '#1E293B', marginBottom: 4 },
     emptyTextSmall: { fontSize: 12, color: '#64748B', textAlign: 'center', lineHeight: 18 },
 
-    // Add data button
     addDataBtn: {
-        backgroundColor: '#FAF5FF',
-        padding: 12,
         borderRadius: 16,
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#E9D5FF',
         marginBottom: 16,
         width: '100%',
         alignSelf: 'center',
     },
-    addDataBtnText: { fontSize: 13, color: '#5B21B6', fontWeight: 'bold' },
+    addDataBtnGradient: {
+        padding: 12,
+        borderRadius: 16,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+    },
+    addDataBtnHover: {
+        borderColor: colors.primaryDark,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+        elevation: 5,
+    },
+    addDataBtnText: { fontSize: 13, color: '#000000', fontWeight: 'bold' },
 
     // Modals overlay
     modalOverlay: {
@@ -1981,7 +2043,7 @@ const styles = StyleSheet.create({
     questionsModalContent: {
         backgroundColor: '#FFF', borderRadius: 32, padding: 24,
         width: width - 40, alignItems: 'stretch',
-        elevation: 8, shadowColor: '#7C3AED', shadowOpacity: 0.1,
+        elevation: 8, shadowColor: colors.primary, shadowOpacity: 0.1,
         shadowRadius: 24, shadowOffset: { width: 0, height: 12 },
     },
     feedbackEmojiTitle: { fontSize: 44, textAlign: 'center', marginBottom: 8 },
@@ -1992,16 +2054,16 @@ const styles = StyleSheet.create({
     },
     btnRow: { flexDirection: 'row', gap: 8, marginBottom: 8 },
     surveyBtn: {
-        flex: 1, paddingVertical: 11, borderWidth: 1.5, borderColor: '#DDD6FE',
+        flex: 1, paddingVertical: 11, borderWidth: 1.5, borderColor: colors.accent,
         borderRadius: 14, alignItems: 'center', backgroundColor: '#FAFAF9',
     },
-    surveyBtnActive: { borderColor: '#7C3AED', backgroundColor: '#EDE9FE' },
+    surveyBtnActive: { borderColor: colors.primary, backgroundColor: colors.lavenderLight },
     surveyBtnText: { fontSize: 13, fontWeight: '600', color: '#475569' },
-    surveyBtnTextActive: { color: '#7C3AED', fontWeight: '800' },
+    surveyBtnTextActive: { color: colors.primary, fontWeight: '800' },
     submitSurveyBtn: {
-        backgroundColor: '#7C3AED', paddingVertical: 15, borderRadius: 20,
+        backgroundColor: colors.primary, paddingVertical: 15, borderRadius: 20,
         alignItems: 'center', marginTop: 20, elevation: 3,
-        shadowColor: '#7C3AED', shadowOpacity: 0.2, shadowRadius: 8,
+        shadowColor: colors.primary, shadowOpacity: 0.2, shadowRadius: 8,
     },
     submitSurveyBtnText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
 
@@ -2009,7 +2071,7 @@ const styles = StyleSheet.create({
     resultsModalContent: {
         backgroundColor: '#FFF', borderRadius: 32, padding: 24,
         width: width - 40, alignItems: 'center',
-        elevation: 8, shadowColor: '#7C3AED', shadowOpacity: 0.1,
+        elevation: 8, shadowColor: colors.primary, shadowOpacity: 0.1,
         shadowRadius: 24, shadowOffset: { width: 0, height: 12 },
     },
     resultsInfoBlock: { width: '100%', marginVertical: 16 },
@@ -2018,33 +2080,54 @@ const styles = StyleSheet.create({
     resultsFeedbackTitle: { fontSize: 15, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
     resultsFeedbackText: {
         fontSize: 13, color: '#475569', lineHeight: 20, fontStyle: 'italic',
-        backgroundColor: '#F5F3FF', padding: 14, borderRadius: 16,
-        borderWidth: 1, borderColor: '#DDD6FE',
+        backgroundColor: colors.lavenderLight, padding: 14, borderRadius: 16,
+        borderWidth: 1, borderColor: colors.accent,
     },
     resultsCloseBtn: {
-        backgroundColor: '#7C3AED', width: '100%', paddingVertical: 14,
+        backgroundColor: colors.primary, width: '100%', paddingVertical: 14,
         borderRadius: 20, alignItems: 'center', elevation: 3,
-        shadowColor: '#7C3AED', shadowOpacity: 0.2, shadowRadius: 8,
+        shadowColor: colors.primary, shadowOpacity: 0.2, shadowRadius: 8,
     },
     resultsCloseBtnText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
 
     // View progress banner
     viewProgressBtn: {
-        marginVertical: 12, borderRadius: 18, overflow: 'hidden',
-        borderWidth: 1, borderColor: '#DDD6FE',
+        marginVertical: 12, borderRadius: 18,
+        borderWidth: 1, borderColor: colors.accent,
         width: '100%',
         alignSelf: 'center',
+        backgroundColor: colors.white,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+        elevation: 2,
+        ...Platform.select({
+            web: {
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                cursor: 'pointer',
+            }
+        })
     },
-    viewProgressBtnGrad: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
+    viewProgressBtnHover: {
+        borderColor: colors.primary,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+        elevation: 5,
+        transform: [{ translateY: -2 }],
+    },
+    viewProgressBtnGrad: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12, borderRadius: 18 },
     viewProgressBtnEmoji: { fontSize: 24 },
-    viewProgressBtnTitle: { fontSize: 13, fontWeight: 'bold', color: '#4C1D95' },
-    viewProgressBtnSub: { fontSize: 11, color: '#7C3AED', marginTop: 2 },
+    viewProgressBtnTitle: { fontSize: 13, fontWeight: 'bold', color: colors.primaryDark },
+    viewProgressBtnSub: { fontSize: 11, color: colors.primary, marginTop: 2 },
 
     // Daily health prompt modal
     promptModalContent: {
         backgroundColor: '#FFF', borderRadius: 32, padding: 26,
         width: width - 40, alignItems: 'center', elevation: 8,
-        shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 8 },
+        shadowColor: colors.primary, shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.1, shadowRadius: 20,
     },
     promptEmoji: { fontSize: 48, marginBottom: 12 },
@@ -2055,32 +2138,33 @@ const styles = StyleSheet.create({
         flex: 1, paddingVertical: 14, paddingHorizontal: 8, borderRadius: 20,
         alignItems: 'center', justifyContent: 'center', borderWidth: 1.5,
     },
-    thumbsUpBtn: { backgroundColor: '#F5F3FF', borderColor: '#7C3AED' },
+    thumbsUpBtn: { backgroundColor: colors.lavenderLight, borderColor: colors.primary },
     thumbsDownBtn: { backgroundColor: '#F8FAFC', borderColor: '#E2E8F0' },
     promptBtnEmoji: { fontSize: 28, marginBottom: 5 },
-    promptBtnTextActive: { color: '#7C3AED', fontWeight: '800', fontSize: 12, textAlign: 'center' },
+    promptBtnTextActive: { color: colors.primary, fontWeight: '800', fontSize: 12, textAlign: 'center' },
     promptBtnText: { color: '#64748B', fontWeight: '700', fontSize: 12, textAlign: 'center' },
 
     // Tab switcher
     tabContainer: {
-        flexDirection: 'row', backgroundColor: 'rgba(109,40,217,0.06)',
+        flexDirection: 'row', backgroundColor: '#FFF',
         borderRadius: 20, padding: 4, marginBottom: 16,
+        borderWidth: 1, borderColor: colors.accent,
     },
     tabButton: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 16 },
     tabButtonActive: {
-        backgroundColor: '#FFF', elevation: 3, shadowColor: '#7C3AED',
+        backgroundColor: colors.lavenderLight, elevation: 3, shadowColor: colors.primary,
         shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 3 },
     },
     tabText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
-    tabTextActive: { color: '#7C3AED', fontWeight: '900' },
+    tabTextActive: { color: colors.primaryDark, fontWeight: '900' },
 
     // Stopwatch
     stopwatchContainer: {
-        width: '100%', alignItems: 'center', backgroundColor: '#F5F3FF',
+        width: '100%', alignItems: 'center', backgroundColor: colors.lavenderLight,
         borderRadius: 20, padding: 18, marginVertical: 14,
-        borderWidth: 1.5, borderColor: '#DDD6FE',
+        borderWidth: 1.5, borderColor: colors.accent,
     },
-    stopwatchLabel: { fontSize: 13, fontWeight: '700', color: '#7C3AED', marginBottom: 6 },
+    stopwatchLabel: { fontSize: 13, fontWeight: '700', color: colors.primary, marginBottom: 6 },
     stopwatchDisplay: {
         fontSize: 36, fontWeight: '900', color: '#1E293B',
         letterSpacing: 3, marginBottom: 16, fontVariant: ['tabular-nums'],
@@ -2107,9 +2191,9 @@ const styles = StyleSheet.create({
 
     // Misc
     playIconButton: {
-        width: 40, height: 40, borderRadius: 20, backgroundColor: '#7C3AED',
+        width: 40, height: 40, borderRadius: 20, backgroundColor: colors.primary,
         alignItems: 'center', justifyContent: 'center', marginLeft: 8, elevation: 3,
-        shadowColor: '#7C3AED', shadowOpacity: 0.3, shadowRadius: 6,
+        shadowColor: colors.primary, shadowOpacity: 0.3, shadowRadius: 6,
         shadowOffset: { height: 2, width: 0 },
     },
     playIconText: { fontSize: 16, color: '#FFF' },
@@ -2122,13 +2206,13 @@ const styles = StyleSheet.create({
         width: width * 0.85,
         alignItems: 'center',
         elevation: 8,
-        shadowColor: '#7C3AED',
+        shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.1,
         shadowRadius: 16,
     },
     safetyCloseBtn: {
-        backgroundColor: '#7C3AED',
+        backgroundColor: colors.primary,
         paddingVertical: 8,
         paddingHorizontal: 24,
         borderRadius: 12,
@@ -2157,7 +2241,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     aiTrackingBtn: {
-        backgroundColor: '#7C3AED',
+        backgroundColor: colors.primary,
         borderRadius: 20,
         paddingVertical: 14,
         paddingHorizontal: 18,
@@ -2165,10 +2249,23 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginTop: 14,
         elevation: 3,
-        shadowColor: '#7C3AED',
+        shadowColor: colors.primary,
         shadowOpacity: 0.2,
         shadowRadius: 8,
-        shadowOffset: { width: 0, height: 3 }
+        shadowOffset: { width: 0, height: 3 },
+        ...Platform.select({
+            web: {
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                cursor: 'pointer',
+            }
+        })
+    },
+    aiTrackingBtnHover: {
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+        elevation: 6,
+        transform: [{ translateY: -2 }],
     },
     aiTrackingBtnText: {
         color: '#FFF',
