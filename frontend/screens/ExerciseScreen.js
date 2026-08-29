@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     View, Text, ScrollView, TouchableOpacity, StyleSheet,
     ActivityIndicator, Alert, Modal, TextInput, Switch,
-    Dimensions, Image, FlatList, Platform, Linking
+    Dimensions, Image, FlatList, Platform, Linking,
+    useWindowDimensions
 } from 'react-native';
 import { Camera } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +16,7 @@ import exerciseService from '../services/exerciseService';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -36,8 +38,9 @@ const getTranslatedFeedback = (feedback, isSinhala) => {
     return translations[feedback.trim()] || feedback;
 };
 
-// YouTube Player Component
 const YouTubePlayer = ({ url, duration, style, onProgress }) => {
+    const { width: currentWidth } = useWindowDimensions();
+    const isLargeScreen = currentWidth > 768;
     const { t } = useTranslation();
     const [error, setError] = useState(false);
     const webViewRef = useRef(null);
@@ -103,7 +106,7 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
 
     if (!embedUrl.includes('youtube.com/embed/')) {
         return (
-            <View style={[styles.videoPlayer, styles.videoPlayerCentered]}>
+            <View style={[styles.videoPlayer, styles.videoPlayerCentered, { height: isLargeScreen ? 420 : 250 }]}>
                 <Text style={{ color: '#fff', textAlign: 'center' }}>
                     {t('Failed to load video')}
                 </Text>
@@ -193,7 +196,7 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
     };
 
     return (
-        <View style={[styles.videoPlayer, { overflow: 'hidden' }]}>
+        <View style={[styles.videoPlayer, { overflow: 'hidden', height: isLargeScreen ? 420 : 250, marginBottom: isLargeScreen ? 16 : 6 }]}>
             {error && (
                 <View style={styles.webViewErrorContainer}>
                     <Text style={styles.webViewErrorText}>
@@ -251,9 +254,27 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
 
+    const getNormalizedDeliveryType = (type) => {
+        if (!type) return 'normal';
+        const lower = type.toLowerCase();
+        if (lower.includes('c-section')) return 'c-section';
+        return 'normal';
+    };
+
     const [deliveryDate, setDeliveryDate] = useState(user?.deliveryDate || '');
     const [weeks, setWeeks] = useState(initialData?.weeksAfterDelivery || '');
-    const [deliveryType, setDeliveryType] = useState(initialData?.deliveryType || 'normal');
+    const [deliveryType, setDeliveryType] = useState(initialData?.deliveryType || getNormalizedDeliveryType(user?.deliveryType));
+
+    useEffect(() => {
+        if (user) {
+            if (user.deliveryDate) {
+                setDeliveryDate(user.deliveryDate);
+            }
+            if (user.deliveryType) {
+                setDeliveryType(getNormalizedDeliveryType(user.deliveryType));
+            }
+        }
+    }, [user]);
 
     useEffect(() => {
         if (deliveryDate && deliveryDate.length === 10) {
@@ -372,16 +393,26 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                     <Text style={styles.label}>{isSinhala ? 'දරු ප්‍රසූති ක්‍රමය' : 'Delivery Method'}</Text>
                     <View style={styles.rowButtons}>
                         <TouchableOpacity
-                            style={[styles.optionBtn, deliveryType === 'normal' && styles.optionBtnActive]}
+                            style={[
+                                styles.optionBtn,
+                                deliveryType === 'normal' && styles.optionBtnActive,
+                                !!user?.deliveryType && { opacity: 0.65 }
+                            ]}
                             onPress={() => setDeliveryType('normal')}
+                            disabled={!!user?.deliveryType}
                         >
                             <Text style={[styles.optionText, deliveryType === 'normal' && styles.optionTextActive]}>
-                                {isSinhala ? '🤱 සාමාන්‍ය' : '🤱 Normal'}
+                                {isSinhala ? '🤱 සාමාන්ූය' : '🤱 Normal'}
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={[styles.optionBtn, deliveryType === 'c-section' && styles.optionBtnActive]}
+                            style={[
+                                styles.optionBtn,
+                                deliveryType === 'c-section' && styles.optionBtnActive,
+                                !!user?.deliveryType && { opacity: 0.65 }
+                            ]}
                             onPress={() => setDeliveryType('c-section')}
+                            disabled={!!user?.deliveryType}
                         >
                             <Text style={[styles.optionText, deliveryType === 'c-section' && styles.optionTextActive]}>
                                 {isSinhala ? '🏥 සිසේරියන්' : '🏥 C-Section'}
@@ -530,6 +561,8 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
 // Exercise Recommendation Card Component
 const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProgressUpdate, navigation }) => {
+    const { width: currentWidth } = useWindowDimensions();
+    const isLargeScreen = currentWidth > 768;
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
     const [videoModal, setVideoModal] = useState(false);
@@ -793,8 +826,8 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                             </View>
 
                             {selectedVideo && (
-                                <View style={styles.modalSplitRow}>
-                                    <View style={styles.modalLeftColumn}>
+                                <View style={[styles.modalSplitRow, { flexDirection: isLargeScreen ? 'row' : 'column', gap: isLargeScreen ? 16 : 8 }]}>
+                                    <View style={[styles.modalLeftColumn, { flex: isLargeScreen ? 1.2 : undefined }]}>
                                         {(selectedVideo.url.includes('youtube') || selectedVideo.url.includes('youtu.be')) ? (
                                             <YouTubePlayer
                                                 url={selectedVideo.url}
@@ -817,14 +850,14 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                                 shouldPlay={videoPlaying}
                                                 useNativeControls
                                                 resizeMode={ResizeMode.CONTAIN}
-                                                style={styles.videoPlayer}
+                                                style={[styles.videoPlayer, { height: isLargeScreen ? 420 : 250, marginBottom: isLargeScreen ? 16 : 6 }]}
                                             />
                                         )}
                                     </View>
 
-                                    <View style={styles.modalRightColumn}>
+                                    <View style={[styles.modalRightColumn, { flex: isLargeScreen ? 0.8 : undefined }]}>
                                         {/* Stopwatch UI */}
-                                        <View style={styles.stopwatchContainer}>
+                                        <View style={[styles.stopwatchContainer, !isLargeScreen && { marginVertical: 6, padding: 14 }]}>
                                             <Text style={styles.stopwatchLabel}>{isSinhala ? '⏱️ කාල ගණකය' : '⏱️ Stopwatch'}</Text>
                                             <Text style={styles.stopwatchDisplay}>{formatTime(stopwatchTime)}</Text>
                                             <View style={styles.stopwatchRow}>
@@ -872,7 +905,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                         </View>
                                         {isSupportedForTracking(title) && (
                                             <TouchableOpacity
-                                                style={styles.aiTrackingBtn}
+                                                style={[styles.aiTrackingBtn, !isLargeScreen && { marginTop: 8 }]}
                                                 onPress={handleStartTracking}
                                             >
                                                 <Text style={styles.aiTrackingBtnText}>
@@ -880,13 +913,20 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                                 </Text>
                                             </TouchableOpacity>
                                         )}
+                                        {!isLargeScreen && (
+                                            <TouchableOpacity style={[styles.modalCloseBtn, { marginTop: 8 }]} onPress={handleCloseVideoModal}>
+                                                <Text style={styles.modalCloseText}>{t('Close')}</Text>
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                 </View>
                             )}
 
-                            <TouchableOpacity style={styles.modalCloseBtn} onPress={handleCloseVideoModal}>
-                                <Text style={styles.modalCloseText}>{t('Close')}</Text>
-                            </TouchableOpacity>
+                            {isLargeScreen && (
+                                <TouchableOpacity style={styles.modalCloseBtn} onPress={handleCloseVideoModal}>
+                                    <Text style={styles.modalCloseText}>{t('Close')}</Text>
+                                </TouchableOpacity>
+                            )}
                         </ScrollView>
                     </View>
                 </View>
@@ -1117,11 +1157,24 @@ export default function ExerciseScreen({ navigation }) {
     const [progress, setProgress] = useState(null);
     const [showForm, setShowForm] = useState(true);
     const [activeTab, setActiveTab] = useState('todo');
+    const [latestUser, setLatestUser] = useState(null);
 
     useEffect(() => {
         loadProgress();
         checkTodayData();
+        fetchLatestUser();
     }, []);
+
+    const fetchLatestUser = async () => {
+        try {
+            const response = await api.get('/user/me');
+            if (response.data) {
+                setLatestUser(response.data);
+            }
+        } catch (err) {
+            console.error('Failed to fetch user me:', err);
+        }
+    };
 
     const loadProgress = async () => {
         try {
@@ -1368,7 +1421,7 @@ export default function ExerciseScreen({ navigation }) {
                         <HealthDataForm
                             onSubmit={handleSubmitHealthData}
                             loading={loading}
-                            user={user}
+                            user={latestUser || user}
                             initialData={initialHealthData}
                         />
                     )}
@@ -2089,18 +2142,18 @@ const styles = StyleSheet.create({
         fontSize: 13,
     },
     modalSplitRow: {
-        flexDirection: width > 500 ? 'row' : 'column',
+        flexDirection: width > 768 ? 'row' : 'column',
         width: '100%',
         gap: 16,
         alignItems: 'center',
         justifyContent: 'center',
     },
     modalLeftColumn: {
-        flex: width > 500 ? 1.2 : 0,
+        flex: width > 768 ? 1.2 : undefined,
         width: '100%',
     },
     modalRightColumn: {
-        flex: width > 500 ? 0.8 : 0,
+        flex: width > 768 ? 0.8 : undefined,
         width: '100%',
     },
     aiTrackingBtn: {

@@ -9,6 +9,7 @@ import {
     Modal,
     Image,
     Platform,
+    useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -17,7 +18,9 @@ import { useTranslation } from 'react-i18next';
 import { Video, ResizeMode } from 'expo-av';
 import { WebView } from 'react-native-webview';
 import exerciseService from '../services/exerciseService';
-import { typography } from '../theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '../context/AuthContext';
 const getYouTubeId = (url) => {
     if (!url) return null;
     if (url.includes('youtube.com/embed/'))
@@ -101,18 +104,18 @@ const navItems = (t) => [
 // ─────────────────────────────────────────────
 // PROGRESS BAR COMPONENT
 // ─────────────────────────────────────────────
-function ProgressBar({ label, progress, color }) {
+function ProgressBar({ label, progress, color, isDarkMode }) {
     const percent = Math.round(progress * 100);
     return (
         <View style={styles.progressRow}>
             <View style={styles.progressLabelRow}>
-                <Text style={styles.progressLabel}>{label}</Text>
+                <Text style={[styles.progressLabel, isDarkMode && { color: '#E5E7EB' }]}>{label}</Text>
                 <Text style={[styles.progressPercent, { color }]}>
                     {percent}%
                 </Text>
             </View>
 
-            <View style={styles.progressTrack}>
+            <View style={[styles.progressTrack, isDarkMode && { backgroundColor: '#374151' }]}>
                 <View
                     style={[
                         styles.progressFill,
@@ -130,12 +133,14 @@ function ProgressBar({ label, progress, color }) {
 // ─────────────────────────────────────────────
 // STAT CARD COMPONENT
 // ─────────────────────────────────────────────
-function StatCard({ icon, label, value, color }) {
+function StatCard({ icon, label, value, color, isDarkMode }) {
+    const { width } = useWindowDimensions();
+    const cardWidth = (width - 42) / 2;
     return (
-        <View style={[styles.statCard, { borderLeftColor: color }]}>
+        <View style={[styles.statCard, { width: cardWidth, borderLeftColor: color }, isDarkMode && { backgroundColor: '#2D2D2D', borderColor: '#3D3D3D' }]}>
             <Text style={styles.statIcon}>{icon}</Text>
             <Text style={[styles.statValue, { color }]}>{value}</Text>
-            <Text style={styles.statLabel}>{label}</Text>
+            <Text style={[styles.statLabel, isDarkMode && { color: '#9CA3AF' }]}>{label}</Text>
         </View>
     );
 }
@@ -145,6 +150,9 @@ function StatCard({ icon, label, value, color }) {
 // ─────────────────────────────────────────────
 function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
     const { t } = useTranslation();
+    const { user } = useAuth();
+    const displayName = user?.username || 'Guest User';
+    const initials = displayName.slice(0, 2).toUpperCase();
 
     return (
         <Modal
@@ -163,16 +171,16 @@ function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
                     {/* Sidebar Header */}
                     <View style={styles.sidebarHeader}>
                         <View style={styles.sidebarAvatar}>
-                            <Text style={styles.sidebarAvatarText}>SJ</Text>
+                            <Text style={styles.sidebarAvatarText}>{initials}</Text>
                         </View>
 
                         <View style={styles.sidebarUserInfo}>
                             <Text style={styles.sidebarUserName}>
-                                {mockUser.name}
+                                {displayName}
                             </Text>
 
                             <Text style={styles.sidebarUserRole}>
-                                {mockUser.role}
+                                {user?.role ? t(user.role) : t('Patient')}
                             </Text>
                         </View>
 
@@ -246,26 +254,98 @@ function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
 }
 
 // ─────────────────────────────────────────────
+// BRIGHTNESS SLIDER COMPONENT
+// ─────────────────────────────────────────────
+function BrightnessSlider({ value, onValueChange, isDarkMode }) {
+    const [sliderWidth, setSliderWidth] = useState(80);
+
+    const handleTouch = (evt) => {
+        const touchX = evt.nativeEvent.locationX;
+        let newValue = touchX / sliderWidth;
+        if (newValue < 0) newValue = 0;
+        if (newValue > 1) newValue = 1;
+        onValueChange(newValue);
+    };
+
+    return (
+        <View
+            style={{
+                width: 80,
+                height: 30,
+                justifyContent: 'center',
+                marginRight: 10,
+            }}
+            onLayout={(e) => {
+                const { width } = e.nativeEvent.layout;
+                if (width) setSliderWidth(width);
+            }}
+            onStartShouldSetResponder={() => true}
+            onMoveShouldSetResponder={() => true}
+            onResponderGrant={handleTouch}
+            onResponderMove={handleTouch}
+        >
+            <View
+                style={{
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: isDarkMode ? '#4B5563' : '#E5E7EB',
+                    width: '100%',
+                    position: 'relative',
+                }}
+            >
+                <View
+                    style={{
+                        height: '100%',
+                        borderRadius: 2,
+                        backgroundColor: '#7C3AED',
+                        width: `${value * 100}%`,
+                    }}
+                />
+                <View
+                    style={{
+                        position: 'absolute',
+                        left: `${value * 100}%`,
+                        top: -6,
+                        marginLeft: -8,
+                        width: 16,
+                        height: 16,
+                        borderRadius: 8,
+                        backgroundColor: '#7C3AED',
+                        borderWidth: 2,
+                        borderColor: '#FFFFFF',
+                        elevation: 3,
+                        shadowColor: '#000',
+                        shadowOffset: { width: 0, height: 1 },
+                        shadowOpacity: 0.22,
+                        shadowRadius: 2.22,
+                    }}
+                />
+            </View>
+        </View>
+    );
+}
+
+// ─────────────────────────────────────────────
 // HEADER COMPONENT
 // ─────────────────────────────────────────────
-function Header({ onMenuPress, onNotifPress }) {
+function Header({ onMenuPress, onNotifPress, isDarkMode, toggleTheme, brightnessLevel, setBrightnessLevel }) {
     const { t, i18n } = useTranslation();
 
     return (
-        <View style={styles.header}>
+        <View style={[styles.header, isDarkMode && { backgroundColor: '#1E1E1E', borderBottomColor: '#2D2D2D' }]}>
             <TouchableOpacity
                 onPress={onMenuPress}
                 style={styles.menuBtn}
             >
-                <View style={styles.menuLine} />
-                <View style={[styles.menuLine, { width: 20 }]} />
-                <View style={styles.menuLine} />
+                <View style={[styles.menuLine, isDarkMode && { backgroundColor: '#F3F4F6' }]} />
+                <View style={[styles.menuLine, { width: 20 }, isDarkMode && { backgroundColor: '#F3F4F6' }]} />
+                <View style={[styles.menuLine, isDarkMode && { backgroundColor: '#F3F4F6' }]} />
             </TouchableOpacity>
 
             <View style={styles.headerCenter}>
                 <Text style={styles.headerLogo}>🌸</Text>
 
-                <Text style={styles.headerTitle}>
+                <Text style={[styles.headerTitle, isDarkMode && { color: '#FFF' }]}>
                     {t('PeriCare')}
                 </Text>
             </View>
@@ -283,8 +363,8 @@ function Header({ onMenuPress, onNotifPress }) {
                         style={{
                             fontWeight: '700',
                             fontSize: 13,
-                            color: '#7C3AED',
-                            backgroundColor: '#EDE9FE',
+                            color: isDarkMode ? '#C084FC' : '#7C3AED',
+                            backgroundColor: isDarkMode ? '#3B0764' : '#EDE9FE',
                             paddingHorizontal: 10,
                             paddingVertical: 4,
                             borderRadius: 12,
@@ -312,7 +392,7 @@ function Header({ onMenuPress, onNotifPress }) {
 // ─────────────────────────────────────────────
 // FOOTER COMPONENT
 // ─────────────────────────────────────────────
-function Footer({ activeTab, onTabPress }) {
+function Footer({ activeTab, onTabPress, isDarkMode }) {
     const { t } = useTranslation();
 
     const footerItems = [
@@ -323,7 +403,7 @@ function Footer({ activeTab, onTabPress }) {
     ];
 
     return (
-        <View style={styles.footer}>
+        <View style={[styles.footer, isDarkMode && { backgroundColor: '#1E1E1E', borderTopColor: '#2D2D2D' }]}>
             {footerItems.map((item) => (
                 <TouchableOpacity
                     key={item.key}
@@ -339,13 +419,14 @@ function Footer({ activeTab, onTabPress }) {
                             styles.footerTabLabel,
                             activeTab === item.key &&
                             styles.footerTabLabelActive,
+                            isDarkMode && { color: activeTab === item.key ? '#A855F7' : '#9CA3AF' }
                         ]}
                     >
                         {item.label}
                     </Text>
 
                     {activeTab === item.key && (
-                        <View style={styles.footerActiveBar} />
+                        <View style={[styles.footerActiveBar, isDarkMode && { backgroundColor: '#A855F7' }]} />
                     )}
                 </TouchableOpacity>
             ))}
@@ -357,7 +438,11 @@ function Footer({ activeTab, onTabPress }) {
 // MAIN DASHBOARD SCREEN
 // ─────────────────────────────────────────────
 export default function DashboardScreen({ navigation }) {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const { width } = useWindowDimensions();
+    const { user } = useAuth();
+    const displayName = user?.username || 'Guest User';
+    const initials = displayName.slice(0, 2).toUpperCase();
 
     const [activeTab, setActiveTab] = useState('home');
     const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -366,8 +451,56 @@ export default function DashboardScreen({ navigation }) {
     const [videoModalVisible, setVideoModalVisible] = useState(false);
     const [selectedVideoUrl, setSelectedVideoUrl] = useState(null);
     const [progressStats, setProgressStats] = useState(null);
+    const [lastVisit, setLastVisit] = useState('');
+    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [brightnessLevel, setBrightnessLevel] = useState(1.0);
+    const [hoveredIndex, setHoveredIndex] = useState(null);
+
+    const toggleTheme = async () => {
+        const nextTheme = !isDarkMode;
+        setIsDarkMode(nextTheme);
+        await AsyncStorage.setItem('app_theme', nextTheme ? 'dark' : 'light');
+    };
+
+    const getBrightnessOpacity = () => {
+        return (1.0 - brightnessLevel) * 0.68;
+    };
+
+    const getCurrentDayString = () => {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const d = new Date();
+        return d.toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', options);
+    };
 
     useEffect(() => {
+        const loadTheme = async () => {
+            const storedTheme = await AsyncStorage.getItem('app_theme');
+            if (storedTheme === 'dark') {
+                setIsDarkMode(true);
+            }
+        };
+        const loadBrightness = async () => {
+            const stored = await AsyncStorage.getItem('app_brightness');
+            if (stored) {
+                setBrightnessLevel(parseFloat(stored));
+            }
+        };
+        loadTheme();
+        loadBrightness();
+        const checkLastVisit = async () => {
+            const stored = await AsyncStorage.getItem('last_visit_date');
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            if (stored) {
+                setLastVisit(stored);
+            } else {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                setLastVisit(yesterday.toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', options));
+            }
+            const todayStr = new Date().toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', options);
+            await AsyncStorage.setItem('last_visit_date', todayStr);
+        };
+        checkLastVisit();
         const fetchExercises = async () => {
             try {
                 const today = new Date().toISOString().split('T')[0];
@@ -464,8 +597,25 @@ export default function DashboardScreen({ navigation }) {
         barPercentage: 0.6,
     };
 
+    const chartConfigDark = {
+        backgroundGradientFrom: '#1E1E1E',
+        backgroundGradientTo: '#1E1E1E',
+        decimalPlaces: 0,
+        color: (opacity = 1) =>
+            `rgba(168, 85, 247, ${opacity})`,
+        labelColor: (opacity = 1) =>
+            `rgba(243, 244, 246, ${opacity})`,
+        style: { borderRadius: 16 },
+        propsForDots: {
+            r: '5',
+            strokeWidth: '2',
+            stroke: '#A855F7',
+        },
+        barPercentage: 0.6,
+    };
+
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={[styles.safeArea, isDarkMode && { backgroundColor: '#121212' }]}>
             {/* ── Sidebar ── */}
             <Sidebar
                 visible={sidebarVisible}
@@ -540,119 +690,105 @@ export default function DashboardScreen({ navigation }) {
             <Header
                 onMenuPress={() => setSidebarVisible(true)}
                 onNotifPress={handleNotifPress}
+                isDarkMode={isDarkMode}
+                toggleTheme={toggleTheme}
+                brightnessLevel={brightnessLevel}
+                setBrightnessLevel={setBrightnessLevel}
             />
 
             {/* ── Main Scrollable Content ── */}
             <ScrollView
-                style={styles.scrollView}
+                style={[styles.scrollView, isDarkMode && { backgroundColor: '#121212' }]}
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={false}
             >
                 {/* Greeting Banner */}
-                <View style={styles.greetingBanner}>
+                <LinearGradient
+                    colors={['#AA60C8', '#BD83CE', '#D69ADE', '#EABDE6']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.greetingBanner}
+                >
                     <View style={styles.greetingTextContainer}>
                         <Text style={styles.greetingHello}>
                             {t('Hello')},{' '}
-                            {mockUser.name.split(' ')[0]} 👋
+                            {displayName.split(' ')[0]} 👋
                         </Text>
 
                         <Text style={styles.greetingSubtitle}>
                             {t("Here's your health overview")}
                         </Text>
 
+                        <Text style={[styles.greetingSubtitle, { fontWeight: '700', color: '#FFF', opacity: 0.9, marginTop: 2 }]}>
+                            📅 {getCurrentDayString()}
+                        </Text>
+
                         <Text style={styles.greetingDate}>
-                            {t('Last visit')}: {mockUser.lastVisit}
+                            {t('Last visit')}: {lastVisit}
                         </Text>
                     </View>
 
                     <View style={styles.greetingAvatarLarge}>
                         <Text style={styles.greetingAvatarText}>
-                            SJ
+                            {initials}
                         </Text>
                     </View>
-                </View>
+                </LinearGradient>
 
                 <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>
+                    <Text style={[styles.sectionTitle, isDarkMode && { color: '#FFF' }]}>
                         {t('Overview')}
                     </Text>
 
-                    <Text style={styles.lastVisit}>
-                        {t('Last visit')}: {mockUser.lastVisit}
+                    <Text style={[styles.lastVisit, isDarkMode && { color: '#9CA3AF' }]}>
+                        {t('Last visit')}: {lastVisit}
                     </Text>
                 </View>
 
                 <View style={styles.statsGrid}>
                     {mockStats(t).map((stat, i) => (
-                        <StatCard key={i} {...stat} />
+                        <StatCard key={i} {...stat} isDarkMode={isDarkMode} />
                     ))}
                 </View>
 
                 {/* ── Progress Chart ── */}
-                <View style={styles.card}>
-                    <Text style={styles.cardTitle}>
+                <View style={[styles.card, isDarkMode && { backgroundColor: '#2D2D2D', borderColor: '#3D3D3D' }]}>
+                    <Text style={[styles.cardTitle, isDarkMode && { color: '#FFF' }]}>
                         {t('Monthly Progress')}
                     </Text>
 
-                    <BarChart
-                        data={barChartData(t)}
-                        width={width - 64}
-                        height={180}
-                        yAxisLabel=""
-                        chartConfig={chartConfig}
-                        verticalLabelRotation={0}
-                        style={styles.chart}
-                        showValuesOnTopOfBars
-                        fromZero
-                    />
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <BarChart
+                            data={barChartData(t)}
+                            width={Math.max(width - 64, 400)}
+                            height={180}
+                            yAxisLabel=""
+                            chartConfig={isDarkMode ? chartConfigDark : chartConfig}
+                            verticalLabelRotation={0}
+                            style={styles.chart}
+                            showValuesOnTopOfBars
+                            fromZero
+                        />
+                    </ScrollView>
                 </View>
 
-                {/* ── Consistency & Recovery Trends ── */}
-                {progressStats && (
-                    <View style={styles.card}>
-                        <Text style={styles.cardTitle}>🏃‍♀️ {t('Consistency & Recovery Trends')}</Text>
-                        <View style={[styles.statsGrid, { marginVertical: 8 }]}>
-                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#FF9A9E' }]}>
-                                <Text style={styles.dashboardMetricVal}>{progressStats.currentStreak} {t('Days')}</Text>
-                                <Text style={styles.dashboardMetricLabel}>🔥 {t('Current Streak')}</Text>
-                            </View>
-                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#F59E0B' }]}>
-                                <Text style={styles.dashboardMetricVal}>{progressStats.missedSessions ?? 0}</Text>
-                                <Text style={styles.dashboardMetricLabel}>⚠️ {t('Missed Sessions')}</Text>
-                            </View>
-                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#10B981' }]}>
-                                <Text style={styles.dashboardMetricVal}>{progressStats.weeklyCompletionRate ?? 0}%</Text>
-                                <Text style={styles.dashboardMetricLabel}>📊 {t('Weekly Rate')}</Text>
-                            </View>
-                            <View style={[styles.dashboardMetricBox, { borderLeftColor: '#7C3AED' }]}>
-                                <Text style={styles.dashboardMetricVal}>{progressStats.averageDuration ?? 0}m</Text>
-                                <Text style={styles.dashboardMetricLabel}>⏱️ {t('Avg Duration')}</Text>
-                            </View>
-                        </View>
 
-                        {progressStats.recoveryTrend && (
-                            <View style={styles.trendContainer}>
-                                <Text style={styles.trendTitle}>🩺 {t('Recovery Trend Analysis')}</Text>
-                                <Text style={styles.trendText}>{t(progressStats.recoveryTrend)}</Text>
-                            </View>
-                        )}
-                    </View>
-                )}
 
                 {/* ── Health Indicators ── */}
-                <View style={styles.indicatorRow}>
+                <View style={[styles.indicatorRow, { flexDirection: width < 768 ? 'column' : 'row' }]}>
                     <View
                         style={[
                             styles.card,
-                            { flex: 1, marginBottom: 0 },
+                            { flex: width < 768 ? undefined : 1, marginBottom: width < 768 ? 16 : 0 },
+                            isDarkMode && { backgroundColor: '#2D2D2D', borderColor: '#3D3D3D' }
                         ]}
                     >
-                        <Text style={styles.cardTitle}>
+                        <Text style={[styles.cardTitle, isDarkMode && { color: '#FFF' }]}>
                             {t('Health Scores')}
                         </Text>
 
                         {progressData(t).map((p, i) => (
-                            <ProgressBar key={i} {...p} />
+                            <ProgressBar key={i} {...p} isDarkMode={isDarkMode} />
                         ))}
                     </View>
 
@@ -660,21 +796,27 @@ export default function DashboardScreen({ navigation }) {
                         style={[
                             styles.card,
                             {
-                                flex: 0.9,
+                                flex: width < 768 ? undefined : 0.9,
                                 marginBottom: 0,
-                                marginLeft: 12,
+                                marginLeft: width < 768 ? 0 : 12,
                             },
+                            isDarkMode && { backgroundColor: '#2D2D2D', borderColor: '#3D3D3D' }
                         ]}
                     >
-                        <Text style={styles.cardTitle}>
+                        <Text style={[styles.cardTitle, isDarkMode && { color: '#FFF' }]}>
                             {t('Risk Level')}
                         </Text>
 
                         <PieChart
-                            data={pieChartData(t)}
-                            width={width * 0.4}
+                            data={[
+                                { name: t('Low'), population: 35, color: '#10B981', legendFontColor: isDarkMode ? '#E5E7EB' : '#374151', legendFontSize: 13 },
+                                { name: t('Medium'), population: 40, color: '#F59E0B', legendFontColor: isDarkMode ? '#E5E7EB' : '#374151', legendFontSize: 13 },
+                                { name: t('High'), population: 15, color: '#EF4444', legendFontColor: isDarkMode ? '#E5E7EB' : '#374151', legendFontSize: 13 },
+                                { name: t('None'), population: 10, color: '#7C3AED', legendFontColor: isDarkMode ? '#E5E7EB' : '#374151', legendFontSize: 13 },
+                            ]}
+                            width={width < 768 ? width - 64 : width * 0.4}
                             height={160}
-                            chartConfig={chartConfig}
+                            chartConfig={isDarkMode ? chartConfigDark : chartConfig}
                             accessor="population"
                             backgroundColor="transparent"
                             paddingLeft="10"
@@ -691,17 +833,17 @@ export default function DashboardScreen({ navigation }) {
                     </Text>
 
                     <TouchableOpacity>
-                        <Text style={styles.viewAllText}>
+                        <Text style={[styles.viewAllText, isDarkMode && { color: '#C084FC' }]}>
                             {t('View All')}
                         </Text>
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.activityList}>
+                <View style={[styles.activityList, isDarkMode && { backgroundColor: '#2D2D2D' }]}>
                     {recentActivities(t).map((item) => (
                         <View
                             key={item.id}
-                            style={styles.activityItem}
+                            style={[styles.activityItem, isDarkMode && { backgroundColor: '#2D2D2D', borderBottomColor: '#3D3D3D' }]}
                         >
                             <View
                                 style={[
@@ -718,11 +860,11 @@ export default function DashboardScreen({ navigation }) {
                             </View>
 
                             <View style={styles.activityInfo}>
-                                <Text style={styles.activityTitle}>
+                                <Text style={[styles.activityTitle, isDarkMode && { color: '#FFF' }]}>
                                     {item.title}
                                 </Text>
 
-                                <Text style={styles.activityTime}>
+                                <Text style={[styles.activityTime, isDarkMode && { color: '#9CA3AF' }]}>
                                     {item.time}
                                 </Text>
                             </View>
@@ -740,15 +882,24 @@ export default function DashboardScreen({ navigation }) {
                 </View>
 
                 {/* Quick Action Buttons */}
-                <Text style={styles.sectionTitle}>
+                <Text style={[styles.sectionTitle, isDarkMode && { color: '#FFF' }]}>
                     {t('Quick Actions')}
                 </Text>
 
                 <View style={styles.quickActions}>
                     <TouchableOpacity
+                        onMouseEnter={() => setHoveredIndex(0)}
+                        onMouseLeave={() => setHoveredIndex(null)}
                         style={[
                             styles.quickActionBtn,
-                            { backgroundColor: '#7C3AED' },
+                            { width: (width - 42) / 2, backgroundColor: '#AA60C8' },
+                            hoveredIndex === 0 && Platform.OS === 'web' && {
+                                transform: [{ translateY: -3 }],
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 8 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 16,
+                            }
                         ]}
                         onPress={() =>
                             navigation.navigate('Diary')
@@ -764,9 +915,18 @@ export default function DashboardScreen({ navigation }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
+                        onMouseEnter={() => setHoveredIndex(1)}
+                        onMouseLeave={() => setHoveredIndex(null)}
                         style={[
                             styles.quickActionBtn,
-                            { backgroundColor: '#0EA5E9' },
+                            { width: (width - 42) / 2, backgroundColor: '#BD83CE' },
+                            hoveredIndex === 1 && Platform.OS === 'web' && {
+                                transform: [{ translateY: -3 }],
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 8 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 16,
+                            }
                         ]}
                         onPress={() =>
                             navigation.navigate('Plan')
@@ -782,7 +942,19 @@ export default function DashboardScreen({ navigation }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#7C3AED' }]}
+                        onMouseEnter={() => setHoveredIndex(2)}
+                        onMouseLeave={() => setHoveredIndex(null)}
+                        style={[
+                            styles.quickActionBtn, 
+                            { width: (width - 42) / 2, backgroundColor: '#D69ADE' },
+                            hoveredIndex === 2 && Platform.OS === 'web' && {
+                                transform: [{ translateY: -3 }],
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 8 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 16,
+                            }
+                        ]}
                         onPress={() => navigation.navigate('EPDSScreening')}
                     >
                         <Text style={styles.quickActionIcon}>📋</Text>
@@ -790,9 +962,18 @@ export default function DashboardScreen({ navigation }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
+                        onMouseEnter={() => setHoveredIndex(3)}
+                        onMouseLeave={() => setHoveredIndex(null)}
                         style={[
                             styles.quickActionBtn,
-                            { backgroundColor: '#10B981' },
+                            { width: (width - 42) / 2, backgroundColor: '#EABDE6' },
+                            hoveredIndex === 3 && Platform.OS === 'web' && {
+                                transform: [{ translateY: -3 }],
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 8 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 16,
+                            }
                         ]}
                         onPress={() =>
                             Toast.show({
@@ -815,9 +996,18 @@ export default function DashboardScreen({ navigation }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
+                        onMouseEnter={() => setHoveredIndex(4)}
+                        onMouseLeave={() => setHoveredIndex(null)}
                         style={[
                             styles.quickActionBtn,
-                            { backgroundColor: '#10B981' },
+                            { width: (width - 42) / 2, backgroundColor: '#F7C6E6' },
+                            hoveredIndex === 4 && Platform.OS === 'web' && {
+                                transform: [{ translateY: -3 }],
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 8 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 16,
+                            }
                         ]}
                         onPress={() =>
                             navigation.navigate('Exercise')
@@ -833,9 +1023,18 @@ export default function DashboardScreen({ navigation }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
+                        onMouseEnter={() => setHoveredIndex(5)}
+                        onMouseLeave={() => setHoveredIndex(null)}
                         style={[
                             styles.quickActionBtn,
-                            { backgroundColor: '#F59E0B' },
+                            { width: (width - 42) / 2, backgroundColor: '#FAD5EC' },
+                            hoveredIndex === 5 && Platform.OS === 'web' && {
+                                transform: [{ translateY: -3 }],
+                                shadowColor: '#000',
+                                shadowOffset: { width: 0, height: 8 },
+                                shadowOpacity: 0.15,
+                                shadowRadius: 16,
+                            }
                         ]}
                         onPress={() =>
                             navigation.navigate('DashboardCopy')
@@ -858,6 +1057,7 @@ export default function DashboardScreen({ navigation }) {
             <Footer
                 activeTab={activeTab}
                 onTabPress={handleTabPress}
+                isDarkMode={isDarkMode}
             />
 
             {/* Toast */}
@@ -1300,6 +1500,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 10,
+        marginTop: 14,
         marginBottom: 10,
     },
 
@@ -1308,8 +1509,17 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         padding: 14,
         alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#EABDE6',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+        elevation: 2,
+        ...Platform.select({
+            web: {
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                cursor: 'pointer',
+            }
+        })
     },
 
     quickActionIcon: {
@@ -1317,7 +1527,7 @@ const styles = StyleSheet.create({
         marginBottom: 6,
     },
     quickActionText: {
-        color: WHITE,
+        color: '#000000',
         fontSize: 11,
         fontFamily: typography.subTopicFont,
         fontWeight: '700',
