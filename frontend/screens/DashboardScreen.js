@@ -21,6 +21,7 @@ import exerciseService from '../services/exerciseService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
+import { colors, typography, spacing, radius, shadows } from '../theme';
 const getYouTubeId = (url) => {
     if (!url) return null;
     if (url.includes('youtube.com/embed/'))
@@ -180,7 +181,7 @@ function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
                             </Text>
 
                             <Text style={styles.sidebarUserRole}>
-                                {user?.role ? t(user.role) : t('Patient')}
+                                {user?.role && user.role !== 'Patient' ? t(user.role) : ''}
                             </Text>
                         </View>
 
