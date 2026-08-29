@@ -21,6 +21,7 @@ import exerciseService from '../services/exerciseService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import { colors, typography, spacing, radius, shadows } from '../theme';
 const getYouTubeId = (url) => {
     if (!url) return null;
@@ -442,7 +443,7 @@ export default function DashboardScreen({ navigation }) {
     const { t, i18n } = useTranslation();
     const { width } = useWindowDimensions();
     const { user } = useAuth();
-    const displayName = user?.username || 'Guest User';
+    const [displayName, setDisplayName] = useState(user?.username || 'Guest User');
     const initials = displayName.slice(0, 2).toUpperCase();
 
     const [activeTab, setActiveTab] = useState('home');
@@ -525,9 +526,21 @@ export default function DashboardScreen({ navigation }) {
             }
         };
 
+        const fetchUserProfile = async () => {
+            try {
+                const res = await api.get('/user/me');
+                if (res.data && res.data.username) {
+                    setDisplayName(res.data.username);
+                }
+            } catch (err) {
+                console.log('Failed to fetch user profile in dashboard', err);
+            }
+        };
+
         fetchExercises();
         fetchProgress();
-    }, []);
+        fetchUserProfile();
+    }, [user]);
 
     const handleLogout = () => {
         setSidebarVisible(false);
