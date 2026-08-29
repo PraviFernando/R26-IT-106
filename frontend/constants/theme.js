@@ -1,45 +1,46 @@
 export const COLORS = {
-    // Light Purple Primary Theme
-    background: '#F4F0FF',           // Main Soft Light Purple Screen Background
-    backgroundAlt: '#EBE5FF',        // Slightly deeper light purple
+    // Primary Brand Palette (#AA60C8, #D69ADE, #EABDE6, #FFDFEF, #FFFFFF)
+    background: '#FAF2FA',           // Main Soft Light Purple Screen Background
+    backgroundAlt: '#FFDFEF',        // Lightest Soft Pinkish Tint Background
     cardBg: '#FFFFFF',
 
     // Purple Brand Palette
-    primary: '#7C3AED',              // Deep Purple
-    primaryLight: '#F3E8FF',         // Light Lavender Pill / Badge
-    primaryDark: '#5B21B6',          // Dark Purple Header
-    accent: '#A78BFA',               // Soft Purple
+    primary: '#AA60C8',              // Deep Soft Purple / Primary Accent
+    primaryLight: '#FFDFEF',         // Soft Pill / Badge Background Tint
+    primaryDark: '#873CA6',          // Dark Purple Header / Button
+    accent: '#EABDE6',               // Soft Purple / Lavender Border Accent
+    secondary: '#D69ADE',            // Medium Pastel Purple
 
-    // Grid Card Pastel Colors (like the modern App Store category cards in user's image)
-    cardGreen: '#D1FAE5',            // Mint / Green
-    cardPink: '#FCE7F3',             // Pink / Rose
-    cardCyan: '#CFFAFE',             // Cyan / Aqua
-    cardYellow: '#FEF3C7',           // Yellow / Amber
-    cardPurple: '#EDE9FE',           // Soft Purple
-    cardOrange: '#FFEDD5',           // Soft Peach / Orange
-    cardBlue: '#E0F2FE',             // Sky Blue
+    // Grid Card Pastel Colors
+    cardGreen: '#E8F8EE',            // Mint / Green Tint
+    cardPink: '#FFDFEF',             // Pink Tint
+    cardCyan: '#EAF7FB',             // Soft Cyan
+    cardYellow: '#FFFDF0',           // Soft Warm Yellow
+    cardPurple: '#F5E6FB',           // Soft Lilac / Purple
+    cardOrange: '#FFF2EB',           // Soft Peach
+    cardBlue: '#EFF6FF',             // Soft Blue
 
     // Borders
-    borderGreen: '#34D399',
-    borderPink: '#F472B6',
-    borderCyan: '#22D3EE',
-    borderYellow: '#FBBF24',
-    borderPurple: '#C4B5FD',
-    borderOrange: '#FB923C',
-    borderLight: '#E5E7EB',
+    borderGreen: '#81C784',
+    borderPink: '#EABDE6',
+    borderCyan: '#80DEEA',
+    borderYellow: '#FFE082',
+    borderPurple: '#D69ADE',
+    borderOrange: '#FFB74D',
+    borderLight: '#F3D9F0',
 
     // Text
-    textPrimary: '#111827',
-    textSecondary: '#4B5563',
-    textMuted: '#6B7280',
-    textLight: '#9CA3AF',
+    textPrimary: '#2C1A35',
+    textSecondary: '#6A4D77',
+    textMuted: '#9E7FA9',
+    textLight: '#BCA4C6',
     textWhite: '#FFFFFF',
 
     // Status
-    success: '#10B981',
-    warning: '#F59E0B',
-    danger: '#EF4444',
-    info: '#06B6D4',
+    success: '#4CAF50',
+    warning: '#FF9800',
+    danger: '#F44336',
+    info: '#00BCD4',
 };
 
 export const SHADOWS = {

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Animated, Modal, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, spacing, radius, shadows } from '../theme';
+import { colors, typography, spacing, radius, shadows } from '../theme';
 import { ALL_ACTIVITIES, NEW_ACTIVITIES } from '../services/activitiesLibrary';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
@@ -3121,7 +3121,7 @@ const ActivityScreen = ({ navigation, route }) => {
 
   return (
     <View style={s.container}>
-      <LinearGradient colors={['#F8F4FF', '#F0FAFF']} style={s.gradient}>
+      <LinearGradient colors={['#FAF2FA', '#FFDFEF']} style={s.gradient}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
           <Text style={s.pageTitle}>ක්‍රියාකාරකම් සහ ක්‍රීඩා 🌸</Text>
           <Text style={s.pageSub}>ඔබේ යහපැවැත්ම 💜</Text>
@@ -3202,38 +3202,40 @@ const newAct = StyleSheet.create({
 });
 
 const s = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: '#FAF2FA' },
   gradient: { flex: 1 },
-  scroll: { padding: spacing.md, paddingTop: 50 },
-  pageTitle: { fontSize: 26, fontWeight: '900', color: colors.textPrimary, marginBottom: 4 },
-  pageSub: { fontSize: 15, color: colors.textSecondary, marginBottom: spacing.lg },
+  scroll: { padding: spacing.md, paddingTop: 50, paddingBottom: 40 },
+  pageTitle: { fontSize: 26, fontFamily: typography.headerFont, fontWeight: '700', color: '#2C1A35', marginBottom: 4 },
+  pageSub: { fontSize: 15, fontFamily: typography.bodyFont, color: '#6A4D77', marginBottom: spacing.lg },
   artBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF9C4',
+    backgroundColor: '#FFDFEF',
     padding: spacing.md,
     borderRadius: radius.xl,
     marginBottom: spacing.lg,
+    borderWidth: 1,
+    borderColor: '#EABDE6',
     ...shadows.soft,
   },
   artBannerIcon: { fontSize: 32, marginRight: 12 },
   artBannerInfo: { flex: 1 },
-  artBannerTitle: { fontSize: 17, fontWeight: '800', color: '#F57F17' },
-  artBannerSub: { fontSize: 13, color: '#F9A825' },
-  artBannerArrow: { fontSize: 20, color: '#F57F17' },
-  sectionLabel: { fontSize: 18, fontWeight: '900', marginBottom: 12, marginTop: 10 },
+  artBannerTitle: { fontSize: 17, fontFamily: typography.topicFont, fontWeight: '700', color: '#AA60C8' },
+  artBannerSub: { fontSize: 13, fontFamily: typography.bodyFont, color: '#6A4D77' },
+  artBannerArrow: { fontSize: 20, color: '#AA60C8' },
+  sectionLabel: { fontSize: 18, fontFamily: typography.topicFont, fontWeight: '700', color: '#2C1A35', marginBottom: 12, marginTop: 10 },
   gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   gameWrap: { width: '48%', marginBottom: 14 },
-  gameCard: { padding: 16, borderRadius: radius.lg, alignItems: 'center', ...shadows.soft },
+  gameCard: { padding: 16, borderRadius: radius.lg, alignItems: 'center', borderWidth: 1, borderColor: '#F5D3EE', ...shadows.soft },
   gameIcon: { fontSize: 36, marginBottom: 8 },
-  gameLabel: { fontSize: 14, fontWeight: '800', textAlign: 'center', color: colors.textPrimary },
-  gameSub: { fontSize: 10, fontWeight: '700', textAlign: 'center', marginTop: 4 },
+  gameLabel: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', textAlign: 'center', color: '#2C1A35' },
+  gameSub: { fontSize: 10, fontFamily: typography.bodyFont, fontWeight: '600', textAlign: 'center', marginTop: 4 },
   backBtn: { marginBottom: 16, alignSelf: 'flex-start' },
-  backText: { color: '#7E57C2', fontWeight: '800', fontSize: 16 },
-  actTitle: { fontSize: 24, fontWeight: '900', color: colors.textPrimary, marginBottom: 6 },
-  actSub: { fontSize: 15, color: colors.textSecondary, marginBottom: 20 },
-  banner: { padding: 16, borderRadius: radius.lg, alignItems: 'center', marginTop: 20 },
-  bannerT: { fontSize: 16, fontWeight: '800', color: '#7E57C2' },
+  backText: { color: '#AA60C8', fontFamily: typography.subTopicFont, fontWeight: '700', fontSize: 16 },
+  actTitle: { fontSize: 24, fontFamily: typography.topicFont, fontWeight: '700', color: '#2C1A35', marginBottom: 6 },
+  actSub: { fontSize: 15, fontFamily: typography.bodyFont, color: '#6A4D77', marginBottom: 20 },
+  banner: { padding: 16, borderRadius: radius.lg, alignItems: 'center', marginTop: 20, backgroundColor: '#FFDFEF' },
+  bannerT: { fontSize: 16, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#AA60C8' },
 });
 
 const bx = StyleSheet.create({

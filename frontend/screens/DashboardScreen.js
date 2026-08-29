@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { Video, ResizeMode } from 'expo-av';
 import { WebView } from 'react-native-webview';
 import exerciseService from '../services/exerciseService';
+import { typography } from '../theme';
 const getYouTubeId = (url) => {
     if (!url) return null;
     if (url.includes('youtube.com/embed/'))
@@ -865,9 +866,10 @@ export default function DashboardScreen({ navigation }) {
     );
 }
 
-const PURPLE = '#7C3AED';
-const PURPLE_LIGHT = '#EDE9FE';
-const BG = '#F3F4F6';
+const PURPLE = '#AA60C8';
+const PURPLE_LIGHT = '#FFDFEF';
+const PURPLE_BORDER = '#EABDE6';
+const BG = '#FAF2FA';
 const WHITE = '#FFFFFF';
 
 const styles = StyleSheet.create({
@@ -883,7 +885,9 @@ const styles = StyleSheet.create({
         backgroundColor: WHITE,
         paddingHorizontal: 16,
         paddingVertical: 12,
-        elevation: 4,
+        elevation: 2,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F5D3EE',
     },
 
     menuBtn: {
@@ -893,7 +897,7 @@ const styles = StyleSheet.create({
     menuLine: {
         width: 24,
         height: 2.5,
-        backgroundColor: '#374151',
+        backgroundColor: '#AA60C8',
         borderRadius: 2,
         marginVertical: 2,
     },
@@ -909,7 +913,8 @@ const styles = StyleSheet.create({
 
     headerTitle: {
         fontSize: 20,
-        fontWeight: '800',
+        fontFamily: typography.headerFont,
+        fontWeight: '700',
         color: PURPLE,
     },
 
@@ -926,7 +931,7 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 4,
         right: 4,
-        backgroundColor: '#EF4444',
+        backgroundColor: '#AA60C8',
         borderRadius: 8,
         width: 16,
         height: 16,
@@ -936,6 +941,7 @@ const styles = StyleSheet.create({
     notifBadgeText: {
         color: WHITE,
         fontSize: 10,
+        fontFamily: typography.subTopicFont,
         fontWeight: 'bold',
     },
 
@@ -945,7 +951,7 @@ const styles = StyleSheet.create({
     },
     sidebarBackdrop: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.45)',
+        backgroundColor: 'rgba(44, 26, 53, 0.45)',
     },
     sidebarContainer: {
         width: 280,
@@ -971,6 +977,7 @@ const styles = StyleSheet.create({
     },
     sidebarAvatarText: {
         color: WHITE,
+        fontFamily: typography.topicFont,
         fontWeight: 'bold',
         fontSize: 16,
     },
@@ -980,14 +987,16 @@ const styles = StyleSheet.create({
     },
 
     sidebarUserName: {
+        fontFamily: typography.subTopicFont,
         fontWeight: '700',
         fontSize: 15,
-        color: '#111827',
+        color: '#2C1A35',
     },
 
     sidebarUserRole: {
         fontSize: 12,
-        color: '#6B7280',
+        fontFamily: typography.bodyFont,
+        color: '#6A4D77',
     },
 
     sidebarCloseBtn: {
@@ -996,11 +1005,11 @@ const styles = StyleSheet.create({
 
     sidebarCloseText: {
         fontSize: 18,
-        color: '#374151',
+        color: '#6A4D77',
     },
     sidebarDivider: {
         height: 1,
-        backgroundColor: '#E5E7EB',
+        backgroundColor: '#F5D3EE',
         marginVertical: 8,
     },
 
@@ -1026,11 +1035,13 @@ const styles = StyleSheet.create({
     },
     sidebarNavLabel: {
         fontSize: 15,
-        color: '#374151',
+        color: '#6A4D77',
+        fontFamily: typography.bodyFont,
         fontWeight: '500',
     },
     sidebarNavLabelActive: {
         color: PURPLE,
+        fontFamily: typography.subTopicFont,
         fontWeight: '700',
     },
     sidebarActiveIndicator: {
@@ -1055,6 +1066,7 @@ const styles = StyleSheet.create({
     sidebarLogoutText: {
         fontSize: 15,
         color: '#EF4444',
+        fontFamily: typography.subTopicFont,
         fontWeight: '600',
     },
 
@@ -1083,17 +1095,20 @@ const styles = StyleSheet.create({
     greetingHello: {
         color: WHITE,
         fontSize: 20,
-        fontWeight: '800',
+        fontFamily: typography.topicFont,
+        fontWeight: '700',
         marginBottom: 4,
     },
     greetingSubtitle: {
-        color: 'rgba(255,255,255,0.85)',
+        color: 'rgba(255,255,255,0.88)',
         fontSize: 13,
+        fontFamily: typography.bodyFont,
         marginBottom: 6,
     },
     greetingDate: {
-        color: 'rgba(255,255,255,0.65)',
+        color: 'rgba(255,255,255,0.7)',
         fontSize: 11,
+        fontFamily: typography.bodyFont,
     },
     greetingAvatarLarge: {
         width: 64,
@@ -1102,18 +1117,22 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.25)',
         alignItems: 'center',
         justifyContent: 'center',
+        borderWidth: 2,
+        borderColor: 'rgba(255,255,255,0.5)',
     },
 
     greetingAvatarText: {
         color: WHITE,
+        fontSize: 24,
+        fontFamily: typography.topicFont,
         fontWeight: 'bold',
-        fontSize: 22,
     },
 
     sectionTitle: {
-        fontSize: 16,
+        fontSize: 17,
+        fontFamily: typography.topicFont,
         fontWeight: '700',
-        color: '#111827',
+        color: '#2C1A35',
     },
 
     sectionHeader: {
@@ -1125,13 +1144,15 @@ const styles = StyleSheet.create({
 
     lastVisit: {
         fontSize: 11,
-        color: '#6B7280',
+        fontFamily: typography.bodyFont,
+        color: '#6A4D77',
     },
 
     viewAllText: {
         fontSize: 12,
         color: PURPLE,
-        fontWeight: '600',
+        fontFamily: typography.subTopicFont,
+        fontWeight: '700',
     },
 
     statsGrid: {
@@ -1142,10 +1163,13 @@ const styles = StyleSheet.create({
     },
     statCard: {
         backgroundColor: WHITE,
-        borderRadius: 14,
+        borderRadius: 16,
         padding: 14,
         width: (width - 48) / 2,
         borderLeftWidth: 4,
+        borderWidth: 1,
+        borderColor: '#F5D3EE',
+        elevation: 2,
     },
 
     statIcon: {
@@ -1155,25 +1179,31 @@ const styles = StyleSheet.create({
 
     statValue: {
         fontSize: 22,
-        fontWeight: '800',
+        fontFamily: typography.topicFont,
+        fontWeight: '700',
     },
 
     statLabel: {
         fontSize: 12,
-        color: '#6B7280',
+        fontFamily: typography.bodyFont,
+        color: '#6A4D77',
     },
 
     card: {
         backgroundColor: WHITE,
-        borderRadius: 16,
+        borderRadius: 18,
         padding: 16,
         marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#F5D3EE',
+        elevation: 2,
     },
 
     cardTitle: {
         fontSize: 14,
+        fontFamily: typography.subTopicFont,
         fontWeight: '700',
-        color: '#374151',
+        color: '#2C1A35',
         marginBottom: 12,
     },
 
@@ -1198,16 +1228,18 @@ const styles = StyleSheet.create({
     },
     progressLabel: {
         fontSize: 13,
+        fontFamily: typography.bodyFont,
         fontWeight: '600',
-        color: '#374151',
+        color: '#2C1A35',
     },
     progressPercent: {
         fontSize: 13,
+        fontFamily: typography.subTopicFont,
         fontWeight: '700',
     },
     progressTrack: {
         height: 8,
-        backgroundColor: '#E5E7EB',
+        backgroundColor: '#FFDFEF',
         borderRadius: 4,
         overflow: 'hidden',
     },
@@ -1218,9 +1250,11 @@ const styles = StyleSheet.create({
 
     activityList: {
         backgroundColor: WHITE,
-        borderRadius: 16,
+        borderRadius: 18,
         padding: 8,
         marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#F5D3EE',
     },
 
     activityItem: {
@@ -1228,7 +1262,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 10,
         borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
+        borderBottomColor: '#FAF2FA',
     },
 
     activityIconBox: {
@@ -1246,13 +1280,15 @@ const styles = StyleSheet.create({
 
     activityTitle: {
         fontSize: 14,
+        fontFamily: typography.subTopicFont,
         fontWeight: '600',
-        color: '#111827',
+        color: '#2C1A35',
     },
 
     activityTime: {
         fontSize: 12,
-        color: '#9CA3AF',
+        fontFamily: typography.bodyFont,
+        color: '#9E7FA9',
     },
     activityDot: {
         width: 8,
@@ -1269,9 +1305,11 @@ const styles = StyleSheet.create({
 
     quickActionBtn: {
         width: (width - 58) / 2,
-        borderRadius: 14,
+        borderRadius: 16,
         padding: 14,
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#EABDE6',
     },
 
     quickActionIcon: {
@@ -1281,6 +1319,7 @@ const styles = StyleSheet.create({
     quickActionText: {
         color: WHITE,
         fontSize: 11,
+        fontFamily: typography.subTopicFont,
         fontWeight: '700',
         textAlign: 'center',
     },
@@ -1291,7 +1330,7 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 8,
         borderTopWidth: 1,
-        borderTopColor: '#E5E7EB',
+        borderTopColor: '#F5D3EE',
     },
 
     footerTab: {
@@ -1306,11 +1345,13 @@ const styles = StyleSheet.create({
     },
     footerTabLabel: {
         fontSize: 10,
-        color: '#9CA3AF',
+        color: '#9E7FA9',
+        fontFamily: typography.bodyFont,
         fontWeight: '500',
     },
     footerTabLabelActive: {
         color: PURPLE,
+        fontFamily: typography.subTopicFont,
         fontWeight: '700',
     },
     footerActiveBar: {
@@ -1331,8 +1372,10 @@ const styles = StyleSheet.create({
         backgroundColor: WHITE,
         borderRadius: 16,
         overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: '#F5D3EE',
         elevation: 3,
-        shadowColor: '#000',
+        shadowColor: '#AA60C8',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
@@ -1340,7 +1383,7 @@ const styles = StyleSheet.create({
     exerciseDashThumbnailContainer: {
         width: '100%',
         height: 100,
-        backgroundColor: '#F3F4F6',
+        backgroundColor: '#FFDFEF',
         position: 'relative',
     },
     exerciseDashThumbnail: {
@@ -1351,7 +1394,7 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#F3F4F6',
+        backgroundColor: '#FFDFEF',
     },
     playIconOverlay: {
         position: 'absolute',
@@ -1359,7 +1402,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0,0,0,0.2)',
+        backgroundColor: 'rgba(44, 26, 53, 0.25)',
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -1378,17 +1421,19 @@ const styles = StyleSheet.create({
     },
     exerciseDashName: {
         fontSize: 13,
+        fontFamily: typography.subTopicFont,
         fontWeight: '700',
-        color: '#1F2937',
+        color: '#2C1A35',
     },
     exerciseDashMeta: {
         fontSize: 11,
-        color: '#6B7280',
+        fontFamily: typography.bodyFont,
+        color: '#6A4D77',
         marginTop: 2,
     },
     videoModalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.85)',
+        backgroundColor: 'rgba(44, 26, 53, 0.85)',
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
@@ -1421,7 +1466,7 @@ const styles = StyleSheet.create({
     dashboardVideoWrapper: {
         width: '100%',
         aspectRatio: 16 / 9,
-        height: Platform.OS === 'web' ? 337 : undefined, // 600 * 9/16 = 337.5
+        height: Platform.OS === 'web' ? 337 : undefined,
         backgroundColor: '#000',
     },
     dashboardWebView: {
