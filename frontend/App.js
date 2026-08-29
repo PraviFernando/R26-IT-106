@@ -10,6 +10,20 @@ import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View } from 'react-native';
 
+import {
+  useFonts,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+} from '@expo-google-fonts/poppins';
+import {
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
+
 import { AuthProvider } from './context/AuthContext';
 import { AppProvider } from './services/AppContext';
 import LoginScreen from './screens/LoginScreen';
@@ -127,7 +141,7 @@ export default function App() {
           {/* Global Toast */}
           <Toast />
 
-          
+
 
           {/* Global Brightness dimmer overlay */}
           <View
