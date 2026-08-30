@@ -2939,13 +2939,13 @@ const ALL_GAMES_LIST = [
   { id: 'coin_maze', label: 'කාසි මාලිම', labelEn: 'Collect coins', icon: '🪙', color: ['#FFF9C4', '#FFF3E0'], accent: '#F57F17' },
   { id: 'rotation_puzzle', label: 'කරකැවිල්ල', labelEn: 'Rotate tiles', icon: '🔄', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'sliding_puzzle', label: 'ස්ලයිඩ්', labelEn: 'Slide tiles', icon: '🧩', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
-  { id: 'write_journal', label: 'දිනපොත ලියන්න', labelEn: 'Write a Journal', icon: '📖', color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
-  { id: 'mindful_tap', label: 'භාවනා ක්‍රියාකාරකම', labelEn: 'Meditation Activity', icon: '🧘', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
+  { id: 'emotion_journal', label: 'හැඟීම් දිනපොත', labelEn: 'Track your mood', icon: '🎭', color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
+  { id: 'mindful_tap', label: 'සිහිකල්පනාව', labelEn: 'Breathing rhythm', icon: '🌿', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
   { id: 'mood_board', label: 'මනෝභාව පුවරුව', labelEn: 'Express your mood', icon: '🎨', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'mandala', label: 'මණ්ඩල කලා', labelEn: 'Colour mandalas', icon: '🔮', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'colouring', label: 'රූප පාටකිරීම', labelEn: 'Colouring pages', icon: '🎨', color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
 ];
-const MATURE_IDS = ['write_journal', 'mindful_tap', 'self_care'];
+const MATURE_IDS = ['self_care', 'bubble_pop', 'word_match', 'memory_match'];
 
 const ActivityScreen = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
@@ -3073,7 +3073,6 @@ const ActivityScreen = ({ navigation, route }) => {
         return <RotationPuzzle onGoBack={goBack} />;
       case 'sliding_puzzle':
         return <SlidingPuzzle onGoBack={goBack} />;
-      case 'write_journal':
       case 'emotion_journal':
         return <EmotionJournal onGoBack={goBack} />;
       case 'mindful_tap':

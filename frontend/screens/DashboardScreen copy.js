@@ -143,14 +143,8 @@ const DashboardScreenCopy = ({ navigation }) => {
           {/* Header */}
           <Animated.View style={[s.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
             <View>
-              {!isSinhala && <Text style={s.greeting}>Good Morning 🌸</Text>}
-              <Text style={s.name}>{isSinhala ? 'ආයුබෝවන්' : `Hello, ${user.name}`}</Text>
+              <Text style={s.name}>{isSinhala ? 'ආයුබෝවන්' : 'Hello'}</Text>
             </View>
-            {!isSinhala && (
-              <View style={s.avatar}>
-                <Text style={s.avatarText}>{user.name ? user.name[0] : 'S'}</Text>
-              </View>
-            )}
           </Animated.View>
 
           {/* Preferences prompt */}
@@ -214,15 +208,31 @@ const DashboardScreenCopy = ({ navigation }) => {
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
                 style={s.recBtnInner}
               >
-                <Text style={s.recBtnText}>{isSinhala ? 'පෞද්ගලිකෘත ආධාර ලබාගන්න 💜' : 'Get Personalized Support 💜'}</Text>
+                <Text style={s.recBtnText}>{isSinhala ? 'පෞද්ගලික ආධාර ලබාගන්න' : 'Get Personalized Support'}</Text>
               </LinearGradient>
             </TouchableOpacity>
           </Animated.View>
 
+          {/* Common Activities & Games Button */}
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Activity' } })}
+            style={s.commonActBanner}
+          >
+            <Text style={s.commonActIcon}>🎮</Text>
+            <View style={s.commonActInfo}>
+              <Text style={s.commonActTitle}>
+                {isSinhala ? 'ක්‍රියාකාරකම් සහ ක්‍රීඩා' : 'Common Activities & Games'}
+              </Text>
+              <Text style={s.commonActSub}>
+                {isSinhala ? 'සන්සුන් ක්‍රියාකාරකම් සහ ක්‍රීඩා වෙත පිවිසෙන්න' : 'Access common activities and games'}
+              </Text>
+            </View>
+            <Text style={s.commonActArrow}>→</Text>
+          </TouchableOpacity>
 
           {/* Quick Actions */}
           <View style={s.section}>
-            <Text style={s.sectionTitle}>{isSinhala ? 'ඉක්මන් ආධාර' : 'Quick Support'}</Text>
+            <Text style={s.sectionTitle}>{isSinhala ? 'පෞද්ගලික ඉක්මන් ආධාර' : 'Personalized Quick Support'}</Text>
             <View style={s.quickGrid}>
               {quickActions.map((a, i) => (
                 <TouchableOpacity 
@@ -320,6 +330,12 @@ const s = StyleSheet.create({
   recBtn:         { borderRadius: radius.full, overflow: 'hidden', marginBottom: spacing.xl, width: '100%', ...shadows.card },
   recBtnInner:    { paddingVertical: 14, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
   recBtnText:     { color: colors.white, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', fontSize: 15, textAlign: 'center' },
+  commonActBanner:{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FCE4EC', borderRadius: radius.xl, padding: spacing.md, marginBottom: spacing.lg, borderWidth: 1.5, borderColor: '#F8BBD9', ...shadows.soft },
+  commonActIcon:  { fontSize: 32, marginRight: 12 },
+  commonActInfo:  { flex: 1 },
+  commonActTitle: { fontSize: 16, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: '#8E24AA' },
+  commonActSub:   { fontSize: 12, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, marginTop: 2 },
+  commonActArrow: { fontSize: 20, color: '#8E24AA', fontWeight: '700' },
 });
 
 export default DashboardScreenCopy;

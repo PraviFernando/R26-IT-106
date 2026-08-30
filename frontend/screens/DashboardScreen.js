@@ -943,15 +943,15 @@ export default function DashboardScreen({ navigation }) {
                             }
                         ]}
                         onPress={() =>
-                            navigation.navigate('Plan')
+                            navigation.navigate('DashboardCopy')
                         }
                     >
                         <Text style={styles.quickActionIcon}>
-                            📅
+                            ✨
                         </Text>
 
                         <Text style={styles.quickActionText}>
-                            {t('My Plans')}
+                            {t('Recommend')}
                         </Text>
                     </TouchableOpacity>
 
@@ -1051,15 +1051,15 @@ export default function DashboardScreen({ navigation }) {
                             }
                         ]}
                         onPress={() =>
-                            navigation.navigate('DashboardCopy')
+                            navigation.navigate('Plan')
                         }
                     >
                         <Text style={styles.quickActionIcon}>
-                            ✨
+                            📅
                         </Text>
 
                         <Text style={styles.quickActionText}>
-                            {t('Recommend')}
+                            {t('My Plans')}
                         </Text>
                     </TouchableOpacity>
                 </View>
