@@ -183,16 +183,16 @@ export const VIDEO_LIBRARY = {
   ],
   // ── BONDING ISSUES ──────────────────────────────────────
   bonding_issues: [
-    { id: 'kQiT2tO3KeE', title: 'Attachment and bonding - Your Baby and You', titleEn: 'Attachment and bonding - Your Baby and You', duration: '12 min', emoji: '👶', url: 'https://www.youtube.com/watch?v=kQiT2tO3KeE', source: null },
-    { id: '4VuEIeDrwAM', title: 'Mother-Baby Bonding & Emotional Connection Guide', titleEn: 'Mother-Baby Bonding & Emotional Connection Guide', duration: '8 min', emoji: '⏱️', url: 'https://www.youtube.com/watch?v=4VuEIeDrwAM', source: null },
-    { id: 'bnlKVPj4zeQ', title: 'දෙමාපිය චිත්තවේගීය සහාය (Parenting Emotional Support)', titleEn: 'Parenting Emotional Support', duration: '15 min', emoji: '💜', url: 'https://www.youtube.com/watch?v=bnlKVPj4zeQ', source: null },
-    { id: '2OEL4P1Rz04', title: 'සමට-සම ප්‍රතිලාභ සහ බැඳීම (Skin-to-Skin Bonding & Support)', titleEn: 'Skin-to-Skin Bonding & Support', duration: '6 min', emoji: '🤱', url: 'https://www.youtube.com/watch?v=2OEL4P1Rz04', source: null },
-    { id: 'AJpErm8H2aU', title: 'නව මව්වරුන්ට චිත්තවේගීය සහාය (Emotional Support for New Mothers)', titleEn: 'Emotional Support for New Mothers', duration: '10 min', emoji: '🔬', url: 'https://www.youtube.com/watch?v=AJpErm8H2aU', source: null },
-    { id: 'kmbKaSRyZ-c', title: 'අඬන බබා සමඟ බැඳීම ශක්තිමත් කිරීම (Soothing and Bonding with Baby)', titleEn: 'Soothing and Bonding with Baby', duration: '14 min', emoji: '🌸', url: 'https://www.youtube.com/watch?v=kmbKaSRyZ-c', source: null },
-    { id: 'n1NGKj2B2eU', title: 'ළදරු ආදරය සහ සන්සුන් කිරීම (Baby Love and Comfort)', titleEn: 'Baby Love and Comfort', duration: '8 min', emoji: '👁️', url: 'https://www.youtube.com/watch?v=n1NGKj2B2eU', source: null },
-    { id: '6rx_-__NsjU', title: 'ළදරු කතා සහ සම්බන්ධතාව (Baby Interaction and Cognitive Bonding)', titleEn: 'Baby Interaction and Cognitive Bonding', duration: '7 min', emoji: '🗣️', url: 'https://www.youtube.com/watch?v=6rx_-__NsjU', source: null },
-    { id: 'qdXehiELnIA', title: 'සෑම පෝෂණයක්ම බැඳීමකි (Breastfeeding & Bonding)', titleEn: 'Breastfeeding & Bonding', duration: '5 min', emoji: '🍼', url: 'https://www.youtube.com/watch?v=qdXehiELnIA', source: null },
-    { id: 'j2C8MkY7Co8', title: 'දිනෙන් දින වැඩෙන ආදරය (Growing Love and Rest)', titleEn: 'Growing Love and Rest', duration: '11 min', emoji: '🌱', url: 'https://www.youtube.com/watch?v=j2C8MkY7Co8', source: null },
+    { id: 'vbo1', title: 'Attachment and bonding - Your Baby and You', titleEn: 'Attachment and bonding - Your Baby and You', duration: '12 min', emoji: '👶', url: 'https://www.youtube.com/watch?v=kQiT2tO3KeE', source: null },
+    { id: 'vbo2', title: 'Mother-Baby Bonding & Emotional Connection Guide', titleEn: 'Mother-Baby Bonding & Emotional Connection Guide', duration: '8 min', emoji: '⏱️', url: 'https://www.youtube.com/watch?v=4VuEIeDrwAM', source: null },
+    { id: 'vbo3', title: 'දෙමාපිය චිත්තවේගීය සහාය (Parenting Emotional Support)', titleEn: 'Parenting Emotional Support', duration: '15 min', emoji: '💜', url: 'https://www.youtube.com/watch?v=bnlKVPj4zeQ', source: null },
+    { id: 'vbo4', title: 'සමට-සම ප්‍රතිලාභ සහ බැඳීම (Skin-to-Skin Bonding & Support)', titleEn: 'Skin-to-Skin Bonding & Support', duration: '6 min', emoji: '🤱', url: 'https://www.youtube.com/watch?v=2OEL4P1Rz04', source: null },
+    { id: 'vbo5', title: 'නව මව්වරුන්ට චිත්තවේගීය සහාය (Emotional Support for New Mothers)', titleEn: 'Emotional Support for New Mothers', duration: '10 min', emoji: '🔬', url: 'https://www.youtube.com/watch?v=AJpErm8H2aU', source: null },
+    { id: 'vbo6', title: 'අඬන බබා සමඟ බැඳීම ශක්තිමත් කිරීම (Soothing and Bonding with Baby)', titleEn: 'Soothing and Bonding with Baby', duration: '14 min', emoji: '🌸', url: 'https://www.youtube.com/watch?v=kmbKaSRyZ-c', source: null },
+    { id: 'vbo7', title: 'ළදරු ආදරය සහ සන්සුන් කිරීම (Baby Love and Comfort)', titleEn: 'Baby Love and Comfort', duration: '8 min', emoji: '👁️', url: 'https://www.youtube.com/watch?v=n1NGKj2B2eU', source: null },
+    { id: 'vbo8', title: 'ළදරු කතා සහ සම්බන්ධතාව (Baby Interaction and Cognitive Bonding)', titleEn: 'Baby Interaction and Cognitive Bonding', duration: '7 min', emoji: '🗣️', url: 'https://www.youtube.com/watch?v=6rx_-__NsjU', source: null },
+    { id: 'vbo9', title: 'සෑම පෝෂණයක්ම බැඳීමකි (Breastfeeding & Bonding)', titleEn: 'Breastfeeding & Bonding', duration: '5 min', emoji: '🍼', url: 'https://www.youtube.com/watch?v=qdXehiELnIA', source: null },
+    { id: 'vbo10', title: 'දිනෙන් දින වැඩෙන ආදරය (Growing Love and Rest)', titleEn: 'Growing Love and Rest', duration: '11 min', emoji: '🌱', url: 'https://www.youtube.com/watch?v=j2C8MkY7Co8', source: null },
   ],
   // ── LACK OF SUPPORT ─────────────────────────────────────
   lack_of_support: [
@@ -363,14 +363,16 @@ export const SUPPORTED_MUSIC_REASONS = [
   'negative_thoughts'
 ];
 
-/**
- * Resolves music from MUSIC_LIBRARY strictly using the detected final reason.
- * Final reason has priority over emotion.
- */
-export const getMusicForReason = (finalReason = '', emotion = '', selectedEmoji = null) => {
-  let targetCategory = (finalReason || '').toLowerCase().trim();
+import { normalizeReasonKey, normalizeEmotionKey, normalizeRiskLevel } from './activitiesLibrary.js';
 
-  // Handle known aliases or baby intents safely
+/**
+ * Resolves music from MUSIC_LIBRARY strictly using the detected final reason and selected emoji.
+ * Reason determines pool, Risk determines safety, Emoji personalizes ranking.
+ */
+export const getMusicForReason = (finalReason = '', emotion = '', selectedEmoji = null, riskLevel = 'low') => {
+  const normReason = normalizeReasonKey(finalReason);
+  let targetCategory = normReason;
+
   if (targetCategory && !SUPPORTED_MUSIC_REASONS.includes(targetCategory)) {
     if (['mother_sleep', 'mother_sleep_problems', 'sleep'].includes(targetCategory)) {
       targetCategory = 'sleep_problems';
@@ -391,50 +393,39 @@ export const getMusicForReason = (finalReason = '', emotion = '', selectedEmoji 
     }
   }
 
-  // Validate supported reason (fallback to loneliness if missing/unsupported)
   const selectedCategory = SUPPORTED_MUSIC_REASONS.includes(targetCategory)
     ? targetCategory
     : 'loneliness';
 
   const fullLibrary = MUSIC_LIBRARY[selectedCategory] || MUSIC_LIBRARY.loneliness;
-  
-  // Personalize music ranking based on selectedEmoji / emotion
-  const effectiveEmotion = (selectedEmoji || emotion || '').toLowerCase().trim();
-  let sortedLibrary = [...fullLibrary];
+  const effectiveEmotion = selectedEmoji || emotion;
+  const normEmotion = normalizeEmotionKey(effectiveEmotion);
 
-  if (effectiveEmotion) {
-    sortedLibrary.sort((a, b) => {
-      const aText = ((a.titleEn || '') + ' ' + (a.title || '') + ' ' + (a.url || '')).toLowerCase();
-      const bText = ((b.titleEn || '') + ' ' + (b.title || '') + ' ' + (b.url || '')).toLowerCase();
-      
-      let aScore = 0;
-      let bScore = 0;
+  const prefixes = ['lo', 'fa', 'an', 'bo', 'ls', 'sl', 'lc', 'ow', 'pd', 'nt'];
+  const mapMusicForEmotion = (pattern) => prefixes.flatMap(p => pattern.map(n => `${p}${n}`));
 
-      if (effectiveEmotion.includes('sleep') || effectiveEmotion.includes('tired') || effectiveEmotion.includes('fatig')) {
-        const sleepKws = ['sleep', 'rest', 'night', 'wave', 'rain', 'gentle', 'calm', 'piano'];
-        sleepKws.forEach(k => {
-          if (aText.includes(k)) aScore += 2;
-          if (bText.includes(k)) bScore += 2;
-        });
-      } else if (effectiveEmotion.includes('happ') || effectiveEmotion.includes('calm')) {
-        const happyKws = ['light', 'smile', 'rise', 'joy', 'melody', 'beautiful', 'warmth'];
-        happyKws.forEach(k => {
-          if (aText.includes(k)) aScore += 2;
-          if (bText.includes(k)) bScore += 2;
-        });
-      } else if (effectiveEmotion.includes('cry') || effectiveEmotion.includes('sad') || effectiveEmotion.includes('anxi')) {
-        const cryKws = ['healing', 'comfort', 'alone', 'brave', 'warmth', 'serenity', 'heart', 'hug'];
-        cryKws.forEach(k => {
-          if (aText.includes(k)) aScore += 2;
-          if (bText.includes(k)) bScore += 2;
-        });
-      }
+  const emojiMusicMap = {
+    crying: mapMusicForEmotion([1, 2, 3, 4]),
+    happy: mapMusicForEmotion([5, 6, 7, 8]),
+    sleepy: mapMusicForEmotion([9, 10, 1, 2]),
+    tired: mapMusicForEmotion([3, 4, 5, 6]),
+    calm: mapMusicForEmotion([7, 8, 9, 10]),
+    sad: mapMusicForEmotion([1, 3, 5, 7])
+  };
 
-      return bScore - aScore;
-    });
-  }
+  const targetMusicList = emojiMusicMap[normEmotion] || emojiMusicMap.calm;
 
-  const cappedMusic = sortedLibrary.slice(0, 4);
+  const scoredMusic = fullLibrary.map((track, idx) => {
+    let emojiScore = 0;
+    if (targetMusicList.includes(track.id)) {
+      emojiScore += 25;
+    }
+    return { track, emojiScore, idx };
+  });
+
+  scoredMusic.sort((a, b) => (b.emojiScore - a.emojiScore) || (a.idx - b.idx));
+
+  const cappedMusic = scoredMusic.map(sm => sm.track).slice(0, 4);
 
   // DEVELOPMENT DEBUG LOGGING
   console.log('[MusicRecommendation]');
@@ -446,7 +437,90 @@ export const getMusicForReason = (finalReason = '', emotion = '', selectedEmoji 
 
   return {
     category: selectedCategory,
-    musicList: sortedLibrary,
+    musicList: fullLibrary,
     music: cappedMusic
+  };
+};
+
+/**
+ * Resolves videos from VIDEO_LIBRARY using reason + riskLevel + selectedEmoji.
+ */
+export const getVideosForReason = (finalReason = '', emotion = '', selectedEmoji = null, riskLevel = 'low') => {
+  const normReason = normalizeReasonKey(finalReason);
+  let targetCategory = normReason;
+
+  if (targetCategory && !VIDEO_LIBRARY[targetCategory]) {
+    if (['mother_sleep', 'mother_sleep_problems', 'sleep'].includes(targetCategory)) {
+      targetCategory = 'sleep_problems';
+    } else if (['baby_crying', 'baby_needs', 'baby_feeding', 'caring_for_baby', 'baby_sleep'].includes(targetCategory)) {
+      targetCategory = 'bonding_issues';
+    } else if (['baby_health'].includes(targetCategory)) {
+      targetCategory = 'anxiety';
+    } else if (['feeling_lonely'].includes(targetCategory)) {
+      targetCategory = 'loneliness';
+    } else if (['feeling_overwhelmed'].includes(targetCategory)) {
+      targetCategory = 'overwhelmed';
+    } else if (['physical_recovery'].includes(targetCategory)) {
+      targetCategory = 'physical_discomfort';
+    } else if (['family_problems', 'relationship_family_problem'].includes(targetCategory)) {
+      targetCategory = 'lack_of_support';
+    } else if (['financial_worries', 'financial_worry'].includes(targetCategory)) {
+      targetCategory = 'overwhelmed';
+    }
+  }
+
+  const selectedCategory = VIDEO_LIBRARY[targetCategory] ? targetCategory : 'loneliness';
+  const fullVideos = (VIDEO_LIBRARY[selectedCategory] || VIDEO_LIBRARY.loneliness).filter(v => v && v.id && (v.title || v.titleEn));
+
+  const effectiveEmotion = selectedEmoji || emotion;
+  const normEmotion = normalizeEmotionKey(effectiveEmotion);
+  const normRisk = normalizeRiskLevel(riskLevel);
+
+  const vPrefixes = ['vlo', 'vfa', 'van', 'vbo', 'vls', 'vsl', 'vlc', 'vow', 'vpd', 'vnt'];
+  const mapVideoForEmotion = (pattern) => vPrefixes.flatMap(p => pattern.map(n => `${p}${n}`));
+
+  const emojiVideoMap = {
+    crying: mapVideoForEmotion([1, 2, 3, 4]),
+    happy: mapVideoForEmotion([5, 6, 7, 8]),
+    sleepy: mapVideoForEmotion([9, 10, 1, 2]),
+    tired: mapVideoForEmotion([3, 4, 5, 6]),
+    calm: mapVideoForEmotion([7, 8, 9, 10]),
+    sad: mapVideoForEmotion([1, 3, 5, 7])
+  };
+
+  const targetIdList = emojiVideoMap[normEmotion] || emojiVideoMap.calm;
+
+  const scoredVideos = fullVideos.map((video, idx) => {
+    const vText = ((video.id || '') + ' ' + (video.titleEn || '') + ' ' + (video.title || '') + ' ' + (video.url || '') + ' ' + (video.emoji || '')).toLowerCase();
+
+    let reasonScore = 15;
+    let riskScore = 4;
+    let emojiScore = 0;
+
+    if (normRisk === 'high') {
+      const highRiskKeywords = ['postpartum', 'guided', 'calm', 'support', 'meditation', 'breathing', 'safe', 'grounding', 'healing', 'circle', 'never', 'alone'];
+      if (highRiskKeywords.some(k => vText.includes(k))) {
+        riskScore = 8;
+      }
+    } else if (normRisk === 'medium') {
+      riskScore = 6;
+    }
+
+    if (targetIdList.includes(video.id)) {
+      emojiScore += 25;
+    }
+
+    const finalScore = reasonScore + riskScore + emojiScore;
+    return { video, finalScore, idx };
+  });
+
+  scoredVideos.sort((a, b) => (b.finalScore - a.finalScore) || (a.idx - b.idx));
+
+  const cappedVideos = scoredVideos.map(sv => sv.video).slice(0, 4);
+
+  return {
+    category: selectedCategory,
+    videosList: fullVideos,
+    videos: cappedVideos
   };
 };

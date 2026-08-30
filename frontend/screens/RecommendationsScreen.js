@@ -14,9 +14,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { colors, typography, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
-import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames, getRankedActivities } from '../services/activitiesLibrary';
-import { getPersonalizedRecommendations } from '../services/emotionEngine';
-import { MUSIC_LIBRARY, getMusicForReason } from '../services/mediaLibrary';
+import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames, getRankedActivities, normalizeReasonKey, normalizeEmotionKey, normalizeRiskLevel } from '../services/activitiesLibrary';
+import { getPersonalizedRecommendations, getRecommendations } from '../services/emotionEngine';
+import { MUSIC_LIBRARY, getMusicForReason, getVideosForReason } from '../services/mediaLibrary';
 import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibrary';
 import { KNOWLEDGE_CATEGORIES, KNOWLEDGE_RESOURCES } from '../services/knowledgeLibrary';
 import api from '../services/api';
@@ -260,6 +260,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const { 
     latestRecommendations, 
     latestAnalysis, 
+    setLatestData,
     userPreferredActivities, 
     userPreferredGames, 
     detectedBabyTopic, 
@@ -366,21 +367,44 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
   // Handle Assessment Completion
   const handleAssessmentContinue = () => {
-    const recs = getPersonalizedRecommendations({
-      emotion: selEmotion,
-      reason: selReason,
-      helpCategories: selHelp,
-      riskLevel: epdsRiskLevel || null, 
-      preferredActivities: userPreferredActivities,
-      preferredGames: userPreferredGames,
-    });
+    const normReason = normalizeReasonKey(selReason);
+    const normEmotion = normalizeEmotionKey(selEmotion);
+    const normRisk = normalizeRiskLevel(epdsRiskLevel || 'low');
+
+    const canonicalAnalysis = {
+      detectedEmotion: normEmotion,
+      primaryReason: normReason,
+      riskLevel: normRisk,
+      selectedEmoji: normEmotion,
+      diaryText: '',
+      babyIntents: {
+        baby_related: isBabyRelatedReason(normReason),
+        baby_crying: normReason === 'baby_crying',
+        baby_needs: normReason === 'baby_needs',
+        baby_feeding: normReason === 'baby_feeding',
+        baby_sleep: normReason === 'baby_sleep',
+        baby_health: normReason === 'baby_health'
+      }
+    };
+
+    const recs = getRecommendations(
+      canonicalAnalysis,
+      userPreferredActivities,
+      userPreferredGames,
+      '',
+      completedActivities
+    );
+
+    if (setLatestData) {
+      setLatestData(canonicalAnalysis, recs);
+    }
     setLocalRuleRecs(recs);
     setShowAssessment(false);
     setIsSkipped(false);
+    setStep(1);
 
     // Dynamically update active tabs based on the selected reason
-    const topics = getBabyTopicsFromReason(selReason);
-    if (topics.length > 0) {
+    if (isBabyRelatedReason(normReason)) {
       setVideoTab('නිර්දේශිත වීඩියෝ');
       setTab('videos');
     } else {
@@ -451,24 +475,27 @@ const RecommendationsScreen = ({ navigation, route }) => {
     return id !== 'baby_bonding' && id !== 'new_baby_interaction_ideas';
   });
 
-  // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
-  // Enforce Max Limits: Activities (4), Games (3), Music (4), Videos (4), Knowledge (5)
+  // Enforce Max Limits: Activities (4), Games (4), Music (4), Videos (4), Knowledge (5)
   const activeDiaryText = activeAnalysis?.diaryText || latestAnalysis?.diaryText || '';
-  const finalActivities = isSkipped
-    ? ALL_ACTIVITIES.slice(0, 4)
-    : getRankedActivities(
+  const rawFinalActivities = isSkipped
+    ? ALL_ACTIVITIES
+    : (latestRecommendations?.newActivities || latestRecommendations?.activities || getRankedActivities(
         emotion,
         activeAnalysis?.primaryReason || selReason || 'overwhelmed',
         risk || 'low',
         activeDiaryText,
         userPreferredActivities,
-        completedActivities
-      );
+        completedActivities,
+        selectedEmojiKey
+      ));
+  const finalActivities = (rawFinalActivities || []).slice(0, 4);
   
   const activeIntents = activeAnalysis?.babyIntents || {};
   const activeReason = activeAnalysis?.primaryReason || selReason || '';
 
-  const dynamicRecommendedGames = getRecommendedGames(activeIntents, activeDiaryText, activeReason, 4, risk, emotion);
+  const dynamicRecommendedGames = (latestRecommendations?.games && latestRecommendations.games.length > 0)
+    ? latestRecommendations.games
+    : getRecommendedGames(activeIntents, activeDiaryText, activeReason, 4, risk, emotion, selectedEmojiKey);
 
   const finalGames = isSkipped
     ? ALL_GAMES.filter(g => g.id !== 'baby_mood').slice(0, 4)
@@ -517,13 +544,20 @@ const RecommendationsScreen = ({ navigation, route }) => {
     /ninda|sleep|sleeping|නිදා/.test(textLower)
   );
 
-  // Music selection STRICTLY driven by primaryReason using getMusicForReason
-  const recMusicRes = getMusicForReason(primaryReason, emotion);
+  // Music & Videos selection driven by Reason + Risk + Emoji
+  const recMusicRes = getMusicForReason(primaryReason, emotion, selectedEmojiKey, risk);
   const libraryMusic = (latestRecommendations?.music && latestRecommendations.music.length > 0)
     ? latestRecommendations.music
     : recMusicRes.music;
 
   const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
+
+  const recVideoRes = getVideosForReason(primaryReason, emotion, selectedEmojiKey, risk);
+  const libraryVideos = (latestRecommendations?.videos && latestRecommendations.videos.length > 0)
+    ? latestRecommendations.videos
+    : recVideoRes.videos;
+
+  const finalVideos = (isSkipped ? Object.values(VIDEO_LIBRARY).flat() : libraryVideos).slice(0, 4);
 
   const activeBabyTopics = (primaryReason === 'bonding_issues' || primaryReason === 'loneliness')
     ? []

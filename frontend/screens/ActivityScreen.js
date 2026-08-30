@@ -3225,7 +3225,7 @@ const s = StyleSheet.create({
   artBannerArrow: { fontSize: 20, color: '#AA60C8' },
   sectionLabel: { fontSize: 18, fontFamily: typography.topicFont, fontWeight: '700', color: '#2C1A35', marginBottom: 12, marginTop: 10 },
   gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  gameWrap: { width: '48%', marginBottom: 14 },
+  gameWrap: { width: '48%', minWidth: 135, marginBottom: 14 },
   gameCard: { padding: 16, borderRadius: radius.lg, alignItems: 'center', borderWidth: 1, borderColor: '#F5D3EE', ...shadows.soft },
   gameIcon: { fontSize: 36, marginBottom: 8 },
   gameLabel: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', textAlign: 'center', color: '#2C1A35' },

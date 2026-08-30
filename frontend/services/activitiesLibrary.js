@@ -513,91 +513,76 @@ export const GAME_RECOMMENDATION_MAP = {
   general: ['memory_match', 'pattern_repeat', 'word_builder', 'spot_diff']
 };
 
-export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', maxGames = 4, riskLevel = 'low', emotion = '') => {
+
+const EMOTION_GAME_MAP = {
+  crying: ['affirmation_game', 'mandala', 'colouring', 'bubble_pop'],
+  happy: ['memory_match', 'pattern_repeat', 'word_builder', 'sliding_puzzle'],
+  sleepy: ['colouring', 'mandala', 'sliding_puzzle', 'mindful_tap'],
+  tired: ['bubble_pop', 'coin_maze', 'sequence_order', 'word_match'],
+  calm: ['mindful_tap', 'colouring', 'mandala', 'pattern_repeat'],
+  sad: ['affirmation_game', 'memory_match', 'colouring', 'word_match'],
+  anxious: ['affirmation_game', 'mandala', 'colouring', 'bubble_pop'],
+  angry: ['bubble_pop', 'coin_maze', 'sequence_order', 'word_match'],
+  frustrated: ['bubble_pop', 'coin_maze', 'sequence_order', 'word_match']
+};
+
+export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', maxGames = 4, riskLevel = 'low', emotion = '', selectedEmoji = null) => {
+  const normReason = normalizeReasonKey(reason);
+  const activeEmotion = selectedEmoji || emotion;
+  const normEmotion = normalizeEmotionKey(activeEmotion);
+  const normRisk = normalizeRiskLevel(riskLevel);
+
   const isBaby = (intents && (intents.baby_related || intents.baby_crying || intents.baby_needs || intents.baby_feeding || intents.baby_sleep || intents.baby_health))
-    || isBabyRelatedContent(diaryText)
-    || isBabyRelatedReason(reason);
+    || isBabyRelatedReason(normReason);
 
-  const activeKeys = [];
+  const safeCalmingGames = ['baby_mood', 'bubble_pop', 'mindful_tap', 'colouring', 'mandala', 'pattern_repeat', 'memory_match', 'affirmation_game', 'sliding_puzzle', 'word_match'];
 
-  if (intents.baby_crying) activeKeys.push('baby_crying');
-  if (intents.baby_needs) activeKeys.push('baby_needs');
-  if (intents.baby_feeding) activeKeys.push('baby_feeding');
-  if (intents.baby_sleep) activeKeys.push('baby_sleep');
-  if (intents.baby_health) activeKeys.push('baby_health');
-  if (isBaby && activeKeys.length === 0) activeKeys.push('caring_for_baby');
-
-  if (reason && GAME_RECOMMENDATION_MAP[reason] && !activeKeys.includes(reason)) {
-    activeKeys.push(reason);
-  }
-
-  // Interleave emotion-specific games
-  const normEmotion = emotion ? emotion.toLowerCase().trim() : '';
-  let emotionKey = '';
-  if (normEmotion.includes('sad') || normEmotion.includes('cry')) emotionKey = 'sadness';
-  else if (normEmotion.includes('anxi')) emotionKey = 'anxiety';
-  else if (normEmotion.includes('stress') || normEmotion.includes('angr') || normEmotion.includes('frust')) emotionKey = 'stress';
-  else if (normEmotion.includes('fatig') || normEmotion.includes('tir') || normEmotion.includes('sleep')) emotionKey = 'fatigue';
-  else if (normEmotion.includes('happ') || normEmotion.includes('calm')) emotionKey = 'general';
-
-  if (emotionKey && GAME_RECOMMENDATION_MAP[emotionKey] && !activeKeys.includes(emotionKey)) {
-    activeKeys.push(emotionKey);
-  }
-
-  const collected = [];
-  let maxLen = 0;
-  activeKeys.forEach(k => {
-    const list = GAME_RECOMMENDATION_MAP[k] || [];
-    if (list.length > maxLen) maxLen = list.length;
-  });
-
-  for (let i = 0; i < maxLen; i++) {
-    activeKeys.forEach(k => {
-      const list = GAME_RECOMMENDATION_MAP[k] || [];
-      if (list[i] && !collected.includes(list[i])) {
-        collected.push(list[i]);
-      }
-    });
-  }
-
-  // Filter out baby_mood if NOT baby context
-  let filtered = collected.filter(gId => {
-    if (gId === 'baby_mood' && !isBaby) return false;
+  const candidateGames = ALL_GAMES.filter(g => {
+    if (g.id === 'baby_mood' && !isBaby) return false;
     return true;
   });
 
-  // If riskLevel is high/medium, filter out complex cognitive games to prevent mental strain
-  const normRisk = (riskLevel || 'low').toLowerCase();
-  if (normRisk === 'high' || normRisk === 'medium') {
-    const safeCalmingGames = ['baby_mood', 'bubble_pop', 'mindful_tap', 'colouring', 'mandala', 'pattern_repeat', 'memory_match'];
-    filtered = filtered.filter(gId => safeCalmingGames.includes(gId));
-  }
+  const scoredGames = candidateGames.map(game => {
+    let score = 0;
+
+    // 1. Reason relevance
+    const reasonList = GAME_RECOMMENDATION_MAP[normReason] || GAME_RECOMMENDATION_MAP[reason] || GAME_RECOMMENDATION_MAP.general;
+    if (reasonList.includes(game.id)) {
+      score += 15;
+    }
+
+    // 2. Risk compatibility (Safety enforcement for high & medium risks)
+    if (normRisk === 'high' || normRisk === 'medium') {
+      if (safeCalmingGames.includes(game.id)) {
+        score += normRisk === 'high' ? 8 : 6;
+      } else {
+        score -= 50; // Filter out complex cognitive strain games for high/medium risk
+      }
+    } else {
+      score += 4;
+    }
+
+    // 3. Emoji relevance
+    const emotionList = EMOTION_GAME_MAP[normEmotion] || EMOTION_GAME_MAP.calm;
+    if (emotionList.includes(game.id)) {
+      score += 18;
+    }
+
+    return { game, score };
+  });
+
+  // Deterministic sort by score DESC, then by game.id ASC
+  scoredGames.sort((a, b) => (b.score - a.score) || a.game.id.localeCompare(b.game.id));
+
+  let finalGameList = scoredGames.map(sg => sg.game);
 
   // If baby context is active, force baby_mood to index 0
   if (isBaby) {
-    filtered = ['baby_mood', ...filtered.filter(gId => gId !== 'baby_mood')];
+    const babyGame = ALL_GAMES.find(g => g.id === 'baby_mood') || { id: 'baby_mood' };
+    finalGameList = [babyGame, ...finalGameList.filter(g => g.id !== 'baby_mood')];
   }
 
-  // If we still need more games up to maxGames (4), fill from general fallback list
-  if (filtered.length < maxGames) {
-    const fallbacks = GAME_RECOMMENDATION_MAP.general.filter(gId => {
-      if (gId === 'baby_mood' && !isBaby) return false;
-      return !filtered.includes(gId);
-    });
-    filtered = [...filtered, ...fallbacks];
-  }
-
-  // If riskLevel filter left us with fewer fallbacks, ensure we filter again
-  if (normRisk === 'high' || normRisk === 'medium') {
-    const safeCalmingGames = ['baby_mood', 'bubble_pop', 'mindful_tap', 'colouring', 'mandala', 'pattern_repeat', 'memory_match'];
-    filtered = filtered.filter(gId => safeCalmingGames.includes(gId));
-  }
-
-  // Ensure unique and capped at maxGames
-  const uniqueIds = [...new Set(filtered)].slice(0, maxGames);
-
-  // Return full Game Objects from ALL_GAMES
-  return uniqueIds.map(gId => ALL_GAMES.find(g => g.id === gId) || { id: gId }).filter(Boolean);
+  return [...new Set(finalGameList)].slice(0, maxGames);
 };
 
 // ================================================================
@@ -947,14 +932,15 @@ export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, prefer
   const effectiveEmotion = selectedEmoji || emotion;
   const newActivities = getRankedActivities(effectiveEmotion, reason, riskLevel, diaryText, preferredActivities, completedActivities, selectedEmoji);
 
-  const games = getRecommendedGames({}, diaryText, reason, 4, riskLevel, effectiveEmotion);
+  const games = getRecommendedGames({}, diaryText, reason, 4, riskLevel, effectiveEmotion, selectedEmoji);
   const game = games[0] || existingRecommendations.game;
 
   return {
     ...existingRecommendations,
+    activities: newActivities,
+    newActivities,
     game,
-    games,
-    newActivities // Return the 4 ranked personalized activities
+    games
   };
 };
 
@@ -1006,7 +992,7 @@ const REASON_ACTIVITY_MAP = {
   loneliness: ['new_positive_affirmations', 'new_gratitude_journal', 'new_emotion_check_in', 'new_relaxing_music', 'write_positive', 'journaling'],
   fatigue: ['new_drink_water', 'new_sleep_reflection', 'new_gentle_stretch', 'new_relaxing_music', 'short_breathing', 'rest_meditation'],
   anxiety: ['new_478_breathing', 'new_box_breathing', 'new_guided_meditation', 'new_five_senses_grounding', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321'],
-  bonding_issues: ['baby_mood', 'new_baby_interaction_ideas', 'new_positive_affirmations', 'new_relaxing_music', 'affirmation_activity'],
+  bonding_issues: ['baby_mood', 'new_guided_meditation', 'guided_meditation', 'new_baby_interaction_ideas', 'new_positive_affirmations', 'new_relaxing_music', 'affirmation_activity'],
   lack_of_support: ['new_positive_affirmations', 'new_emotion_check_in', 'new_gratitude_journal', 'new_worry_box', 'gratitude_writing', 'journaling'],
   sleep_problems: ['new_sleep_reflection', 'new_relaxing_music', 'new_guided_meditation', 'new_deep_breathing', 'rest_meditation', 'night_breathing'],
   loss_of_confidence: ['new_positive_affirmations', 'new_gratitude_journal', 'new_self_care_checklist', 'new_smile_challenge', 'affirmation_activity', 'write_positive'],
@@ -1024,44 +1010,63 @@ const REASON_ACTIVITY_MAP = {
 };
 
 const EMOTION_ACTIVITY_MAP = {
-  sad: ['new_positive_affirmations', 'new_gratitude_journal', 'new_relaxing_music', 'new_smile_challenge', 'write_positive', 'journaling'],
-  crying: ['new_positive_affirmations', 'new_gratitude_journal', 'new_relaxing_music', 'new_worry_box', 'write_positive', 'journaling', 'new_calm_coloring'],
-  anxious: ['new_478_breathing', 'new_box_breathing', 'new_guided_meditation', 'new_five_senses_grounding', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321'],
-  stressed: ['new_deep_breathing', 'new_guided_meditation', 'new_bubble_pop', 'new_worry_box', 'deep_breathing', 'guided_meditation', 'short_breathing'],
-  happy: ['new_gratitude_journal', 'new_smile_challenge', 'new_drink_water', 'new_self_care_checklist', 'write_positive'],
-  sleepy: ['new_sleep_reflection', 'new_relaxing_music', 'night_breathing', 'rest_meditation', 'short_breathing'],
-  fatigue: ['new_sleep_reflection', 'new_drink_water', 'new_gentle_stretch', 'short_breathing', 'rest_meditation'],
-  calm: ['new_gratitude_journal', 'new_relaxing_music', 'new_self_care_checklist', 'write_positive']
+  crying: ['new_worry_box', 'new_five_senses_grounding', 'breathing_478', 'new_calm_coloring'],
+  happy: ['new_smile_challenge', 'new_gratitude_journal', 'write_positive', 'new_positive_affirmations'],
+  sleepy: ['new_sleep_reflection', 'night_breathing', 'rest_meditation', 'new_relaxing_music'],
+  tired: ['new_478_breathing', 'new_box_breathing', 'box_breathing', 'new_five_senses_grounding'],
+  calm: ['new_guided_meditation', 'guided_meditation', 'deep_breathing', 'grounding_54321'],
+  sad: ['journaling', 'new_positive_affirmations', 'write_positive', 'new_gratitude_journal'],
+  anxious: ['new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'breathing_478'],
+  angry: ['new_box_breathing', 'new_worry_box', 'new_deep_breathing', 'short_breathing'],
+  frustrated: ['new_worry_box', 'new_box_breathing', 'new_deep_breathing', 'short_breathing'],
+  stressed: ['new_guided_meditation', 'guided_meditation', 'deep_breathing', 'new_worry_box']
 };
 
-const normalizeReasonKey = (reason) => {
+export const normalizeReasonKey = (reason) => {
   if (!reason) return 'overwhelmed';
-  const r = reason.toLowerCase().replace(/ /g, '_');
-  if (r === 'understanding_baby') return 'baby_needs';
-  if (r === 'feeling_lonely') return 'loneliness';
-  if (r === 'feeling_overwhelmed') return 'overwhelmed';
-  if (r === 'physical_recovery') return 'physical_discomfort';
-  if (r === 'breastfeeding_concerns') return 'baby_feeding';
-  if (r === 'mother_sleep') return 'sleep_problems';
-  if (r === 'family_problems') return 'lack_of_support';
-  if (r === 'financial_worries') return 'anxiety';
+  const r = String(reason).toLowerCase().trim().replace(/[\s-]+/g, '_');
+  if (r === 'mother_sleep' || r === 'mother_sleep_problems' || r === 'mother_sleep_problem' || r === 'sleep_problem' || r === 'sleep_problems' || r === 'sleep') return 'sleep_problems';
+  if (r === 'understanding_baby' || r === 'baby_needs') return 'baby_needs';
+  if (r === 'feeling_lonely' || r === 'loneliness' || r === 'lonely') return 'loneliness';
+  if (r === 'feeling_overwhelmed' || r === 'overwhelmed') return 'overwhelmed';
+  if (r === 'physical_recovery' || r === 'physical_discomfort') return 'physical_discomfort';
+  if (r === 'breastfeeding_concerns' || r === 'baby_feeding') return 'baby_feeding';
+  if (r === 'family_problems' || r === 'lack_of_support' || r === 'no_support') return 'lack_of_support';
+  if (r === 'financial_worries' || r === 'anxiety') return 'anxiety';
   if (r === 'daily_responsibilities') return 'overwhelmed';
   if (r === 'other_concern') return 'overwhelmed';
+  if (r === 'baby_crying') return 'baby_crying';
+  if (r === 'baby_sleep') return 'baby_sleep';
+  if (r === 'baby_health') return 'baby_health';
+  if (r === 'caring_for_baby') return 'caring_for_baby';
+  if (r === 'bonding_issues' || r === 'bonding' || r === 'baby_bonding') return 'bonding_issues';
+  if (r === 'loss_of_confidence' || r === 'confidence') return 'loss_of_confidence';
+  if (r === 'negative_thoughts') return 'negative_thoughts';
   return r;
 };
 
-const normalizeEmotionKey = (emotion) => {
+export const normalizeEmotionKey = (emotion) => {
   if (!emotion) return 'stressed';
-  const e = emotion.toLowerCase().trim();
-  if (e === 'crying') return 'crying';
-  if (e === 'sleepy') return 'sleepy';
-  if (e === 'happy') return 'happy';
-  if (e === 'calm') return 'calm';
-  if (e === 'sad') return 'sad';
-  if (e === 'tired') return 'fatigue';
-  if (e === 'angry' || e === 'frustrated') return 'stressed';
-  if (e === 'anxious' || e === 'worried') return 'anxious';
+  const e = String(emotion).toLowerCase().trim();
+  if (e === 'crying' || e === '😢' || e === '😭') return 'crying';
+  if (e === 'sleepy' || e === '😴') return 'sleepy';
+  if (e === 'happy' || e === '😊') return 'happy';
+  if (e === 'calm' || e === '😌') return 'calm';
+  if (e === 'sad' || e === '😔') return 'sad';
+  if (e === 'tired' || e === 'fatigue' || e === '😪') return 'tired';
+  if (e === 'angry' || e === '😡') return 'angry';
+  if (e === 'frustrated' || e === '😞') return 'frustrated';
+  if (e === 'anxious' || e === 'worried' || e === '😰') return 'anxious';
   return e;
+};
+
+export const normalizeRiskLevel = (risk) => {
+  if (!risk) return 'low';
+  const r = String(risk).toLowerCase().trim();
+  if (r.includes('high') || r.includes('වැඩි')) return 'high';
+  if (r.includes('med') || r.includes('මධ්‍යම')) return 'medium';
+  if (r.includes('low') || r.includes('අඩු')) return 'low';
+  return 'low';
 };
 
 const getCandidatesPool = () => {
@@ -1080,10 +1085,17 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
   const activeEmotion = selectedEmoji || emotion;
   const normReason = normalizeReasonKey(reason);
   const normEmotion = normalizeEmotionKey(activeEmotion);
-  const normRisk = (riskLevel || 'low').toLowerCase();
+  const normRisk = normalizeRiskLevel(riskLevel);
 
-  const isBabyActive = isBabyRelatedReason(reason) || isBabyRelatedContent(diaryText);
+  const isBabyActive = isBabyRelatedReason(normReason);
   const pool = getCandidatesPool();
+
+  const highRiskSafeList = [
+    'new_deep_breathing', 'new_guided_meditation', 'new_worry_box', 'new_relaxing_music',
+    'deep_breathing', 'guided_meditation', 'breathing_478', 'new_478_breathing',
+    'grounding_54321', 'new_five_senses_grounding', 'night_breathing', 'rest_meditation',
+    'journaling', 'write_positive', 'new_gratitude_journal', 'new_positive_affirmations'
+  ];
 
   const ranked = pool.map(act => {
     let score = 0;
@@ -1100,22 +1112,24 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
       score += 20;
     }
 
-    // 3. EMOTION MATCH (Boosted for selected emoji differentiation)
+    // 3. EMOTION MATCH (Personalization weight)
     const emotionList = EMOTION_ACTIVITY_MAP[normEmotion] || EMOTION_ACTIVITY_MAP.stressed;
     if (emotionList.includes(act.id)) {
-      score += 10;
+      score += 18;
     }
 
-    // 4. RISK LEVEL MATCH
+    // 4. RISK LEVEL MATCH (Safety Enforcement)
     if (normRisk === 'high') {
-      const highRiskList = ['new_deep_breathing', 'new_guided_meditation', 'new_worry_box', 'new_relaxing_music', 'deep_breathing', 'guided_meditation'];
-      if (highRiskList.includes(act.id)) score += 8;
+      if (highRiskSafeList.includes(act.id)) {
+        score += 8;
+      } else {
+        score -= 50; // Safety constraint: exclude non-calming activities for High Risk
+      }
     } else if (normRisk === 'medium') {
-      const medRiskList = ['new_guided_meditation', 'new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'new_sleep_reflection', 'new_worry_box', 'new_bubble_pop', 'new_memory_card', 'new_self_care_checklist', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321'];
+      const medRiskList = ['new_guided_meditation', 'new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'new_sleep_reflection', 'new_worry_box', 'new_bubble_pop', 'new_memory_card', 'new_self_care_checklist', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321', 'night_breathing', 'rest_meditation', 'short_breathing', 'new_drink_water', 'new_gentle_stretch', 'journaling', 'write_positive', 'new_gratitude_journal', 'new_positive_affirmations'];
       if (medRiskList.includes(act.id)) score += 6;
     } else {
-      const lowRiskList = ['new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations', 'new_relaxing_music', 'new_drink_water', 'new_smile_challenge', 'new_emotion_check_in', 'new_calm_coloring', 'write_positive', 'journaling', 'gentle_stretch'];
-      if (lowRiskList.includes(act.id)) score += 4;
+      score += 4;
     }
 
     // 5. USER PREFERENCES
@@ -1136,35 +1150,25 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
 
     return {
       ...act,
-      score,
-      scoreBreakdown: {
-        reason: reasonList.includes(act.id) ? 15 : 0,
-        emotion: emotionList.includes(act.id) ? 5 : 0,
-        risk: normRisk === 'high' ? 8 : (normRisk === 'medium' ? 6 : 4),
-        babyIntent: (isBabyActive && babyActivities.includes(act.id)) ? 20 : 0,
-        preference: (preferredActivities && preferredActivities.includes(act.id)) ? 10 : 0,
-        historyPenalty: (completedActivities && completedActivities.includes(act.id)) ? -15 : 0
-      }
+      score
     };
   });
 
-  // Sort by score descending
-  ranked.sort((a, b) => b.score - a.score);
+  // Sort by score descending, then by activity ID ascending (deterministic)
+  ranked.sort((a, b) => (b.score - a.score) || a.id.localeCompare(b.id));
 
   let top4 = ranked.slice(0, 4);
 
-  // If user selected crying, sad, anxious, stressed, or frustrated, ensure Mandala Art (new_calm_coloring) is in activities list
+  // If user selected crying, sad, anxious, stressed, or frustrated, ensure Mandala Art (new_calm_coloring) is included if suitable
   const targetEmotions = ['crying', 'sad', 'anxious', 'stressed', 'frustrated'];
   if (targetEmotions.includes(normEmotion)) {
     const hasColoring = top4.some(act => act.id === 'new_calm_coloring');
-    if (!hasColoring) {
+    if (!hasColoring && normRisk !== 'high') {
       const coloringAct = pool.find(act => act.id === 'new_calm_coloring');
       if (coloringAct) {
-        // Replace the 4th (least relevant / lowest score in top 4) activity with Mandala Art
         top4[3] = {
           ...coloringAct,
-          score: 0,
-          scoreBreakdown: { reason: 0, emotion: 0, risk: 0, babyIntent: 0, preference: 0, historyPenalty: 0 }
+          score: 0
         };
       }
     }

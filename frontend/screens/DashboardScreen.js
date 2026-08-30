@@ -1160,12 +1160,14 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         gap: 10,
         marginBottom: 20,
+        justify: 'space-between',
     },
     statCard: {
         backgroundColor: WHITE,
         borderRadius: 16,
         padding: 14,
-        width: (width - 48) / 2,
+        width: '48%',
+        minWidth: 135,
         borderLeftWidth: 4,
         borderWidth: 1,
         borderColor: '#F5D3EE',
@@ -1304,7 +1306,8 @@ const styles = StyleSheet.create({
     },
 
     quickActionBtn: {
-        width: (width - 58) / 2,
+        width: '48%',
+        minWidth: 135,
         borderRadius: 16,
         padding: 14,
         alignItems: 'center',

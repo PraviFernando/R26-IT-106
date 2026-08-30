@@ -2,8 +2,8 @@
 // EMOTION ENGINE — emotionEngine.js (Multilingual: EN + SI + Singlish)
 // ================================================================
 
-import { getEnhancedRecommendationRule, getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent } from './activitiesLibrary.js';
-import { MUSIC_LIBRARY, VIDEO_LIBRARY, getMusicForReason } from './mediaLibrary.js';
+import { getEnhancedRecommendationRule, getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent, normalizeReasonKey, normalizeEmotionKey, normalizeRiskLevel } from './activitiesLibrary.js';
+import { MUSIC_LIBRARY, VIDEO_LIBRARY, getMusicForReason, getVideosForReason } from './mediaLibrary.js';
 
 export { getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedContent };
 
@@ -165,11 +165,10 @@ const REASON_KW = {
     'අම්මා කෙනෙක් නෙවෙයිද', 'බැඳීමක් දැනෙන්නෙ නැහැ', 'බැඳීමක් දැනෙන්නෙ නෑ', 'බබා එක්ක ලොකු බැඳීමක්', 'බැඳීමක්',
     'සම්බන්ධ වෙන්න බැහැ', 'සම්බන්ධ වෙන්න බෑ', 'connection එකක් නැහැ', 'connection එකක් නෑ', 'ඈත් වෙලා වගේ', 'ඈත් වෙලා',
     'විශේෂ ලංවීමක්', 'ලංවීමක්', 'ලංවීම', 'ලංවීමක් දැනෙන්න',
-    'bandimak naha', 'danenne naha', 'connection ekak naha', 'connection ekak na', 'connection na', 'emotional connection na', 'emotional connection', 'bandeemak', 'bandeemak danenne na', 'bandeemak danenne naha',
-    'bandimak danenne na', 'bandimak danenne naha', 'loku bandeemak', 'loku bandimak', 'danenne na',
-    'wenas feeling', 'wenas feeling ekak', 'feeling ekak enne', 'baby langa hitiyath', 'loku bandeemak danenne na',
-    'bond wenna amarui', 'bond wenna', 'baba ekka close na', 'close na', 'baba ekka sambandha wenna ba', 'sambandha wenna ba',
-    'special close feeling', 'special close feeling ekak', 'close feeling', 'close feeling ekak', 'lanweemak', 'langweemak'
+    'special close feeling', 'special close feeling ekak', 'close feeling', 'close feeling ekak', 'lanweemak', 'langweemak',
+    'sabaendiyawak', 'sabaendiyawak daenenne naha', 'sabaendiyawak daenenne na', 'sabaendiyawak naha', 'sabaendiyawak na',
+    'baendimak', 'baendimak nah', 'baendimak naha', 'baendimak na', 'baendima', 'loku sabaendiyawak', 'loku baendimak',
+    'baba ekka baendimak', 'baba ekka sabaendiyawak', 'baba ekka loku sabaendiyawak', 'baba ekka baendimak nah'
   ],
   lack_of_support: [
     'nobody i can depend on', 'take care of the baby for a while so i could rest', 'nobody to share', 'make every decision alone',
@@ -496,37 +495,33 @@ export const analyzeDiary = (text) => {
 };
 
 // ── GET RECOMMENDATIONS ───────────────────────────────────────
-export const getRecommendations = (analysisResult, preferredActivities = [], preferredGames = [], diaryText = '', completedActivities = []) => {
-  const { detectedEmotion, primaryReason, riskLevel, selectedEmoji } = analysisResult;
+export const getRecommendations = (analysisResult = {}, preferredActivities = [], preferredGames = [], diaryText = '', completedActivities = []) => {
+  const normReason = normalizeReasonKey(analysisResult?.primaryReason || analysisResult?.reason);
+  const rawEmotion = analysisResult?.selectedEmoji || analysisResult?.detectedEmotion || analysisResult?.emotion;
+  const normEmotion = normalizeEmotionKey(rawEmotion);
+  const normRisk = normalizeRiskLevel(analysisResult?.riskLevel);
+  const normEmoji = normalizeEmotionKey(analysisResult?.selectedEmoji || normEmotion);
 
-  const rule = getEnhancedRecommendationRule(detectedEmotion, primaryReason, riskLevel, preferredActivities, preferredGames, diaryText, completedActivities, selectedEmoji);
+  const rule = getEnhancedRecommendationRule(normEmotion, normReason, normRisk, preferredActivities, preferredGames, '', completedActivities, normEmoji);
 
-  const { category: musicCategory, music: cappedMusic } = getMusicForReason(primaryReason, detectedEmotion, selectedEmoji);
-  const videoKey = rule.videoKey || (primaryReason.includes('baby') ? 'bonding_issues' : primaryReason);
+  const { category: musicCategory, music: cappedMusic } = getMusicForReason(normReason, normEmotion, normEmoji, normRisk);
+  const { category: videoCategory, videos: cappedVideos } = getVideosForReason(normReason, normEmotion, normEmoji, normRisk);
+  const messages = SUPPORT_MESSAGES[normReason] || SUPPORT_MESSAGES.overwhelmed;
 
-  const videos = VIDEO_LIBRARY[videoKey] || VIDEO_LIBRARY.loneliness;
-  const messages = SUPPORT_MESSAGES[primaryReason] || SUPPORT_MESSAGES.overwhelmed;
-
-  const urgencyMessage = riskLevel === RISK.MEDIUM
+  const urgencyMessage = normRisk === 'medium'
     ? 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'
     : null;
 
   const cappedGames = (rule.games || []).slice(0, 4);
 
-  // DEBUG LOGGING REQUIREMENT
-  console.log('[GAME RANKING]');
-  console.log('Selected games:', JSON.stringify(cappedGames.map(g => g.id || g)));
-  console.log('[MUSIC RANKING]');
-  console.log('Selected music category:', musicCategory);
-  console.log('Selected music:', JSON.stringify(cappedMusic));
-
   return {
-    detectedEmotion,
-    selectedEmoji: selectedEmoji || null,
-    riskLevel,
+    detectedEmotion: normEmotion,
+    selectedEmoji: normEmoji,
+    riskLevel: normRisk,
     musicCategory,
     music: cappedMusic,
-    videos,
+    videoCategory,
+    videos: cappedVideos,
     activities: rule.activities,
     newActivities: rule.newActivities,
     games: cappedGames,
@@ -534,7 +529,7 @@ export const getRecommendations = (analysisResult, preferredActivities = [], pre
     messages,
     urgencyMessage,
     supportMsg: rule.supportMsg,
-    _internal: { primaryReason },
+    _internal: { primaryReason: normReason },
   };
 };
 

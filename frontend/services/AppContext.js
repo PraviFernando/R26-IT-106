@@ -5,6 +5,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { analyzeDiary, getRecommendations } from './emotionEngine.js';
 import { detectBabyTopic } from './babyCareService.js';
 import api from './api.js';
+import { normalizeReasonKey, normalizeEmotionKey, normalizeRiskLevel } from './activitiesLibrary.js';
 
 const AppContext = createContext();
 
@@ -185,7 +186,11 @@ export const AppProvider = ({ children }) => {
       fetchProgressData();
       const analysis = analyzeDiary(diaryText);
       analysis.diaryText = diaryText;
-      analysis.selectedEmoji = selectedEmoji || null;
+      analysis.primaryReason = normalizeReasonKey(analysis.primaryReason);
+      analysis.detectedEmotion = normalizeEmotionKey(analysis.detectedEmotion);
+      analysis.selectedEmoji = selectedEmoji ? normalizeEmotionKey(selectedEmoji) : analysis.detectedEmotion;
+      analysis.riskLevel = normalizeRiskLevel(epdsRiskLevel || analysis.riskLevel);
+
       const defaultEmotionEmojis = {
         happy: '😊',
         sad: '😔',
@@ -198,8 +203,8 @@ export const AppProvider = ({ children }) => {
         calm: '😌',
         stressed: '😟'
       };
-      analysis.mood = selectedEmoji
-        ? (defaultEmotionEmojis[selectedEmoji] || selectedEmoji)
+      analysis.mood = analysis.selectedEmoji
+        ? (defaultEmotionEmojis[analysis.selectedEmoji] || analysis.selectedEmoji)
         : (defaultEmotionEmojis[analysis.detectedEmotion] || '😊');
 
       // Detect Baby Care Topic using independent babyCareService
@@ -214,9 +219,6 @@ export const AppProvider = ({ children }) => {
         setDetectedBabyTopics([]);
         setDetectedBabyTopic(null);
       }
-
-      // Override rule-based riskLevel with true stored EPDS riskLevel
-      analysis.riskLevel = epdsRiskLevel;
 
       const recommendations = getRecommendations(analysis, userPreferredActivities, userPreferredGames, diaryText, completedActivities);
       setLatestAnalysis(analysis);
