@@ -292,35 +292,37 @@ def get_risk_level(text, reason, emotion):
 # ============================================================
 
 GAME_RECOMMENDATION_MAP = {
-    "baby_crying":        ["baby_mood", "sequence_order", "memory_match", "number_seq"],
-    "baby_needs":         ["baby_mood", "word_match", "spot_diff", "memory_match"],
-    "caring_for_baby":    ["baby_mood", "sequence_order", "pattern_repeat", "word_match"],
-    "baby_feeding":       ["baby_mood", "pattern_repeat", "number_seq", "memory_match"],
-    "baby_sleep":         ["baby_mood", "mindful_tap", "sliding_puzzle", "word_match"],
-    "baby_health":        ["baby_mood", "spot_diff", "sequence_order", "memory_match"],
-    "bonding_issues":     ["baby_mood", "memory_match", "pattern_repeat", "word_match"],
-    "fatigue":            ["coin_maze", "sliding_puzzle", "word_match", "colouring"],
-    "sadness":            ["bubble_pop", "memory_match", "pattern_repeat", "word_builder"],
-    "anxiety":            ["bubble_pop", "mindful_tap", "spot_diff", "number_seq"],
-    "loneliness":         ["memory_match", "word_builder", "word_match", "pattern_repeat"],
-    "anger":              ["bubble_pop", "coin_maze", "spot_diff", "sliding_puzzle"],
-    "overwhelmed":        ["bubble_pop", "mindful_tap", "sequence_order", "word_match"],
-    "stress":             ["bubble_pop", "spot_diff", "sliding_puzzle", "mindful_tap"],
-    "loss_of_confidence": ["affirmation_game", "word_builder", "pattern_repeat", "memory_match"],
-    "lack_of_support":    ["word_match", "affirmation_game", "memory_match", "coin_maze"],
-    "sleep_problems":     ["colouring", "mandala", "mindful_tap", "sliding_puzzle"],
-    "physical_discomfort":["mindful_tap", "colouring", "word_match", "sliding_puzzle"],
-    "negative_thoughts":  ["affirmation_game", "word_builder", "spot_diff", "mandala"],
-    "general":            ["memory_match", "pattern_repeat", "word_builder", "spot_diff"]
+    "baby_crying":                ["baby_mood", "sequence_order", "memory_match", "number_seq"],
+    "baby_needs":                 ["baby_mood", "word_match", "spot_diff", "memory_match"],
+    "difficulty_caring_for_baby": ["baby_mood", "sequence_order", "pattern_repeat", "word_match"],
+    "caring_for_baby":            ["baby_mood", "sequence_order", "pattern_repeat", "word_match"],
+    "baby_feeding":               ["baby_mood", "pattern_repeat", "number_seq", "memory_match"],
+    "baby_sleep":                 ["baby_mood", "mindful_tap", "sliding_puzzle", "word_match"],
+    "baby_health":                ["baby_mood", "spot_diff", "sequence_order", "memory_match"],
+    "bonding_issues":             ["baby_mood", "memory_match", "pattern_repeat", "word_match"],
+    "fatigue":                    ["coin_maze", "sliding_puzzle", "word_match", "colouring"],
+    "sadness":                    ["bubble_pop", "memory_match", "pattern_repeat", "word_builder"],
+    "anxiety":                    ["bubble_pop", "mindful_tap", "spot_diff", "number_seq"],
+    "loneliness":                 ["memory_match", "word_builder", "word_match", "pattern_repeat"],
+    "anger":                      ["bubble_pop", "coin_maze", "spot_diff", "sliding_puzzle"],
+    "overwhelmed":                ["bubble_pop", "mindful_tap", "sequence_order", "word_match"],
+    "stress":                     ["bubble_pop", "spot_diff", "sliding_puzzle", "mindful_tap"],
+    "loss_of_confidence":         ["affirmation_game", "word_builder", "pattern_repeat", "memory_match"],
+    "lack_of_support":            ["word_match", "affirmation_game", "memory_match", "coin_maze"],
+    "sleep_problems":             ["colouring", "mandala", "mindful_tap", "sliding_puzzle"],
+    "physical_discomfort":        ["mindful_tap", "colouring", "word_match", "sliding_puzzle"],
+    "negative_thoughts":          ["affirmation_game", "word_builder", "spot_diff", "mandala"],
+    "general":                    ["memory_match", "pattern_repeat", "word_builder", "spot_diff"]
 }
 
 ACTIVITIES_RECOMMENDATION_MAP = {
-    "baby_crying":        ["baby_mood", "new_deep_breathing", "new_gratitude_journal", "new_positive_affirmations"],
-    "baby_needs":         ["baby_mood", "new_deep_breathing", "new_gratitude_journal", "new_positive_affirmations"],
-    "baby_feeding":       ["baby_mood", "new_drink_water", "new_gentle_stretch", "new_relaxing_music"],
-    "baby_sleep":         ["baby_mood", "new_sleep_reflection", "night_breathing", "rest_meditation"],
-    "baby_health":        ["baby_mood", "new_deep_breathing", "new_positive_affirmations", "grounding_54321"],
-    "caring_for_baby":    ["baby_mood", "new_deep_breathing", "new_gratitude_journal", "new_positive_affirmations"]
+    "baby_crying":                ["baby_mood", "new_deep_breathing", "new_gratitude_journal", "new_positive_affirmations"],
+    "baby_needs":                 ["baby_mood", "new_deep_breathing", "new_gratitude_journal", "new_positive_affirmations"],
+    "difficulty_caring_for_baby": ["baby_mood", "new_deep_breathing", "new_gratitude_journal", "new_positive_affirmations"],
+    "baby_feeding":               ["baby_mood", "new_drink_water", "new_gentle_stretch", "new_relaxing_music"],
+    "baby_sleep":                 ["baby_mood", "new_sleep_reflection", "night_breathing", "rest_meditation"],
+    "baby_health":                ["baby_mood", "new_deep_breathing", "new_positive_affirmations", "grounding_54321"],
+    "caring_for_baby":            ["baby_mood", "new_deep_breathing", "new_gratitude_journal", "new_positive_affirmations"]
 }
 
 def get_recommendations(risk, reason, emotion):
@@ -334,7 +336,7 @@ def get_recommendations(risk, reason, emotion):
 
     # Resolve games using distinct pool
     games = GAME_RECOMMENDATION_MAP.get(reason, GAME_RECOMMENDATION_MAP["general"])
-    is_baby = "baby" in reason or reason in ["bonding_issues", "caring_for_baby", "baby_crying", "baby_feeding", "baby_sleep", "baby_health", "baby_needs"]
+    is_baby = "baby" in reason or reason in ["bonding_issues", "difficulty_caring_for_baby", "caring_for_baby", "baby_crying", "baby_feeding", "baby_sleep", "baby_health", "baby_needs"]
     if is_baby:
         if "baby_mood" not in games:
             games = ["baby_mood"] + games

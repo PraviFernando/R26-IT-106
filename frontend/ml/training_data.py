@@ -2302,27 +2302,80 @@ BABY_NEEDS_REASONS = ["baby_needs"] * len(BABY_NEEDS_TEXTS)
 BABY_NEEDS_EMOTIONS = ["stressed"] * len(BABY_NEEDS_TEXTS)
 
 # --------------------------------------------------------------
+# DIFFICULTY CARING FOR BABY (emotion: anxious)
+# --------------------------------------------------------------
+DIFFICULTY_CARING_ENGLISH = [
+    "I am finding it difficult to take care of my newborn",
+    "I do not feel confident looking after my baby",
+    "I struggle to manage my baby's daily care",
+    "I am not sure how to properly care for my newborn",
+    "I need help learning how to look after my newborn",
+    "I find newborn care very difficult to manage",
+    "I don't know how to bathe my baby",
+    "I struggle with feeding my baby",
+    "I don't know how to change my baby's diaper",
+    "I don't know how to take care of my newborn",
+    "I find it difficult to look after my baby",
+    "I am not confident caring for my newborn",
+    "I need help learning how to care for my baby",
+    "I don't know how to handle my newborn safely",
+    "I struggle with baby hygiene and care tasks",
+    "Taking care of my baby feels very difficult",
+    "I don't feel confident caring for my baby",
+    "I am finding baby care tasks overwhelming",
+    "I struggle with daily baby care duties",
+]
+
+DIFFICULTY_CARING_SINHALA = [
+    "මට මගේ අලුත උපන් බබාව බලාගන්න අමාරුයි",
+    "මට බබාව හරියට බලාගන්න පුළුවන්ද කියලා විශ්වාසයක් නැහැ",
+    "බබාව බලාගන්නේ කොහොමද කියලා මට හරියට දන්නේ නැහැ",
+    "මට අලුත උපන් බබාව බලාගන්න ඉගෙනගන්න උදව් ඕනේ",
+    "බබාව බලාගන්න එක මට හරිම අමාරුයි",
+    "මට බබාව බලාගන්නේ කොහොමද කියලා දන්නේ නැහැ",
+    "බබාව නාන්නන්නේ කොහොමද කියලා මට දන්නේ නැහැ",
+    "බබාට ඩයපර් දාන්නේ කොහොමද කියලා මට අමාරුයි",
+    "අලුත උපන් බබාව පරිස්සමෙන් බලාගන්න මට අමාරුයි",
+]
+
+DIFFICULTY_CARING_SINGLISH = [
+    "mata mage aluth upan baba wa balaganna amarui",
+    "mata baba wa hariyata balaganna puluwanda kiyala wishwasayak naha",
+    "baba wa balaganne kohomada kiyala mata danne naha",
+    "mata newborn baba kenekwa balaganna igena ganna help one",
+    "baba wa balaganna eka mata harima amarui",
+    "mata baba wa balaganne kohomada kiyala danne naha",
+    "baba wa nana nanne kohomada kiyala danne naha",
+    "babata diaper danna kohomada kiyala amarui",
+    "mata aluth upan baba kenekwa balaganna igena ganna help one",
+]
+
+DIFFICULTY_CARING_TEXTS = DIFFICULTY_CARING_ENGLISH + DIFFICULTY_CARING_SINHALA + DIFFICULTY_CARING_SINGLISH
+DIFFICULTY_CARING_REASONS = ["difficulty_caring_for_baby"] * len(DIFFICULTY_CARING_TEXTS)
+DIFFICULTY_CARING_EMOTIONS = ["anxious"] * len(DIFFICULTY_CARING_TEXTS)
+
+# --------------------------------------------------------------
 # COMBINE ALL DATA
 # --------------------------------------------------------------
 TRAIN_TEXTS = (
     LONELINESS_TEXTS + FATIGUE_TEXTS + ANXIETY_TEXTS + BONDING_TEXTS +
     SUPPORT_TEXTS + SLEEP_TEXTS + CONFIDENCE_TEXTS + OVERWHELMED_TEXTS +
     PHYSICAL_TEXTS + NEGATIVE_TEXTS + HAPPY_TEXTS + FINANCIAL_TEXTS + RELATIONSHIP_TEXTS +
-    BABY_NEEDS_TEXTS
+    BABY_NEEDS_TEXTS + DIFFICULTY_CARING_TEXTS
 )
 
 TRAIN_REASONS = (
     LONELINESS_REASONS + FATIGUE_REASONS + ANXIETY_REASONS + BONDING_REASONS +
     SUPPORT_REASONS + SLEEP_REASONS + CONFIDENCE_REASONS + OVERWHELMED_REASONS +
     PHYSICAL_REASONS + NEGATIVE_REASONS + HAPPY_REASONS + FINANCIAL_REASONS + RELATIONSHIP_REASONS +
-    BABY_NEEDS_REASONS
+    BABY_NEEDS_REASONS + DIFFICULTY_CARING_REASONS
 )
 
 TRAIN_EMOTIONS = (
     LONELINESS_EMOTIONS + FATIGUE_EMOTIONS + ANXIETY_EMOTIONS + BONDING_EMOTIONS +
     SUPPORT_EMOTIONS + SLEEP_EMOTIONS + CONFIDENCE_EMOTIONS + OVERWHELMED_EMOTIONS +
     PHYSICAL_EMOTIONS + NEGATIVE_EMOTIONS + HAPPY_EMOTIONS + FINANCIAL_EMOTIONS + RELATIONSHIP_EMOTIONS +
-    BABY_NEEDS_EMOTIONS
+    BABY_NEEDS_EMOTIONS + DIFFICULTY_CARING_EMOTIONS
 )
 
 assert len(TRAIN_TEXTS) == len(TRAIN_REASONS) == len(TRAIN_EMOTIONS), \

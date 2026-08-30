@@ -61,6 +61,7 @@ const REASON_OPTIONS = [
   { key: 'physical_recovery', label: 'Physical recovery (ශාරීරික සුවවීමේ අපහසුතා)' },
   { key: 'breastfeeding_concerns', label: 'Breastfeeding concerns (මව්කිරි දීමේ ගැටලු)' },
   { key: 'caring_for_baby', label: 'Difficulty caring for baby (ළදරුවා සාත්තු කිරීමේ අපහසුව)' },
+  { key: 'difficulty_caring_for_baby', label: 'Difficulty caring for baby (ළදරුවා සාත්තු කිරීමේ අපහසුව)' },
   { key: 'lack_of_support', label: 'Lack of support (සහයෝගය මදි වීම)' },
   { key: 'daily_responsibilities', label: 'Daily responsibilities (දෛනික වගකීම් අධික වීම)' },
   { key: 'other_concern', label: 'Other / General concern (වෙනත් / සාමාන්‍ය කනස්සල්ල)' },
@@ -117,12 +118,28 @@ const getBabyTopicsFromReason = (reason) => {
   if (reason === 'baby_crying') return ['Baby Crying'];
   if (reason === 'baby_sleep') return ['Baby Sleeping'];
   if (reason === 'baby_health') return ['Baby Health'];
-  if (reason === 'caring_for_baby') return ['Mother Care'];
+  if (reason === 'caring_for_baby' || reason === 'difficulty_caring_for_baby') return ['Baby Care'];
   if (reason === 'understanding_baby' || reason === 'baby_needs') return ['Baby Needs'];
   return [];
 };
 
 const HARDCODED_VIDEO_MAP = {
+  difficulty_caring_for_baby: {
+    id: '7yxd25nZMaE',
+    title: 'අලුත උපන් බබා සුවපහසුවෙන් බලාගන්නා ආකාරය (Newborn Care & Handling Basics)',
+    description: 'අලුත උපන් බබා සුවපහසුවෙන් සහ පරිස්සමෙන් බලාගන්නා ආකාරය පිළිබඳ ප්‍රායෝගික මඟ පෙන්වීම.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/7yxd25nZMaE',
+    thumbnail: 'https://img.youtube.com/vi/7yxd25nZMaE/0.jpg',
+  },
+  caring_for_baby: {
+    id: '7yxd25nZMaE',
+    title: 'අලුත උපන් බබා සුවපහසුවෙන් බලාගන්නා ආකාරය (Newborn Care & Handling Basics)',
+    description: 'අලුත උපන් බබා සුවපහසුවෙන් සහ පරිස්සමෙන් බලාගන්නා ආකාරය පිළිබඳ ප්‍රායෝගික මඟ පෙන්වීම.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/7yxd25nZMaE',
+    thumbnail: 'https://img.youtube.com/vi/7yxd25nZMaE/0.jpg',
+  },
   loneliness: {
     id: '2OEL4P1Rz04',
     title: 'තනිකම සහ හුදකලා බව මඟහරවා ගැනීම (Overcoming Loneliness in Motherhood)',
@@ -514,6 +531,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
     reasonLower === 'baby_needs' ||
     reasonLower === 'baby_feeding' ||
     reasonLower === 'caring_for_baby' ||
+    reasonLower === 'difficulty_caring_for_baby' ||
     reasonLower === 'understanding_baby' ||
     intents.baby_crying ||
     intents.baby_sleep ||
@@ -682,14 +700,14 @@ const RecommendationsScreen = ({ navigation, route }) => {
       } else {
         const fallback = (latestRecommendations?.videos && latestRecommendations.videos.length > 0)
           ? latestRecommendations.videos
-          : getAllBabyVideos().slice(0, 4);
+          : getVideosForReason(primaryReason, emotion, selectedEmojiKey, risk).videos;
         setDynamicVideos(fallback);
       }
     } catch (err) {
       console.warn('Backend dynamic videos endpoint unavailable, using curated videos fallback:', err.message);
       const fallback = (latestRecommendations?.videos && latestRecommendations.videos.length > 0)
         ? latestRecommendations.videos
-        : getAllBabyVideos().slice(0, 4);
+        : getVideosForReason(primaryReason, emotion, selectedEmojiKey, risk).videos;
       setDynamicVideos(fallback);
       setVideoError(null);
     } finally {
@@ -843,13 +861,6 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 <LinearGradient colors={ec.badge} style={s.badge}>
                   <Text style={[s.badgeText, { color: ec.col }]}>{ec.emoji} {isSinhala ? ec.label : (ec.labelEn || ec.label)}</Text>
                 </LinearGradient>
-                {rc && (
-                  <View style={[s.badge, { backgroundColor: rc.bg }]}>
-                    <Text style={[s.badgeText, { color: rc.col }]}>
-                      {isSinhala ? rc.label : (risk === 'high' ? '🔴 High Risk' : risk === 'medium' ? '🟡 Medium Risk' : '🟢 Low Risk')}
-                    </Text>
-                  </View>
-                )}
                 {!isSkipped && activeReason && (() => {
                   const reasonObj = REASON_OPTIONS.find(r => r.key === activeReason);
                   const reasonLabel = isSinhala

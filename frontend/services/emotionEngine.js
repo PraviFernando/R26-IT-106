@@ -181,8 +181,8 @@ const REASON_KW = {
     'help me with ordinary things', 'nobody notices how much work', 'without assistance', 'no assistance',
     'difficult parts of parenting with', 'every decision alone', 'nobody notices how much work i am doing',
     'take over some of the baby care when i am exhausted',
-    'husband udaw karanne naha', 'husband udaw naha', 'partner udaw naha', 'no help', 'unsupported', 'nobody helps', 'no family', 'doing it alone',
-    'no one help me', 'no one helps me', 'no one help', 'no one helps', 'do everything alone',
+    'husband udaw karanne naha', 'husband udaw naha', 'partner udaw naha', 'no help', 'unsupported', 'nobody helps me with the baby', 'nobody helps me', 'nobody helps', 'no family', 'doing it alone',
+    'no one helps me with the baby', 'no one help me', 'no one helps me', 'no one help', 'no one helps', 'do everything alone',
     'do everything alone now', 'have to do everything alone', 'doing everything alone',
     'everything alone', 'all alone', 'no one to help me', 'do all the baby work and household work',
     'සැමියා උදව් කරන්නේ නැහැ', 'සැමියා උදව් කරන්නේ නෑ', 'උදව්වක් නෑ', 'කාගෙවත් සහයක් නෑ', 'උදව් නෑ',
@@ -319,19 +319,26 @@ const REASON_KW = {
     'mata babava nalavaganna therenne na', 'mata babage hasirima handunaganna ba', 'mata babage hasirima handunaganna baha',
     'mata babata monawada one kiyala therenne naha', 'mata babata monawada one kiyala therenne na',
     'baba andanne ai kiyala mata therenne naha', 'baba andanne ai kiyala mata therenne na',
-    'baba andanakota eyata monawada one kiyala hithaganna ba', 'babage wenas wenas hasirum therum ganna amarui',
-    'baba badaginne da nidimathe da kiyala mata handunaganna ba', 'baba kiri one welawa mata therenne naha',
-    'baba mata kiyanna hadanne mokakda kiyala therenne naha', 'baba andana widiye wenas kam therum ganna amarui',
-    'baba hamadama andanne ai kiyala mata hithaganna ba', 'babata mokak wela thiyenawada kiyala mata therenne naha',
-    'baba badagin da kiyala mata handunaganna ba', 'babata diaper maru karanna one da kiyala mata therenne naha',
-    'baba nosansun wenne ai kiyala mata therenne naha', 'baba nidimathe da kiyala mata handunaganna amarui',
-    'baba kalabala unama eyata monawada one kiyala mata therenne naha', 'mata babage awashya tha handunaganna amarui',
-    'baba mata monawada kiyanna hadanne kiyala therenne naha', 'babata apahasuwak thiyenawada kiyala mata hithaganna ba',
     'babage signs therum ganna mata amarui', 'baba andanakota eyata one mokakda kiyala handunaganna ba',
     'baba eka paratama andanna patan ganne ai kiyala mata therenne naha', 'baba badagin da nidimathe da amaruwak da kiyala handunaganna ba',
     'welawen welawata babata monawada one kiyala therum ganna amarui', 'baba karana wenas wenas sounds wala theruma mata therenne naha',
     'babata attention one welawa mata therenne naha', 'babage behavior eka wenas unama mata hithaganna ba',
     'baba mehema sounds karanne ai kiyala mata therenne naha', 'babage basic needs handunaganna mata amarui'
+  ],
+  difficulty_caring_for_baby: [
+    'take care of my newborn', 'take care of my baby', 'take care of baby',
+    'looking after my baby', 'look after my baby', 'looking after my newborn', 'look after my newborn',
+    'caring for my baby', 'caring for my newborn', 'caring for newborn',
+    'manage my baby\'s daily care', 'properly care for my newborn', 'properly care for my baby',
+    'newborn care', 'difficult to take care', 'difficult to look after',
+    'don\'t know how to take care', 'dont know how to take care',
+    'don\'t know how to bathe', 'dont know how to bathe', 'bathe my baby', 'bathing my baby',
+    'don\'t know how to change', 'dont know how to change', 'change my baby\'s diaper', 'change my babys diaper',
+    'struggle with feeding', 'feeding my baby', 'daily care', 'baby care',
+    'confident caring', 'confident looking after', 'how to care', 'how to look after',
+    'balaganna amarui', 'balaganne kohomada', 'balaganna puluwanda', 'balaganna igena ganna',
+    'aluth upan baba wa balaganna', 'baba wa balaganne kohomada', 'baba wa balaganna eka',
+    'බලාගන්න අමාරුයි', 'බලාගන්නේ කොහොමද', 'බලාගන්න පුළුවන්ද කියලා', 'බලාගන්න ඉගෙනගන්න', 'බලාගන්න එක මට හරිම අමාරුයි'
   ]
 };
 
@@ -391,6 +398,7 @@ const SUPPORT_MESSAGES = {
   baby_sleep: ['බබාගේ නින්ද රටාව වර්ධනය වෙමින් පවතී 🌙', 'කෙටි විවේක පවා ඔබට උපකාරී වෙයි 💜'],
   baby_health: ['සෞඛ්‍යය කෙරෙහි සැලකිලිමත් වීම අගනේය 💜', 'වෛද්‍ය උපදෙස් ලබා ගැනීම සැමවිටම සුදුසුයි 🌸'],
   caring_for_baby: ['දරුවා රැකබලා ගැනීම උතුම් කාර්යයකි 💜', 'ඔබ අද්භූත මවකි 🌸'],
+  difficulty_caring_for_baby: ['දරුවා රැකබලා ගැනීම ඉගෙනීම කාලය සමඟ සිදුවන සුන්දර ගමනකි 💜', 'ඔබ ඔබේ බබා වෙනුවෙන් කැපවූ අද්භූත මවකි 🌸'],
 };
 
 export const detectBabyIntents = (text = '') => {
@@ -469,7 +477,7 @@ export const analyzeDiary = (text) => {
   ]);
 
   // Only override with baby-specific care topics (crying, health, feeding, sleep, needs) if maternal state isn't an explicit primary concern
-  if (babyIntents.baby_related && (!hasMaternalMatch || motherReason === 'fatigue' || (rScores.baby_needs > 0 && rScores.baby_needs >= (rScores[motherReason] || 0)))) {
+  if (babyIntents.baby_related && (!hasMaternalMatch || motherReason === 'fatigue' || motherReason === 'sleep_problems' || (rScores.baby_needs > 0 && rScores.baby_needs >= (rScores[motherReason] || 0)))) {
     const intentsList = [
       { id: 'baby_crying', kws: ['crying', 'cries', 'cry', 'andana', 'andanawa', 'adanawa', 'අඬනවා', 'අඬන', 'ඇඬීම', 'කෑගහනවා'] },
       { id: 'baby_needs', kws: ['needs', 'want', 'wants', 'understand', 'therenne naha', 'therenne na', 'therum ganna baha', 'one kiyala', 'mokakda one', 'monawada one', 'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා'] },

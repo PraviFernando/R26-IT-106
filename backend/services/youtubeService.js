@@ -4,6 +4,33 @@ const axios = require('axios');
 // ALL CURATED VIDEOS REPOSITORY (Flat Store)
 // ============================================================
 const ALL_CURATED_VIDEOS = {
+  // Difficulty Caring For Baby
+  '7yxd25nZMaE': {
+    id: '7yxd25nZMaE',
+    title: 'අලුත උපන් බබා සුවපහසුවෙන් බලාගන්නා ආකාරය (Newborn Care & Handling Basics)',
+    description: 'Practical guidance for new parents on caring for a newborn baby.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/7yxd25nZMaE',
+    thumbnail: 'https://img.youtube.com/vi/7yxd25nZMaE/0.jpg'
+  },
+  'dp_education_health': {
+    id: 'dp_education_health',
+    title: 'DP Education Health - ළදරු සාත්තු මාර්ගෝපදේශය (Baby Care Channel)',
+    description: 'DP Education Health YouTube channel video resources on newborn care and soothing.',
+    channelTitle: 'DP Education Health',
+    url: 'https://www.youtube.com/@dpeducationhealth/videos',
+    thumbnail: 'https://img.youtube.com/vi/kmbKaSRyZ-c/0.jpg',
+    source: 'channel'
+  },
+  '40twQSFLHMw': {
+    id: '40twQSFLHMw',
+    title: 'බබා නෑවීම සහ ඩයපර් මාරු කිරීම (Baby Bathing & Diaper Care Basics)',
+    description: 'Step-by-step guidance on bathing and diaper care for newborn babies.',
+    channelTitle: 'PeriCare Care Library',
+    url: 'https://youtu.be/40twQSFLHMw',
+    thumbnail: 'https://img.youtube.com/vi/40twQSFLHMw/0.jpg'
+  },
+
   // Baby Feeding / Breastfeeding
   'qdXehiELnIA': {
     id: 'qdXehiELnIA',
@@ -837,7 +864,8 @@ const normalizeReasonKey = (reason) => {
   if (r.includes('baby_sleep') || r.includes('baby sleep')) return 'baby_sleep';
   if (r.includes('sleep_problems') || r.includes('mother_sleep') || r.includes('mother sleep') || r.includes('sleepless')) return 'mother_sleep_problems';
   if (r.includes('crying') || r.includes('andanawa')) return 'baby_crying';
-  if (r.includes('understanding') || r.includes('needs') || r.includes('caring') || r.includes('kaha')) return 'understanding_baby';
+  if (r.includes('difficulty_caring_for_baby') || r.includes('caring_for_baby')) return 'difficulty_caring_for_baby';
+  if (r.includes('understanding') || r.includes('needs') || r.includes('kaha')) return 'understanding_baby';
   if (r.includes('health') || r.includes('fever') || r.includes('una')) return 'baby_health';
   if (r.includes('anxiety') || r.includes('anxious') || r.includes('baya')) return 'anxiety';
   if (r.includes('lonely') || r.includes('loneliness')) return 'loneliness';
@@ -951,6 +979,8 @@ function getCuratedVideos(reason, emotion, babyContext, subIntent = '', requestS
     baby_sleep: ['SfCxUG1nE84', 'pJYWRlTQ9s8', 'n1NGKj2B2eU'],
     understanding_baby: ['a4WGVOzTR4A', 've7yXXRaYT8', 'k_FyoBhaFTA'],
     baby_needs: ['a4WGVOzTR4A', 've7yXXRaYT8', 'k_FyoBhaFTA'],
+    difficulty_caring_for_baby: ['7yxd25nZMaE', 'dp_education_health', '40twQSFLHMw'],
+    caring_for_baby: ['7yxd25nZMaE', 'dp_education_health', '40twQSFLHMw'],
     baby_health: ['ZCQUPRyZbO0', '4SQNqugTUmw', 'k_FyoBhaFTA']
   };
 
@@ -1070,6 +1100,16 @@ const VIDEO_SEARCH_QUERIES = {
     "decoding baby communication and hunger cues",
     "understanding newborn needs and behavior"
   ],
+  difficulty_caring_for_baby: [
+    "how to take care of a newborn baby guide",
+    "newborn baby care basics feeding bathing diapering",
+    "practical baby care tips for new parents"
+  ],
+  caring_for_baby: [
+    "how to take care of a newborn baby guide",
+    "newborn baby care basics feeding bathing diapering",
+    "practical baby care tips for new parents"
+  ],
   baby_health: [
     "newborn baby health wellness care tips guide",
     "newborn baby illness warning signs pediatrician",
@@ -1094,6 +1134,14 @@ const CATEGORY_RULES = {
   bonding_issues: {
     required: ['bonding', 'bond', 'attachment', 'attach', 'connect', 'connection', 'mother-baby', 'maternal bonding', 'connecting with baby', 'skin-to-skin', 'baby'],
     forbidden: ['jaundice', 'fever', 'sick', 'illness', 'cough', 'sleep', 'sleeping', 'feed', 'feeding', 'breastfeed', 'breastfeeding', 'crying', 'colic', 'financial', 'budget', 'marriage', 'husband', 'c section', 'recovery', 'workout', 'exercise', 'grammarly', 'try grammarly']
+  },
+  difficulty_caring_for_baby: {
+    required: ['baby', 'newborn', 'care', 'caring', 'bathe', 'bathing', 'diaper', 'feed', 'feeding', 'soothe', 'handle', 'parenting'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'cough', 'workout', 'exercise', 'grammarly', 'husband', 'financial', 'budget']
+  },
+  caring_for_baby: {
+    required: ['baby', 'newborn', 'care', 'caring', 'bathe', 'bathing', 'diaper', 'feed', 'feeding', 'soothe', 'handle', 'parenting'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'cough', 'workout', 'exercise', 'grammarly', 'husband', 'financial', 'budget']
   },
   sleep_problems: {
     required: ['sleep', 'insomnia', 'sleeping', 'rest', 'bedtime', 'sleep deprivation', 'sleepless', 'tired', 'fatigue'],
@@ -1236,6 +1284,11 @@ const FALLBACK_YOUTUBE_API_VIDEOS = {
     { id: 'iLUk7xB0BVw', title: 'Finding Connection & Support in Motherhood', description: 'Overcoming feelings of being alone during the postpartum period.', url: 'https://www.youtube.com/watch?v=iLUk7xB0BVw', thumbnail: 'https://img.youtube.com/vi/iLUk7xB0BVw/0.jpg' },
     { id: 'AJpErm8H2aU', title: 'Finding Emotional Support as a New Mother', description: 'Emotional support and overcoming maternal isolation.', url: 'https://www.youtube.com/watch?v=AJpErm8H2aU', thumbnail: 'https://img.youtube.com/vi/AJpErm8H2aU/0.jpg' },
     { id: 'bnlKVPj4zeQ', title: 'Navigating Postpartum Support System', description: 'Postpartum lack of support for mothers emotional help and coping.', url: 'https://www.youtube.com/watch?v=bnlKVPj4zeQ', thumbnail: 'https://img.youtube.com/vi/bnlKVPj4zeQ/0.jpg' }
+  ],
+  difficulty_caring_for_baby: [
+    { id: '7yxd25nZMaE', title: 'Newborn Baby Care & Daily Handling Basics', description: 'Practical guidance for new parents on caring for a newborn baby.', url: 'https://youtu.be/7yxd25nZMaE', thumbnail: 'https://img.youtube.com/vi/7yxd25nZMaE/0.jpg' },
+    { id: 'dp_education_health', title: 'DP Education Health - ළදරු සාත්තු සහ රක්නා මාර්ගෝපදේශය', description: 'DP Education Health channel guide on newborn care and soothing.', url: 'https://www.youtube.com/@dpeducationhealth/videos', thumbnail: 'https://img.youtube.com/vi/kmbKaSRyZ-c/0.jpg', source: 'channel' },
+    { id: '40twQSFLHMw', title: 'Newborn Baby Bathing, Hygiene & Diaper Care', description: 'Step-by-step tutorial on bathing and diaper care for newborn babies.', url: 'https://youtu.be/40twQSFLHMw', thumbnail: 'https://img.youtube.com/vi/40twQSFLHMw/0.jpg' }
   ],
   loneliness: [
     { id: 'AJpErm8H2aU', title: 'Finding Emotional Support as a New Mother', description: 'Postpartum loneliness emotional support for mothers feeling isolated.', url: 'https://www.youtube.com/watch?v=AJpErm8H2aU', thumbnail: 'https://img.youtube.com/vi/AJpErm8H2aU/0.jpg' },
@@ -1505,7 +1558,7 @@ async function validateYouTubeVideos(candidates, apiKey) {
 async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryText = '') {
   const normReason = normalizeReasonKey(reason);
   const normEmotion = normalizeEmotionKey(emotion);
-  const isBaby = (babyIntent === 'true' || babyIntent === true || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_needs', 'baby_health', 'bonding_issues'].includes(normReason));
+  const isBaby = (babyIntent === 'true' || babyIntent === true || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_needs', 'baby_health', 'bonding_issues', 'difficulty_caring_for_baby', 'caring_for_baby'].includes(normReason));
 
   const subIntent = normReason === 'baby_health' ? detectBabyHealthSubIntent(diaryText) : 'Other Baby Health';
 

@@ -985,7 +985,7 @@ export const isBabyRelatedReason = (reason = '') => {
   const r = reason.toLowerCase();
   const babyKeys = [
     'baby', 'crying', 'feeding', 'breastfeeding', 'understanding_baby',
-    'caring_for_baby', 'baby_crying', 'baby_feeding', 'baby_sleep',
+    'difficulty_caring_for_baby', 'caring_for_baby', 'baby_crying', 'baby_feeding', 'baby_sleep',
     'baby_needs', 'baby_health', 'baby_behaviour', 'bonding_issues', 'ළදරු', 'බබා', 'දරුවා'
   ];
   return babyKeys.some(k => r.includes(k));
@@ -1039,6 +1039,7 @@ const REASON_ACTIVITY_MAP = {
   // Baby-focused entries
   baby_crying: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
   baby_needs: ['baby_cue_observation', 'hunger_cue_observation', 'sleep_cue_observation', 'crying_pattern_observation', 'baby_routine_tracking', 'mother_baby_observation_time', 'baby_mood'],
+  difficulty_caring_for_baby: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
   baby_feeding: ['new_drink_water', 'baby_mood', 'new_gentle_stretch', 'new_relaxing_music', 'gentle_stretch'],
   baby_sleep: ['baby_mood', 'new_sleep_reflection', 'night_breathing', 'rest_meditation'],
   baby_health: ['baby_mood', 'new_deep_breathing', 'new_positive_affirmations', 'grounding_54321'],
@@ -1074,7 +1075,7 @@ export const normalizeReasonKey = (reason) => {
   if (r === 'baby_crying') return 'baby_crying';
   if (r === 'baby_sleep') return 'baby_sleep';
   if (r === 'baby_health') return 'baby_health';
-  if (r === 'caring_for_baby') return 'caring_for_baby';
+  if (r === 'difficulty_caring_for_baby' || r === 'caring_for_baby') return 'difficulty_caring_for_baby';
   if (r === 'bonding_issues' || r === 'bonding' || r === 'baby_bonding') return 'bonding_issues';
   if (r === 'loss_of_confidence' || r === 'confidence') return 'loss_of_confidence';
   if (r === 'negative_thoughts') return 'negative_thoughts';

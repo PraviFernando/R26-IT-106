@@ -326,7 +326,13 @@ export const VIDEO_LIBRARY = {
     { id: 'vnt7', title: 'ඔබේ සිතුවිලි කරුණු නොවේ', titleEn: 'Your Thoughts Are Not Facts', duration: '9 min', emoji: '💡', source: null },
     { id: 'vnt8', title: 'අඳුරු මොහොත ගෙවී යයි', titleEn: 'Dark Moments Pass', duration: '8 min', emoji: '🌊', source: null },
     { id: 'vnt9', title: 'දිවි ගලවා ගත් අය කතා බෙදා ගනිති', titleEn: 'Survivors Share Stories', duration: '15 min', emoji: '🌱', source: null },
-    { id: 'vnt10', title: 'මේ මොහොතේ ආරක්ෂිතයි', titleEn: 'Safe in This Moment', duration: '7 min', emoji: '🛡️', source: null },
+    { id: 'vnt10', title: 'මේ මොහොතේ ආරක්ෂිතයි', titleEn: 'Safe in This Moment', duration: '7 min', emoji: '🛡️', source: null }
+  ],
+  // ── DIFFICULTY CARING FOR BABY ──────────────────────────
+  difficulty_caring_for_baby: [
+    { id: '7yxd25nZMaE', title: 'අලුත උපන් බබා සුවපහසුවෙන් බලාගන්නා ආකාරය', titleEn: 'Newborn Care & Handling Basics', duration: '10 min', emoji: '👶', url: 'https://youtu.be/7yxd25nZMaE', source: null },
+    { id: 'dp_education_health', title: 'DP Education Health - ළදරු සාත්තු මාර්ගෝපදේශය', titleEn: 'DP Education Health Channel - Baby Care Videos', duration: '12 min', emoji: '🏥', url: 'https://www.youtube.com/@dpeducationhealth/videos', source: 'channel', channelTitle: 'DP Education Health' },
+    { id: '40twQSFLHMw', title: 'බබා නෑවීම සහ ඩයපර් මාරු කිරීම', titleEn: 'Baby Bathing & Diaper Care Basics', duration: '8 min', emoji: '🍼', url: 'https://youtu.be/40twQSFLHMw', source: null }
   ],
 };
 
@@ -335,6 +341,7 @@ MUSIC_LIBRARY.baby_crying = MUSIC_LIBRARY.bonding_issues;
 MUSIC_LIBRARY.baby_needs = MUSIC_LIBRARY.bonding_issues;
 MUSIC_LIBRARY.baby_feeding = MUSIC_LIBRARY.bonding_issues;
 MUSIC_LIBRARY.caring_for_baby = MUSIC_LIBRARY.bonding_issues;
+MUSIC_LIBRARY.difficulty_caring_for_baby = MUSIC_LIBRARY.bonding_issues;
 MUSIC_LIBRARY.baby_sleep = MUSIC_LIBRARY.bonding_issues;
 MUSIC_LIBRARY.mother_sleep = MUSIC_LIBRARY.sleep_problems;
 MUSIC_LIBRARY.mother_sleep_problems = MUSIC_LIBRARY.sleep_problems;
@@ -344,7 +351,7 @@ MUSIC_LIBRARY.baby_health = MUSIC_LIBRARY.anxiety;
 
 VIDEO_LIBRARY.baby_crying = VIDEO_LIBRARY.bonding_issues;
 VIDEO_LIBRARY.baby_feeding = VIDEO_LIBRARY.bonding_issues;
-VIDEO_LIBRARY.caring_for_baby = VIDEO_LIBRARY.bonding_issues;
+VIDEO_LIBRARY.caring_for_baby = VIDEO_LIBRARY.difficulty_caring_for_baby;
 VIDEO_LIBRARY.baby_sleep = VIDEO_LIBRARY.sleep_problems;
 VIDEO_LIBRARY.mother_sleep = VIDEO_LIBRARY.sleep_problems;
 VIDEO_LIBRARY.mother_sleep_problems = VIDEO_LIBRARY.sleep_problems;
@@ -379,7 +386,7 @@ export const getMusicForReason = (finalReason = '', emotion = '', selectedEmoji 
   if (targetCategory && !SUPPORTED_MUSIC_REASONS.includes(targetCategory)) {
     if (['mother_sleep', 'mother_sleep_problems', 'sleep'].includes(targetCategory)) {
       targetCategory = 'sleep_problems';
-    } else if (['baby_crying', 'baby_needs', 'baby_feeding', 'caring_for_baby', 'baby_sleep'].includes(targetCategory)) {
+    } else if (['baby_crying', 'baby_needs', 'baby_feeding', 'caring_for_baby', 'difficulty_caring_for_baby', 'baby_sleep'].includes(targetCategory)) {
       targetCategory = 'bonding_issues';
     } else if (['baby_health'].includes(targetCategory)) {
       targetCategory = 'anxiety';
