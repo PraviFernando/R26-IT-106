@@ -86,13 +86,16 @@ const RISK_CFG = {
 };
 
 const openYouTube = async (itemOrUrl, title, titleEn) => {
-  let url = typeof itemOrUrl === 'string' ? itemOrUrl : itemOrUrl?.url;
+  let rawUrl = typeof itemOrUrl === 'string' ? itemOrUrl : itemOrUrl?.url;
+  let ytId = typeof itemOrUrl === 'object' ? extractYouTubeId(itemOrUrl?.url || itemOrUrl?.id) : extractYouTubeId(itemOrUrl);
+  let url = rawUrl || (ytId ? `https://www.youtube.com/watch?v=${ytId}` : null);
+
   let searchTitle = typeof itemOrUrl === 'object'
     ? (itemOrUrl?.titleEn || itemOrUrl?.title || itemOrUrl?.label)
     : (titleEn || title);
 
   if (!url && searchTitle) {
-    url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTitle + ' music video relaxation')}`;
+    url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTitle)}`;
   }
 
   if (!url) {
@@ -100,12 +103,7 @@ const openYouTube = async (itemOrUrl, title, titleEn) => {
   }
 
   try {
-    const canOpen = await Linking.canOpenURL(url).catch(() => false);
-    if (canOpen || url.startsWith('http') || url.startsWith('tel:')) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert('සබැඳිය', `තොරතුරු: ${url}`);
-    }
+    await Linking.openURL(url);
   } catch (e) {
     console.error('Error opening URL:', e);
     Alert.alert('දෝෂයක්', 'සබැඳිය විවෘත කළ නොහැකි විය.');
@@ -1124,17 +1122,25 @@ const RecommendationsScreen = ({ navigation, route }) => {
                         const badgeBg = isCurated ? '#EDE7F6' : isApi ? '#FFEBEE' : '#E0F2FE';
                         const badgeCol = isCurated ? '#6A1B9A' : isApi ? '#C62828' : '#0369A1';
 
+                        const ytId = extractYouTubeId(video.url || video.id);
+                        const videoUrl = video.url || (ytId ? `https://www.youtube.com/watch?v=${ytId}` : null);
+                        const rawThumb = video.thumbnail || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null);
+
                         return (
-                          <TouchableOpacity key={extractYouTubeId(video.url) || video.id || `v-${idx}`} style={s.mediaCard} onPress={() => openYouTube(video)}>
-                            {video.thumbnail ? (
-                              <Image source={{ uri: video.thumbnail }} style={s.videoThumb} />
+                          <TouchableOpacity key={ytId || video.id || `v-${idx}`} style={s.mediaCard} onPress={() => openYouTube(videoUrl || video)}>
+                            {rawThumb ? (
+                              <View style={{ position: 'relative' }}>
+                                <Image source={{ uri: rawThumb }} style={s.videoThumb} />
+                                <View style={s.playOverlay}>
+                                  <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '700' }}>▶</Text>
+                                </View>
+                              </View>
                             ) : (
                               <View style={[s.mediaIcon, { backgroundColor: colors.roseLight }]}>
                                 <Text style={s.mediaEmoji}>🎬</Text>
                               </View>
                             )}
                             <View style={s.mediaInfo}>
-
                               <Text style={s.mediaTitle} numberOfLines={2}>{video.title}</Text>
                               <Text style={s.mediaSub} numberOfLines={1}>{video.channelTitle || 'YouTube'}</Text>
                               <Text style={s.videoDesc} numberOfLines={2}>{video.description}</Text>
@@ -1372,6 +1378,17 @@ const s = StyleSheet.create({
     height: 60,
     borderRadius: 10,
     marginRight: 12,
+  },
+  playOverlay: {
+    position: 'absolute',
+    top: 18,
+    left: 28,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   videoDesc: {
     fontSize: 11,

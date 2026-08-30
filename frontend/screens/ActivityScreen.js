@@ -3025,6 +3025,10 @@ const ActivityScreen = ({ navigation, route }) => {
   };
 
   const goBack = () => {
+    if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
+      navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Recommendations' } });
+      return;
+    }
     if (view === 'game' || view === 'activity') {
       if (route?.params?.gameId || route?.params?.activityId) {
         if (navigation.canGoBack()) {
@@ -3042,10 +3046,6 @@ const ActivityScreen = ({ navigation, route }) => {
     }
     if (navigation.canGoBack()) {
       navigation.goBack();
-      return;
-    }
-    if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
-      navigation.navigate('Recommendations');
       return;
     }
     navigation.navigate('Home');

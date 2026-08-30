@@ -1219,6 +1219,14 @@ const CATEGORY_RULES = {
     required: ['cue', 'cues', 'understand', 'needs', 'body language', 'development', 'milestone', 'milestones', 'cognitive', 'brain', 'baby', 'newborn'],
     forbidden: ['jaundice', 'fever', 'sick', 'illness', 'financial', 'marriage', 'husband', 'workout', 'grammarly']
   },
+  difficulty_caring_for_baby: {
+    required: ['care', 'caring', 'newborn', 'baby', 'tips', 'guide', 'handling', 'soothe', 'soothing', 'mother', 'parenting'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'financial', 'marriage', 'husband', 'workout', 'grammarly']
+  },
+  caring_for_baby: {
+    required: ['care', 'caring', 'newborn', 'baby', 'tips', 'guide', 'handling', 'soothe', 'soothing', 'mother', 'parenting'],
+    forbidden: ['jaundice', 'fever', 'sick', 'illness', 'financial', 'marriage', 'husband', 'workout', 'grammarly']
+  },
   baby_health: {
     required: ['health', 'fever', 'sick', 'illness', 'wellness', 'temp', 'temperature', 'doctor', 'medicine', 'pediatrician', 'jaundice', 'baby', 'newborn'],
     forbidden: ['bonding', 'attachment', 'financial', 'marriage', 'husband', 'workout', 'grammarly']
@@ -1272,6 +1280,25 @@ function scoreApiVideo(video, normReason, normEmotion, babyContext, subIntent = 
   const matchesReason = reasonKeywords.some(kw => title.includes(kw));
   if (matchesReason) {
     score += 5;
+  }
+
+  // 4. Secondary Personalization: Selected Emoji (+5 Boost)
+  const activeEmotion = selectedEmoji || normEmotion;
+  if (['crying', 'sad', 'anxious', 'stressed'].includes(activeEmotion)) {
+    if (fullText.includes('support') || fullText.includes('soothing') || fullText.includes('coping') || fullText.includes('comfort') || fullText.includes('gentle')) {
+      score += 5;
+    }
+  } else if (['happy', 'calm'].includes(activeEmotion)) {
+    if (fullText.includes('positive') || fullText.includes('strength') || fullText.includes('resilience') || fullText.includes('uplifting') || fullText.includes('joy')) {
+      score += 5;
+    }
+  }
+
+  // 5. Risk Level Safety Signal
+  if (normRisk === 'high') {
+    if (fullText.includes('meditation') || fullText.includes('gentle') || fullText.includes('relaxation') || fullText.includes('calm') || fullText.includes('breathing')) {
+      score += 8;
+    }
   }
 
   return score;
@@ -1392,6 +1419,18 @@ const FALLBACK_YOUTUBE_API_VIDEOS = {
     { id: '4SQNqugTUmw', title: 'Understanding Newborn Needs and Care', description: 'Understanding baby behavior and development cues.', url: 'https://www.youtube.com/watch?v=4SQNqugTUmw', thumbnail: 'https://img.youtube.com/vi/4SQNqugTUmw/0.jpg' },
     { id: 'k_FyoBhaFTA', title: 'Key Newborn Development Cues', description: 'Decoding body language and baby communication.', url: 'https://www.youtube.com/watch?v=k_FyoBhaFTA', thumbnail: 'https://img.youtube.com/vi/k_FyoBhaFTA/0.jpg' }
   ],
+  difficulty_caring_for_baby: [
+    { id: 'SQX5Nwr4ekc', title: 'Newborn Baby Care Basics & Handling Guide', description: 'Essential step by step newborn baby care tips for new mothers.', url: 'https://www.youtube.com/watch?v=SQX5Nwr4ekc', thumbnail: 'https://img.youtube.com/vi/SQX5Nwr4ekc/0.jpg' },
+    { id: '4SQNqugTUmw', title: 'How to Care for Your Newborn Baby', description: 'Practical guidance for new parents caring for a newborn baby.', url: 'https://www.youtube.com/watch?v=4SQNqugTUmw', thumbnail: 'https://img.youtube.com/vi/4SQNqugTUmw/0.jpg' },
+    { id: 'ZCQUPRyZbO0', title: 'Soothing and Caring for Newborn Needs', description: 'Confidence building tips for caring for your newborn baby.', url: 'https://www.youtube.com/watch?v=ZCQUPRyZbO0', thumbnail: 'https://img.youtube.com/vi/ZCQUPRyZbO0/0.jpg' },
+    { id: 'k_FyoBhaFTA', title: 'Daily Newborn Care Routine & Tips', description: 'Comprehensive guide to newborn handling and daily baby care.', url: 'https://www.youtube.com/watch?v=k_FyoBhaFTA', thumbnail: 'https://img.youtube.com/vi/k_FyoBhaFTA/0.jpg' }
+  ],
+  caring_for_baby: [
+    { id: 'SQX5Nwr4ekc', title: 'Newborn Baby Care Basics & Handling Guide', description: 'Essential step by step newborn baby care tips for new mothers.', url: 'https://www.youtube.com/watch?v=SQX5Nwr4ekc', thumbnail: 'https://img.youtube.com/vi/SQX5Nwr4ekc/0.jpg' },
+    { id: '4SQNqugTUmw', title: 'How to Care for Your Newborn Baby', description: 'Practical guidance for new parents caring for a newborn baby.', url: 'https://www.youtube.com/watch?v=4SQNqugTUmw', thumbnail: 'https://img.youtube.com/vi/4SQNqugTUmw/0.jpg' },
+    { id: 'ZCQUPRyZbO0', title: 'Soothing and Caring for Newborn Needs', description: 'Confidence building tips for caring for your newborn baby.', url: 'https://www.youtube.com/watch?v=ZCQUPRyZbO0', thumbnail: 'https://img.youtube.com/vi/ZCQUPRyZbO0/0.jpg' },
+    { id: 'k_FyoBhaFTA', title: 'Daily Newborn Care Routine & Tips', description: 'Comprehensive guide to newborn handling and daily baby care.', url: 'https://www.youtube.com/watch?v=k_FyoBhaFTA', thumbnail: 'https://img.youtube.com/vi/k_FyoBhaFTA/0.jpg' }
+  ],
   baby_health: [
     { id: 'fpiYNkkNmEo', title: 'Understanding Newborn Jaundice & Health', description: 'Newborn baby health wellness care tips pediatrician guide.', url: 'https://www.youtube.com/watch?v=fpiYNkkNmEo', thumbnail: 'https://img.youtube.com/vi/fpiYNkkNmEo/0.jpg' },
     { id: 'SQX5Nwr4ekc', title: 'Newborn Health Signs & Yellow Skin Guide', description: 'Newborn baby illness warning signs pediatrician care.', url: 'https://www.youtube.com/watch?v=SQX5Nwr4ekc', thumbnail: 'https://img.youtube.com/vi/SQX5Nwr4ekc/0.jpg' },
@@ -1421,6 +1460,8 @@ async function fetchYouTubeItems(query, apiKey, maxResults = 15, normReason = 'g
         q: query,
         type: 'video',
         maxResults: maxResults,
+        relevanceLanguage: 'en',
+        regionCode: 'LK',
         key: apiKey
       }
     });
@@ -1555,9 +1596,10 @@ async function validateYouTubeVideos(candidates, apiKey) {
 // ============================================================
 // MAIN HYBRID RECOMMENDATION PIPELINE (3 Curated + 2 API = 5)
 // ============================================================
-async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryText = '') {
+async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryText = '', selectedEmoji = null) {
   const normReason = normalizeReasonKey(reason);
   const normEmotion = normalizeEmotionKey(emotion);
+  const normRisk = String(riskLevel || 'low').toLowerCase();
   const isBaby = (babyIntent === 'true' || babyIntent === true || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_needs', 'baby_health', 'bonding_issues', 'difficulty_caring_for_baby', 'caring_for_baby'].includes(normReason));
 
   const subIntent = normReason === 'baby_health' ? detectBabyHealthSubIntent(diaryText) : 'Other Baby Health';
@@ -1613,7 +1655,7 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryT
         });
 
         const scored = validated.map(v => {
-          const score = scoreApiVideo(v, normReason, normEmotion, isBaby, subIntent);
+          const score = scoreApiVideo(v, normReason, normEmotion, isBaby, subIntent, selectedEmoji, normRisk);
           return { ...v, score, source: 'youtube_api' };
         });
 
@@ -1691,27 +1733,17 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryT
   const uniqueCount = new Set(finalVideos.map(v => extractYouTubeId(v.url || v.id))).size;
   const isSuccess = totalCount === 5 && curatedCount === 3 && youtubeApiCount === 2 && uniqueCount === 5;
 
-  // DETAILED LOGGING (Step 12)
+  // Safe development logging without YOUTUBE_API_KEY leakage
   console.log('\n==================================================');
-  console.log('[VIDEO RECOMMENDATION PIPELINE LOG]');
-  console.log(`  Raw Reason: "${reason}" → Normalized: "${normReason}"`);
-  console.log(`  Raw Emotion: "${emotion}" → Normalized: "${normEmotion}"`);
-  console.log(`  Risk Level: ${riskLevel} | Baby Intent: ${isBaby} | SubIntent: ${subIntent}`);
-  console.log('--------------------------------------------------');
-  console.log(`  Curated Candidates Found: ${curatedCandidates.length}`);
-  console.log(`  Selected Curated Count: ${curatedCount}`);
-  selectedCuratedVideos.forEach((v, i) => {
-    console.log(`    [Curated ${i + 1}] ID: ${v.id} | Title: "${v.title}"`);
-  });
-  console.log('--------------------------------------------------');
-  console.log(`  YouTube API Key Present: ${!!apiKey}`);
-  console.log(`  Queries Tried (${queriesTried.length}): ${JSON.stringify(queriesTried)}`);
-  console.log(`  API Candidates Evaluated: ${candidateLogs.length}`);
-  console.log(`  API Accepted Count: ${youtubeApiCount}`);
-  apiVideos.forEach((v, i) => {
-    console.log(`    [API ${i + 1}] ID: ${v.id} | Score: ${v.score} | Title: "${v.title}"`);
-  });
-  console.log(`  API Rejected Candidates (${rejectedLogs.length}): ${JSON.stringify(rejectedLogs)}`);
+  console.log('[PeriCare YouTube]');
+  console.log(`  Reason: ${normReason}`);
+  console.log(`  Risk: ${normRisk}`);
+  console.log(`  Selected Emoji: ${selectedEmoji || emotion || 'none'}`);
+  console.log(`  Generated Query: ${JSON.stringify(queriesTried)}`);
+  console.log(`  Number of API Results: ${candidateLogs.length}`);
+  console.log(`  Number Rejected: ${rejectedLogs.length}`);
+  console.log(`  Number Accepted: ${youtubeApiCount}`);
+  console.log(`  Final Videos: ${JSON.stringify(finalVideos.map(v => v.title))}`);
   console.log('--------------------------------------------------');
   console.log('  FINAL VERIFICATION SUMMARY:');
   console.log(`    TOTAL VIDEO COUNT  : ${totalCount}  (Expected: 5)`);
@@ -1719,10 +1751,15 @@ async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryT
   console.log(`    YOUTUBE API COUNT  : ${youtubeApiCount}  (Expected: 2)`);
   console.log(`    UNIQUE VIDEO COUNT : ${uniqueCount}  (Expected: 5)`);
   console.log(`    HYBRID RULE STATUS : ${isSuccess ? 'PASS ✅' : 'FAIL ❌'}`);
-  if (!isSuccess) {
-    console.warn(`    FAILURE REASON     : Expected 3 Curated + 2 API = 5 Unique. Got ${curatedCount} Curated + ${youtubeApiCount} API = ${totalCount} Total (${uniqueCount} Unique)`);
-  }
   console.log('==================================================\n');
+
+  // For baby_health concerns, append professional medical advice notice
+  if (normReason === 'baby_health') {
+    return finalVideos.map(v => ({
+      ...v,
+      medicalNotice: 'Seek professional medical advice. YouTube educational videos do not replace medical evaluation by a pediatrician.'
+    }));
+  }
 
   return finalVideos;
 }

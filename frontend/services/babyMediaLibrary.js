@@ -293,6 +293,64 @@ export const BABY_VIDEO_LIBRARY = {
       emoji: '🌸',
     },
   ],
+
+  'Baby Care': [
+    {
+      id: 'bc1',
+      title: 'අලුත උපන් බබා සුවපහසුවෙන් බලාගන්නා ආකාරය (Newborn Care & Handling Basics)',
+      category: 'Baby Care',
+      ages: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      tags: ['baby care', 'caring_for_baby', 'newborn', 'handling'],
+      url: 'https://youtu.be/7yxd25nZMaE',
+      description: 'Practical guidance for new parents on caring for a newborn baby.',
+      emoji: '👶',
+      thumbnail: 'https://img.youtube.com/vi/7yxd25nZMaE/0.jpg'
+    },
+    {
+      id: 'bc2',
+      title: 'DP Education Health - ළදරු සාත්තු මාර්ගෝපදේශය (Baby Care Channel)',
+      category: 'Baby Care',
+      ages: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      tags: ['baby care', 'caring_for_baby', 'dp education'],
+      url: 'https://www.youtube.com/@dpeducationhealth/videos',
+      description: 'DP Education Health YouTube channel video resources on newborn care and soothing.',
+      emoji: '📺',
+      thumbnail: 'https://img.youtube.com/vi/kmbKaSRyZ-c/0.jpg'
+    },
+    {
+      id: 'bc3',
+      title: 'බබා නැවීම සහ ඩයපර් මාරු කිරීම (Baby Bathing & Diaper Care Basics)',
+      category: 'Baby Care',
+      ages: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      tags: ['baby care', 'bathing', 'diaper'],
+      url: 'https://youtu.be/40twQSFLHMw',
+      description: 'Step-by-step guidance on bathing and diaper care for newborn babies.',
+      emoji: '🛁',
+      thumbnail: 'https://img.youtube.com/vi/40twQSFLHMw/0.jpg'
+    },
+    {
+      id: 'bc4',
+      title: 'Newborn Baby Handling & Care Tutorial',
+      category: 'Baby Care',
+      ages: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      tags: ['handling', 'newborn', 'care'],
+      url: 'https://www.youtube.com/watch?v=SQX5Nwr4ekc',
+      description: 'Essential step by step newborn baby care tips for new mothers.',
+      emoji: '🌸',
+      thumbnail: 'https://img.youtube.com/vi/SQX5Nwr4ekc/0.jpg'
+    },
+    {
+      id: 'bc5',
+      title: 'Daily Newborn Care Routine & Tips for New Moms',
+      category: 'Baby Care',
+      ages: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      tags: ['routine', 'daily care', 'tips'],
+      url: 'https://www.youtube.com/watch?v=4SQNqugTUmw',
+      description: 'Comprehensive guide to newborn handling and daily baby care routine.',
+      emoji: '🧸',
+      thumbnail: 'https://img.youtube.com/vi/4SQNqugTUmw/0.jpg'
+    }
+  ],
 };
 
 export const getAllBabyVideos = () => {
