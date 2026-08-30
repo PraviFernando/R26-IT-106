@@ -7,16 +7,46 @@ export const KNOWLEDGE_CATEGORIES = [
   { id: 'all', label: 'සියල්ල', icon: '✨' },
   { id: 'baby_care', label: 'දරුවාගේ රැකවරණය', icon: '👶' },
   { id: 'mother_care', label: 'මවගේ සුවසෙත', icon: '🌸' },
-  { id: 'mental_wellbeing', label: 'මානසික සුවය', icon: '🧘' },
+  { id: 'social_support', label: 'සමාජීය සහය', icon: '🤝' },
   { id: 'podcasts', label: 'පොඩ්කාස්ට්', icon: '🎙️' },
   { id: 'books_audio', label: 'පොත් සහ ශ්‍රව්‍ය', icon: '📚' },
   { id: 'learning', label: 'ඉගෙනුම් පාඨමාලා', icon: '🎓' },
-  { id: 'social_support', label: 'සමාජීය සහය', icon: '🤝' },
   { id: 'lifestyle', label: 'ජීවන රටාව', icon: '🌿' },
   { id: 'useful_apps', label: 'වැදගත් ඇප්ස්', icon: '📱' },
 ];
 
 export const KNOWLEDGE_RESOURCES = [
+  // ── NATIONAL CRISIS SERVICES ────────────────────────────────
+  {
+    id: 'kb_crisis_1926',
+    title: '1926 National Mental Health Helpline',
+    titleEn: '1926 National Mental Health Helpline',
+    description: 'නොමිලේ සහ රහස්‍ය සහාය 24/7 දුරකථන සහ SMS හරහා ලබාදෙන සේවාවකි.',
+    category: 'mental_wellbeing',
+    subCategory: 'Crisis Support',
+    type: 'helpline',
+    tags: ['1926', 'helpline', 'crisis', 'mental health', 'ජාතික', 'නොමිලේ'],
+    thumbnail: '📞',
+    url: 'tel:1926',
+    duration: '24/7 නොමිලේ',
+    language: 'si',
+    source: 'National Institute of Mental Health (NIMH)'
+  },
+  {
+    id: 'kb_crisis_1333',
+    title: '1333 Crisis Support Line',
+    titleEn: '1333 Crisis Support Line',
+    description: '24/7 ක්‍රියාත්මක වන සහ toll-free සේවාවකි.',
+    category: 'mental_wellbeing',
+    subCategory: 'Crisis Support',
+    type: 'helpline',
+    tags: ['1333', 'helpline', 'crisis', 'toll free', 'ජාතික'],
+    thumbnail: '☎️',
+    url: 'tel:1333',
+    duration: '24/7 Toll-Free',
+    language: 'si',
+    source: 'CCC Line Sri Lanka'
+  },
   // ── BABY CARE ──────────────────────────────────────────────
   {
     id: 'kb_b1',

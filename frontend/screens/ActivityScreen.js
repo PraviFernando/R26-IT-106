@@ -3024,16 +3024,16 @@ const ActivityScreen = ({ navigation, route }) => {
   };
 
   const goBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
     if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
       navigation.navigate('Recommendations');
       return;
     }
     if (route?.params?.gameId || route?.params?.activityId) {
-      if (navigation.canGoBack()) {
-        navigation.goBack();
-      } else {
-        navigation.navigate('Home');
-      }
+      navigation.navigate('Home');
       return;
     }
     setView('list');
@@ -3200,6 +3200,23 @@ const ActivityScreen = ({ navigation, route }) => {
                 </TouchableOpacity>
               )
             )}
+          </View>
+          <View style={{ height: 30 }} />
+          <Text style={[s.sectionLabel, { color: '#8E24AA' }]}>✍️ ලිවීම සහ දිනපොත</Text>
+          <View style={s.gamesGrid}>
+            <TouchableOpacity
+              style={s.gameWrap}
+              onPress={() => {
+                setSelGame({ id: 'emotion_journal', label: 'හැඟීම් දිනපොත', labelEn: 'Track your mood', icon: '✍️' });
+                setView('game');
+              }}
+            >
+              <LinearGradient colors={['#FCE4EC', '#F8BBD9']} style={s.gameCard}>
+                <Text style={s.gameIcon}>✍️</Text>
+                <Text style={s.gameLabel}>{isSinhala ? 'දිනපොත් සටහන' : 'Journaling Activity'}</Text>
+                <Text style={[s.gameSub, { color: '#C2185B' }]}>{isSinhala ? 'හැඟීම් ලියන්න' : 'Express Feelings'}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
           <View style={{ height: 110 }} />
         </ScrollView>

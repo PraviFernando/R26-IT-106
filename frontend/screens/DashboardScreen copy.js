@@ -16,9 +16,9 @@ import { SI } from '../services/translations';
 const { width } = Dimensions.get('window');
 
 const emotionConfig = (isSinhala) => ({
-  happy:    { emoji: '😊', label: isSinhala ? 'සතුටුයි' : 'Happy',    gradient: ['#FFF9C4','#FFF3E0'], color: '#F57F17', bg: '#FFFDE7' },
-  sad:      { emoji: '😔', label: isSinhala ? 'දුකයි' : 'Sad',      gradient: ['#E8EAF6','#E3F2FD'], color: '#3949AB', bg: '#EDE7F6' },
-  stressed: { emoji: '😟', label: isSinhala ? 'ආතතියයි' : 'Stressed', gradient: ['#EDE7F6','#FCE4EC'], color: '#7E57C2', bg: '#F3E5F5' },
+  happy: { emoji: '😊', label: isSinhala ? 'සතුටුයි' : 'Happy', gradient: ['#FFF9C4', '#FFF3E0'], color: '#F57F17', bg: '#FFFDE7' },
+  sad: { emoji: '😔', label: isSinhala ? 'දුකයි' : 'Sad', gradient: ['#E8EAF6', '#E3F2FD'], color: '#3949AB', bg: '#EDE7F6' },
+  stressed: { emoji: '😟', label: isSinhala ? 'ආතතියයි' : 'Stressed', gradient: ['#EDE7F6', '#FCE4EC'], color: '#7E57C2', bg: '#F3E5F5' },
 });
 
 const emojiFeelingsMap = (isSinhala) => ({
@@ -33,19 +33,30 @@ const emojiFeelingsMap = (isSinhala) => ({
 });
 
 const getSupportMessages = (isSinhala) => ({
+
   happy: {
-    title: isSinhala ? 'ඔබ අද දිලිසෙනවා ✨' : 'You are shining today ✨',
-    body: isSinhala ? 'ඔබේ ධනාත්මක ශක්තිය ප්‍රමාද යයි — ඔබ සහ ඔබේ දරුවාට. මෙම සතුටු මොහොත ආදරෙන් ගෙවන්න.' : 'Your positive energy shines through for you and your baby. Enjoy this happy moment.'
+    title: isSinhala ? 'ඔබේ සතුට සුන්දරයි ✨' : 'Your happiness is beautiful ✨',
+    body: isSinhala
+      ? 'අද ඔබට සතුටක් දැනෙන එක වටින දෙයක්. මේ සුන්දර මොහොත ඔබේ බබා සමඟ ආදරයෙන් විඳින්න. 💛'
+      : 'It is wonderful that you are feeling happy today. Cherish this beautiful moment with your baby and enjoy the little things that bring you joy. 💛'
   },
+
   sad: {
-    title: isSinhala ? 'ඔබේ හැඟීම් වලංගුයි 🌧️' : 'Your feelings are valid 🌧️',
-    body: isSinhala ? 'දුකක් දැනෙනවා නම් හරිය. අම්මා වීම ලෝකයේ අභියෝගාත්මක කාර්යයකි. දැන් ඔබ වෙනුවෙන් ඉඩ ගනිමු.' : 'It is okay to feel sad. Being a mother is a challenging role. Take time for yourself now.'
+    title: isSinhala ? 'ඔබේ හැඟීම් වැදගත් 💜' : 'Your feelings matter 💜',
+    body: isSinhala
+      ? 'දුකක් හෝ බරක් දැනෙන එක ගැන ඔබට දොස් කියාගන්න එපා. ඔබ තනිවම මේ හැඟීම් දරාගත යුතු නැහැ. අද ඔබ වෙනුවෙන් පොඩි මොහොතක් වෙන් කරගන්න. 🌷'
+      : 'You do not have to blame yourself for feeling sad or overwhelmed. You do not have to carry these feelings alone. Take a small moment for yourself today. 🌷'
   },
+
   stressed: {
-    title: isSinhala ? 'ඔබ තනිව නොමැත 💜' : 'You are not alone 💜',
-    body: isSinhala ? 'ආතතිය යනු ශ්‍රේෂ්ඨ ගොඩ බිමකට ළඟා වීමට දරන උත්සාහයකි. දැන් ඔබ සඳහා සන්සුන් බව සහ සහනය සොයා ගනිමු.' : 'Anxiety is love reaching for a safe shore. Let us find calm and relief for you now.'
+    title: isSinhala ? 'ටිකක් හුස්ම ගන්න 💜' : 'Take a moment to breathe 💜',
+    body: isSinhala
+      ? 'ඔබට දැන් බොහෝ දේ එකවර දරාගන්න වෙලා ඇති. හැමදේම එකවර විසඳන්න අවශ්‍ය නැහැ. ටිකෙන් ටික ඉදිරියට යන්න — ඔබ ඔබට හිතනවාට වඩා ශක්තිමත්. 🌿'
+      : 'You may be carrying a lot right now. You do not have to solve everything at once. Take it one step at a time — you are stronger than you may feel right now. 🌿'
   },
+
 });
+
 
 const DashboardScreenCopy = ({ navigation }) => {
   const { t, i18n } = useTranslation();
@@ -53,12 +64,12 @@ const DashboardScreenCopy = ({ navigation }) => {
 
   const { user, latestAnalysis, moodHistory, preferencesSet, simulateNextDiary, nextDemoPreview } = useApp();
   const [processing, setProcessing] = useState(false);
-  const fadeAnim  = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim,  { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 700, useNativeDriver: true }),
     ]).start();
   }, []);
@@ -81,10 +92,10 @@ const DashboardScreenCopy = ({ navigation }) => {
   const affirmationsList = isSinhala ? SI.affirmations : affirmationsEN;
   const affirmation = affirmationsList[new Date().getDay() % affirmationsList.length];
 
-  const emotion  = latestAnalysis?.detectedEmotion || 'stressed';
-  const risk     = latestAnalysis?.riskLevel || 'low';
-  const ecMap    = emotionConfig(isSinhala);
-  const ec       = ecMap[emotion] || ecMap.stressed;
+  const emotion = latestAnalysis?.detectedEmotion || 'stressed';
+  const risk = latestAnalysis?.riskLevel || 'low';
+  const ecMap = emotionConfig(isSinhala);
+  const ec = ecMap[emotion] || ecMap.stressed;
   const selectedEmoji = latestAnalysis?.mood || ec.emoji;
   const selectedFeeling = emojiFeelingsMap(isSinhala)[selectedEmoji] || ec.label;
   const weekDays = moodHistory.slice(-7);
@@ -107,16 +118,16 @@ const DashboardScreenCopy = ({ navigation }) => {
 
   // Quick Actions with proper navigation
   const quickActions = [
-    { icon: '🎵', label: isSinhala ? 'සංගීතය' : 'Music',     color: colors.lavenderLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Recommendations', params: { tab: 'music' } } } },
-    { icon: '🧘', label: isSinhala ? 'ක්‍රියාකාරකම්' : 'Activities', color: colors.roseLight,     nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Activity' } } },
-    { icon: '🎮', label: isSinhala ? 'ක්‍රීඩා' : 'Games',      color: colors.mintLight,     nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Activity' } } },
-    { icon: '📊', label: isSinhala ? 'ප්‍රගතිය' : 'Progress',  color: colors.peach,         nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Progress' } } },
+    { icon: '🎵', label: isSinhala ? 'සංගීතය' : 'Music', color: colors.lavenderLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Recommendations', params: { tab: 'music' } } } },
+    { icon: '🧘', label: isSinhala ? 'ක්‍රියාකාරකම්' : 'Activities', color: colors.roseLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Activity' } } },
+    { icon: '🎮', label: isSinhala ? 'ක්‍රීඩා' : 'Games', color: colors.mintLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Activity' } } },
+    { icon: '📊', label: isSinhala ? 'ප්‍රගතිය' : 'Progress', color: colors.peach, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Progress' } } },
   ];
 
   return (
     <View style={s.container}>
       <StatusBar barStyle="dark-content" />
-      <LinearGradient colors={['#F8F4FF','#FFF0F8','#F5FBFF']} style={s.gradient}>
+      <LinearGradient colors={['#F8F4FF', '#FFF0F8', '#F5FBFF']} style={s.gradient}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
           {/* Top Header Row with Back Button and Language Toggle Button */}
@@ -159,16 +170,12 @@ const DashboardScreenCopy = ({ navigation }) => {
 
           {/* Merged Support Screen Contents */}
           <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-            {!isSinhala && <Text style={s.supportTitle}>Emotional Analysis 💜</Text>}
-            {!isSinhala && <Text style={s.supportSubtitle}>Your diary entry was read and analyzed</Text>}
-
             {/* System Note */}
             <View style={s.systemNote}>
               <Text style={s.systemNoteText}>
                 {isSinhala ? '🔍 ඔබේ දිනපොත් සංරචකයෙන් ස්වයංක්‍රීයව සකසන ලදි' : '🔍 Automatically generated from your diary entry'}
               </Text>
             </View>
-
 
             {/* Support Message Card */}
             <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={s.msgCard}>
@@ -217,17 +224,25 @@ const DashboardScreenCopy = ({ navigation }) => {
           <TouchableOpacity
             onPress={() => navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Activity' } })}
             style={s.commonActBanner}
+            activeOpacity={0.8}
           >
-            <Text style={s.commonActIcon}>🎮</Text>
-            <View style={s.commonActInfo}>
-              <Text style={s.commonActTitle}>
-                {isSinhala ? 'ක්‍රියාකාරකම් සහ ක්‍රීඩා' : 'Common Activities & Games'}
-              </Text>
-              <Text style={s.commonActSub}>
-                {isSinhala ? 'සන්සුන් ක්‍රියාකාරකම් සහ ක්‍රීඩා වෙත පිවිසෙන්න' : 'Access common activities and games'}
-              </Text>
-            </View>
-            <Text style={s.commonActArrow}>→</Text>
+            <LinearGradient
+              colors={['#EDE7F6', '#FCE4EC']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={s.commonActInner}
+            >
+              <Text style={s.commonActIcon}>🎮</Text>
+              <View style={s.commonActInfo}>
+                <Text style={s.commonActTitle}>
+                  {isSinhala ? 'ක්‍රියාකාරකම් සහ ක්‍රීඩා' : 'Common Activities & Games'}
+                </Text>
+                <Text style={s.commonActSub}>
+                  {isSinhala ? 'සන්සුන් ක්‍රියාකාරකම් සහ ක්‍රීඩා වෙත පිවිසෙන්න' : 'Access common activities and games'}
+                </Text>
+              </View>
+              <Text style={s.commonActArrow}>→</Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           {/* Quick Actions */}
@@ -235,8 +250,8 @@ const DashboardScreenCopy = ({ navigation }) => {
             <Text style={s.sectionTitle}>{isSinhala ? 'පෞද්ගලික ඉක්මන් ආධාර' : 'Personalized Quick Support'}</Text>
             <View style={s.quickGrid}>
               {quickActions.map((a, i) => (
-                <TouchableOpacity 
-                  key={i} 
+                <TouchableOpacity
+                  key={i}
                   style={[s.quickCard, { backgroundColor: a.color }]}
                   onPress={() => navigation.navigate(a.nav, a.params)}
                 >
@@ -247,7 +262,6 @@ const DashboardScreenCopy = ({ navigation }) => {
             </View>
           </View>
 
-
           <View style={{ height: 110 }} />
         </ScrollView>
       </LinearGradient>
@@ -256,86 +270,87 @@ const DashboardScreenCopy = ({ navigation }) => {
 };
 
 const s = StyleSheet.create({
-  container:      { flex: 1, backgroundColor: '#FAF2FA' },
-  gradient:       { flex: 1 },
-  scroll:         { paddingHorizontal: spacing.md, paddingTop: 56, paddingBottom: 30 },
-  topBarRow:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  backBtn:        { alignSelf: 'flex-start' },
-  backText:       { color: colors.lavenderDark, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', fontSize: 15 },
-  langToggleBtn:  { backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.full, borderWidth: 1, borderColor: '#EABDE6' },
+  container: { flex: 1, backgroundColor: '#FAF2FA' },
+  gradient: { flex: 1 },
+  scroll: { paddingHorizontal: spacing.md, paddingTop: 56, paddingBottom: 30 },
+  topBarRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  backBtn: { alignSelf: 'flex-start' },
+  backText: { color: colors.lavenderDark, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', fontSize: 15 },
+  langToggleBtn: { backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.full, borderWidth: 1, borderColor: '#EABDE6' },
   langToggleText: { fontSize: 13, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: colors.lavenderDark },
-  header:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.lg },
-  greeting:       { fontSize: 13, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, fontWeight: '600' },
-  name:           { fontSize: 24, fontFamily: typography ? typography.headerFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, marginTop: 2 },
-  week:           { fontSize: 12, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textMuted, marginTop: 3 },
-  avatar:         { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.lavender, justifyContent: 'center', alignItems: 'center', ...shadows.soft },
-  avatarText:     { fontSize: 20, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: colors.white },
-  prefBanner:     { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFDFEF', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md, borderWidth: 1.5, borderColor: '#EABDE6' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.lg },
+  greeting: { fontSize: 13, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, fontWeight: '600' },
+  name: { fontSize: 24, fontFamily: typography ? typography.headerFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, marginTop: 2 },
+  week: { fontSize: 12, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textMuted, marginTop: 3 },
+  avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.lavender, justifyContent: 'center', alignItems: 'center', ...shadows.soft },
+  avatarText: { fontSize: 20, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: colors.white },
+  prefBanner: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFDFEF', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md, borderWidth: 1.5, borderColor: '#EABDE6' },
   prefBannerText: { flex: 1, fontSize: 13, fontFamily: typography ? typography.subTopicFont : 'sans-serif', color: colors.lavenderDark, fontWeight: '700' },
-  prefArrow:      { fontSize: 18, color: colors.lavenderDark },
-  emotionCard:    { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.lg, ...shadows.card },
-  emotionTop:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.sm },
-  emotionLeft:    { flex: 1 },
-  emotionSub:     { fontSize: 11, fontFamily: typography ? typography.subTopicFont : 'sans-serif', color: colors.textMuted, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
-  emotionTitle:   { fontSize: 20, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', marginBottom: 10 },
-  riskBadge:      { alignSelf: 'flex-start', paddingVertical: 4, paddingHorizontal: 10, borderRadius: radius.full },
-  riskLabel:      { fontSize: 12, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700' },
-  emotionEmoji:   { fontSize: 52 },
-  emotionMsg:     { fontSize: 14, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.md },
-  viewBtn:        { backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: radius.full, paddingVertical: 10, paddingHorizontal: 18, alignSelf: 'flex-start', ...shadows.soft },
-  viewBtnText:    { fontWeight: '700', fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontSize: 13 },
-  section:        { marginBottom: spacing.lg },
-  sectionTitle:   { fontSize: 17, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.md },
-  weekStrip:      { flexDirection: 'row', justifyContent: 'space-between', gap: 4 },
-  dayChip:        { flex: 1, paddingVertical: 8, paddingHorizontal: 2, alignItems: 'center', borderRadius: radius.lg, minWidth: 0 },
-  dayChipToday:   { borderWidth: 2, borderColor: colors.lavenderDark },
-  dayEmoji:       { fontSize: 16, marginBottom: 2 },
-  dayLabel:       { fontSize: 9, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, fontWeight: '600', textAlign: 'center' },
-  riskDot:        { fontSize: 8, marginTop: 2 },
-  quickGrid:      { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' },
-  quickCard:      { width: '48%', minWidth: 135, borderRadius: radius.xl, padding: spacing.md, alignItems: 'center', ...shadows.soft, marginBottom: 4 },
-  quickIcon:      { fontSize: 32, marginBottom: 8 },
-  quickLabel:     { fontSize: 13, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, textAlign: 'center' },
-  affirmCard:     { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
-  affirmTitle:    { fontSize: 13, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: colors.lavenderDark, marginBottom: 8 },
-  affirmText:     { fontSize: 15, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, lineHeight: 24, fontStyle: 'italic' },
-  demoSection:    { backgroundColor: colors.softGray, borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md },
-  demoTitle:      { fontSize: 14, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, marginBottom: 6 },
-  demoPreview:    { fontSize: 12, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, fontStyle: 'italic', marginBottom: 12, lineHeight: 18 },
-  demoBtn:        { backgroundColor: colors.white, borderRadius: radius.full, paddingVertical: 10, paddingHorizontal: 20, alignSelf: 'flex-start', ...shadows.soft },
-  demoBtnText:    { color: colors.lavenderDark, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', fontSize: 13 },
-  supportTitle:   { fontSize: 24, fontFamily: typography ? typography.headerFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, marginBottom: 8 },
-  supportSubtitle:{ fontSize: 14, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.md },
-  systemNote:     { backgroundColor: '#FFDFEF', borderRadius: radius.full, paddingVertical: 10, paddingHorizontal: 16, marginBottom: spacing.lg, borderWidth: 1, borderColor: '#EABDE6' },
+  prefArrow: { fontSize: 18, color: colors.lavenderDark },
+  emotionCard: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.lg, ...shadows.card },
+  emotionTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.sm },
+  emotionLeft: { flex: 1 },
+  emotionSub: { fontSize: 11, fontFamily: typography ? typography.subTopicFont : 'sans-serif', color: colors.textMuted, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 },
+  emotionTitle: { fontSize: 20, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', marginBottom: 10 },
+  riskBadge: { alignSelf: 'flex-start', paddingVertical: 4, paddingHorizontal: 10, borderRadius: radius.full },
+  riskLabel: { fontSize: 12, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700' },
+  emotionEmoji: { fontSize: 52 },
+  emotionMsg: { fontSize: 14, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.md },
+  viewBtn: { backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: radius.full, paddingVertical: 10, paddingHorizontal: 18, alignSelf: 'flex-start', ...shadows.soft },
+  viewBtnText: { fontWeight: '700', fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontSize: 13 },
+  section: { marginBottom: spacing.lg },
+  sectionTitle: { fontSize: 17, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, marginBottom: spacing.md },
+  weekStrip: { flexDirection: 'row', justifyContent: 'space-between', gap: 4 },
+  dayChip: { flex: 1, paddingVertical: 8, paddingHorizontal: 2, alignItems: 'center', borderRadius: radius.lg, minWidth: 0 },
+  dayChipToday: { borderWidth: 2, borderColor: colors.lavenderDark },
+  dayEmoji: { fontSize: 16, marginBottom: 2 },
+  dayLabel: { fontSize: 9, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, fontWeight: '600', textAlign: 'center' },
+  riskDot: { fontSize: 8, marginTop: 2 },
+  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' },
+  quickCard: { width: '48%', minWidth: 135, borderRadius: radius.xl, padding: spacing.md, alignItems: 'center', ...shadows.soft, marginBottom: 4 },
+  quickIcon: { fontSize: 32, marginBottom: 8 },
+  quickLabel: { fontSize: 13, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, textAlign: 'center' },
+  affirmCard: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
+  affirmTitle: { fontSize: 13, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: colors.lavenderDark, marginBottom: 8 },
+  affirmText: { fontSize: 15, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, lineHeight: 24, fontStyle: 'italic' },
+  demoSection: { backgroundColor: colors.softGray, borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md },
+  demoTitle: { fontSize: 14, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, marginBottom: 6 },
+  demoPreview: { fontSize: 12, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, fontStyle: 'italic', marginBottom: 12, lineHeight: 18 },
+  demoBtn: { backgroundColor: colors.white, borderRadius: radius.full, paddingVertical: 10, paddingHorizontal: 20, alignSelf: 'flex-start', ...shadows.soft },
+  demoBtnText: { color: colors.lavenderDark, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', fontSize: 13 },
+  supportTitle: { fontSize: 24, fontFamily: typography ? typography.headerFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, marginBottom: 8 },
+  supportSubtitle: { fontSize: 14, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.md },
+  systemNote: { backgroundColor: '#FFDFEF', borderRadius: radius.full, paddingVertical: 10, paddingHorizontal: 16, marginBottom: spacing.lg, borderWidth: 1, borderColor: '#EABDE6' },
   systemNoteText: { fontSize: 12, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: '#AA60C8', fontWeight: '600' },
-  moodCard:       { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
-  moodCardLabel:  { fontSize: 11, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: colors.textMuted, letterSpacing: 1.5, marginBottom: 12 },
-  moodRow:        { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  moodEmojiBig:   { fontSize: 52 },
-  moodName:       { fontSize: 24, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700' },
-  moodSub:        { fontSize: 13, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, marginTop: 4 },
-  riskCard:       { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
-  riskTop:        { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  riskCardLabel:  { fontSize: 11, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: colors.textMuted, letterSpacing: 1.5 },
-  riskText:       { fontSize: 18, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700' },
-  riskBar:        { height: 10, backgroundColor: 'rgba(0,0,0,0.08)', borderRadius: 5, overflow: 'hidden', marginBottom: 10 },
-  riskBarFill:    { height: 10, borderRadius: 5 },
-  riskDesc:       { fontSize: 13, fontFamily: typography ? typography.bodyFont : 'sans-serif', fontWeight: '600' },
-  msgCard:        { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
-  msgTitle:       { fontSize: 18, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, marginBottom: 8 },
-  msgBody:        { fontSize: 14, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, lineHeight: 23 },
-  urgencyCard:    { flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: '#FFFDE7', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md, borderWidth: 1, borderColor: '#FFD54F' },
-  urgencyIcon:    { fontSize: 20 },
-  urgencyText:    { flex: 1, fontSize: 13, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: '#E65100', lineHeight: 20 },
-  recBtn:         { borderRadius: radius.full, overflow: 'hidden', marginBottom: spacing.xl, width: '100%', ...shadows.card },
-  recBtnInner:    { paddingVertical: 14, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
-  recBtnText:     { color: colors.white, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', fontSize: 15, textAlign: 'center' },
-  commonActBanner:{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FCE4EC', borderRadius: radius.xl, padding: spacing.md, marginBottom: spacing.lg, borderWidth: 1.5, borderColor: '#F8BBD9', ...shadows.soft },
-  commonActIcon:  { fontSize: 32, marginRight: 12 },
-  commonActInfo:  { flex: 1 },
-  commonActTitle: { fontSize: 16, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: '#8E24AA' },
-  commonActSub:   { fontSize: 12, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, marginTop: 2 },
-  commonActArrow: { fontSize: 20, color: '#8E24AA', fontWeight: '700' },
+  moodCard: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
+  moodCardLabel: { fontSize: 11, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: colors.textMuted, letterSpacing: 1.5, marginBottom: 12 },
+  moodRow: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  moodEmojiBig: { fontSize: 52 },
+  moodName: { fontSize: 24, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700' },
+  moodSub: { fontSize: 13, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, marginTop: 4 },
+  riskCard: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
+  riskTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  riskCardLabel: { fontSize: 11, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: colors.textMuted, letterSpacing: 1.5 },
+  riskText: { fontSize: 18, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700' },
+  riskBar: { height: 10, backgroundColor: 'rgba(0,0,0,0.08)', borderRadius: 5, overflow: 'hidden', marginBottom: 10 },
+  riskBarFill: { height: 10, borderRadius: 5 },
+  riskDesc: { fontSize: 13, fontFamily: typography ? typography.bodyFont : 'sans-serif', fontWeight: '600' },
+  msgCard: { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, ...shadows.soft },
+  msgTitle: { fontSize: 18, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: colors.textPrimary, marginBottom: 8 },
+  msgBody: { fontSize: 14, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, lineHeight: 23 },
+  urgencyCard: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', backgroundColor: '#FFFDE7', borderRadius: radius.lg, padding: spacing.md, marginBottom: spacing.md, borderWidth: 1, borderColor: '#FFD54F' },
+  urgencyIcon: { fontSize: 20 },
+  urgencyText: { flex: 1, fontSize: 13, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: '#E65100', lineHeight: 20 },
+  recBtn: { borderRadius: radius.full, overflow: 'hidden', marginBottom: spacing.xl, width: '100%', ...shadows.card },
+  recBtnInner: { paddingVertical: 14, paddingHorizontal: 16, alignItems: 'center', justifyContent: 'center' },
+  recBtnText: { color: colors.white, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', fontSize: 15, textAlign: 'center' },
+  commonActBanner: { borderRadius: radius.xl, overflow: 'hidden', marginBottom: spacing.lg, borderWidth: 1.5, borderColor: '#EABDE6', ...shadows.card },
+  commonActInner: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 18 },
+  commonActIcon: { fontSize: 30, marginRight: 12 },
+  commonActInfo: { flex: 1 },
+  commonActTitle: { fontSize: 16, fontFamily: typography ? typography.topicFont : 'sans-serif', fontWeight: '700', color: '#7E57C2' },
+  commonActSub: { fontSize: 12, fontFamily: typography ? typography.bodyFont : 'sans-serif', color: colors.textSecondary, marginTop: 2 },
+  commonActArrow: { fontSize: 22, color: '#7E57C2', fontWeight: '700', marginLeft: 8 },
 });
 
 export default DashboardScreenCopy;

@@ -1367,10 +1367,10 @@ const ArtScreen = ({ navigation, route }) => {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
           <TouchableOpacity onPress={() => {
-            if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
-              navigation.navigate('Tabs', { screen: 'Recommendations' });
-            } else if (navigation.canGoBack()) {
+            if (navigation.canGoBack()) {
               navigation.goBack();
+            } else if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
+              navigation.navigate('Tabs', { screen: 'Recommendations' });
             } else {
               navigation.navigate('Tabs', { screen: 'Home' });
             }

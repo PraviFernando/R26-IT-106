@@ -1149,6 +1149,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 {/* 5. KNOWLEDGE HUB TAB */}
                 {tab === 'knowledge' && (
                   <View>
+
                     <Text style={s.tabIntro}>{isSinhala ? 'කේන්ද්‍රීය දැනුම පියස 📚 (උපරිම 5)' : 'Central Knowledge Hub 📚 (Max 5)'}</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.videoTabsScroll}>
                       {KNOWLEDGE_CATEGORIES.map(cat => (
@@ -1326,6 +1327,11 @@ const s = StyleSheet.create({
   emergencyIcon: { fontSize: 24 },
   emergencyTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#D32F2F', marginBottom: 2 },
   emergencyText: { fontSize: 11, fontFamily: typography.bodyFont, color: '#B71C1C', lineHeight: 17 },
+  crisisKnowledgeCard: { backgroundColor: '#FFF5F5', borderWidth: 1.5, borderColor: '#FFCDD2', borderRadius: radius.lg, padding: 14, marginBottom: 16 },
+  crisisKnowledgeTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#D32F2F', marginBottom: 10 },
+  crisisKnowledgeBox: { backgroundColor: '#FFFFFF', borderRadius: 8, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: '#FFEBEE' },
+  crisisKnowledgeItemTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#C62828', marginBottom: 3 },
+  crisisKnowledgeItemDesc: { fontSize: 11, fontFamily: typography.bodyFont, color: '#5D4037', lineHeight: 17 },
   detectedTopicsBanner: { backgroundColor: '#FFDFEF', borderWidth: 1.5, borderColor: '#EABDE6', borderRadius: radius.lg, padding: 14, marginBottom: 16 },
   detectedTopicsTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#AA60C8', marginBottom: 6 },
   topicBadgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
