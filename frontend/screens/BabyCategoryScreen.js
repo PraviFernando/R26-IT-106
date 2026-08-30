@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     View, Text, TouchableOpacity, StyleSheet,
-    TextInput, FlatList, Image, Dimensions, ActivityIndicator, Animated, ScrollView
+    TextInput, FlatList, Image, Dimensions, ActivityIndicator, Animated, ScrollView, useWindowDimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -32,7 +32,7 @@ const SHADOW_PINK = {
 };
 
 // Skeleton card for loading state
-const SkeletonCard = () => {
+const SkeletonCard = ({ cardWidth = '100%' }) => {
     const anim = useRef(new Animated.Value(0.4)).current;
     useEffect(() => {
         Animated.loop(
@@ -46,7 +46,7 @@ const SkeletonCard = () => {
         <Animated.View style={{ height: h, width: w, borderRadius: r, backgroundColor: '#FECDD3', opacity: anim, marginBottom: m }} />
     );
     return (
-        <View style={styles.exerciseCard}>
+        <View style={[styles.exerciseCard, { width: cardWidth }]}>
             <Skel h={110} w="100%" r={12} m={8} />
             <View style={{ gap: 6 }}>
                 <Skel h={14} w="90%" r={6} m={0} />
@@ -61,6 +61,8 @@ export default function BabyCategoryScreen({ route, navigation }) {
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
     const { user } = useAuth();
+    const { width } = useWindowDimensions();
+    const isLargeScreen = width > 768;
 
     const getInitialAgeFilter = (deliveryDate) => {
         if (!deliveryDate) return '0–3 months';
@@ -204,12 +206,14 @@ export default function BabyCategoryScreen({ route, navigation }) {
         const videoId = getYoutubeId(item.video_url);
         const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
 
+        const cardWidth = isLargeScreen ? (width - 72) / 3 : (width - 40);
+
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => navigation.navigate('BabyActivityDetail', { activityId: item._id })}
             >
-                <View style={styles.exerciseCard}>
+                <View style={[styles.exerciseCard, { width: cardWidth }]}>
                     <View style={styles.thumbnailContainer}>
                         {thumbnailUrl ? (
                             <Image source={{ uri: thumbnailUrl }} style={styles.cardThumbnail} resizeMode="cover" />
@@ -227,7 +231,9 @@ export default function BabyCategoryScreen({ route, navigation }) {
 
                     <View style={styles.cardDetailsRow}>
                         <View style={styles.cardTextContainer}>
-
+                            <Text style={styles.videoTitle}>
+                                {title}
+                            </Text>
                             <Text style={styles.videoStats}>
                                 {isSinhala ? 'ළදරු සංවර්ධනය' : 'Baby Development'} • {age}
                             </Text>
@@ -309,15 +315,15 @@ export default function BabyCategoryScreen({ route, navigation }) {
                     </View>
 
                     {loading ? (
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollContent}>
-                            <SkeletonCard />
-                            <SkeletonCard />
-                            <SkeletonCard />
-                        </ScrollView>
+                        <View style={styles.gridContainer}>
+                            <SkeletonCard cardWidth={isLargeScreen ? (width - 72) / 3 : (width - 40)} />
+                            <SkeletonCard cardWidth={isLargeScreen ? (width - 72) / 3 : (width - 40)} />
+                            <SkeletonCard cardWidth={isLargeScreen ? (width - 72) / 3 : (width - 40)} />
+                        </View>
                     ) : activities.length > 0 ? (
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollContent}>
+                        <View style={styles.gridContainer}>
                             {activities.map((item, index) => renderActivityCard({ item, index }))}
-                        </ScrollView>
+                        </View>
                     ) : (
                         <View style={styles.emptyInner}>
                             <Text style={styles.emptyEmoji}>🌸</Text>
@@ -426,15 +432,19 @@ const styles = StyleSheet.create({
     // Exercise styled cards
     exerciseCard: {
         backgroundColor: 'transparent',
-        width: (width - 60) / 2.3,
-        maxWidth: 400,
-        marginRight: 14,
-        marginBottom: 10,
+        marginBottom: 16,
+    },
+    gridContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 16,
+        paddingHorizontal: 20,
+        marginTop: 10,
     },
     thumbnailContainer: {
         width: '100%',
         aspectRatio: 16 / 9,
-        borderRadius: 20,
+        borderRadius: 12,
         overflow: 'hidden',
         position: 'relative',
         backgroundColor: '#000',
@@ -472,14 +482,14 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     videoTitle: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: 'bold',
         color: COLORS.text,
-        lineHeight: 18,
+        lineHeight: 16,
         marginBottom: 2,
     },
     videoStats: {
-        fontSize: 11,
+        fontSize: 9,
         color: COLORS.textMid,
     },
     menuContainer: {
