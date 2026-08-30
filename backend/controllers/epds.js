@@ -1,4 +1,5 @@
 const EPDSScreening = require('../models/EPDSScreening');
+const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const { spawn } = require('child_process');
 const path = require('path');
@@ -13,10 +14,6 @@ const getUserId = (req) => {
 };
 
 // ─── Score → Risk Level ──────────────────────────────────────────────────────
-// Standard EPDS thresholds:
-//   0–9   ➜ Low
-//   10–12 ➜ Medium
-//   13–30 ➜ High
 const getRiskLevel = (score) => {
     if (score >= 13) return 'high';
     if (score >= 10) return 'medium';
@@ -24,7 +21,6 @@ const getRiskLevel = (score) => {
 };
 
 // ─── 2-Week Cycle Helper ─────────────────────────────────────────────────────
-// Returns YYYY-MM-H1 for days 1-15, and YYYY-MM-H2 for days 16+
 const getCycleStr = () => {
     const d = new Date();
     const year = d.getFullYear();
@@ -33,18 +29,83 @@ const getCycleStr = () => {
     return `${year}-${month}-${half}`;
 };
 
+// ─── Get Next Available Date ─────────────────────────────────────────────────
+const getNextAvailableDate = () => {
+    const d = new Date();
+    let nextDate;
+    if (d.getDate() <= 15) {
+        nextDate = new Date(d.getFullYear(), d.getMonth(), 16);
+    } else {
+        nextDate = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    }
+    return nextDate.toISOString().split('T')[0];
+};
+
 // ─── POST /epds/submit ────────────────────────────────────────────────────────
 const submitScreening = async (req, res) => {
     try {
         const userId = getUserId(req);
         const { answers, fullName, age, district, village } = req.body;
 
-        if (!Array.isArray(answers) || answers.length !== 10) {
-            return res.status(400).json({ message: 'Please provide exactly 10 answers.' });
+        // ─── Validate required fields ──────────────────────────────────────
+        if (!answers || !Array.isArray(answers) || answers.length !== 10) {
+            return res.status(400).json({
+                message: 'Please provide exactly 10 answers.'
+            });
         }
 
+        // ─── Validate personal details ─────────────────────────────────────
+        if (!fullName || !fullName.trim()) {
+            return res.status(400).json({
+                message: 'Full name is required.'
+            });
+        }
+
+        if (!age) {
+            return res.status(400).json({
+                message: 'Age is required.'
+            });
+        }
+
+        const ageNum = Number(age);
+        if (isNaN(ageNum) || ageNum < 16 || ageNum > 100) {
+            return res.status(400).json({
+                message: 'Please provide a valid age (16-100).'
+            });
+        }
+
+        if (!district || !district.trim()) {
+            return res.status(400).json({
+                message: 'District is required.'
+            });
+        }
+
+        if (!village || !village.trim()) {
+            return res.status(400).json({
+                message: 'Village is required.'
+            });
+        }
+
+        // ─── Check if user already submitted in this cycle ────────────────
+        const currentCycle = getCycleStr();
+        const existingScreening = await EPDSScreening.findOne({
+            userId,
+            month: currentCycle
+        });
+
+        if (existingScreening) {
+            const nextAvailableDate = getNextAvailableDate();
+            return res.status(400).json({
+                message: 'You have already completed the screening for this 2-week period.',
+                nextAvailableDate: nextAvailableDate,
+                alreadySubmitted: true
+            });
+        }
+
+        // ─── Calculate total score ──────────────────────────────────────────
         const totalScore = answers.reduce((sum, v) => sum + Number(v), 0);
 
+        // ─── Prepare ML data ───────────────────────────────────────────────
         const mlData = {
             emotional_indicators: Number(answers[0]) + Number(answers[1]) + Number(answers[7]),
             sleep_quality: Number(answers[6]),
@@ -58,6 +119,7 @@ const submitScreening = async (req, res) => {
             epds_total_score: totalScore
         };
 
+        // ─── Run ML prediction ─────────────────────────────────────────────
         const pythonProcess = spawn('python', [path.join(__dirname, '../ml_model/predict.py')]);
 
         let pythonOutput = '';
@@ -102,27 +164,27 @@ const submitScreening = async (req, res) => {
         pythonProcess.stdin.end();
 
         const riskLevel = await mlPromise;
-        const month = getCycleStr(); // Using 'month' field to store the 2-week cycle ID
+        const month = getCycleStr();
 
-        // Upsert: replace existing entry for this cycle if any
+        // ─── Save screening ─────────────────────────────────────────────────
         const screening = await EPDSScreening.findOneAndUpdate(
             { userId, month },
             { $set: { answers, totalScore, riskLevel, month } },
             { upsert: true, new: true, setDefaultsOnInsert: true }
         );
 
-        // Update user profile with personal details if provided
-        if (fullName || age || district || village) {
-            const updateFields = {};
-            if (fullName) updateFields.fullName = fullName;
-            if (age) updateFields.age = age;
-            if (district) updateFields.district = district;
-            if (village) updateFields.village = village;
+        // ─── Update user profile ────────────────────────────────────────────
+        await User.findByIdAndUpdate(userId, {
+            fullName: fullName.trim(),
+            age: ageNum,
+            district: district.trim(),
+            village: village.trim()
+        });
 
-            await require('../models/User').findByIdAndUpdate(userId, updateFields);
-        }
-
-        return res.status(200).json({ screening, message: 'Screening saved successfully.' });
+        return res.status(200).json({
+            screening,
+            message: 'Screening saved successfully.'
+        });
     } catch (err) {
         console.error('submitScreening error:', err);
         return res.status(500).json({ message: err.message || 'Server error' });
@@ -155,7 +217,6 @@ const getCurrentMonth = async (req, res) => {
 };
 
 // ─── GET /epds/my-history ────────────────────────────────────────────────────
-// Returns { screenings: [...] } — used by the frontend history panel
 const getMyHistory = async (req, res) => {
     try {
         const userId = getUserId(req);
@@ -170,8 +231,6 @@ const getMyHistory = async (req, res) => {
 };
 
 // ─── GET /epds/my-status ─────────────────────────────────────────────────────
-// Returns { hasDoneCurrentCycle, nextAvailableDate, currentScreening }
-// nextAvailableDate: ISO date string of when the next cycle starts
 const getMyStatus = async (req, res) => {
     try {
         const userId = getUserId(req);
@@ -179,20 +238,11 @@ const getMyStatus = async (req, res) => {
         const screening = await EPDSScreening.findOne({ userId, month: cycle });
         const hasDoneCurrentCycle = !!screening;
 
-        // Compute next cycle start date
-        const d = new Date();
-        let nextDate;
-        if (d.getDate() <= 15) {
-            // H1 (days 1-15) → next cycle starts on the 16th
-            nextDate = new Date(d.getFullYear(), d.getMonth(), 16);
-        } else {
-            // H2 (days 16-end) → next cycle starts on the 1st of next month
-            nextDate = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-        }
+        const nextAvailableDate = getNextAvailableDate();
 
         return res.status(200).json({
             hasDoneCurrentCycle,
-            nextAvailableDate: nextDate.toISOString().split('T')[0],
+            nextAvailableDate: nextAvailableDate,
             currentScreening: screening || null,
         });
     } catch (err) {
@@ -201,4 +251,10 @@ const getMyStatus = async (req, res) => {
     }
 };
 
-module.exports = { submitScreening, getHistory, getCurrentMonth, getMyHistory, getMyStatus };
+module.exports = {
+    submitScreening,
+    getHistory,
+    getCurrentMonth,
+    getMyHistory,
+    getMyStatus
+};
