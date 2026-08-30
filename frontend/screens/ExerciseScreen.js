@@ -364,7 +364,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
             {/* Section: Delivery Info */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>{isSinhala ? '📅 දරු ප්‍රසූතිය පිළිබඳ තොරතුරු' : '📅 Delivery Information'}</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? 'දරු ප්‍රසූතිය පිළිබඳ තොරතුරු' : 'Delivery Information'}</Text>
 
                 {(!user?.deliveryDate) && (
                     <View style={styles.inputGroup}>
@@ -410,7 +410,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                             disabled={!!user?.deliveryType}
                         >
                             <Text style={[styles.optionText, deliveryType === 'normal' && styles.optionTextActive]}>
-                                {isSinhala ? '🤱 සාමාන්ූය' : '🤱 Normal'}
+                                {isSinhala ? 'සාමාන්ූය' : 'Normal'}
                             </Text>
                         </Pressable>
                         <Pressable
@@ -424,7 +424,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                             disabled={!!user?.deliveryType}
                         >
                             <Text style={[styles.optionText, deliveryType === 'c-section' && styles.optionTextActive]}>
-                                {isSinhala ? '🏥 සිසේරියන්' : '🏥 C-Section'}
+                                {isSinhala ? 'සිසේරියන්' : 'C-Section'}
                             </Text>
                         </Pressable>
                     </View>
@@ -433,7 +433,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
             {/* Section: Pain Conditions */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>{isSinhala ? '⚡ වේදනා තත්ත්වයන්' : '⚡ Pain Conditions'}</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? 'වේදනා තත්ත්වයන්' : 'Pain Conditions'}</Text>
                 <View style={styles.checkboxGroup}>
                     <Pressable style={({ hovered }) => [styles.checkboxRow, hovered && styles.checkboxRowHover]} onPress={() => setPelvicPain(!pelvicPain)}>
                         <View style={[styles.checkbox, pelvicPain && styles.checkboxChecked]}>
@@ -458,7 +458,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
             {/* Section: Other Health Flags */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>{isSinhala ? '🚩 වෙනත් සෞඛ්‍ය ගැටළු' : '🚩 Other Health Conditions'}</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? 'වෙනත් සෞඛ්‍ය ගැටළු' : 'Other Health Conditions'}</Text>
                 <View style={styles.checkboxGroup}>
                     <Pressable style={({ hovered }) => [styles.checkboxRow, hovered && styles.checkboxRowHover]} onPress={() => setBleeding(!bleeding)}>
                         <View style={[styles.checkbox, bleeding && styles.checkboxChecked]}>
@@ -483,7 +483,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
             {/* Section: Energy & Mobility */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>{isSinhala ? '⚡ ශක්තිය සහ චලන හැකියාව' : '⚡ Energy & Mobility'}</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? 'ශක්තිය සහ චලන හැකියාව' : 'Energy & Mobility'}</Text>
 
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>{isSinhala ? 'තෙහෙට්ටුව මට්ටම' : 'Fatigue Level'}</Text>
@@ -512,7 +512,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                                 onPress={() => setMobility(level)}
                             >
                                 <Text style={[styles.optionText, mobility === level && styles.optionTextActive]}>
-                                    {level === 'very_limited' ? (isSinhala ? '🦽 ඉතා සීමිතයි' : '🦽 Very Limited') : level === 'limited' ? (isSinhala ? '🚶 සීමිතයි' : '🚶 Limited') : (isSinhala ? '🏃 සාමාන්‍යයි' : '🏃 Normal')}
+                                    {level === 'very_limited' ? (isSinhala ? 'ඉතා සීමිතයි' : 'Very Limited') : level === 'limited' ? (isSinhala ? 'සීමිතයි' : 'Limited') : (isSinhala ? 'සාමාන්‍යයි' : 'Normal')}
                                 </Text>
                             </Pressable>
                         ))}
@@ -787,7 +787,11 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                 onPress={handleCardPress}
                 disabled={videoList.length === 0}
             >
-                <View style={[styles.exerciseCard, isCompleted && styles.exerciseCardCompleted]}>
+                <View style={[
+                    styles.exerciseCard,
+                    { width: isLargeScreen ? (currentWidth - 60) / 3 : (currentWidth - 40) },
+                    isCompleted && styles.exerciseCardCompleted
+                ]}>
                     <View style={styles.thumbnailContainer}>
                         {thumbnailUrl ? (
                             <Image source={{ uri: thumbnailUrl }} style={styles.cardThumbnail} resizeMode="cover" />
@@ -1411,16 +1415,37 @@ export default function ExerciseScreen({ navigation }) {
                             {t('Postpartum Exercise')}
                         </Text>
                     </View>
-                    <View style={styles.backBtnPlaceholder} />
+                    <TouchableOpacity
+                        onPress={() =>
+                            i18n.changeLanguage(
+                                i18n.language === 'en' ? 'si' : 'en'
+                            )
+                        }
+                        style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <Text
+                            style={{
+                                fontWeight: '700',
+                                fontSize: 13,
+                                color: '#7C3AED',
+                                backgroundColor: '#EDE9FE',
+                                paddingHorizontal: 10,
+                                paddingVertical: 4,
+                                borderRadius: 12,
+                            }}
+                        >
+                            {i18n.language === 'en' ? 'සිං' : 'EN'}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
                 <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
                     {!(showForm || !hasData) && (
                         <Pressable
-                             style={({ hovered }) => [
-                                 styles.viewProgressBtn,
-                                 hovered && styles.viewProgressBtnHover
-                             ]}
-                             onPress={() => navigation.navigate('ExerciseProgress')}
+                            style={({ hovered }) => [
+                                styles.viewProgressBtn,
+                                hovered && styles.viewProgressBtnHover
+                            ]}
+                            onPress={() => navigation.navigate('ExerciseProgress')}
                         >
                             <LinearGradient colors={[colors.white, colors.lavenderLight]} style={styles.viewProgressBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
                                 <Text style={styles.viewProgressBtnEmoji}>📊</Text>
@@ -1472,7 +1497,7 @@ export default function ExerciseScreen({ navigation }) {
 
                             {activeTab === 'todo' && (
                                 recommendations.filter(rec => !rec.completed).slice(0, 5).length > 0 ? (
-                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollContent}>
+                                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
                                         {recommendations.filter(rec => !rec.completed).slice(0, 5).map((rec, idx) => (
                                             <ExerciseCard
                                                 key={idx}
@@ -1484,7 +1509,7 @@ export default function ExerciseScreen({ navigation }) {
                                                 navigation={navigation}
                                             />
                                         ))}
-                                    </ScrollView>
+                                    </View>
                                 ) : (
                                     <View style={styles.emptyContainerSmall}>
                                         <Text style={styles.emptyTitleSmall}>🎉 {t('All Done!')}</Text>
@@ -1495,7 +1520,7 @@ export default function ExerciseScreen({ navigation }) {
 
                             {activeTab === 'completed' && (
                                 recommendations.filter(rec => rec.completed).length > 0 ? (
-                                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollContent}>
+                                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
                                         {recommendations.filter(rec => rec.completed).map((rec, idx) => (
                                             <ExerciseCard
                                                 key={idx}
@@ -1507,7 +1532,7 @@ export default function ExerciseScreen({ navigation }) {
                                                 navigation={navigation}
                                             />
                                         ))}
-                                    </ScrollView>
+                                    </View>
                                 ) : (
                                     <View style={styles.emptyContainerSmall}>
                                         <Text style={styles.emptyTitleSmall}>🌸 {t('No Videos Completed')}</Text>
@@ -1835,10 +1860,7 @@ const styles = StyleSheet.create({
     },
     exerciseCard: {
         backgroundColor: 'transparent',
-        width: (width - 60) / 2.3,
-        maxWidth: 400,
-        marginRight: 14,
-        marginBottom: 10,
+        marginBottom: 16,
     },
     thumbnailContainer: {
         width: '100%',
