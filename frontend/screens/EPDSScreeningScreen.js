@@ -399,6 +399,7 @@ function ResultModal({ visible, score, riskLevel, onClose, onViewHistory }) {
     );
 }
 
+
 // ─── History Modal ────────────────────────────────────────────────────────────
 function HistoryModal({ visible, history, questions, onClose }) {
     const { t } = useTranslation();
@@ -409,58 +410,164 @@ function HistoryModal({ visible, history, questions, onClose }) {
         <Modal visible={visible} transparent animationType="slide">
             <View style={styles.modalOverlay}>
                 <View style={styles.historyCard}>
+
                     <View style={styles.historyHeader}>
-                        <Text style={styles.historyTitle}>{t('📅 Screening History')}</Text>
-                        <TouchableOpacity onPress={onClose} style={{ padding: 4 }}>
-                            <Text style={styles.historyClose}>✕</Text>
+                        <Text style={styles.historyTitle}>
+                            {t('📅 Screening History')}
+                        </Text>
+
+                        <TouchableOpacity
+                            onPress={onClose}
+                            style={{ padding: 4 }}
+                        >
+                            <Text style={styles.historyClose}>
+                                ✕
+                            </Text>
                         </TouchableOpacity>
                     </View>
+
                     <ScrollView showsVerticalScrollIndicator={false}>
+
                         {history.length === 0 && (
-                            <Text style={styles.historyEmpty}>{t('No past screenings yet.')}</Text>
+                            <Text style={styles.historyEmpty}>
+                                {t('No past screenings yet.')}
+                            </Text>
                         )}
+
                         {history.map((item, i) => {
-                            const cfg = riskConfig[item.riskLevel] || riskConfig.low;
-                            const monthParts = item.month ? item.month.split(' ') : [];
-                            const translatedMonth = monthParts.length > 1 ? `${t(monthParts[0])} ${monthParts[1]}` : t(item.month || 'Past Screening');
-                            const isExpanded = expandedIdx === i;
+
+                            const cfg =
+                                riskConfig[item.riskLevel] ||
+                                riskConfig.low;
+
+                            // ─── Use actual screening date ─────────────────
+                            const screeningDate = item.createdAt
+                                ? new Date(item.createdAt).toLocaleDateString(
+                                    'en-GB',
+                                    {
+                                        day: '2-digit',
+                                        month: 'short',
+                                        year: 'numeric'
+                                    }
+                                )
+                                : 'Past Screening';
+
+                            const isExpanded =
+                                expandedIdx === i;
 
                             return (
-                                <View key={i} style={[styles.historyRowCard, { borderLeftColor: cfg.color }]}>
+                                <View
+                                    key={item._id || i}
+                                    style={[
+                                        styles.historyRowCard,
+                                        {
+                                            borderLeftColor:
+                                                cfg.color
+                                        }
+                                    ]}
+                                >
+
                                     <TouchableOpacity
                                         style={styles.historyRowHeader}
-                                        onPress={() => setExpandedIdx(isExpanded ? null : i)}
+                                        onPress={() =>
+                                            setExpandedIdx(
+                                                isExpanded
+                                                    ? null
+                                                    : i
+                                            )
+                                        }
                                         activeOpacity={0.7}
                                     >
+
                                         <View style={{ flex: 1 }}>
-                                            <Text style={styles.historyMonth}>{translatedMonth}</Text>
-                                            <Text style={[styles.historyRisk, { color: cfg.color }]}>
-                                                {cfg.emoji} {cfg.label}
+
+                                            {/* Screening date */}
+                                            <Text
+                                                style={
+                                                    styles.historyMonth
+                                                }
+                                            >
+                                                📅 {screeningDate}
                                             </Text>
+
+                                            {/* Risk level */}
+                                            <Text
+                                                style={[
+                                                    styles.historyRisk,
+                                                    {
+                                                        color:
+                                                            cfg.color
+                                                    }
+                                                ]}
+                                            >
+                                                {cfg.emoji}{' '}
+                                                {cfg.label}
+                                            </Text>
+
                                         </View>
-                                        <View style={[styles.historyScoreBadge, { backgroundColor: cfg.bg }]}>
-                                            <Text style={[styles.historyScore, { color: cfg.color }]}>
+
+                                        {/* Score */}
+                                        <View
+                                            style={[
+                                                styles.historyScoreBadge,
+                                                {
+                                                    backgroundColor:
+                                                        cfg.bg
+                                                }
+                                            ]}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.historyScore,
+                                                    {
+                                                        color:
+                                                            cfg.color
+                                                    }
+                                                ]}
+                                            >
                                                 {item.totalScore}
                                             </Text>
                                         </View>
-                                        <Text style={{ fontSize: 16, color: '#9CA3AF', marginLeft: 8 }}>
-                                            {isExpanded ? '▲' : '▼'}
+
+                                        {/* Expand arrow */}
+                                        <Text
+                                            style={{
+                                                fontSize: 16,
+                                                color: '#9CA3AF',
+                                                marginLeft: 8
+                                            }}
+                                        >
+                                            {isExpanded
+                                                ? '▲'
+                                                : '▼'}
                                         </Text>
+
                                     </TouchableOpacity>
 
-                                    {isExpanded && item.answers && (
-                                        <AnswersBreakdown answers={item.answers} questions={questions} t={t} />
-                                    )}
+                                    {/* Answers */}
+                                    {isExpanded &&
+                                        item.answers && (
+                                            <AnswersBreakdown
+                                                answers={
+                                                    item.answers
+                                                }
+                                                questions={
+                                                    questions
+                                                }
+                                                t={t}
+                                            />
+                                        )}
+
                                 </View>
                             );
                         })}
+
                     </ScrollView>
                 </View>
             </View>
         </Modal>
     );
 }
-
 // ─── MAIN SCREEN ──────────────────────────────────────────────────────────────
 export default function EPDSScreeningScreen({ navigation }) {
     const { t, i18n } = useTranslation();
@@ -820,15 +927,27 @@ export default function EPDSScreeningScreen({ navigation }) {
                         </View>
                     )}
 
+
+
+
                     {/* ─── Personal Details Form ───────────────────────────────── */}
                     <View style={styles.introCard}>
                         <Text style={styles.introTitle}>📋 {t('Personal Details')}</Text>
                         <Text style={styles.introSub}>{t('Please fill in your information before starting')}</Text>
+                        {/* ─── Greeting ───────────────────────────────── */}
+                        <View style={styles.introCard}>
+                            <Text style={styles.introTitle}>
+                                👋 {t('Hello')}, {fullName || user?.username || user?.fullName || 'there'}!
+                            </Text>
+                            <Text style={styles.introSub}>
+                                {t('Please answer the following 10 questions honestly. This will help us support you better.')}
+                            </Text>
+                        </View>
 
                         <TextInput
                             style={[styles.inputField, !fullName.trim() && styles.inputFieldRequired]}
                             placeholder={t('Full Name *')}
-                            placeholderTextColor={!fullName.trim() ? '#EF4444' : '#9CA3AF'}
+                            placeholderTextColor={!fullName.trim() ? '#eee1e1ff' : '#9CA3AF'}
                             value={fullName}
                             onChangeText={setFullName}
                         />
@@ -896,7 +1015,7 @@ export default function EPDSScreeningScreen({ navigation }) {
                         </Text>
                         {!hasDoneCurrentCycle && (
                             <Text style={styles.startBtnSub}>
-                                {t('10 Questions • One by One Flow')}
+                                {t('10 Questions')}
                             </Text>
                         )}
                         {hasDoneCurrentCycle && nextAvailableDate && (
