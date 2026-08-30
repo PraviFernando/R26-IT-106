@@ -153,6 +153,9 @@ def preprocess(text: str) -> str:
     text = re.sub(r"ninda\s*yanne\s*na\b", "ninda yanne naha", text)
     text = re.sub(r"baya\s*hithenawa", "baya", text)
     text = re.sub(r"mahansi\b", "mahansiyi", text)
+    text = re.sub(r"\bepavela\b|\bepa\s*wela\b", "epawela", text)
+    text = re.sub(r"\bamarui\b", "amaruyi", text)
+    text = re.sub(r"\bnidimatai\b", "nidimathai", text)
     text = re.sub(r"['’]", "", text)
 
     # KEEP Sinhala + English
