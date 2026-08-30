@@ -10,6 +10,7 @@ import {
     Image,
     Platform,
     useWindowDimensions,
+    ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -18,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { Video, ResizeMode } from 'expo-av';
 import { WebView } from 'react-native-webview';
 import exerciseService from '../services/exerciseService';
+import babyActivityService from '../services/babyActivityService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
@@ -381,10 +383,6 @@ function Header({ onMenuPress, onNotifPress, isDarkMode, toggleTheme, brightness
                     style={styles.notifBtn}
                 >
                     <Text style={styles.notifIcon}>🔔</Text>
-
-                    <View style={styles.notifBadge}>
-                        <Text style={styles.notifBadgeText}>3</Text>
-                    </View>
                 </TouchableOpacity>
             </View>
         </View>
@@ -400,7 +398,6 @@ function Footer({ activeTab, onTabPress, isDarkMode }) {
     const footerItems = [
         ...navItems(t).slice(0, 3), // home, screening, diary
         navItems(t).find((i) => i.key === 'exercise'),
-        navItems(t).find((i) => i.key === 'baby'),
         ...navItems(t).slice(3, 5), // plan, profile
     ];
 
@@ -457,6 +454,35 @@ export default function DashboardScreen({ navigation }) {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [brightnessLevel, setBrightnessLevel] = useState(1.0);
     const [hoveredIndex, setHoveredIndex] = useState(null);
+    const [babyVideos, setBabyVideos] = useState([]);
+    const [loadingBabyVideos, setLoadingBabyVideos] = useState(true);
+    const isSinhala = i18n.language === 'si';
+
+    const getInitialAgeFilter = (deliveryDate) => {
+        if (!deliveryDate) return '0–3 months';
+        try {
+            const birthDate = new Date(deliveryDate);
+            const today = new Date();
+            if (isNaN(birthDate.getTime())) return '0–3 months';
+            const diffTime = today - birthDate;
+            if (diffTime < 0) return '0–3 months';
+            const diffDays = diffTime / (1000 * 60 * 60 * 24);
+            const diffMonths = diffDays / 30;
+            
+            if (diffMonths >= 0 && diffMonths < 3) {
+                return '0–3 months';
+            } else if (diffMonths >= 3 && diffMonths < 6) {
+                return '3–6 months';
+            } else if (diffMonths >= 6 && diffMonths < 9) {
+                return '6–9 months';
+            } else if (diffMonths >= 9) {
+                return '9–12 months';
+            }
+        } catch (e) {
+            console.log("Error calculating age filter", e);
+        }
+        return '0–3 months';
+    };
 
     const toggleTheme = async () => {
         const nextTheme = !isDarkMode;
@@ -537,9 +563,73 @@ export default function DashboardScreen({ navigation }) {
             }
         };
 
+        const fetchBabyVideos = async () => {
+            try {
+                setLoadingBabyVideos(true);
+                const ageFilter = getInitialAgeFilter(user?.deliveryDate);
+                
+                const tummyRes = await babyActivityService.getActivities({ category: 'tummy_time', ageFilter });
+                const legRes = await babyActivityService.getActivities({ category: 'leg_movement', ageFilter });
+                const reachRes = await babyActivityService.getActivities({ category: 'reaching_grasping', ageFilter });
+                const rollRes = await babyActivityService.getActivities({ category: 'rolling_positioning', ageFilter });
+                const armRes = await babyActivityService.getActivities({ category: 'gentle_arm', ageFilter });
+                const sensoryRes = await babyActivityService.getActivities({ category: 'sensory_movement', ageFilter });
+
+                const videos = [];
+                // 1. Tummy Time
+                if (tummyRes.success && tummyRes.activities && tummyRes.activities.length > 0) {
+                    videos.push(tummyRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_PtD1gC8d4V0', activity_name: 'Tummy Time', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=PtD1gC8d4V0' });
+                }
+
+                // 2. Leg & Movement
+                if (legRes.success && legRes.activities && legRes.activities.length > 0) {
+                    videos.push(legRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_uK7S6yvK1hM', activity_name: 'Leg & Movement', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=uK7S6yvK1hM' });
+                }
+
+                // 3. Reaching & Grasping
+                if (reachRes.success && reachRes.activities && reachRes.activities.length > 0) {
+                    videos.push(reachRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_kYJ5oQ3j63k', activity_name: 'Reaching & Grasping', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=kYJ5oQ3j63k' });
+                }
+
+                // 4. Rolling & Positioning
+                if (rollRes.success && rollRes.activities && rollRes.activities.length > 0) {
+                    videos.push(rollRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_8HPrnN9sWlo', activity_name: 'Rolling & Positioning', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=8HPrnN9sWlo' });
+                }
+
+                // 5. Gentle Arm Movement
+                if (armRes.success && armRes.activities && armRes.activities.length > 0) {
+                    videos.push(armRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_gT2qR-VpCkw', activity_name: 'Gentle Arm Movement', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=gT2qR-VpCkw' });
+                }
+
+                // 6. Sensory & Play
+                if (sensoryRes.success && sensoryRes.activities && sensoryRes.activities.length > 0) {
+                    videos.push(sensoryRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_F3_G8N7e4zY', activity_name: 'Sensory & Play', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=F3_G8N7e4zY' });
+                }
+
+                setBabyVideos(videos);
+            } catch (err) {
+                console.log('Failed to fetch baby videos for dashboard', err);
+            } finally {
+                setLoadingBabyVideos(false);
+            }
+        };
+
         fetchExercises();
         fetchProgress();
         fetchUserProfile();
+        fetchBabyVideos();
     }, [user]);
 
     const handleLogout = () => {
@@ -894,6 +984,8 @@ export default function DashboardScreen({ navigation }) {
                         </View>
                     ))}
                 </View>
+
+
 
                 {/* Quick Action Buttons */}
                 <Text style={[styles.sectionTitle, isDarkMode && { color: '#FFF' }]}>
@@ -1596,22 +1688,17 @@ const styles = StyleSheet.create({
     },
     exerciseDashCard: {
         flex: 1,
-        backgroundColor: WHITE,
-        borderRadius: 16,
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: '#F5D3EE',
-        elevation: 3,
-        shadowColor: '#AA60C8',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        backgroundColor: 'transparent',
+        marginBottom: 16,
     },
     exerciseDashThumbnailContainer: {
         width: '100%',
-        height: 100,
-        backgroundColor: '#FFDFEF',
+        aspectRatio: 16 / 9,
+        borderRadius: 12,
+        overflow: 'hidden',
         position: 'relative',
+        backgroundColor: '#000',
+        marginBottom: 8,
     },
     exerciseDashThumbnail: {
         width: '100%',
@@ -1642,6 +1729,54 @@ const styles = StyleSheet.create({
     },
     exerciseDashIcon: {
         fontSize: 32,
+    },
+    cardDetailsRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        marginTop: 2,
+    },
+    channelAvatar: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: '#F5F3FF',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 8,
+        borderWidth: 1.5,
+        borderColor: '#EABDE6',
+    },
+    channelAvatarText: {
+        fontSize: 14,
+    },
+    cardTextContainer: {
+        flex: 1,
+    },
+    videoTitle: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#0F172A',
+        lineHeight: 16,
+        marginBottom: 2,
+    },
+    channelMetadata: {
+        fontSize: 10,
+        color: '#64748B',
+        marginBottom: 1,
+    },
+    durationBadge: {
+        position: 'absolute',
+        bottom: 6,
+        right: 6,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        paddingHorizontal: 4,
+        paddingVertical: 1,
+        borderRadius: 3,
+    },
+    durationBadgeText: {
+        color: '#FFF',
+        fontSize: 9,
+        fontWeight: 'bold',
     },
     exerciseDashInfo: {
         padding: 10,

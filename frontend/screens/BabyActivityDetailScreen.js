@@ -117,7 +117,28 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
                             </View>
                         </TouchableOpacity>
                         <Text style={styles.headerTitle} numberOfLines={1}>Loading...</Text>
-                        <View style={styles.headerBackBtnPlaceholder} />
+                        <TouchableOpacity
+                            onPress={() =>
+                                i18n.changeLanguage(
+                                    i18n.language === 'en' ? 'si' : 'en'
+                                )
+                            }
+                            style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            <Text
+                                style={{
+                                    fontWeight: '700',
+                                    fontSize: 13,
+                                    color: '#7C3AED',
+                                    backgroundColor: '#EDE9FE',
+                                    paddingHorizontal: 10,
+                                    paddingVertical: 4,
+                                    borderRadius: 12,
+                                }}
+                            >
+                                {i18n.language === 'en' ? 'සිං' : 'EN'}
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                     <LoadingSkeleton />
                 </LinearGradient>
@@ -136,7 +157,28 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
                             </View>
                         </TouchableOpacity>
                         <Text style={styles.headerTitle}>Error</Text>
-                        <View style={styles.headerBackBtnPlaceholder} />
+                        <TouchableOpacity
+                            onPress={() =>
+                                i18n.changeLanguage(
+                                    i18n.language === 'en' ? 'si' : 'en'
+                                )
+                            }
+                            style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
+                        >
+                            <Text
+                                style={{
+                                    fontWeight: '700',
+                                    fontSize: 13,
+                                    color: '#7C3AED',
+                                    backgroundColor: '#EDE9FE',
+                                    paddingHorizontal: 10,
+                                    paddingVertical: 4,
+                                    borderRadius: 12,
+                                }}
+                            >
+                                {i18n.language === 'en' ? 'සිං' : 'EN'}
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                     <View style={styles.errorContainer}>
                         <Text style={styles.errorEmoji}>😕</Text>
@@ -174,7 +216,28 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
                         </View>
                     </TouchableOpacity>
                     <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
-                    <View style={styles.headerBackBtnPlaceholder} />
+                    <TouchableOpacity
+                        onPress={() =>
+                            i18n.changeLanguage(
+                                i18n.language === 'en' ? 'si' : 'en'
+                            )
+                        }
+                        style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <Text
+                            style={{
+                                fontWeight: '700',
+                                fontSize: 13,
+                                color: '#7C3AED',
+                                backgroundColor: '#EDE9FE',
+                                paddingHorizontal: 10,
+                                paddingVertical: 4,
+                                borderRadius: 12,
+                            }}
+                        >
+                            {i18n.language === 'en' ? 'සිං' : 'EN'}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>

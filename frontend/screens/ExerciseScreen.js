@@ -833,6 +833,31 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                             contentContainerStyle={styles.modalScrollContent}
                             style={{ width: '100%' }}
                         >
+                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', paddingRight: 10, marginBottom: 10 }}>
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        i18n.changeLanguage(
+                                            i18n.language === 'en' ? 'si' : 'en'
+                                        )
+                                    }
+                                    style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
+                                >
+                                    <Text
+                                        style={{
+                                            fontWeight: '700',
+                                            fontSize: 13,
+                                            color: '#7C3AED',
+                                            backgroundColor: '#EDE9FE',
+                                            paddingHorizontal: 10,
+                                            paddingVertical: 4,
+                                            borderRadius: 12,
+                                        }}
+                                    >
+                                        {i18n.language === 'en' ? 'සිං' : 'EN'}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+
                             <View style={styles.modalTitleContainer}>
                                 <Text style={styles.modalTitleText}>
                                     {isSinhala
@@ -929,7 +954,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                                 onPress={handleStartTracking}
                                             >
                                                 <Text style={styles.aiTrackingBtnText}>
-                                                    {isSinhala ? '🤖 AI චලන ලුහුබැඳීම ආරම්භ කරන්න' : '🤖 Start AI Movement Tracking'}
+                                                    {isSinhala ? 'චලන ලුහුබැඳීම ආරම්භ කරන්න' : 'Start Movement Tracking'}
                                                 </Text>
                                             </Pressable>
                                         )}

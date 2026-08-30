@@ -1,216 +1,263 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     View, Text, ScrollView, TouchableOpacity, StyleSheet,
-    ActivityIndicator, RefreshControl, TextInput, Dimensions, Modal,
-    FlatList,
+    ActivityIndicator, RefreshControl, TextInput, Modal,
+    FlatList, useWindowDimensions, StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import api, { setAuthToken } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - 56) / 4; // 4 cards per row with padding
+// ─── EPDS Questions ─────────────────────────
+const EPDS_QUESTIONS = [
+    '1. I have been able to laugh and see the funny side of things',
+    '2. I have looked forward with enjoyment to things',
+    '3. I have blamed myself unnecessarily when things went wrong',
+    '4. I have been anxious or worried for no good reason',
+    '5. I have felt scared or panicky for no very good reason',
+    '6. Things have been getting on top of me',
+    '7. I have been so unhappy that I have had difficulty sleeping',
+    '8. I have felt sad or miserable',
+    '9. I have been so unhappy that I have been crying',
+    '10. The thought of harming myself has occurred to me',
+];
 
-// ─── Risk Level Colors ─────────────────────────
 const RISK_COLORS = {
-    high: { bg: '#FEE2E2', border: '#EF4444', text: '#991B1B', score: '#EF4444' },
-    medium: { bg: '#FEF3C7', border: '#F59E0B', text: '#92400E', score: '#F59E0B' },
-    low: { bg: '#D1FAE5', border: '#10B981', text: '#065F46', score: '#10B981' },
+    high: { bg: '#FEF2F2', border: '#EF4444', text: '#991B1B', soft: '#FEE2E2' },
+    medium: { bg: '#FFFBEB', border: '#F59E0B', text: '#92400E', soft: '#FEF3C7' },
+    low: { bg: '#ECFDF5', border: '#10B981', text: '#065F46', soft: '#D1FAE5' },
 };
 
 const RISK_EMOJIS = { high: '🔴', medium: '🟡', low: '🟢' };
 const RISK_LABELS = { high: 'High', medium: 'Medium', low: 'Low' };
 
+function getRisk(p) {
+    return p?.latestEpds?.riskLevel || p?.latestEpdsRisk || 'low';
+}
+function getScore(p) {
+    return p?.latestEpds?.totalScore ?? p?.latestEpdsScore ?? undefined;
+}
+function getAnswers(p) {
+    return p?.latestEpds?.answers || null;
+}
+
 // ─── Stat Card ────────────────────────────────
 function StatCard({ icon, label, value, color }) {
     return (
-        <View style={[styles.statCard, { borderTopColor: color }]}>
+        <View style={[styles.statCard, { borderLeftColor: color }]}>
             <Text style={styles.statIcon}>{icon}</Text>
-            <Text style={[styles.statValue, { color }]}>{value}</Text>
-            <Text style={styles.statLabel}>{label}</Text>
+            <View>
+                <Text style={[styles.statValue, { color }]}>{value}</Text>
+                <Text style={styles.statLabel}>{label}</Text>
+            </View>
         </View>
     );
 }
 
-// ─── Patient Card (4 Per Row) ──────────────────
-function PatientCard({ patient, onView }) {
+// ─── Patient Card ─────────────────────────────
+function PatientCard({ patient, onView, cardWidth }) {
+    const risk = getRisk(patient);
+    const colors = RISK_COLORS[risk] || RISK_COLORS.low;
+    const score = getScore(patient);
     const initials = patient.username?.slice(0, 2).toUpperCase() || '??';
-    const risk = patient.latestEpdsRisk || 'low';
-    const colors = RISK_COLORS[risk];
-    const emoji = RISK_EMOJIS[risk];
-    const label = RISK_LABELS[risk];
 
     return (
         <TouchableOpacity
-            style={[
-                styles.patientCard,
-                { backgroundColor: colors.bg }
-            ]}
+            style={[styles.patientCard, { backgroundColor: colors.bg, width: cardWidth }]}
             onPress={() => onView(patient)}
             activeOpacity={0.85}
         >
-            {/* Risk Indicator Bar */}
-            <View style={[styles.riskBar, { backgroundColor: colors.border }]} />
+            <View style={[styles.riskDot, { backgroundColor: colors.border }]} />
 
-            {/* Avatar */}
-            <View style={[styles.patientAvatar, { backgroundColor: colors.border + '30' }]}>
-                <Text style={[styles.patientAvatarText, { color: colors.border }]}>{initials}</Text>
+            <View style={[styles.avatar, { backgroundColor: colors.soft }]}>
+                <Text style={[styles.avatarText, { color: colors.border }]}>{initials}</Text>
             </View>
 
-            {/* Name */}
             <Text style={[styles.patientName, { color: colors.text }]} numberOfLines={1}>
                 {patient.username}
             </Text>
 
-            {/* Risk Badge */}
-            <View style={[styles.riskBadge, { backgroundColor: colors.border + '20' }]}>
-                <Text style={styles.riskEmoji}>{emoji}</Text>
-                <Text style={[styles.riskLabel, { color: colors.text }]}>{label}</Text>
+            <View style={[styles.riskPill, { backgroundColor: colors.soft }]}>
+                <Text style={styles.riskEmoji}>{RISK_EMOJIS[risk]}</Text>
+                <Text style={[styles.riskPillText, { color: colors.text }]}>{RISK_LABELS[risk]}</Text>
             </View>
 
-            {/* EPDS Score */}
-            {patient.latestEpdsScore !== undefined && (
-                <Text style={[styles.riskScore, { color: colors.score }]}>
-                    {patient.latestEpdsScore}/30
-                </Text>
+            {score !== undefined && (
+                <Text style={[styles.scoreText, { color: colors.border }]}>{score}/30</Text>
             )}
         </TouchableOpacity>
     );
 }
 
-// ─── Patient Detail Modal ─────────────────────
-function PatientModal({ visible, patient, onClose }) {
+// ─── Patient Modal ────────────────────────────
+function PatientModal({ visible, patient, onClose, loadingDetail }) {
     if (!patient) return null;
-    const joined = new Date(patient.createdAt).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'long', year: 'numeric',
-    });
+
+    const risk = getRisk(patient);
+    const colors = RISK_COLORS[risk] || RISK_COLORS.low;
+    const score = getScore(patient);
+    const answers = getAnswers(patient);
+    const history = patient.epdsHistory || [];
     const initials = patient.username?.slice(0, 2).toUpperCase() || '??';
-    const risk = patient.latestEpdsRisk || 'low';
-    const colors = RISK_COLORS[risk];
+    const joined = new Date(patient.createdAt).toLocaleDateString('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric',
+    });
 
     return (
         <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
             <View style={styles.modalOverlay}>
-                <View style={[styles.modalCard, { borderTopColor: colors.border, borderTopWidth: 6 }]}>
-                    <View style={[styles.modalAvatarBig, { backgroundColor: colors.bg }]}>
-                        <Text style={[styles.modalAvatarBigText, { color: colors.border }]}>{initials}</Text>
-                    </View>
-                    <Text style={styles.modalName}>{patient.username}</Text>
+                <View style={styles.modalCard}>
+                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 30 }}>
 
-                    {/* Risk Badge in Modal */}
-                    <View style={[styles.modalRiskBadge, { backgroundColor: colors.bg }]}>
-                        <Text style={styles.modalRiskEmoji}>{RISK_EMOJIS[risk]}</Text>
-                        <Text style={[styles.modalRiskText, { color: colors.text }]}>
-                            {RISK_LABELS[risk]} Risk • Score: {patient.latestEpdsScore || 0}/30
-                        </Text>
-                    </View>
-
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailIcon}>📧</Text>
-                        <Text style={styles.detailText}>{patient.email}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailIcon}>📅</Text>
-                        <Text style={styles.detailText}>Joined {joined}</Text>
-                    </View>
-                    <View style={styles.detailRow}>
-                        <Text style={styles.detailIcon}>🏷️</Text>
-                        <Text style={[styles.detailText, { color: '#10B981', fontWeight: '700' }]}>
-                            {patient.role}
-                        </Text>
-                    </View>
-
-                    {/* EPDS Details */}
-                    {patient.latestEpdsScore !== undefined && (
-                        <>
-                            <View style={styles.divider} />
-                            <Text style={styles.sectionHeading}>📊 EPDS Assessment</Text>
-                            <View style={styles.detailRow}>
-                                <Text style={styles.detailIcon}>📝</Text>
-                                <Text style={styles.detailText}>Score: {patient.latestEpdsScore}/30</Text>
+                        {/* Header */}
+                        <View style={[styles.modalHeader, { backgroundColor: colors.bg }]}>
+                            <View style={[styles.modalAvatar, { backgroundColor: colors.soft }]}>
+                                <Text style={[styles.modalAvatarText, { color: colors.border }]}>{initials}</Text>
                             </View>
-                            <View style={styles.detailRow}>
-                                <Text style={styles.detailIcon}>⚠️</Text>
-                                <Text style={[styles.detailText, {
-                                    color: colors.score,
-                                    fontWeight: '700'
-                                }]}>
-                                    Risk: {patient.latestEpdsRisk?.toUpperCase() || 'UNKNOWN'}
+                            <Text style={styles.modalName}>{patient.username}</Text>
+                            <View style={[styles.modalRiskBadge, { backgroundColor: colors.soft }]}>
+                                <Text style={{ fontSize: 14 }}>{RISK_EMOJIS[risk]}</Text>
+                                <Text style={[styles.modalRiskText, { color: colors.text }]}>
+                                    {RISK_LABELS[risk]} Risk  •  {score ?? 0}/30
                                 </Text>
                             </View>
-                            {patient.latestEpdsDate && (
-                                <View style={styles.detailRow}>
-                                    <Text style={styles.detailIcon}>📅</Text>
-                                    <Text style={styles.detailText}>
-                                        Last Screened: {
-                                            new Date(patient.latestEpdsDate).getTime()
-                                                ? new Date(patient.latestEpdsDate).toLocaleDateString('en-GB')
-                                                : patient.latestEpdsDate
-                                        }
-                                    </Text>
-                                </View>
-                            )}
-                        </>
-                    )}
+                        </View>
 
-                    {/* Baby Details */}
-                    {patient.babyDetails && Object.keys(patient.babyDetails).length > 0 && (
-                        <>
-                            <View style={styles.divider} />
-                            <Text style={styles.sectionHeading}>👶 Baby Details</Text>
-                            {patient.babyDetails.birthday ? (
-                                <View style={styles.detailRow}>
-                                    <Text style={styles.detailIcon}>🎂</Text>
-                                    <Text style={styles.detailText}>Born: {patient.babyDetails.birthday}</Text>
-                                </View>
-                            ) : null}
-                            {patient.babyDetails.weight ? (
-                                <View style={styles.detailRow}>
-                                    <Text style={styles.detailIcon}>⚖️</Text>
-                                    <Text style={styles.detailText}>Weight: {patient.babyDetails.weight}</Text>
-                                </View>
-                            ) : null}
-                            {patient.babyDetails.height ? (
-                                <View style={styles.detailRow}>
-                                    <Text style={styles.detailIcon}>📏</Text>
-                                    <Text style={styles.detailText}>Height: {patient.babyDetails.height}</Text>
-                                </View>
-                            ) : null}
+                        {/* Info */}
+                        <View style={styles.infoSection}>
+                            <InfoRow icon="📧" text={patient.email} />
+                            <InfoRow icon="📅" text={`Joined ${joined}`} />
+                            <InfoRow icon="🏷️" text={patient.role} highlight />
+                        </View>
 
-                            {patient.babyDetails.vaccinations && patient.babyDetails.vaccinations.length > 0 && (
-                                <View style={{ width: '100%', marginTop: 8 }}>
-                                    <Text style={[styles.detailText, { fontWeight: 'bold', marginBottom: 4 }]}>Vaccinations:</Text>
-                                    {patient.babyDetails.vaccinations.map((vac, i) => (
-                                        <Text key={i} style={[styles.detailText, { fontSize: 13, marginLeft: 24, color: '#6B7280' }]}>
-                                            • {vac.name} ({vac.date})
-                                        </Text>
-                                    ))}
-                                </View>
-                            )}
-                        </>
-                    )}
+                        {loadingDetail && (
+                            <ActivityIndicator size="small" color="#0EA5E9" style={{ marginVertical: 20 }} />
+                        )}
 
-                    <TouchableOpacity style={[styles.closeBtn, { backgroundColor: colors.border }]} onPress={onClose}>
-                        <Text style={styles.closeBtnText}>Close</Text>
-                    </TouchableOpacity>
+                        {/* EPDS Answers */}
+                        {answers?.length === 10 && (
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>📝 Latest EPDS Answers</Text>
+                                {EPDS_QUESTIONS.map((q, idx) => (
+                                    <View key={idx} style={styles.questionCard}>
+                                        <Text style={styles.questionText}>{q}</Text>
+                                        <View style={styles.answerChips}>
+                                            {[0, 1, 2, 3].map(val => (
+                                                <View
+                                                    key={val}
+                                                    style={[
+                                                        styles.chip,
+                                                        answers[idx] === val && { backgroundColor: colors.border },
+                                                    ]}
+                                                >
+                                                    <Text style={[
+                                                        styles.chipText,
+                                                        answers[idx] === val && { color: '#fff' },
+                                                    ]}>
+                                                        {val}
+                                                    </Text>
+                                                </View>
+                                            ))}
+                                            <Text style={[styles.selectedValue, { color: colors.border }]}>
+                                                → {answers[idx]}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                ))}
+                            </View>
+                        )}
+
+                        {/* History */}
+                        {history.length > 0 && (
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>📊 EPDS History</Text>
+                                {history.map((entry, i) => {
+                                    const r = entry.riskLevel || 'low';
+                                    const c = RISK_COLORS[r] || RISK_COLORS.low;
+                                    return (
+                                        <View key={entry._id || i} style={styles.historyItem}>
+                                            <View style={styles.historyTop}>
+                                                <Text style={styles.historyMonth}>{entry.month}</Text>
+                                                <Text style={[styles.historyScore, { color: c.border }]}>
+                                                    {entry.totalScore}/30 • {RISK_LABELS[r]}
+                                                </Text>
+                                            </View>
+                                            {entry.answers && (
+                                                <Text style={styles.historyAnswers}>
+                                                    [{entry.answers.join(', ')}]
+                                                </Text>
+                                            )}
+                                        </View>
+                                    );
+                                })}
+                            </View>
+                        )}
+
+                        {/* Baby Details */}
+                        {patient.babyDetails && Object.keys(patient.babyDetails).length > 0 && (
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>👶 Baby Details</Text>
+                                {patient.babyDetails.birthday && <InfoRow icon="🎂" text={`Born: ${patient.babyDetails.birthday}`} />}
+                                {patient.babyDetails.weight && <InfoRow icon="⚖️" text={`Weight: ${patient.babyDetails.weight}`} />}
+                                {patient.babyDetails.height && <InfoRow icon="📏" text={`Height: ${patient.babyDetails.height}`} />}
+                            </View>
+                        )}
+
+                        <TouchableOpacity
+                            style={[styles.closeBtn, { backgroundColor: colors.border }]}
+                            onPress={onClose}
+                        >
+                            <Text style={styles.closeBtnText}>Close</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
                 </View>
             </View>
         </Modal>
     );
 }
 
+function InfoRow({ icon, text, highlight }) {
+    return (
+        <View style={styles.infoRow}>
+            <Text style={styles.infoIcon}>{icon}</Text>
+            <Text style={[styles.infoText, highlight && { color: '#10B981', fontWeight: '700' }]}>
+                {text}
+            </Text>
+        </View>
+    );
+}
+
 // ─── MAIN SCREEN ──────────────────────────────
 export default function MidwifeDashboardScreen({ navigation }) {
     const { user: authUser, token, logout } = useAuth();
+    const { width } = useWindowDimensions();
+
     const [stats, setStats] = useState(null);
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [selected, setSelected] = useState(null);
+    const [loadingDetail, setLoadingDetail] = useState(false);
+    const [filterRisk, setFilterRisk] = useState('all'); // all | high | medium | low
 
-    useEffect(() => { if (token) setAuthToken(token); }, [token]);
+    const numColumns = useMemo(() => {
+        if (width >= 1100) return 5;
+        if (width >= 800) return 4;
+        if (width >= 560) return 3;
+        return 2;
+    }, [width]);
+
+    const cardWidth = useMemo(() => {
+        const padding = 32;
+        const gap = 12;
+        return (width - padding - gap * (numColumns - 1)) / numColumns;
+    }, [width, numColumns]);
+
+    useEffect(() => {
+        if (token) setAuthToken(token);
+    }, [token]);
 
     const fetchData = useCallback(async () => {
         try {
@@ -225,7 +272,6 @@ export default function MidwifeDashboardScreen({ navigation }) {
                 type: 'error',
                 text1: 'Failed to load data',
                 text2: err.response?.data?.message || 'Please try again',
-                position: 'top',
             });
         } finally {
             setLoading(false);
@@ -235,63 +281,70 @@ export default function MidwifeDashboardScreen({ navigation }) {
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
-    const onRefresh = () => { setRefreshing(true); fetchData(); };
-
-    const handleLogout = () => {
-        logout();
-        navigation.replace('Login');
+    const handleViewPatient = async (patient) => {
+        setSelected(patient);
+        setLoadingDetail(true);
+        try {
+            const res = await api.get(`/midwife/patients/${patient._id}`);
+            setSelected(res.data);
+        } catch (err) {
+            // keep existing data
+        } finally {
+            setLoadingDetail(false);
+        }
     };
 
-    const filtered = patients.filter(p =>
-        p.username?.toLowerCase().includes(searchText.toLowerCase()) ||
-        p.email?.toLowerCase().includes(searchText.toLowerCase())
-    );
+    const filtered = useMemo(() => {
+        return patients.filter(p => {
+            const matchesSearch =
+                p.username?.toLowerCase().includes(searchText.toLowerCase()) ||
+                p.email?.toLowerCase().includes(searchText.toLowerCase());
 
-    // Render patient in 4-column grid
+            const risk = getRisk(p);
+            const matchesRisk = filterRisk === 'all' || risk === filterRisk;
+
+            return matchesSearch && matchesRisk;
+        });
+    }, [patients, searchText, filterRisk]);
+
     const renderPatient = ({ item }) => (
-        <PatientCard patient={item} onView={setSelected} />
+        <PatientCard patient={item} onView={handleViewPatient} cardWidth={cardWidth} />
     );
 
     return (
-        <SafeAreaView style={styles.safe}>
-            {/* ── Header ── */}
+        <SafeAreaView style={styles.safe} edges={['top']}>
+            <StatusBar barStyle="light-content" backgroundColor="#0EA5E9" />
+
+            {/* Header */}
             <View style={styles.header}>
                 <View>
-                    <Text style={styles.headerTitle}>👩‍⚕️ Midwife Portal</Text>
+                    <Text style={styles.headerTitle}>Midwife Portal</Text>
                     <Text style={styles.headerSub}>Welcome, {authUser?.username || 'Midwife'}</Text>
                 </View>
-                <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+                <TouchableOpacity style={styles.logoutBtn} onPress={() => { logout(); navigation.replace('Login'); }}>
                     <Text style={styles.logoutText}>Sign Out</Text>
                 </TouchableOpacity>
             </View>
 
             <ScrollView
-                contentContainerStyle={styles.scroll}
+                contentContainerStyle={[styles.scroll, { maxWidth: 1200, alignSelf: 'center', width: '100%' }]}
                 showsVerticalScrollIndicator={false}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0EA5E9']} />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} colors={['#0EA5E9']} />}
             >
-                {/* ── Stats ── */}
+                {/* Stats */}
                 {stats && (
                     <View style={styles.statsRow}>
-                        <StatCard icon="🤰" label="Total Patients" value={stats.totalPatients} color="#10B981" />
+                        <StatCard icon="🤰" label="Patients" value={stats.totalPatients} color="#10B981" />
                         <StatCard icon="👩‍⚕️" label="Midwives" value={stats.totalMidwives} color="#0EA5E9" />
                     </View>
                 )}
 
-                {/* ── Tip Banner ── */}
-                <View style={styles.tipBanner}>
-                    <Text style={styles.tipIcon}>💡</Text>
-                    <Text style={styles.tipText}>
-                        Tap any patient card to view their profile. Cards show risk level with color coding.
-                    </Text>
-                </View>
-
-                {/* ── Search ── */}
+                {/* Search */}
                 <View style={styles.searchBox}>
                     <Text style={styles.searchIcon}>🔍</Text>
                     <TextInput
                         style={styles.searchInput}
-                        placeholder="Search patients…"
+                        placeholder="Search by name or email..."
                         placeholderTextColor="#9CA3AF"
                         value={searchText}
                         onChangeText={setSearchText}
@@ -299,43 +352,65 @@ export default function MidwifeDashboardScreen({ navigation }) {
                     />
                     {searchText.length > 0 && (
                         <TouchableOpacity onPress={() => setSearchText('')}>
-                            <Text style={{ fontSize: 18, color: '#9CA3AF' }}>✕</Text>
+                            <Text style={{ color: '#9CA3AF', fontSize: 18 }}>✕</Text>
                         </TouchableOpacity>
                     )}
                 </View>
 
-                {/* ── Patient Grid ── */}
+                {/* Risk Filter Chips */}
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
+                    {['all', 'high', 'medium', 'low'].map(r => (
+                        <TouchableOpacity
+                            key={r}
+                            style={[
+                                styles.filterChip,
+                                filterRisk === r && styles.filterChipActive,
+                                r !== 'all' && filterRisk === r && { backgroundColor: RISK_COLORS[r].border },
+                            ]}
+                            onPress={() => setFilterRisk(r)}
+                        >
+                            <Text style={[
+                                styles.filterChipText,
+                                filterRisk === r && { color: '#fff' },
+                            ]}>
+                                {r === 'all' ? 'All' : `${RISK_EMOJIS[r]} ${RISK_LABELS[r]}`}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </ScrollView>
+
+                {/* Count */}
                 <Text style={styles.sectionTitle}>
-                    👤 {filtered.length} Patient{filtered.length !== 1 ? 's' : ''}
+                    {filtered.length} Patient{filtered.length !== 1 ? 's' : ''}
                 </Text>
 
+                {/* Grid */}
                 {loading ? (
-                    <ActivityIndicator size="large" color="#0EA5E9" style={{ marginTop: 40 }} />
+                    <ActivityIndicator size="large" color="#0EA5E9" style={{ marginTop: 50 }} />
                 ) : filtered.length === 0 ? (
-                    <View style={styles.emptyBox}>
-                        <Text style={styles.emptyIcon}>😶</Text>
+                    <View style={styles.empty}>
+                        <Text style={styles.emptyIcon}>🔍</Text>
                         <Text style={styles.emptyText}>No patients found</Text>
                     </View>
                 ) : (
                     <FlatList
                         data={filtered}
                         renderItem={renderPatient}
-                        keyExtractor={(item) => item._id}
-                        numColumns={4}
-                        columnWrapperStyle={styles.gridRow}
+                        keyExtractor={item => item._id}
+                        numColumns={numColumns}
+                        key={numColumns}
+                        columnWrapperStyle={numColumns > 1 ? styles.gridRow : null}
                         scrollEnabled={false}
-                        contentContainerStyle={styles.gridContainer}
+                        contentContainerStyle={{ paddingBottom: 20 }}
                     />
                 )}
-
-                <View style={{ height: 32 }} />
             </ScrollView>
 
-            {/* ── Patient Detail Modal ── */}
             <PatientModal
                 visible={!!selected}
                 patient={selected}
                 onClose={() => setSelected(null)}
+                loadingDetail={loadingDetail}
             />
 
             <Toast />
@@ -344,267 +419,210 @@ export default function MidwifeDashboardScreen({ navigation }) {
 }
 
 // ─── Styles ───────────────────────────────────
-const TEAL = '#0EA5E9';
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: '#F0F9FF' },
+    safe: { flex: 1, backgroundColor: '#F8FAFC' },
 
-    // Header
     header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: TEAL,
+        backgroundColor: '#0EA5E9',
         paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingVertical: 18,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
-    headerTitle: { color: '#fff', fontSize: 20, fontWeight: '800' },
-    headerSub: { color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 },
+    headerTitle: { color: '#fff', fontSize: 22, fontWeight: '800' },
+    headerSub: { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 2 },
     logoutBtn: {
         backgroundColor: 'rgba(255,255,255,0.2)',
-        paddingHorizontal: 14,
+        paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
     },
-    logoutText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+    logoutText: { color: '#fff', fontWeight: '600', fontSize: 13 },
 
-    // Scroll
-    scroll: { paddingHorizontal: 12, paddingTop: 16 },
+    scroll: { paddingHorizontal: 16, paddingTop: 16 },
 
-    // Stats
-    statsRow: {
-        flexDirection: 'row',
-        gap: 12,
-        marginBottom: 16
-    },
+    statsRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
     statCard: {
-        backgroundColor: '#fff',
-        borderRadius: 14,
-        padding: 14,
         flex: 1,
-        borderTopWidth: 4,
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        borderLeftWidth: 5,
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07,
+        shadowOpacity: 0.06,
         shadowRadius: 4,
-        alignItems: 'center',
     },
-    statIcon: { fontSize: 26, marginBottom: 6 },
-    statValue: { fontSize: 26, fontWeight: '800', marginBottom: 2 },
-    statLabel: { fontSize: 12, color: '#6B7280', fontWeight: '500' },
+    statIcon: { fontSize: 28 },
+    statValue: { fontSize: 24, fontWeight: '800' },
+    statLabel: { fontSize: 12, color: '#64748B', marginTop: 1 },
 
-    // Tip banner
-    tipBanner: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#E0F2FE',
-        borderRadius: 12,
-        padding: 12,
-        marginBottom: 14,
-        gap: 10,
-    },
-    tipIcon: { fontSize: 20 },
-    tipText: {
-        flex: 1,
-        fontSize: 13,
-        color: '#0369A1',
-        lineHeight: 18
-    },
-
-    // Search
     searchBox: {
         flexDirection: 'row',
         alignItems: 'center',
         backgroundColor: '#fff',
-        borderRadius: 12,
+        borderRadius: 14,
         paddingHorizontal: 14,
-        marginBottom: 14,
+        marginBottom: 12,
         elevation: 1,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
+        shadowOpacity: 0.04,
+        shadowRadius: 3,
     },
     searchIcon: { fontSize: 18, marginRight: 8 },
-    searchInput: {
-        flex: 1,
-        paddingVertical: 12,
-        fontSize: 14,
-        color: '#111827'
-    },
+    searchInput: { flex: 1, paddingVertical: 13, fontSize: 15, color: '#1E293B' },
 
-    // Section title
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#111827',
-        marginBottom: 10
+    filterRow: { marginBottom: 16 },
+    filterChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: '#E2E8F0',
+        marginRight: 8,
     },
+    filterChipActive: { backgroundColor: '#0EA5E9' },
+    filterChipText: { fontSize: 13, fontWeight: '600', color: '#475569' },
 
-    // ── Grid Layout (4 Columns) ──
-    gridContainer: {
-        paddingBottom: 8
-    },
-    gridRow: {
-        justifyContent: 'space-between',
-        marginBottom: 12,
-        gap: 8,
-    },
+    sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1E293B', marginBottom: 12 },
 
-    // ── Patient Card (4 Per Row) ──
+    gridRow: { gap: 12, marginBottom: 12 },
+
     patientCard: {
-        width: (width - 56) / 4, // 4 cards per row with padding
-        borderRadius: 14,
-        padding: 10,
+        borderRadius: 16,
+        padding: 14,
         alignItems: 'center',
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.08,
+        shadowOpacity: 0.06,
         shadowRadius: 4,
+        minHeight: 155,
         position: 'relative',
-        overflow: 'hidden',
-        minHeight: 150,
     },
-    riskBar: {
+    riskDot: {
         position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 3,
+        top: 10,
+        right: 10,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
     },
-    patientAvatar: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+    avatar: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 6,
-        marginTop: 4,
+        marginBottom: 8,
     },
-    patientAvatarText: {
-        fontWeight: '800',
-        fontSize: 16,
-    },
-    patientName: {
-        fontWeight: '700',
-        fontSize: 11,
-        textAlign: 'center',
-        marginBottom: 3,
-        width: '100%',
-    },
-    riskBadge: {
+    avatarText: { fontWeight: '800', fontSize: 17 },
+    patientName: { fontWeight: '700', fontSize: 13, textAlign: 'center', marginBottom: 6 },
+    riskPill: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 6,
-        paddingVertical: 2,
-        borderRadius: 10,
-        marginBottom: 2,
-        gap: 3,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        gap: 4,
+        marginBottom: 4,
     },
-    riskEmoji: { fontSize: 9 },
-    riskLabel: { fontSize: 8, fontWeight: '600' },
-    riskScore: {
-        fontSize: 11,
-        fontWeight: '800',
-        marginTop: 1,
-    },
+    riskEmoji: { fontSize: 11 },
+    riskPillText: { fontSize: 11, fontWeight: '600' },
+    scoreText: { fontSize: 13, fontWeight: '800', marginTop: 2 },
 
-    // Empty
-    emptyBox: {
-        alignItems: 'center',
-        paddingVertical: 48
-    },
+    empty: { alignItems: 'center', paddingVertical: 60 },
     emptyIcon: { fontSize: 48, marginBottom: 12 },
-    emptyText: {
-        fontSize: 16,
-        color: '#6B7280',
-        fontWeight: '600'
-    },
+    emptyText: { fontSize: 16, color: '#64748B', fontWeight: '500' },
 
-    // ── Modal ──
+    // Modal
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        padding: 20
+        backgroundColor: 'rgba(15,23,42,0.55)',
+        justifyContent: 'flex-end',
     },
     modalCard: {
         backgroundColor: '#fff',
-        borderRadius: 24,
-        padding: 24,
-        alignItems: 'center',
-        maxHeight: '90%',
+        borderTopLeftRadius: 28,
+        borderTopRightRadius: 28,
+        maxHeight: '92%',
+        overflow: 'hidden',
     },
-    modalAvatarBig: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+    modalHeader: {
+        alignItems: 'center',
+        paddingTop: 28,
+        paddingBottom: 20,
+        paddingHorizontal: 20,
+    },
+    modalAvatar: {
+        width: 76,
+        height: 76,
+        borderRadius: 38,
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 12,
     },
-    modalAvatarBigText: {
-        fontWeight: '800',
-        fontSize: 28,
-    },
-    modalName: {
-        fontSize: 22,
-        fontWeight: '800',
-        color: '#111827',
-        marginBottom: 12,
-    },
+    modalAvatarText: { fontWeight: '800', fontSize: 28 },
+    modalName: { fontSize: 22, fontWeight: '800', color: '#0F172A', marginBottom: 10 },
     modalRiskBadge: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
-        marginBottom: 16,
         gap: 8,
     },
-    modalRiskEmoji: { fontSize: 16 },
-    modalRiskText: {
-        fontSize: 14,
-        fontWeight: '700',
-    },
-    detailRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        width: '100%',
-        marginBottom: 10,
-        gap: 10,
-    },
-    detailIcon: { fontSize: 18 },
-    detailText: {
-        fontSize: 14,
-        color: '#374151',
-        flex: 1
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#E5E7EB',
-        width: '100%',
-        marginVertical: 12
-    },
-    sectionHeading: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#111827',
-        width: '100%',
-        marginBottom: 10,
-    },
-    closeBtn: {
-        marginTop: 16,
+    modalRiskText: { fontSize: 14, fontWeight: '700' },
+
+    infoSection: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4 },
+    infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 },
+    infoIcon: { fontSize: 17 },
+    infoText: { fontSize: 14, color: '#334155', flex: 1 },
+
+    section: { paddingHorizontal: 20, marginTop: 8 },
+    sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0F172A', marginBottom: 12 },
+
+    questionCard: {
+        backgroundColor: '#F8FAFC',
         borderRadius: 14,
-        paddingVertical: 13,
-        paddingHorizontal: 40,
-        width: '100%',
+        padding: 14,
+        marginBottom: 10,
+    },
+    questionText: { fontSize: 13, color: '#334155', marginBottom: 10, lineHeight: 19 },
+    answerChips: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
+    chip: {
+        width: 34,
+        height: 34,
+        borderRadius: 10,
+        backgroundColor: '#E2E8F0',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    chipText: { fontSize: 14, fontWeight: '700', color: '#475569' },
+    selectedValue: { fontSize: 14, fontWeight: '800', marginLeft: 4 },
+
+    historyItem: {
+        backgroundColor: '#F8FAFC',
+        borderRadius: 12,
+        padding: 14,
+        marginBottom: 8,
+    },
+    historyTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
+    historyMonth: { fontWeight: '700', fontSize: 14, color: '#0F172A' },
+    historyScore: { fontWeight: '700', fontSize: 13 },
+    historyAnswers: { fontSize: 12, color: '#64748B' },
+
+    closeBtn: {
+        marginHorizontal: 20,
+        marginTop: 24,
+        borderRadius: 16,
+        paddingVertical: 15,
         alignItems: 'center',
     },
-    closeBtnText: {
-        color: '#fff',
-        fontWeight: '700',
-        fontSize: 15
-    },
+    closeBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
 });

@@ -218,7 +218,7 @@ export default function ExerciseProgressScreen({ navigation }) {
 
         return (
             <View style={styles.movementSection}>
-                <Text style={styles.movementTitle}>🤖 {isSinhala ? 'AI චලන කාර්ය සාධනය' : 'AI Movement Performance'}</Text>
+                <Text style={styles.movementTitle}>🤖 {isSinhala ? 'චලන කාර්ය සාධනය' : 'Movement Performance'}</Text>
                 
                 {/* Overall Score Stats */}
                 <View style={[styles.statsGrid, { marginTop: 12 }]}>
@@ -306,7 +306,28 @@ export default function ExerciseProgressScreen({ navigation }) {
                             {isSinhala ? 'ඔබේ ප්‍රගතිය' : 'Your Progress'}
                         </Text>
                     </View>
-                    <View style={styles.backBtnPlaceholder} />
+                    <TouchableOpacity
+                        onPress={() =>
+                            i18n.changeLanguage(
+                                i18n.language === 'en' ? 'si' : 'en'
+                            )
+                        }
+                        style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <Text
+                            style={{
+                                fontWeight: '700',
+                                fontSize: 13,
+                                color: '#7C3AED',
+                                backgroundColor: '#EDE9FE',
+                                paddingHorizontal: 10,
+                                paddingVertical: 4,
+                                borderRadius: 12,
+                            }}
+                        >
+                            {i18n.language === 'en' ? 'සිං' : 'EN'}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -318,7 +339,7 @@ export default function ExerciseProgressScreen({ navigation }) {
                     ) : progress ? (
                         <View style={styles.progressContainer}>
                             {/* Dropdown Time Filter Selector at Top of Container */}
-                            <View style={{ position: 'relative', zIndex: 100, marginBottom: 16 }}>
+                            <View style={{ position: 'relative', zIndex: 100, marginBottom: 8 }}>
                                 <TouchableOpacity 
                                     style={styles.dropdownHeader} 
                                     onPress={() => setShowDropdown(!showDropdown)}
@@ -355,11 +376,8 @@ export default function ExerciseProgressScreen({ navigation }) {
                                 )}
                             </View>
 
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-                                <Text style={styles.progressTitle}>
-                                    {isSinhala ? 'ප්‍රගති උපකරණ පුවරුව' : 'Progress Dashboard'}
-                                </Text>
-                                {detectedMood && detectedMood !== 'happy' && detectedMood !== 'neutral' && (
+                            {detectedMood && detectedMood !== 'happy' && detectedMood !== 'neutral' && (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                                     <View style={styles.moodBadge}>
                                         <Text style={{ fontSize: 13, marginRight: 4 }}>
                                             {detectedMood === 'sad' ? '😔' : detectedMood === 'tired' ? '😪' : detectedMood === 'stressed' ? '😰' : detectedMood === 'angry' ? '😠' : '😌'}
@@ -368,38 +386,10 @@ export default function ExerciseProgressScreen({ navigation }) {
                                             {t(detectedMood)}
                                         </Text>
                                     </View>
-                                )}
-                            </View>
+                                </View>
+                            )}
 
-                            {/* Stats Grid Layout */}
-                            <View style={styles.statsGrid}>
-                                <LinearGradient colors={['#EFF6FF', '#DBEAFE']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                                    <Text style={styles.statValue}>{progress.currentStreak}</Text>
-                                    <Text style={styles.statLabel}>🔥 {isSinhala ? 'වත්මන් දින දාමය' : 'Current Streak'}</Text>
-                                </LinearGradient>
-                                <LinearGradient colors={['#ECFDF5', '#D1FAE5']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                                    <Text style={styles.statValue}>{progress.weeklyCompletionRate ?? 0}%</Text>
-                                    <Text style={styles.statLabel}>📊 {isSinhala ? 'සතිපතා ප්‍රතිශතය' : 'Weekly Rate'}</Text>
-                                </LinearGradient>
-                            </View>
 
-                            <View style={[styles.statsGrid, { marginTop: 12 }]}>
-                                <LinearGradient colors={['#F5F3FF', '#EDE9FE']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                                    <Text style={styles.statValue}>{progress.averageDuration ?? 0}m</Text>
-                                    <Text style={styles.statLabel}>⏱️ {isSinhala ? 'සාමාන්‍ය කාලය' : 'Avg Duration'}</Text>
-                                </LinearGradient>
-                                <LinearGradient colors={['#FFFBEB', '#FEF3C7']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                                    <Text style={styles.statValue}>{progress.totalExercises}</Text>
-                                    <Text style={styles.statLabel}>🏋️ {isSinhala ? 'සම්පූර්ණ කළ ගණන' : 'Total Completed'}</Text>
-                                </LinearGradient>
-                            </View>
-
-                            <View style={[styles.statsGrid, { marginTop: 12 }]}>
-                                <LinearGradient colors={['#FFF1F2', '#FFE4E6']} style={[styles.statBox, { minWidth: '100%' }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                                    <Text style={styles.statValue}>{progress.missedSessions ?? 0}</Text>
-                                    <Text style={styles.statLabel}>⚠️ {isSinhala ? 'මඟ හැරුණු ව්‍යායාම (දින 7)' : 'Missed Sessions (Last 7 Days)'}</Text>
-                                </LinearGradient>
-                            </View>
 
 
 

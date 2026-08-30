@@ -1192,7 +1192,28 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     <Text style={styles.backIcon}>←</Text>
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>{exerciseName}</Text>
-                <View style={{ width: 40 }} />
+                <TouchableOpacity
+                    onPress={() =>
+                        i18n.changeLanguage(
+                            i18n.language === 'en' ? 'si' : 'en'
+                        )
+                    }
+                    style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
+                >
+                    <Text
+                        style={{
+                            fontWeight: '700',
+                            fontSize: 13,
+                            color: '#7C3AED',
+                            backgroundColor: '#EDE9FE',
+                            paddingHorizontal: 10,
+                            paddingVertical: 4,
+                            borderRadius: 12,
+                        }}
+                    >
+                        {i18n.language === 'en' ? 'සිං' : 'EN'}
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             {/* Split Screen Container */}
