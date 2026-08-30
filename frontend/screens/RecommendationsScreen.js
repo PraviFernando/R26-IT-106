@@ -118,7 +118,7 @@ const getBabyTopicsFromReason = (reason) => {
   if (reason === 'baby_sleep') return ['Baby Sleeping'];
   if (reason === 'baby_health') return ['Baby Health'];
   if (reason === 'caring_for_baby') return ['Mother Care'];
-  if (reason === 'understanding_baby') return ['Baby Development'];
+  if (reason === 'understanding_baby' || reason === 'baby_needs') return ['Baby Needs'];
   return [];
 };
 
@@ -212,12 +212,12 @@ const HARDCODED_VIDEO_MAP = {
     thumbnail: 'https://img.youtube.com/vi/UrfpkvvRTns/0.jpg',
   },
   baby_needs: {
-    id: 'fpiYNkkNmEo',
-    title: 'බබා සහ මව අතර බැඳීම ශක්තිමත් කිරීම (Building Bond with Baby)',
-    description: 'නවජන්ම දරුවා සමඟ ආදරණීය සම්බන්ධතාවය වර්ධනය කරගන්නා අයුරු.',
-    channelTitle: 'Bloom Supportive Care',
-    url: 'https://youtu.be/fpiYNkkNmEo',
-    thumbnail: 'https://img.youtube.com/vi/fpiYNkkNmEo/0.jpg',
+    id: 'a4WGVOzTR4A',
+    title: 'ළදරු සංඥා සහ අවශ්‍යතා හඳුනාගනිමු (Understanding Baby Cues & Needs)',
+    description: 'බබාගේ මුහුණේ ඉරියව්, ශබ්ද සහ සංඥා හඳුනාගැනීම සඳහා උපදෙස්.',
+    channelTitle: 'PeriCare Baby Care',
+    url: 'https://youtu.be/a4WGVOzTR4A',
+    thumbnail: 'https://img.youtube.com/vi/a4WGVOzTR4A/0.jpg',
   },
   baby_feeding: {
     id: 'Uz978b7Gsm4',
@@ -559,11 +559,15 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
   const finalVideos = (isSkipped ? Object.values(VIDEO_LIBRARY).flat() : libraryVideos).slice(0, 4);
 
-  const activeBabyTopics = (primaryReason === 'bonding_issues' || primaryReason === 'loneliness')
+  const rawBabyTopics = (primaryReason === 'bonding_issues' || primaryReason === 'loneliness')
     ? []
     : ((detectedBabyTopics && detectedBabyTopics.length > 0)
         ? detectedBabyTopics
         : (detectedBabyTopic ? [detectedBabyTopic] : getBabyTopicsFromReason(activeAnalysis?.primaryReason || selReason)));
+
+  const activeBabyTopics = (primaryReason === 'baby_needs' || primaryReason === 'understanding_baby')
+    ? ['Baby Needs']
+    : Array.from(new Set(rawBabyTopics.map(t => t === 'Baby Bathing' ? 'Baby Needs' : t)));
 
   // Resolve featured hardcoded video based on reason
   const featuredVideo = (() => {

@@ -108,7 +108,31 @@ const ALL_CURATED_VIDEOS = {
     thumbnail: 'https://img.youtube.com/vi/e_3UoecZlxY/0.jpg'
   },
 
-  // Understanding Baby / Development
+  // Understanding Baby / Development / Baby Needs
+  'a4WGVOzTR4A': {
+    id: 'a4WGVOzTR4A',
+    title: 'ළදරු සංඥා සහ අවශ්‍යතා හඳුනාගනිමු (Understanding Baby Cues & Needs)',
+    description: 'බබාගේ මුහුණේ ඉරියව්, ශබ්ද සහ සංඥා හඳුනාගැනීම සඳහා උපදෙස්.',
+    channelTitle: 'PeriCare Baby Care',
+    url: 'https://youtu.be/a4WGVOzTR4A',
+    thumbnail: 'https://img.youtube.com/vi/a4WGVOzTR4A/0.jpg'
+  },
+  've7yXXRaYT8': {
+    id: 've7yXXRaYT8',
+    title: 'අලුත උපන් බබාගේ හැසිරීම් තේරුම් ගැනීම (Newborn Behavior & Signals)',
+    description: 'අලුත උපන් දරුවාගේ හැසිරීම් රටා සහ ඉඟි තේරුම් ගන්නා ආකාරය.',
+    channelTitle: 'PeriCare Baby Care',
+    url: 'https://youtu.be/ve7yXXRaYT8',
+    thumbnail: 'https://img.youtube.com/vi/ve7yXXRaYT8/0.jpg'
+  },
+  'k_FyoBhaFTA': {
+    id: 'k_FyoBhaFTA',
+    title: 'බබාගේ හැඬීම සහ සංඥා වලට සාර්ථකව ප්‍රතිචාර දැක්වීම (Soothe & Respond to Baby Crying)',
+    description: 'දරුවාගේ හැඬීම හඳුනාගෙන සන්සුන් කිරීම සඳහා සාර්ථක ක්‍රමවේද.',
+    channelTitle: 'PeriCare Baby Care',
+    url: 'https://youtu.be/k_FyoBhaFTA',
+    thumbnail: 'https://img.youtube.com/vi/k_FyoBhaFTA/0.jpg'
+  },
   'fpiYNkkNmEo': {
     id: 'fpiYNkkNmEo',
     title: 'ළදරුවන් කහ වීම පිළිබඳ දැනුවත් වෙමු (Understanding Newborn Jaundice)',
@@ -686,8 +710,14 @@ const CURATED_VIDEO_LIBRARY = {
     stressed: ['t0kACis_dJE', '-aqpq-9UcH8', 'e_3UoecZlxY']
   },
   understanding_baby: {
-    default: ['fpiYNkkNmEo', '6rx_-__NsjU', 'dEQOWf-NuKs'],
-    anxious: ['fpiYNkkNmEo', '6rx_-__NsjU', 'dEQOWf-NuKs']
+    default: ['a4WGVOzTR4A', 've7yXXRaYT8', 'k_FyoBhaFTA'],
+    anxious: ['a4WGVOzTR4A', 've7yXXRaYT8', 'k_FyoBhaFTA'],
+    stressed: ['a4WGVOzTR4A', 've7yXXRaYT8', 'k_FyoBhaFTA']
+  },
+  baby_needs: {
+    default: ['a4WGVOzTR4A', 've7yXXRaYT8', 'k_FyoBhaFTA'],
+    anxious: ['a4WGVOzTR4A', 've7yXXRaYT8', 'k_FyoBhaFTA'],
+    stressed: ['a4WGVOzTR4A', 've7yXXRaYT8', 'k_FyoBhaFTA']
   },
   baby_health: {
     default: ['ZCQUPRyZbO0', '4SQNqugTUmw', 'fpiYNkkNmEo'],
@@ -919,7 +949,8 @@ function getCuratedVideos(reason, emotion, babyContext, subIntent = '', requestS
     baby_crying: ['TWHOFDQHOUA', '3G5aAQL3R_g', 'kmbKaSRyZ-c'],
     baby_feeding: ['qdXehiELnIA', '_FsNGM2cIpI', 'n2Iu6NooqgE'],
     baby_sleep: ['SfCxUG1nE84', 'pJYWRlTQ9s8', 'n1NGKj2B2eU'],
-    understanding_baby: ['6rx_-__NsjU', 'dEQOWf-NuKs', 'fpiYNkkNmEo'],
+    understanding_baby: ['a4WGVOzTR4A', 've7yXXRaYT8', 'k_FyoBhaFTA'],
+    baby_needs: ['a4WGVOzTR4A', 've7yXXRaYT8', 'k_FyoBhaFTA'],
     baby_health: ['ZCQUPRyZbO0', '4SQNqugTUmw', 'k_FyoBhaFTA']
   };
 
@@ -1474,7 +1505,7 @@ async function validateYouTubeVideos(candidates, apiKey) {
 async function fetchAndRankVideos(reason, emotion, riskLevel, babyIntent, diaryText = '') {
   const normReason = normalizeReasonKey(reason);
   const normEmotion = normalizeEmotionKey(emotion);
-  const isBaby = (babyIntent === 'true' || babyIntent === true || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_health', 'bonding_issues'].includes(normReason));
+  const isBaby = (babyIntent === 'true' || babyIntent === true || ['baby_feeding', 'baby_sleep', 'baby_crying', 'understanding_baby', 'baby_needs', 'baby_health', 'bonding_issues'].includes(normReason));
 
   const subIntent = normReason === 'baby_health' ? detectBabyHealthSubIntent(diaryText) : 'Other Baby Health';
 

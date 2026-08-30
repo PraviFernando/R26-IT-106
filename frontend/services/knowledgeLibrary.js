@@ -35,6 +35,22 @@ export const KNOWLEDGE_RESOURCES = [
     source: 'WHO / MOH Sri Lanka'
   },
   {
+    id: 'kb_b1_unicef_soothe',
+    title: 'අඬන බබාව සන්සුන් කරන්නේ කෙසේද',
+    titleEn: 'How to Soothe a Crying Baby - UNICEF Guide',
+    description: 'ළදරු ඇඬීම, සංඥා සහ බබාව සන්සුන් කිරීම සඳහා UNICEF මඟින් ලබාදෙන නිල උපදෙස්.',
+    category: 'baby_care',
+    subCategory: 'Crying & Soothing',
+    type: 'article',
+    tags: ['soothe baby', 'crying', 'baby cues', 'baby needs', 'unicef', 'සන්සුන් කිරීම'],
+    thumbnail: '👶',
+    url: 'https://www.unicef.org/parenting/child-care/how-soothe-baby',
+    duration: 'විනාඩි 5 කියවීම',
+    age_group: '0-12 මාස',
+    language: 'si',
+    source: 'UNICEF Parenting'
+  },
+  {
     id: 'kb_b2',
     title: 'ප්‍රථම ඝන ආහාර ලබාදීම (මාස 6 සිට)',
     titleEn: 'Introducing Solid Foods from 6 Months',

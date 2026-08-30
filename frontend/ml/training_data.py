@@ -2199,24 +2199,130 @@ HAPPY_REASONS = ["loneliness"] * len(HAPPY_TEXTS)   # fallback reason for happy
 HAPPY_EMOTIONS = ["happy"] * len(HAPPY_TEXTS)
 
 # --------------------------------------------------------------
+# BABY NEEDS (emotion: stressed)
+# --------------------------------------------------------------
+BABY_NEEDS_ENGLISH = [
+    "I don't understand what my baby needs",
+    "I cannot understand my baby's behavior",
+    "I don't know why my baby is crying",
+    "I am not sure what my baby wants when she cries",
+    "I have difficulty understanding my baby's signals",
+    "I cannot tell if my baby is hungry or tired",
+    "I don't know when my baby needs to be fed",
+    "I am confused about what my baby is trying to tell me",
+    "I struggle to understand my baby's different cries",
+    "I cannot figure out what is wrong with my baby",
+    "I am not sure whether my baby is hungry",
+    "I don't know if my baby needs a diaper change",
+    "I cannot understand why my baby is restless",
+    "I have trouble knowing when my baby is sleepy",
+    "I don't know what my baby needs when she becomes fussy",
+    "I struggle to recognize my baby's needs",
+    "I cannot tell what my baby is trying to communicate",
+    "I don't know whether my baby is uncomfortable",
+    "I find it difficult to understand my baby's cues",
+    "I cannot recognize what my baby needs from her crying",
+    "I don't know why my baby suddenly starts crying",
+    "I am unsure whether my baby is hungry, tired, or uncomfortable",
+    "I have difficulty knowing what my baby needs at different times",
+    "I don't understand the different sounds my baby makes",
+    "I cannot tell what my baby's crying means",
+    "I don't know when my baby wants attention",
+    "I am confused when my baby changes her behavior",
+    "I don't know why my baby is making these sounds",
+    "I struggle to identify my baby's basic needs",
+]
+
+BABY_NEEDS_SINHALA = [
+    "මට බබාගේ හැසිරීම හඳුනාගන්න බැහැ",
+    "මට බබාට මොනවා ඕනෙද කියලා තේරෙන්නේ නැහැ",
+    "බබා අඬන්නේ ඇයි කියලා මට තේරෙන්නේ නැහැ",
+    "බබාගේ විවිධ හැසිරීම් තේරුම් ගන්න මට අමාරුයි",
+    "බබා බඩගින්නෙන්ද නිදිමතෙන්ද කියලා මට හඳුනාගන්න බැහැ",
+    "බබාට කිරි ඕනේ වෙලාව මට තේරෙන්නේ නැහැ",
+    "බබා මට කියන්න හදන්නේ මොනවාද කියලා මට තේරෙන්නේ නැහැ",
+    "බබා අඬන විදිහේ වෙනස්කම් තේරුම් ගන්න මට අමාරුයි",
+    "බබා නිතරම අඬන්නේ ඇයි කියලා මට හිතාගන්න බැහැ",
+    "බබාට මොකක්ද වෙලා තියෙන්නේ කියලා මට තේරෙන්නේ නැහැ",
+    "බබාට බඩගිනිද කියලා මට හඳුනාගන්න බැහැ",
+    "බබාට ඩයපර් මාරු කරන්න ඕනෙද කියලා මට තේරෙන්නේ නැහැ",
+    "බබා නොසන්සුන් වෙන්නේ ඇයි කියලා මට තේරෙන්නේ නැහැ",
+    "බබාට නිදිමතයිද කියලා මට හඳුනාගන්න අමාරුයි",
+    "බබා කලබල වෙනකොට එයාට මොනවා ඕනෙද කියලා මට තේරෙන්නේ නැහැ",
+    "මට බබාගේ අවශ්යතා හඳුනාගන්න අමාරුයි",
+    "බබා මට මොනවා කියන්න හදනවාද කියලා තේරෙන්නේ නැහැ",
+    "බබාට අපහසුතාවයක් තියෙනවාද කියලා මට හිතාගන්න බැහැ",
+    "බබාගේ ඉඟි තේරුම් ගන්න මට අමාරුයි",
+    "බබා අඬනකොට එයාට ඕනේ මොනවාද කියලා හඳුනාගන්න බැහැ",
+    "බබා එකපාරටම අඬන්න පටන් ගන්නේ ඇයි කියලා මට තේරෙන්නේ නැහැ",
+    "බබාට බඩගිනිද නිදිමතද අපහසුතාවයක්ද කියලා මට හඳුනාගන්න බැහැ",
+    "වෙලාවෙන් වෙලාවට බබාට මොනවා ඕනෙද කියලා තේරුම් ගන්න අමාරුයි",
+    "බබා කරන විවිධ ශබ්දවල තේරුම මට තේරෙන්නේ නැහැ",
+    "බබාට අවධානය ඕනේ වෙලාව මට තේරෙන්නේ නැහැ",
+    "බබාගේ හැසිරීම වෙනස් වුණාම මට හිතාගන්න බැහැ",
+    "බබා මේ වගේ ශබ්ද කරන්නේ ඇයි කියලා මට තේරෙන්නේ නැහැ",
+    "බබාගේ මූලික අවශ්යතා හඳුනාගන්න මට අමාරුයි",
+]
+
+BABY_NEEDS_SINGLISH = [
+    "mata babava nalavaganna therenne na",
+    "mata babage hasirima handunaganna ba",
+    "mata babata monawada one kiyala therenne naha",
+    "baba andanne ai kiyala mata therenne naha",
+    "baba andanakota eyata monawada one kiyala hithaganna ba",
+    "babage wenas wenas hasirum therum ganna amarui",
+    "baba badaginne da nidimathe da kiyala mata handunaganna ba",
+    "baba kiri one welawa mata therenne naha",
+    "baba mata kiyanna hadanne mokakda kiyala therenne naha",
+    "baba andana widiye wenas kam therum ganna amarui",
+    "baba hamadama andanne ai kiyala mata hithaganna ba",
+    "babata mokak wela thiyenawada kiyala mata therenne naha",
+    "baba badagin da kiyala mata handunaganna ba",
+    "babata diaper maru karanna one da kiyala mata therenne naha",
+    "baba nosansun wenne ai kiyala mata therenne naha",
+    "baba nidimathe da kiyala mata handunaganna amarui",
+    "baba kalabala unama eyata monawada one kiyala mata therenne naha",
+    "mata babage awashya tha handunaganna amarui",
+    "baba mata monawada kiyanna hadanne kiyala therenne naha",
+    "babata apahasuwak thiyenawada kiyala mata hithaganna ba",
+    "babage signs therum ganna mata amarui",
+    "baba andanakota eyata one mokakda kiyala handunaganna ba",
+    "baba eka paratama andanna patan ganne ai kiyala mata therenne naha",
+    "baba badagin da nidimathe da amaruwak da kiyala handunaganna ba",
+    "welawen welawata babata monawada one kiyala therum ganna amarui",
+    "baba karana wenas wenas sounds wala theruma mata therenne naha",
+    "babata attention one welawa mata therenne naha",
+    "babage behavior eka wenas unama mata hithaganna ba",
+    "baba mehema sounds karanne ai kiyala mata therenne naha",
+    "babage basic needs handunaganna mata amarui",
+]
+
+BABY_NEEDS_TEXTS = BABY_NEEDS_ENGLISH + BABY_NEEDS_SINHALA + BABY_NEEDS_SINGLISH
+BABY_NEEDS_REASONS = ["baby_needs"] * len(BABY_NEEDS_TEXTS)
+BABY_NEEDS_EMOTIONS = ["stressed"] * len(BABY_NEEDS_TEXTS)
+
+# --------------------------------------------------------------
 # COMBINE ALL DATA
 # --------------------------------------------------------------
 TRAIN_TEXTS = (
     LONELINESS_TEXTS + FATIGUE_TEXTS + ANXIETY_TEXTS + BONDING_TEXTS +
     SUPPORT_TEXTS + SLEEP_TEXTS + CONFIDENCE_TEXTS + OVERWHELMED_TEXTS +
-    PHYSICAL_TEXTS + NEGATIVE_TEXTS + HAPPY_TEXTS + FINANCIAL_TEXTS + RELATIONSHIP_TEXTS
+    PHYSICAL_TEXTS + NEGATIVE_TEXTS + HAPPY_TEXTS + FINANCIAL_TEXTS + RELATIONSHIP_TEXTS +
+    BABY_NEEDS_TEXTS
 )
 
 TRAIN_REASONS = (
     LONELINESS_REASONS + FATIGUE_REASONS + ANXIETY_REASONS + BONDING_REASONS +
     SUPPORT_REASONS + SLEEP_REASONS + CONFIDENCE_REASONS + OVERWHELMED_REASONS +
-    PHYSICAL_REASONS + NEGATIVE_REASONS + HAPPY_REASONS + FINANCIAL_REASONS + RELATIONSHIP_REASONS
+    PHYSICAL_REASONS + NEGATIVE_REASONS + HAPPY_REASONS + FINANCIAL_REASONS + RELATIONSHIP_REASONS +
+    BABY_NEEDS_REASONS
 )
 
 TRAIN_EMOTIONS = (
     LONELINESS_EMOTIONS + FATIGUE_EMOTIONS + ANXIETY_EMOTIONS + BONDING_EMOTIONS +
     SUPPORT_EMOTIONS + SLEEP_EMOTIONS + CONFIDENCE_EMOTIONS + OVERWHELMED_EMOTIONS +
-    PHYSICAL_EMOTIONS + NEGATIVE_EMOTIONS + HAPPY_EMOTIONS + FINANCIAL_EMOTIONS + RELATIONSHIP_EMOTIONS
+    PHYSICAL_EMOTIONS + NEGATIVE_EMOTIONS + HAPPY_EMOTIONS + FINANCIAL_EMOTIONS + RELATIONSHIP_EMOTIONS +
+    BABY_NEEDS_EMOTIONS
 )
 
 assert len(TRAIN_TEXTS) == len(TRAIN_REASONS) == len(TRAIN_EMOTIONS), \

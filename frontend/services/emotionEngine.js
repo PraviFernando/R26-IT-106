@@ -42,6 +42,9 @@ export const normalizeMultilingualText = (text = '') => {
     .replace(/kavurth\s*mata\s*na/g, 'kawuruth naha')
     .replace(/kavuruth\s*na/g, 'kawuruth naha')
     .replace(/kavurth\s*na/g, 'kawuruth naha')
+    .replace(/kavuruth/g, 'kauruth')
+    .replace(/udavu/g, 'udaw')
+    .replace(/udawu/g, 'udaw')
     // Singlish/Sinhala spelling variations:
     .replace(/there\s*nne/g, 'therenne')
     .replace(/there\s*ne/g, 'therenne')
@@ -192,7 +195,10 @@ const REASON_KW = {
     'තනියම කරන්න වෙලා තියෙන්නේ', 'තනියම කරන්න වෙලා', 'මට තනියම කරන්න වෙලා',
     'husband udaw naha', 'udawwak naha', 'kagegenwat support naha',
     'mata udaw karanna kauruth naha', 'udaw karanna kauruth naha',
-    'babage wada saha gedara wada okkoma mata thaniyama karanna wela'
+    'babage wada saha gedara wada okkoma mata thaniyama karanna wela',
+    'udaw karanne na', 'udaw karanne naha', 'udavu karanne na', 'udavu karanne naha', 'wada walata udaw karanne na',
+    'wada walata udavu karanne na', 'udaw karanna kauruth na', 'udavu karanna kauruth na', 'kavuruth mage wada walata udavu karanne na',
+    'kavuruth udaw karanne na', 'kauruth udaw karanne na', 'kavuruth mage wada', 'wada walata udavu', 'wada walata udaw'
   ],
   sleep_problems: [
     'sleep', 'insomnia', 'awake all night', 'sleep deprived', 'cant sleep', 'no sleep',
@@ -276,6 +282,57 @@ const REASON_KW = {
     'සැමියාත් එක්ක', 'සැමියා එක්ක', 'සම්බන්ධය ගොඩක් නරක', 'සම්බන්ධය', 'සැමියාටයි', 'ප්රශ්න ඇති වෙනවා', 'ප්‍රශ්න ඇති වෙනවා',
     'සම්බන්ධතාවය', 'සම්බන්ධතාවය ගොඩක් වෙනස්', 'අපි දෙන්නා අතර'
   ],
+  baby_needs: [
+    'don\'t understand what my baby needs', 'dont understand what my baby needs', 'cannot understand my baby\'s behavior',
+    'don\'t know why my baby is crying', 'dont know why my baby is crying', 'not sure what my baby wants',
+    'difficulty understanding my baby\'s signals', 'cannot tell if my baby is hungry or tired',
+    'don\'t know when my baby needs', 'dont know when my baby needs', 'confused about what my baby is trying to tell me',
+    'struggle to understand my baby\'s different cries', 'cannot figure out what is wrong with my baby',
+    'not sure whether my baby is hungry', 'don\'t know if my baby needs a diaper change',
+    'cannot understand why my baby is restless', 'trouble knowing when my baby is sleepy',
+    'don\'t know what my baby needs', 'struggle to recognize my baby\'s needs',
+    'cannot tell what my baby is trying to communicate', 'don\'t know whether my baby is uncomfortable',
+    'difficult to understand my baby\'s cues', 'cannot recognize what my baby needs',
+    'don\'t know why my baby suddenly starts crying', 'unsure whether my baby is hungry, tired, or uncomfortable',
+    'difficulty knowing what my baby needs', 'don\'t understand the different sounds my baby makes',
+    'cannot tell what my baby\'s crying means', 'don\'t know when my baby wants attention',
+    'confused when my baby changes her behavior', 'don\'t know why my baby is making these sounds',
+    'struggle to identify my baby\'s basic needs', 'baby needs', 'understanding my baby',
+    // Sinhala Unicode
+    'බබාගේ හැසිරීම හඳුනාගන්න බැහැ', 'බබාගේ හැසිරීම හඳුනාගන්න බෑ', 'බබාට මොනවා ඕනෙද කියලා තේරෙන්නේ නැහැ',
+    'බබාට මොනවා ඕනෙද කියලා තේරෙන්නේ නෑ', 'බබා අඬන්නේ ඇයි කියලා මට තේරෙන්නේ නැහැ', 'බබා අඬන්නේ ඇයි කියලා මට තේරෙන්නේ නෑ',
+    'බබා අඬනකොට එයාට මොනවා ඕනෙද කියලා හිතාගන්න බැහැ', 'බබාගේ විවිධ හැසිරීම් තේරුම් ගන්න මට අමාරුයි',
+    'බබා බඩගින්නෙන්ද නිදිමතෙන්ද කියලා මට හඳුනාගන්න බැහැ', 'බබාට කිරි ඕනේ වෙලාව මට තේරෙන්නේ නැහැ',
+    'බබා මට කියන්න හදන්නේ මොනවාද කියලා මට තේරෙන්නේ නැහැ', 'බබා අඬන විදිහේ වෙනස්කම් තේරුම් ගන්න මට අමාරුයි',
+    'බබා නිතරම අඬන්නේ ඇයි කියලා මට හිතාගන්න බැහැ', 'බබාට මොකක්ද වෙලා තියෙන්නේ කියලා මට තේරෙන්නේ නැහැ',
+    'බබාට බඩගිනිද කියලා මට හඳුනාගන්න බැහැ', 'බබාට ඩයපර් මාරු කරන්න ඕනෙද කියලා මට තේරෙන්නේ නැහැ',
+    'බබා නොසන්සුන් වෙන්නේ ඇයි කියලා මට තේරෙන්නේ නැහැ', 'බබාට නිදිමතයිද කියලා මට හඳුනාගන්න අමාරුයි',
+    'බබා කලබල වෙනකොට එයාට මොනවා ඕනෙද කියලා මට තේරෙන්නේ නැහැ', 'මට බබාගේ අවශ්යතා හඳුනාගන්න අමාරුයි',
+    'බබා මට මොනවා කියන්න හදනවාද කියලා තේරෙන්නේ නැහැ', 'බබාට අපහසුතාවයක් තියෙනවාද කියලා මට හිතාගන්න බැහැ',
+    'බබාගේ ඉඟි තේරුම් ගන්න මට අමාරුයි', 'බබා අඬනකොට එයාට ඕනේ මොනවාද කියලා හඳුනාගන්න බැහැ',
+    'බබා එකපාරටම අඬන්න පටන් ගන්නේ ඇයි කියලා මට තේරෙන්නේ නැහැ', 'බබාට බඩගිනිද නිදිමතද අපහසුතාවයක්ද කියලා මට හඳුනාගන්න බැහැ',
+    'වෙලාවෙන් වෙලාවට බබාට මොනවා ඕනෙද කියලා තේරුම් ගන්න අමාරුයි', 'බබා කරන විවිධ ශබ්දවල තේරුම මට තේරෙන්නේ නැහැ',
+    'බබා අඬනකොට ඒකෙන් කියන්නේ මොනවාද කියලා මට තේරෙන්නේ නැහැ', 'බබාට අවධානය ඕනේ වෙලාව මට තේරෙන්නේ නැහැ',
+    'බබාගේ හැසිරීම වෙනස් වුණාම මට හිතාගන්න බැහැ', 'බබා මේ වගේ ශබ්ද කරන්නේ ඇයි කියලා මට තේරෙන්නේ නැහැ',
+    'බබාගේ මූලික අවශ්යතා හඳුනාගන්න මට අමාරුයි',
+    // Singlish
+    'mata babava nalavaganna therenne na', 'mata babage hasirima handunaganna ba', 'mata babage hasirima handunaganna baha',
+    'mata babata monawada one kiyala therenne naha', 'mata babata monawada one kiyala therenne na',
+    'baba andanne ai kiyala mata therenne naha', 'baba andanne ai kiyala mata therenne na',
+    'baba andanakota eyata monawada one kiyala hithaganna ba', 'babage wenas wenas hasirum therum ganna amarui',
+    'baba badaginne da nidimathe da kiyala mata handunaganna ba', 'baba kiri one welawa mata therenne naha',
+    'baba mata kiyanna hadanne mokakda kiyala therenne naha', 'baba andana widiye wenas kam therum ganna amarui',
+    'baba hamadama andanne ai kiyala mata hithaganna ba', 'babata mokak wela thiyenawada kiyala mata therenne naha',
+    'baba badagin da kiyala mata handunaganna ba', 'babata diaper maru karanna one da kiyala mata therenne naha',
+    'baba nosansun wenne ai kiyala mata therenne naha', 'baba nidimathe da kiyala mata handunaganna amarui',
+    'baba kalabala unama eyata monawada one kiyala mata therenne naha', 'mata babage awashya tha handunaganna amarui',
+    'baba mata monawada kiyanna hadanne kiyala therenne naha', 'babata apahasuwak thiyenawada kiyala mata hithaganna ba',
+    'babage signs therum ganna mata amarui', 'baba andanakota eyata one mokakda kiyala handunaganna ba',
+    'baba eka paratama andanna patan ganne ai kiyala mata therenne naha', 'baba badagin da nidimathe da amaruwak da kiyala handunaganna ba',
+    'welawen welawata babata monawada one kiyala therum ganna amarui', 'baba karana wenas wenas sounds wala theruma mata therenne naha',
+    'babata attention one welawa mata therenne naha', 'babage behavior eka wenas unama mata hithaganna ba',
+    'baba mehema sounds karanne ai kiyala mata therenne naha', 'babage basic needs handunaganna mata amarui'
+  ]
 };
 
 const EMOTION_KW = {
@@ -348,9 +405,10 @@ export const detectBabyIntents = (text = '') => {
     'අඬනවා', 'අඬන', 'අඬන බබා', 'ඇඬීම', 'කෑගහනවා', 'නවත්තන්න බැරි තරම් අඬනවා'
   ];
   const needsKW = [
-    'needs', 'want', 'wants', 'understand', 'dont know what', 'dont understand',
+    'needs', 'want', 'wants', 'understand', 'dont know what', 'dont understand', 'behavior', 'hasirima', 'cues', 'signals',
     'therenne naha', 'therenne na', 'therum ganna baha', 'one kiyala', 'mokakda one', 'monawada one',
-    'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා', 'අවශ්යතා', 'තේරුම් ගන්න', 'මොනවා කරන්නද', 'දන්නේ නැහැ', 'දන්නෙ නෑ'
+    'handunaganna ba', 'handunaganna baha', 'hithaganna ba', 'therum ganna amarui', 'handunaganna amarui',
+    'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා', 'අවශ්යතා', 'තේරුම් ගන්න', 'මොනවා කරන්නද', 'දන්නේ නැහැ', 'දන්නෙ නෑ', 'හඳුනාගන්න බැහැ', 'හඳුනාගන්න බෑ'
   ];
   const sleepKW = [
     'sleep', 'sleeping', 'ninda', 'ninda yanne', 'nida', 'nida ganne',
@@ -370,7 +428,7 @@ export const detectBabyIntents = (text = '') => {
     baby_needs: isBabyRelated && needsKW.some(k => norm.includes(k)),
     baby_sleep: isBabyRelated && sleepKW.some(k => norm.includes(k)),
     baby_feeding: isBabyRelated && feedingKW.some(k => norm.includes(k)),
-    baby_health: isBabyRelated && healthKW.some(k => norm.includes(k)),
+    baby_health: isBabyRelated && healthKW.some(k => k === 'una' ? new RegExp(`\\b${k}\\b`, 'i').test(norm) : norm.includes(k)),
   };
 };
 
@@ -410,8 +468,8 @@ export const analyzeDiary = (text) => {
     'fatigue', 'sleep_problems', 'financial_worry', 'loss_of_confidence'
   ]);
 
-  // Only override with baby-specific care topics (crying, health, feeding, sleep) if maternal state isn't an explicit primary concern
-  if (babyIntents.baby_related && (!hasMaternalMatch || !primaryMaternalReasons.has(motherReason))) {
+  // Only override with baby-specific care topics (crying, health, feeding, sleep, needs) if maternal state isn't an explicit primary concern
+  if (babyIntents.baby_related && (!hasMaternalMatch || motherReason === 'fatigue' || (rScores.baby_needs > 0 && rScores.baby_needs >= (rScores[motherReason] || 0)))) {
     const intentsList = [
       { id: 'baby_crying', kws: ['crying', 'cries', 'cry', 'andana', 'andanawa', 'adanawa', 'අඬනවා', 'අඬන', 'ඇඬීම', 'කෑගහනවා'] },
       { id: 'baby_needs', kws: ['needs', 'want', 'wants', 'understand', 'therenne naha', 'therenne na', 'therum ganna baha', 'one kiyala', 'mokakda one', 'monawada one', 'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා'] },

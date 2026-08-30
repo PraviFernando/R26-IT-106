@@ -256,8 +256,6 @@ export const VIDEO_LIBRARY = {
     { id: 'vpd6', title: 'සුවය රේඛීය නොවේ', titleEn: 'Healing Is Not Linear', duration: '7 min', emoji: '📈', url: 'https://www.youtube.com/results?search_query=physical+postpartum+recovery+journey', source: null },
     { id: 'vpd7', title: 'මෘදු ප්‍රසව දිගු කිරීම්', titleEn: 'Gentle Postpartum Stretches', duration: '10 min', emoji: '🌺', url: 'https://www.youtube.com/results?search_query=gentle+postpartum+stretches+for+back+pain', source: null },
     { id: 'vpd8', title: 'ඔබේ ශරීරය පුදුම සහගත දෙයක් කළා', titleEn: 'Your Body Did Something Amazing', duration: '6 min', emoji: '✨', url: 'https://www.youtube.com/results?search_query=appreciation+for+postpartum+body', source: null },
-    { id: 'vpd9', title: 'ප්‍රකෘතිය සඳහා පෝෂණය', titleEn: 'Nutrition for Recovery', duration: '9 min', emoji: '🥗', url: 'https://www.youtube.com/results?search_query=postpartum+recovery+foods+nutrition', source: null },
-    { id: 'vpd10', title: 'විවේකය දුර්වලකමක් නොවේ', titleEn: 'Rest Is Not Weakness', duration: '5 min', emoji: '🌙', url: 'https://www.youtube.com/results?search_query=physical+rest+postpartum+recovery', source: null },
   ],
   // ── NEGATIVE THOUGHTS ───────────────────────────────────
   negative_thoughts: [
@@ -284,6 +282,12 @@ export const VIDEO_LIBRARY = {
     { id: 'vlc8', title: 'ඔබ ළදරුවාගේ ප්‍රවීණයා', titleEn: 'You Are the Expert on Baby', duration: '14 min', emoji: '👑', source: null },
     { id: 'vlc9', title: 'විවේක ගැනීමට අවසර', titleEn: 'Permission to Rest', duration: '8 min', emoji: '🛌', source: null },
     { id: 'vlc10', title: 'ඔබ ගැන විශ්වාස කරන්න අම්මා', titleEn: 'Believe in Yourself Mama', duration: '7 min', emoji: '🌸', source: null },
+  ],
+  // ── BABY NEEDS ──────────────────────────────────────────
+  baby_needs: [
+    { id: 'vbn1', title: 'ළදරු සංඥා සහ අවශ්‍යතා හඳුනාගනිමු', titleEn: 'Understanding Baby Cues & Needs', duration: '10 min', emoji: '👶', url: 'https://youtu.be/a4WGVOzTR4A?si=zWbE5ITNZLEsO6H2', source: null },
+    { id: 'vbn2', title: 'අලුත උපන් බබාගේ හැසිරීම් තේරුම් ගැනීම', titleEn: 'Newborn Behavior & Signals', duration: '8 min', emoji: '🍼', url: 'https://youtu.be/ve7yXXRaYT8?si=CFs6Njp60GFDTD_H', source: null },
+    { id: 'vbn3', title: 'බබාගේ හැඬීම සහ සංඥා වලට සාර්ථකව ප්‍රතිචාර දැක්වීම', titleEn: 'Soothe & Respond to Baby Crying', duration: '7 min', emoji: '😴', url: 'https://youtu.be/k_FyoBhaFTA?si=EAwpncWybW7DHQ1i', source: null },
   ],
   // ── OVERWHELMED ─────────────────────────────────────────
   overwhelmed: [
@@ -339,7 +343,6 @@ MUSIC_LIBRARY.sleep = MUSIC_LIBRARY.sleep_problems;
 MUSIC_LIBRARY.baby_health = MUSIC_LIBRARY.anxiety;
 
 VIDEO_LIBRARY.baby_crying = VIDEO_LIBRARY.bonding_issues;
-VIDEO_LIBRARY.baby_needs = VIDEO_LIBRARY.bonding_issues;
 VIDEO_LIBRARY.baby_feeding = VIDEO_LIBRARY.bonding_issues;
 VIDEO_LIBRARY.caring_for_baby = VIDEO_LIBRARY.bonding_issues;
 VIDEO_LIBRARY.baby_sleep = VIDEO_LIBRARY.sleep_problems;
@@ -452,7 +455,7 @@ export const getVideosForReason = (finalReason = '', emotion = '', selectedEmoji
   if (targetCategory && !VIDEO_LIBRARY[targetCategory]) {
     if (['mother_sleep', 'mother_sleep_problems', 'sleep'].includes(targetCategory)) {
       targetCategory = 'sleep_problems';
-    } else if (['baby_crying', 'baby_needs', 'baby_feeding', 'caring_for_baby', 'baby_sleep'].includes(targetCategory)) {
+    } else if (['baby_crying', 'baby_feeding', 'caring_for_baby', 'baby_sleep'].includes(targetCategory)) {
       targetCategory = 'bonding_issues';
     } else if (['baby_health'].includes(targetCategory)) {
       targetCategory = 'anxiety';
@@ -476,7 +479,7 @@ export const getVideosForReason = (finalReason = '', emotion = '', selectedEmoji
   const normEmotion = normalizeEmotionKey(effectiveEmotion);
   const normRisk = normalizeRiskLevel(riskLevel);
 
-  const vPrefixes = ['vlo', 'vfa', 'van', 'vbo', 'vls', 'vsl', 'vlc', 'vow', 'vpd', 'vnt'];
+  const vPrefixes = ['vlo', 'vfa', 'van', 'vbo', 'vls', 'vsl', 'vlc', 'vow', 'vpd', 'vnt', 'vbn'];
   const mapVideoForEmotion = (pattern) => vPrefixes.flatMap(p => pattern.map(n => `${p}${n}`));
 
   const emojiVideoMap = {

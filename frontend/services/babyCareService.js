@@ -5,7 +5,7 @@
 
 export const BABY_TOPIC_CATEGORIES = {
   BABY_FEEDING: 'Baby Feeding',
-  BABY_BATHING: 'Baby Bathing',
+  BABY_NEEDS: 'Baby Needs',
   BABY_DIAPERING: 'Baby Diapering',
   BABY_SLEEPING: 'Baby Sleeping',
   BABY_CRYING: 'Baby Crying',
@@ -36,17 +36,17 @@ const CATEGORY_RULES = {
     ]
   },
 
-  'Baby Bathing': {
+  'Baby Needs': {
     phrases: [
-      'wash my baby', 'clean my baby', 'first bath', 'newborn bath', 'don\'t know how to bath',
-      'dont know how to bath', 'how can i bath', 'how to bath', 'bath my newborn',
-      'bath my baby', 'bathing baby', 'sponge bath', 'umbilical cord', 'baby bath',
-      'bathe my baby', 'bath my newborn baby', 'bathe my newborn baby', 'wash baby', 'clean baby',
-      'නාන්න', 'නාගන්න', 'නාවන්න', 'බබාව නාවන්න', 'nawanna', 'baba nawanna'
+      'understand baby', 'baby needs', 'baby signals', 'baby cues', 'baby behavior',
+      'don\'t understand what my baby needs', 'dont understand what my baby needs',
+      'cannot understand my baby', 'don\'t know why my baby is crying',
+      'බබාගේ හැසිරීම හඳුනාගන්න බැහැ', 'බබාට මොනවා ඕනෙද කියලා තේරෙන්නේ නැහැ',
+      'babage hasirima handunaganna ba', 'babata monawada one kiyala therenne naha',
+      'baba andanne ai kiyala therenne naha', 'baba badagin da nidimathe da kiyala handunaganna ba'
     ],
     keywords: [
-      'bath', 'bathe', 'bathing', 'wash', 'clean', 'soap', 'shampoo', 'water',
-      'sponge', 'umbilical', 'නාවන්න', 'නෑම', 'nawanna'
+      'cues', 'signals', 'needs', 'behavior', 'hasirima', 'handunaganna', 'therenne', 'crying'
     ]
   },
 
@@ -111,12 +111,17 @@ const CATEGORY_RULES = {
   'Baby Development': {
     phrases: [
       'tummy time', 'weight gain', 'developmental milestones', 'learning to sit',
-      'learning to crawl', 'first smile',
+      'learning to crawl', 'first smile', 'understand baby', 'baby needs', 'baby signals', 'baby cues',
+      'don\'t understand what my baby needs', 'dont understand what my baby needs',
+      'cannot understand my baby', 'don\'t know why my baby is crying',
+      'බබාගේ හැසිරීම හඳුනාගන්න බැහැ', 'බබාට මොනවා ඕනෙද කියලා තේරෙන්නේ නැහැ',
+      'babage hasirima handunaganna ba', 'babata monawada one kiyala therenne naha',
       'වර්ධනය', 'බර වැඩිවීම', 'ඉඳගන්න', 'ඇවිදින්න'
     ],
     keywords: [
       'growth', 'weight', 'gain', 'milestone', 'milestones', 'crawling', 'crawl',
-      'sitting', 'sit', 'walking', 'walk', 'standing', 'talking', 'rolling', 'roll', 'smile'
+      'sitting', 'sit', 'walking', 'walk', 'standing', 'talking', 'rolling', 'roll', 'smile',
+      'cues', 'signals', 'needs', 'behavior', 'hasirima', 'handunaganna', 'therenne'
     ]
   },
 

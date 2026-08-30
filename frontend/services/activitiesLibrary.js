@@ -360,6 +360,42 @@ export const NEW_ACTIVITIES = [
     benefits: ['ළදරු සංඥා හඳුනාගැනීම', 'සන්නිවේදනය වැඩි දියුණු කිරීම', 'විශ්වාසය ඇතිකිරීම'],
     color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17',
     isNewFormat: true
+  },
+  {
+    id: 'baby_cue_observation', icon: '👶', label: 'ළදරු සංඥා නිරීක්ෂණය', labelEn: 'Baby Cue Observation',
+    purpose: 'බබාගේ මුහුණේ ඉරියව්, චලනයන්, ශබ්ද සහ ශරීර භාෂාව නිරීක්ෂණය කරන්න.', duration: 'විනාඩි 5',
+    instructions: ['බබාගේ මුහුණේ ඉරියව්, අත් සහ පාද චලනයන් සෙමෙන් නිරීක්ෂණය කරන්න.', 'බබා නිකුත් කරන විවිධ ශබ්දවලට සවන් දෙන්න.', 'නැවත නැවත සිදුවන රටා සටහන් කරගන්න.'],
+    benefits: ['ළදරු සංඥා හඳුනාගැනීම', 'සන්නිවේදනය වැඩි දියුණු කිරීම', 'විශ්වාසය ගොඩනැගීම'], isNewFormat: true
+  },
+  {
+    id: 'hunger_cue_observation', icon: '🍼', label: 'බඩගිනි සංඥා නිරීක්ෂණය', labelEn: 'Hunger Cue Observation',
+    purpose: 'බබාගේ මුල් බඩගිනි සංඥා (මුඛය සෙවීම, අත කටට ගැනීම) හඳුනාගන්න.', duration: 'විනාඩි 5',
+    instructions: ['බබා හිස දෙපසට හරවමින් කිරි සොයන්නේදැයි බලන්න.', 'අත කටට ගැනීම සහ තොල් සෙලවීම නිරීක්ෂණය කරන්න.', 'අඬන්නට පෙර ඇතිවන මුල් බඩගිනි සංඥා හඳුනාගන්න.'],
+    benefits: ['කිරිදීමේ කාලය නිවැරදිව හඳුනාගැනීම', 'අඬන්නට පෙර ප්‍රතිචාර දැක්වීම', 'සහනය ලබාදීම'], isNewFormat: true
+  },
+  {
+    id: 'sleep_cue_observation', icon: '😴', label: 'නිදිමත සංඥා නිරීක්ෂණය', labelEn: 'Sleep Cue Observation',
+    purpose: 'බබාට නිදිමත එන මුල් සංඥා නිරීක්ෂණය කර නිසි වේලාවට නිදිකරවන්න.', duration: 'විනාඩි 5',
+    instructions: ['ඇස් පියවීම, ඇස් ඇල්ලීම, හෝ ඈනුම් ඇරීම බලන්න.', 'බබා හිස පසෙකට හැරවීම සහ ක්‍රියාකාරීත්වය අඩුවීම නිරීක්ෂණය කරන්න.', 'බබා වැඩිපුර වෙහෙස වීමට පෙර නිදිකරවන්න.'],
+    benefits: ['හොඳ නින්දක් ලබාදීම', 'නොසන්සුන්බව අඩුකිරීම', 'නින්දේ රටා සකස් කිරීම'], isNewFormat: true
+  },
+  {
+    id: 'crying_pattern_observation', icon: '😭', label: 'හැඬීම් රටා නිරීක්ෂණය', labelEn: 'Crying Pattern Observation',
+    purpose: 'බබා අඬන වෙලාව සහ ඊට පෙර පසු සිදු වූ දේ සටහන් කරගන්න.', duration: 'විනාඩි 5',
+    instructions: ['බබා අඬන්නට පටන් ගත්තේ කුමන වෙලාවකදැයි බලන්න.', 'ඊට පෙර කිරි දුන්නේද, ඩයපර් මාරු කළේදැයි පරීක්ෂණ කරන්න.', 'හැඬීමේ ශබ්දයේ සහ තීව්‍රතාවයේ වෙනස්කම් නිරීක්ෂණය කරන්න.'],
+    benefits: ['හැඬීමට හේතු හඳුනාගැනීම', 'මානසික පීඩනය අඩුකිරීම', 'නිවැරදි සත්කාරය ලබාදීම'], isNewFormat: true
+  },
+  {
+    id: 'baby_routine_tracking', icon: '📝', label: 'ළදරු රුටීන් සටහන් කිරීම', labelEn: 'Baby Routine Tracking',
+    purpose: 'කිරිදීම, නින්ද, ඩයපර් මාරුකිරීම සහ හැඬීම පිළිබඳ නිරීක්ෂණ සටහන් කරන්න.', duration: 'විනාඩි 5',
+    instructions: ['අද දවසේ කිරි දුන් වේලාවන් සටහන් කරන්න.', 'නින්ද ගිය වේලාවන් සහ ඩයපර් මාරු කළ වාර ගණන ලියන්න.', 'දෛනික රටාවන් හඳුනාගන්න.'],
+    benefits: ['දෛනික කාලසටහන අවබෝධ වීම', 'සෞඛ්‍ය නිරීක්ෂණය පහසුවීම', 'සංවිධානාත්මකබව වැඩිවීම'], isNewFormat: true
+  },
+  {
+    id: 'mother_baby_observation_time', icon: '💖', label: 'අම්මා-බබා නිරීක්ෂණ කාලය', labelEn: 'Mother-Baby Observation Time',
+    purpose: 'වෙනත් වැඩ නොකර බබා දෙස මෘදුව බලමින් ගත කරන සන්සුන් විනාඩි 5ක්.', duration: 'විනාඩි 5',
+    instructions: ['දුරකථනය සහ වෙනත් වැඩ පසෙක තබන්න.', 'බබා අසලින් අසුන්ගෙන මෘදුව දෑස් දෙස බලන්න.', 'බබාගේ හැසිරීම සහ සිනහව සන්සුන්ව නිරීක්ෂණය කරන්න.'],
+    benefits: ['ආදරණීය බැඳීම වැඩිවීම', 'මනස සන්සුන්වීම', 'බබා සමඟ සුහදතාවය'], isNewFormat: true
   }
 ];
 
@@ -1002,8 +1038,8 @@ const REASON_ACTIVITY_MAP = {
 
   // Baby-focused entries
   baby_crying: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
-  baby_needs: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations'],
-  baby_feeding: ['baby_mood', 'new_drink_water', 'new_gentle_stretch', 'new_relaxing_music', 'gentle_stretch'],
+  baby_needs: ['baby_cue_observation', 'hunger_cue_observation', 'sleep_cue_observation', 'crying_pattern_observation', 'baby_routine_tracking', 'mother_baby_observation_time', 'baby_mood'],
+  baby_feeding: ['new_drink_water', 'baby_mood', 'new_gentle_stretch', 'new_relaxing_music', 'gentle_stretch'],
   baby_sleep: ['baby_mood', 'new_sleep_reflection', 'night_breathing', 'rest_meditation'],
   baby_health: ['baby_mood', 'new_deep_breathing', 'new_positive_affirmations', 'grounding_54321'],
   caring_for_baby: ['baby_mood', 'new_deep_breathing', 'new_gratitude_journal', 'new_positive_affirmations']
@@ -1017,7 +1053,7 @@ const EMOTION_ACTIVITY_MAP = {
   calm: ['new_guided_meditation', 'guided_meditation', 'deep_breathing', 'grounding_54321'],
   sad: ['journaling', 'new_positive_affirmations', 'write_positive', 'new_gratitude_journal'],
   anxious: ['new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'breathing_478'],
-  angry: ['new_box_breathing', 'new_worry_box', 'new_deep_breathing', 'short_breathing'],
+  angry: ['new_guided_meditation', 'guided_meditation', 'new_box_breathing', 'new_worry_box', 'new_deep_breathing'],
   frustrated: ['new_worry_box', 'new_box_breathing', 'new_deep_breathing', 'short_breathing'],
   stressed: ['new_guided_meditation', 'guided_meditation', 'deep_breathing', 'new_worry_box']
 };
@@ -1107,7 +1143,11 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
     }
 
     // 2. BABY CONTEXT BOOST
-    const babyActivities = ['baby_mood', 'new_baby_interaction_ideas', 'baby_bonding'];
+    const babyActivities = [
+      'baby_mood', 'new_baby_interaction_ideas', 'baby_bonding', 'new_drink_water',
+      'baby_cue_observation', 'hunger_cue_observation', 'sleep_cue_observation',
+      'crying_pattern_observation', 'baby_routine_tracking', 'mother_baby_observation_time'
+    ];
     if (isBabyActive && babyActivities.includes(act.id)) {
       score += 20;
     }
