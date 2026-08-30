@@ -91,6 +91,11 @@ const updatePlanStatus = async (req, res, next) => {
 const upsertActivity = async (req, res, next) => {
     try {
         const { date, activityId, activityName, timeOfDay, icon, completed, timerSeconds, isCustom, note } = req.body;
+        // Validation: Disallow creating/updating activities for past dates
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (date < todayStr) {
+            return res.status(400).json({ message: 'Cannot add activity for past dates' });
+        }
         const userId = req.user.id;
         const [year, month] = date.split('-').map(Number);
 
@@ -158,13 +163,51 @@ const getDateActivities = async (req, res, next) => {
     }
 };
 
-module.exports = { 
-    getOrCreatePlan, 
-    getPlanDetails, 
-    saveDetail, 
-    updateDetail, 
+// GET /plan/activity/history
+const getActivityHistory = async (req, res, next) => {
+    try {
+        const userId = req.user?.id;
+        console.log('[DEBUG Progress API] getActivityHistory received request. User ID:', userId);
+
+        const plans = await Plan.find({ userId });
+        console.log('[DEBUG Progress API] Found plans count:', plans.length);
+        const planIds = plans.map(p => p._id);
+
+        const details = await PlanDetail.find({ planId: { $in: planIds } });
+        console.log('[DEBUG Progress API] Found plan details count:', details.length);
+
+        const allActivities = details.reduce((acc, d) => {
+            const dateActivities = d.activities.map(a => ({
+                activityId: a.activityId,
+                activityName: a.activityName,
+                completed: a.completed,
+                timeOfDay: a.timeOfDay,
+                icon: a.icon,
+                timerSeconds: a.timerSeconds,
+                isCustom: a.isCustom,
+                note: a.note,
+                date: d.date,
+                createdAt: a.createdAt || d.createdAt
+            }));
+            return [...acc, ...dateActivities];
+        }, []);
+
+        console.log('[DEBUG Progress API] Total extracted activities:', allActivities.length);
+        res.status(200).json(allActivities);
+    } catch (err) {
+        console.error('[DEBUG Progress API ERROR] Exception in getActivityHistory:', err);
+        next(err);
+    }
+};
+
+module.exports = {
+    getOrCreatePlan,
+    getPlanDetails,
+    saveDetail,
+    updateDetail,
     updatePlanStatus,
     upsertActivity,
     getMonthActivities,
-    getDateActivities
+    getDateActivities,
+    getActivityHistory
 };

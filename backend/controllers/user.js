@@ -77,6 +77,11 @@ const signin = async (req, res, next) => {
       { expiresIn: '7d' }
     );
 
+    validUser.isOnline = true;
+    validUser.lastLogin = Date.now();
+    validUser.deviceType = req.headers['user-agent'] || 'Unknown';
+    await validUser.save();
+
     const { password: pass, ...rest } = validUser._doc;
 
     res
@@ -93,8 +98,11 @@ const signin = async (req, res, next) => {
   }
 };
 
-const signOut = (req, res, next) => {
+const signOut = async (req, res, next) => {
   try {
+    if (req.user && req.user.id) {
+      await User.findByIdAndUpdate(req.user.id, { isOnline: false });
+    }
     res
       .clearCookie('access_token', {
         httpOnly: true,
@@ -108,4 +116,153 @@ const signOut = (req, res, next) => {
   }
 };
 
-module.exports = { signup, signin, signOut };
+const getUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    res.json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateUser = async (req, res, next) => {
+  try {
+    const { fullName, age, email, phoneNumber, district, village, babyDetails, currentWeight, currentLength } = req.body;
+    const updateFields = {};
+    if (fullName !== undefined) updateFields.fullName = fullName;
+    if (age !== undefined) updateFields.age = age;
+    if (email !== undefined) updateFields.email = email;
+    if (phoneNumber !== undefined) updateFields.phoneNumber = phoneNumber;
+    if (district !== undefined) updateFields.district = district;
+    if (village !== undefined) updateFields.village = village;
+    if (babyDetails !== undefined) updateFields.babyDetails = babyDetails;
+    if (currentWeight !== undefined) updateFields.currentWeight = currentWeight;
+    if (currentLength !== undefined) updateFields.currentLength = currentLength;
+
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, updateFields, { new: true }).select('-password');
+    res.json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    await User.findByIdAndDelete(req.user.id);
+    res
+      .clearCookie('access_token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+      })
+      .status(200)
+      .json({ message: 'User account has been deleted' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /user/onboarding  (protected)
+ * Saves all three onboarding steps and marks the user as onboarded.
+ */
+const saveOnboarding = async (req, res, next) => {
+  try {
+    const {
+      deliveryType,
+      deliveryDate,
+      numBabies,
+      babyName,
+      gender,
+      birthWeight,
+      currentWeight,
+      birthLength,
+      currentLength,
+      headCircumference,
+      feedingMethod,
+    } = req.body;
+
+    const initialHistory = [];
+    if (birthWeight || birthLength) {
+      initialHistory.push({
+        date: deliveryDate || 'At Birth',
+        weight: birthWeight || '0',
+        length: birthLength || '0',
+        headCircumference: headCircumference || '0',
+        notes: 'Birth measurements',
+      });
+    }
+    if (currentWeight || currentLength) {
+      initialHistory.push({
+        date: new Date().toISOString().split('T')[0],
+        weight: currentWeight || birthWeight || '0',
+        length: currentLength || birthLength || '0',
+        headCircumference: headCircumference || '0',
+        notes: 'Onboarding baseline',
+      });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        deliveryType,
+        deliveryDate,
+        numBabies,
+        babyName,
+        gender,
+        birthWeight,
+        currentWeight,
+        birthLength,
+        currentLength,
+        headCircumference,
+        feedingMethod,
+        growthHistory: initialHistory,
+        onboardingCompleted: true,
+      },
+      { new: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'Onboarding saved successfully', user: updatedUser });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /user/growth-record (protected)
+ * Adds a new growth measurement record to the baby's history.
+ */
+const addGrowthRecord = async (req, res, next) => {
+  try {
+    const { date, weight, length, headCircumference, notes } = req.body;
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const recordDate = date || new Date().toISOString().split('T')[0];
+    const newRecord = {
+      date: recordDate,
+      weight: weight ? String(weight) : user.currentWeight || '0',
+      length: length ? String(length) : user.currentLength || '0',
+      headCircumference: headCircumference ? String(headCircumference) : user.headCircumference || '0',
+      notes: notes || 'Follow-up visit measurement',
+    };
+
+    user.growthHistory.push(newRecord);
+    if (weight) user.currentWeight = String(weight);
+    if (length) user.currentLength = String(length);
+    if (headCircumference) user.headCircumference = String(headCircumference);
+
+    await user.save();
+    const updatedUser = await User.findById(req.user.id).select('-password');
+    res.status(200).json({ message: 'Growth measurement added successfully', user: updatedUser });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { signup, signin, signOut, getUser, updateUser, deleteUser, saveOnboarding, addGrowthRecord };

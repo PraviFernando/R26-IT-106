@@ -41,7 +41,7 @@ const getUserById = async (req, res, next) => {
 
 // POST /admin/users  — create any user (admin, midwife, patient …)
 const createUser = async (req, res, next) => {
-    const { username, email, password, role } = req.body;
+    const { username, email, password, role, district } = req.body;
     if (!username || !email || !password) {
         return res.status(400).json({ message: 'Username, email and password are required' });
     }
@@ -50,7 +50,7 @@ const createUser = async (req, res, next) => {
         if (existing) return res.status(400).json({ message: 'Email already in use' });
 
         const hashed = await bcrypt.hash(password, 12);
-        const newUser = await User.create({ username, email, password: hashed, role: role || 'patient' });
+        const newUser = await User.create({ username, email, password: hashed, role: role || 'patient', district });
         const { password: _p, ...safe } = newUser._doc;
         res.status(201).json({ message: 'User created', user: safe });
     } catch (err) {
@@ -61,10 +61,11 @@ const createUser = async (req, res, next) => {
 // PATCH /admin/users/:id
 const updateUser = async (req, res, next) => {
     try {
-        const { username, role } = req.body;
+        const { username, role, district } = req.body;
         const update = {};
         if (username) update.username = username;
         if (role) update.role = role;
+        if (district !== undefined) update.district = district;
 
         const updated = await User.findByIdAndUpdate(req.params.id, update, { new: true }).select('-password');
         if (!updated) return res.status(404).json({ message: 'User not found' });
