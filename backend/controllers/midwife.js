@@ -18,15 +18,28 @@ const getPatients = async (req, res, next) => {
     try {
         const midwife = await User.findById(req.user.id);
         const query = { role: 'patient' };
-        
-        // If midwife has a village, only show patients from that village
-        if (midwife && midwife.village) {
-            query.village = midwife.village;
+
+        // Filter by midwife's district and village if they exist
+        if (midwife) {
+            if (midwife.district) query.district = midwife.district;
+            if (midwife.village) query.village = midwife.village;
         }
 
         const patients = await User.find(query)
             .select('-password')
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const EPDSScreening = require('../models/EPDSScreening');
+        for (let patient of patients) {
+            const latestEpds = await EPDSScreening.findOne({ userId: patient._id }).sort({ month: -1 });
+            if (latestEpds) {
+                patient.latestEpdsScore = latestEpds.totalScore;
+                patient.latestEpdsRisk = latestEpds.riskLevel;
+                patient.latestEpdsDate = latestEpds.completedAt || latestEpds.month;
+            }
+        }
+
         res.json(patients);
     } catch (err) {
         next(err);

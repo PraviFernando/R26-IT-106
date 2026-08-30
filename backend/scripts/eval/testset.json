@@ -1,0 +1,173 @@
+[
+  {
+    "id": "q01",
+    "question": "what causes postpartum depression",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "Researchgate_Risk Factors of Postpartum Depression.pdf",
+      "CMJ_Postnatal mental disorders.pdf",
+      "OpenUnivrsity_THE PSYCHOSOCIAL FACTORS RELATED TO POST-PARTUM.pdf"
+    ]
+  },
+  {
+    "id": "q02",
+    "question": "what are the risk factors for postpartum depression",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "Researchgate_Risk Factors of Postpartum Depression.pdf",
+      "pmc_srilanka.pdf"
+    ]
+  },
+  {
+    "id": "q03",
+    "question": "what is the EPDS score and what does it mean",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "pmc_srilanka.pdf",
+      "Researchgate_Risk Factors of Postpartum Depression.pdf"
+    ]
+  },
+  {
+    "id": "q04",
+    "question": "how is postpartum depression treated",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "CMJ_Postnatal mental disorders.pdf",
+      "Researchgate_Maternal_mental_health_services_in_Sri_Lanka_chall.pdf",
+      "CMJ_Post partum depression.pdf"
+    ]
+  },
+  {
+    "id": "q05",
+    "question": "what mental health services are available for mothers in Sri Lanka",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "CMJ_Perinatal mental health in Sri Lanka.pdf",
+      "Researchgate_Maternal_mental_health_services_in_Sri_Lanka_chall.pdf"
+    ]
+  },
+  {
+    "id": "q06",
+    "question": "how common is postpartum depression in Sri Lanka",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "CMJ_Post partum depression.pdf",
+      "pmc_srilanka.pdf"
+    ]
+  },
+  {
+    "id": "q07",
+    "question": "does childbirth experience affect the risk of postpartum depression",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "Researcgate_Effect of childbirth experiencet.pdf"
+    ]
+  },
+  {
+    "id": "q08",
+    "question": "what is perinatal mental health",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "WHO-eng.pdf",
+      "CMJ_Perinatal mental health in Sri Lanka.pdf"
+    ]
+  },
+  {
+    "id": "q09",
+    "question": "how should healthcare workers integrate mental health screening into maternal care",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "WHO-eng.pdf"
+    ]
+  },
+  {
+    "id": "q10",
+    "question": "what postnatal care guidance does WHO recommend for mothers and newborns",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "WHO_Brief-postnatal-care-for-mothers-and-newborns-highlights-from-the-WHO-2013-Guidelines.pdf",
+      "Pregnancy WHO article.pdf"
+    ]
+  },
+  {
+    "id": "q11",
+    "question": "what is postpartum psychosis",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "CMJ_Postnatal mental disorders.pdf"
+    ]
+  },
+  {
+    "id": "q12",
+    "question": "how should I care for my newborn's umbilical cord",
+    "expectedCategory": "newborn_care",
+    "expectedSourceFiles": [
+      "Pregnancy WHO article.pdf"
+    ]
+  },
+  {
+    "id": "q13",
+    "question": "how often should I breastfeed my newborn",
+    "expectedCategory": "newborn_care",
+    "expectedSourceFiles": [
+      "Pregnancy WHO article.pdf"
+    ]
+  },
+  {
+    "id": "q14",
+    "question": "what are the psychosocial factors affecting mothers after birth",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "Researcgate_Effect of childbirth experiencet.pdf",
+      "Researchgate_Risk Factors of Postpartum Depression.pdf"
+    ]
+  },
+  {
+    "id": "q15",
+    "question": "how is depression managed according to mhGAP guidelines",
+    "expectedCategory": "maternal_mental_health",
+    "expectedSourceFiles": [
+      "WHO_basic guide-eng.pdf",
+      "WHO_MSD_MER_15.1_eng.pdf"
+    ]
+  },
+  {
+    "id": "q16",
+    "question": "what nutrition advice is given during pregnancy",
+    "expectedCategory": "unknown",
+    "expectedSourceFiles": [
+      "Pregnancy WHO article.pdf"
+    ]
+  },
+  {
+    "id": "q17",
+    "question": "what are signs of a high risk pregnancy that need facility delivery",
+    "expectedCategory": "unknown",
+    "expectedSourceFiles": [
+      "Pregnancy WHO article.pdf"
+    ]
+  },
+  {
+    "id": "q18",
+    "question": "what is a good recipe for pasta",
+    "expectedCategory": "unknown",
+    "expectedSourceFiles": [],
+    "note": "off-topic control — should reject, zero delivered chunks expected"
+  },
+  {
+    "id": "q19",
+    "question": "how do I fix my car engine",
+    "expectedCategory": "unknown",
+    "expectedSourceFiles": [],
+    "note": "off-topic control — should reject, zero delivered chunks expected"
+  },
+  {
+    "id": "q20",
+    "question": "how do I bathe my newborn baby",
+    "expectedCategory": "newborn_care",
+    "expectedSourceFiles": [
+      "Pregnancy WHO article.pdf"
+    ],
+    "note": "tests the unfiltered-fallback path — no content is tagged newborn_care, so this only succeeds via retrievalService's category-filter-empty fallback"
+  }
+]

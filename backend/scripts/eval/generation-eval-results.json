@@ -1,0 +1,639 @@
+{
+  "results": [
+    {
+      "id": "q01",
+      "question": "what causes postpartum depression",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 41820,
+      "answer": "It is completely understandable that you are looking for answers and support. Dealing with the postpartum period can bring many challenges, and it is important to know that you do not have to navigate this alone.\n\nBased on the information available, postpartum depression (PPD) is influenced by a combination of personal, social, and situational factors. Understanding these factors can be the first step toward seeking the support you need.\n\nHere is a summary of the factors that have been linked to postpartum depression:\n\n### Factors Contributing to Postpartum Depression\n\nThe research points to several interconnected factors that can increase the risk of PPD [1, 2, 3]. These factors often relate to the mother's experience, her support system, and the circumstances surrounding the pregnancy and birth.\n\n**1. Pregnancy and Birth Circumstances:**\n*   **Type of Pregnancy:** Factors related to the pregnancy, such as unintended pregnancy, the fear of delivery, and the overall pregnancy intention, can influence the occurrence of PPD [1, 3].\n*   **Birth Events:** Preterm birth is listed as a factor that can influence PPD [1].\n\n**2. Social and Relational Factors:**\n*   **Lack of Social Support:** A lack of social support is consistently identified as a significant contributing factor [1, 3].\n*   **Spousal Support:** The level of spousal support is crucial in preventing PPD, although this level can vary across cultures [1].\n*   **Intimate Partner Violence:** Intimate partner violence (domestic violence) may be either a cause or an effect of postpartum depression [2].\n*   **Mother-Infant Relationship:** Postpartum depression is associated with disturbances in the mother-infant relationship [2].\n\n**3. Personal and Historical Factors:**\n*   **Past Mental Health:** A past history of depression or anxiety during pregnancy or the early postpartum period, as well as general depression history, are strong predictors of PPD [1, 2].\n*   **Socioeconomic Factors:** Factors such as family income level and general socioeconomic factors contribute to the risk [1].\n*   **Family Dynamics:** Family type is also noted as an influencing factor [1].\n\n### Seeking Support\n\nPlease remember that you are not alone in this experience. While understanding these factors is helpful, **it is very important to seek professional support immediately.**\n\nPostpartum depression is a mental and behavioral disorder that is responsive to treatment [1]. Many mothers with postpartum depression are still ill one year postpartum without treatment [10].\n\n**Please reach out to a healthcare professional, a counselor, or a mental health specialist.** They can provide personalized guidance, effective treatment options, and support tailored to your specific needs [1].\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Risk Factors of Postpartum Depression",
+          "section": "1-2"
+        },
+        {
+          "title": "Postnatal Mental Disorders",
+          "section": "1-2"
+        },
+        {
+          "title": "The Psychosocial Factors Related to Post-Partum Depression Among Mothers in the Post-Partum Period at the De Soyza Maternity Hospital for Women in Sri Lanka",
+          "section": "3-4"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "Researchgate_Risk Factors of Postpartum Depression.pdf",
+          "CMJ_Postnatal mental disorders.pdf",
+          "OpenUnivrsity_THE PSYCHOSOCIAL FACTORS RELATED TO POST-PARTUM.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q02",
+      "question": "what are the risk factors for postpartum depression",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 24418,
+      "answer": "It is completely understandable that you are seeking information during this time. Dealing with the postpartum period and newborn care is challenging, and recognizing risk factors is a helpful first step. Please remember that support is available, and reaching out to a healthcare professional is a crucial step.\n\nBased on the information provided, here are some factors that have been identified as significantly influencing the risk of Postpartum Depression (PPD) [1]:\n\n### Key Risk Factors for Postpartum Depression\n\nThe factors that can contribute to PPD are often related to various aspects of a woman's life, including socioeconomic conditions, family dynamics, and medical history [1].\n\n**Socioeconomic and Family Factors:**\n*   **Socioeconomic factors:** These factors play a role in contributing to PPD [1].\n*   **Family type:** The structure of the family can influence risk [1].\n*   **Family income level:** Financial status is identified as a factor influencing PPD [1].\n*   **Lack of social support:** A lack of adequate social support is a significant risk factor [1].\n\n**Pregnancy and Birth Factors:**\n*   **Type of pregnancy:** The circumstances surrounding the pregnancy are relevant [1].\n*   **Pregnancy intention:** The intentions related to the pregnancy are considered a contributing factor [1].\n*   **Preterm birth:** Being born prematurely is listed as a factor [1].\n*   **Cesarean Section:** A meta-analysis suggests a link between Cesarean section and the risk of Postpartum Depression [2].\n\n**Personal and Health Factors:**\n*   **Depression history:** A previous history of depression is a known risk factor [1].\n*   **Spousal violence:** Exposure to spousal violence is identified as a risk factor [1].\n*   **Newborn feeding stage:** The stage of newborn feeding can influence risk [1].\n*   **Newborn diseases:** The presence of newborn diseases is also noted as a potential factor [1].\n\n### Seeking Support\n\nPlease remember that these factors are interconnected, and managing them requires support. The context emphasizes the need for comprehensive support measures to mitigate these risks [1]:\n\n*   **Counseling Services:** Seeking counseling services can be beneficial [1].\n*   **Support Groups:** Participating in postpartum support groups can offer valuable community support [1].\n*   **Awareness:** Awareness campaigns and accessible mental health services are recommended to address these concerns [1].\n\nIf you are struggling or need immediate support, please reach out to a healthcare professional or a mental health service. They are trained to provide personalized care and guidance.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Risk Factors of Postpartum Depression",
+          "section": "1-2"
+        },
+        {
+          "title": "Risk Factors of Postpartum Depression",
+          "section": "5-6"
+        },
+        {
+          "title": "Mothers at Risk of Postpartum Depression in Sri Lanka: A Population-Based Study Using a Validated Screening Tool",
+          "section": "10-11"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "Researchgate_Risk Factors of Postpartum Depression.pdf",
+          "pmc_srilanka.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q03",
+      "question": "what is the EPDS score and what does it mean",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 22195,
+      "answer": "It sounds like you are navigating some very challenging feelings right now, and it is completely understandable that you are seeking more information. Dealing with the postpartum period can bring many complex emotions.\n\nHere is some information regarding the Edinburgh Postnatal Depression Scale (EPDS), based on the context provided:\n\n### Understanding the EPDS Score\n\n**1. What is the EPDS?**\nThe EPDS is a generally recognized tool used to screen for depression during the postnatal period [3]. It consists of 10 questions [3].\n\n**2. How is the Score Calculated?**\n*   Each of the 10 questions is scored on a scale of 0 to 3 [3].\n*   The total score for the entire scale ranges from 0 to 30 [3].\n\n**3. What Does the Score Mean in the Context of Risk?**\nThe EPDS is used as a screening tool, and it helps in identifying various factors associated with postpartum depression [1].\n*   In some studies, a score of **9 or more** has been identified as a potential indicator of a higher risk of Postpartum Depression (PPD) [1].\n*   Some resources suggest that cut-offs for screening have been suggested, such as a score of 10 or more for \"possible depression\" and 13 or more for \"probable depression\" [2].\n\n**4. Important Symptom Identification:**\nOne potentially alarming symptom of PPD is the presence of **thoughts of self-harm**, which can be identified by the EPDS item 10, which asks about \"the thought of harming myself has occurred to me\" [2]. It is important to note that thoughts of self-harm are a signal that attention should be given, as they can indicate more severe depressive symptoms and increased risk of negative outcomes for both the mother and the child [2].\n\n***\n\n### Seeking Professional Support\n\nPlease remember that while understanding these tools is helpful, they are screening instruments. They are not a substitute for professional diagnosis or treatment.\n\nIf you are experiencing difficult emotions, or if you are concerned about your mental health, it is very important to seek help from a qualified healthcare professional. They can provide personalized guidance and support tailored to your specific situation [3]. Please reach out to your doctor, a mental health professional, or a local support service.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Mothers at Risk of Postpartum Depression in Sri Lanka: A Population-Based Study Using a Validated Screening Tool",
+          "section": "4-5"
+        },
+        {
+          "title": "Mothers at Risk of Postpartum Depression in Sri Lanka: A Population-Based Study Using a Validated Screening Tool",
+          "section": "2-3"
+        },
+        {
+          "title": "Risk Factors of Postpartum Depression",
+          "section": "2"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "pmc_srilanka.pdf",
+          "Researchgate_Risk Factors of Postpartum Depression.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q04",
+      "question": "how is postpartum depression treated",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 20435,
+      "answer": "I understand that dealing with postpartum depression and newborn care can be very difficult. Please know that help is available, and seeking support is a brave and important step.\n\nBased on the information available, here is some guidance on addressing postpartum depression:\n\n### 1. Seek Professional Support Immediately\n\nIt is very important to connect with mental health professionals for diagnosis and treatment.\n\n*   **Referral:** Women who have mental health problems during their pregnancy or postpartum are generally referred by a Medical Officer of Health (MOH), obstetrician, or pediatrician to psychiatry services in either the state or private sector, depending on the severity of the problem and the woman's or her family's preference [2].\n*   **Psychiatric Care:** Seeking consultation with psychiatrists is a key step in managing these conditions [2].\n\n### 2. Understanding Treatment Responsiveness\n\nIt is important to know that treatment for severe conditions is often effective.\n\n*   **Responsiveness:** Most often, early-onset puerperal psychoses and severe depressive illnesses are very responsive to treatment [1].\n\n### 3. Screening and Assessment\n\nGetting assessed helps determine the best course of action.\n\n*   **Screening Tools:** Tools exist to help assess for depression. For example, the Edinburgh Postnatal Depression Scale (EPDS) 9 has been introduced into routine practice to screen for depression in women during the first 6 weeks postpartum [2].\n\n***\n\n**Important Note:** While this information provides context on seeking help, I strongly encourage you to reach out to a healthcare provider or mental health professional directly. They can provide personalized guidance on the specific treatments, therapies, and support available to you.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Postnatal Mental Disorders",
+          "section": "1-2"
+        },
+        {
+          "title": "Maternal Mental Health Services in Sri Lanka: Challenges and Solutions",
+          "section": "1-2"
+        },
+        {
+          "title": "Mothers at Risk of Postpartum Depression in Sri Lanka: A Population-Based Study Using a Validated Screening Tool",
+          "section": "10-11"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "CMJ_Postnatal mental disorders.pdf",
+          "Researchgate_Maternal_mental_health_services_in_Sri_Lanka_chall.pdf",
+          "pmc_srilanka.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q05",
+      "question": "what mental health services are available for mothers in Sri Lanka",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 35434,
+      "answer": "It is completely understandable that you are seeking information about the support available. Dealing with the postpartum period and newborn care can be incredibly challenging. While I cannot provide medical advice, I can share the information regarding the mental health services and systems referenced in the context regarding Sri Lanka.\n\nHere is a structured overview of the mental health services and support pathways available based on the provided context:\n\n### 1. Understanding Perinatal Mental Health\n\nMental health challenges during pregnancy and the postpartum period are recognized as a significant area of focus, as perinatal mental health encompasses a range of conditions, with anxiety and depression being the most prevalent [1].\n\n### 2. Healthcare System and Access to Services\n\nHealthcare services in Sri Lanka are provided through a combination of systems:\n\n*   **Multi-Disciplinary Care:** Healthcare in Sri Lanka is primarily provided by practitioners of Western medicine, with contributions from Ayurveda, Yunani, Sidda, and homeopathy practitioners [2].\n*   **Public Health System:** The state health system provides a substantial amount of medical treatment, covering 50% of medical treatment, 95% of hospital admissions, and 99% of preventive care [2].\n*   **Primary Healthcare:** Primary healthcare services are centered around medical officers of health (MOHs), who are responsible for covering designated areas [2].\n\n### 3. Screening and Identification Tools\n\nTo help identify potential mental health concerns, screening tools are utilized:\n\n*   **Postnatal Screening:** The validated Sinhala translation of the Edinburgh Postnatal Depression Scale (EPDS) has been introduced into routine practice in MOH clinics to screen for depression in women during the first 6 weeks postpartum [3].\n\n### 4. Referral Pathways for Treatment\n\nIf a mother is experiencing mental health problems during pregnancy or postpartum, there is a clear pathway for referral to specialized care:\n\n*   **Referral Authorities:** Women who are found to have mental health problems during their pregnancy or postpartum are generally referred by an MOH, obstetrician, or pediatrician to psychiatry services [3].\n*   **Service Delivery:** These services can be accessed in either the state or private sector, depending on the severity of the problem and the preference of the woman and/or her family [3].\n*   **Specialized Facilities:** Some state and private sector hospitals located in more urban areas have dedicated mother and baby beds specifically for women with postnatal mental illnesses [3].\n\n***\n\n**Please remember:** If you or someone you know is experiencing symptoms of depression, anxiety, or any other mental health challenges, seeking professional support is a crucial step. The information above outlines the existing pathways for referral. Please reach out to a healthcare provider or mental health professional in your area for personalized guidance and support.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Perinatal Mental Health in Sri Lanka",
+          "section": "1"
+        },
+        {
+          "title": "Maternal Mental Health Services in Sri Lanka: Challenges and Solutions",
+          "section": "1"
+        },
+        {
+          "title": "Maternal Mental Health Services in Sri Lanka: Challenges and Solutions",
+          "section": "1-2"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "CMJ_Perinatal mental health in Sri Lanka.pdf",
+          "Researchgate_Maternal_mental_health_services_in_Sri_Lanka_chall.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q06",
+      "question": "how common is postpartum depression in Sri Lanka",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 26149,
+      "answer": "It is completely understandable that you are looking for information about postpartum depression (PPD). Please know that you are not alone, and seeking information is a positive first step.\n\nBased on the information available, here is what the context tells us regarding postpartum depression in Sri Lanka:\n\n### Understanding Postpartum Depression (PPD) in Sri Lanka\n\nWhile a precise national prevalence figure is not provided in the text, studies have been conducted in Sri Lanka to assess the risk and presence of PPD:\n\n*   **Screening Tools Used:** The Edinburgh Postnatal Depression Scale (EPDS) is a widely accepted tool used for screening for PPD [1].\n*   **Study Findings:**\n    *   One descriptive cross-sectional study among 1492 postpartum mothers in Sri Lanka found a cut-off point for PPD at **4%** [1].\n    *   Other research has investigated mothers at risk of PPD in Sri Lanka using the EPDS, assessing risk factors and outcomes [2].\n\n### Important Considerations\n\n*   **Risk Factors:** Risk factors for PPD can include low spousal and social support, a history of depression, genetic factors, chronic illnesses, negative childbirth experiences, and delivering preterm or low birth weight infants [3].\n*   **Impact:** PPD results in negative outcomes for both the mother and the infant, affecting physical health, social relationships, and cognitive functioning [3].\n\n***\n\n**Please remember:** These numbers are based on specific studies. If you are currently experiencing symptoms, it is very important to talk to a healthcare professional. They can provide accurate assessment and connect you with the appropriate support services. Professional support is available to help you through this time.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Post Partum Depression",
+          "section": "1"
+        },
+        {
+          "title": "Mothers at Risk of Postpartum Depression in Sri Lanka: A Population-Based Study Using a Validated Screening Tool",
+          "section": "1"
+        },
+        {
+          "title": "Effect of Childbirth Experience on the Development of Early Postpartum Depression in Mothers Admitted to Postnatal Wards at a Tertiary Care Hospital in Galle, Sri Lanka",
+          "section": "4"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "CMJ_Post partum depression.pdf",
+          "pmc_srilanka.pdf",
+          "Researcgate_Effect of childbirth experiencet.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 3,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 3\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q07",
+      "question": "does childbirth experience affect the risk of postpartum depression",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 27524,
+      "answer": "It is completely understandable that you are seeking information about how your experiences relate to your mental health. Dealing with the postpartum period is challenging, and seeking knowledge is a positive step.\n\nBased on the information provided, there is a recognized link between the childbirth experience and the development of postpartum depression (PPD).\n\nHere is a breakdown of what the context suggests regarding this relationship:\n\n### The Link Between Childbirth Experience and Postpartum Depression\n\nThe experience of childbirth and labor can significantly influence a mother's mental well-being during the postpartum period [2].\n\n*   **Negative Experiences:** A negative childbirth experience has been linked to the development of postpartum depression among mothers [9].\n*   **Positive Experiences:** Conversely, mothers who have a positive childbirth experience tend to have positive outcomes, such as increased self-esteem, self-efficacy, better maternal and infant attachment, and a better acceptance of the maternal role [7].\n*   **Specific Outcomes:** Negative childbirth experiences have also been linked to other issues, including breastfeeding problems and post-traumatic stress disorder [9].\n\n### Understanding Postpartum Depression (PPD)\n\nIt is important to remember that Postpartum Depression (PPD) is a recognized mental health issue characterized by prolonged emotional disturbance during the postpartum period [3].\n\n*   **Onset:** PPD symptoms typically occur 2 to 4 weeks after delivery [3].\n*   **Impact:** Depression experienced during this time is particularly prone to causing harm to both the mother and her baby, adversely impacting their psychological, physical, and social well-being [3].\n\n### What This Means for You\n\nThe research suggests that the way you experienced your childbirth can affect your overall well-being during the postpartum phase [1, 2].\n\nIf you are experiencing feelings of sadness, anxiety, or difficulty coping, please know that support is available. Recognizing the signs and seeking help is a vital step toward feeling better.\n\n***\n\n**Please remember:** While this information is based on research, it is not a substitute for professional medical advice, diagnosis, or treatment. If you are struggling with symptoms of depression or anxiety, it is strongly recommended that you seek support from a healthcare professional or mental health specialist.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Effect of Childbirth Experience on the Development of Early Postpartum Depression in Mothers Admitted to Postnatal Wards at a Tertiary Care Hospital in Galle, Sri Lanka",
+          "section": "1-3"
+        },
+        {
+          "title": "Effect of Childbirth Experience on the Development of Early Postpartum Depression in Mothers Admitted to Postnatal Wards at a Tertiary Care Hospital in Galle, Sri Lanka",
+          "section": "3-4"
+        },
+        {
+          "title": "Risk Factors of Postpartum Depression",
+          "section": "1-2"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "Researcgate_Effect of childbirth experiencet.pdf",
+          "Researchgate_Risk Factors of Postpartum Depression.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q08",
+      "question": "what is perinatal mental health",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 28955,
+      "answer": "It is completely understandable that you are looking for clarity on this topic. Dealing with the changes during this time can be overwhelming, and understanding what perinatal mental health means is the first step toward feeling better.\n\nHere is a guide to understanding perinatal mental health, based on the information available:\n\n### What is Perinatal Mental Health?\n\nPerinatal mental health refers to the mental health experience that many women go through during pregnancy and the year following the birth [2].\n\n**1. The Context of Change:**\nPregnancy and the time after birth often bring significant stress because they can change a woman’s identity, physical health, and economic situation [1].\n\n**2. The Spectrum of Mental Health:**\nMental health is often understood as a spectrum, ranging from good mental health to day-to-day struggles and more severe mental health and psychosocial conditions [1], [2]. Perinatal mental health includes conditions that fall along this spectrum.\n\n**3. Prevalence and Scope:**\nPerinatal anxiety and depression are common during this period [1]. Mental health challenges pose a threat to maternal well-being and pregnancy outcomes [3].\n\n### Common Symptoms of Poor Mental Health\n\nPoor mental health during the perinatal period can present in many ways [2]. Some common symptoms include:\n\n*   Feeling sad [2]\n*   No pleasure in experiences or activities that were once enjoyed [2]\n*   Lack of energy and motivation [2]\n*   Excessive worrying [2]\n*   Difficulty in concentrating or making decisions [2]\n*   Feelings of guilt and hopelessness [2]\n*   Feeling worthless [2]\n*   Non-specific body aches or pains [2]\n\n### The Importance of Support\n\nIt is important to remember that these challenges are not something you have to manage alone. Women who experience poor mental health during the perinatal period may find that their symptoms worsen [1].\n\nBecause mental health challenges can affect the well-being of the woman, her infant, and the family, professional support is crucial [1].\n\n***\n\n**Please remember:** If you are experiencing any of these feelings, or if you feel overwhelmed, please reach out for professional support. Mental health is a spectrum, and help is available to support you through this time.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Guide for Integration of Perinatal Mental Health in Maternal and Child Health Services",
+          "section": "15"
+        },
+        {
+          "title": "Guide for Integration of Perinatal Mental Health in Maternal and Child Health Services",
+          "section": "14-15"
+        },
+        {
+          "title": "Perinatal Mental Health in Sri Lanka",
+          "section": "1"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "WHO-eng.pdf",
+          "CMJ_Perinatal mental health in Sri Lanka.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q09",
+      "question": "how should healthcare workers integrate mental health screening into maternal care",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 30433,
+      "answer": "It is completely understandable that you are seeking guidance during this time. Taking steps to understand how mental health support can be integrated into your care is a positive step.\n\nBased on the guidelines for integrating perinatal mental health into maternal and child health services, here is a structured approach that healthcare workers can follow when integrating mental health screening into maternal care [1].\n\n### Steps for Integrating Mental Health Screening into Maternal Care\n\n**1. Planning and Identification:**\nThe planning phase should focus on ensuring that mental health support is intentionally integrated into services [1].\n\n*   **Screening of All Women:** A key step is the screening of all women for perinatal mental health (PMH) conditions [1].\n*   **Identifying Needs:** Identify which women would benefit from mental health support based on the needs of women during pregnancy and the year after birth, as well as the available services and budgets [1].\n*   **Planning Based on Context:** Planning should reflect the local culture and context [1]. Community champions and mental health coordinators are crucial in steering this process [1].\n\n**2. Implementation of Screening (The Screening Process):**\nWhen implementing the screening, healthcare staff can use structured tools [2].\n\n*   **Administering Screening Tools:** Clinic staff or counsellors can administer a mental health screening questionnaire to women, such as a three-item questionnaire, during the first antenatal visit [2].\n\n**3. Follow-Up and Referral:**\nOnce screening is completed, the next steps involve assessment and connecting women with necessary support [1, 2].\n\n*   **Referral:** Identify women who screen positive for depression, anxiety, and/or suicidality and refer them to other services that can offer additional support [1].\n*   **Risk Assessment:** Following the screening, a counsellor can conduct a brief “engage, assess, triage” session with the woman. This session serves to validate the questionnaire and assess risk factors [2].\n\n**4. Monitoring and Ongoing Care:**\nIntegration requires continuous monitoring to ensure effective care [1, 2].\n\n*   **Follow-Up Assessments:** Monitoring and evaluation plans should include routine follow-up assessments with counselled clients, for example, 6–12 weeks after they have given birth [2].\n\n***\n\n### Important Note on Professional Support\n\nWhile these steps provide a framework for integrating mental health care, please remember that you do not have to navigate this experience alone. If you are experiencing difficulties, reaching out for professional support is important. There are services available to help you [1].\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Guide for Integration of Perinatal Mental Health in Maternal and Child Health Services",
+          "section": "30-31"
+        },
+        {
+          "title": "Guide for Integration of Perinatal Mental Health in Maternal and Child Health Services",
+          "section": "53-54"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "WHO-eng.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q10",
+      "question": "what postnatal care guidance does WHO recommend for mothers and newborns",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 29076,
+      "answer": "It is completely understandable that you are looking for clear guidance during this time. The World Health Organization (WHO) provides important recommendations to ensure the best care for mothers and newborns during the postnatal period [1].\n\nHere is a summary of the postnatal care guidance recommended by the WHO, structured into key areas:\n\n### 1. Immediate Postnatal Care\n\n*   **Provide Care in the First 24 Hours:** Postnatal care should be provided to all mothers and babies within the first 24 hours following childbirth, regardless of where the birth occurred [1].\n*   **Clinical Examination:** A full clinical examination should be performed approximately 1 hour after birth, once the baby has had their first breastfeeding session [1]. The baby should be checked again before discharge [1].\n\n### 2. Newborn Care and Practices\n\n*   **Cord Care:** Clean, dry cord care remains the standard recommendation for newborns in settings with low neonatal mortality [2].\n*   **Newborn Health Messages:** Families and providers should be reinforced with key newborn care messages. These include:\n    *   Delayed bathing [2].\n    *   Skin-to-skin contact [2].\n    *   Immunization [2].\n*   **Vulnerability Care:** Interventions are needed to identify preterm and low-birth-weight babies in all settings to ensure they receive special care [2].\n\n### 3. Respectful Care Environment\n\n*   **Respectful Maternity Care:** It is essential to promote respectful and women-centered maternity care [2]. This involves:\n    *   Treating women with kindness, dignity, and respect [2].\n    *   Recognizing that women and their families should be fully informed about all aspects of care [2].\n    *   Valuing counseling as an opportunity to answer questions and address concerns [2].\n    *   Practicing best practices such as rooming in, unless separation is medically necessary [2].\n\n### 4. Recognizing Danger Signs\n\n*   **Seek Early Care:** Families should be encouraged to seek health care early if they identify any of the following danger signs during postnatal care visits:\n    *   Any jaundice in the first 24 hours of life [2].\n    *   Yellow palms and soles at any age [2].\n\n***\n\nPlease remember that this information is guidance, and professional support is incredibly valuable. If you are experiencing feelings of difficulty, please reach out to a healthcare provider or mental health professional. They can offer personalized support and resources tailored to your specific needs [3].\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "WHO Brief: Postnatal Care for Mothers and Newborns — Highlights from the WHO 2013 Guidelines",
+          "section": "1"
+        },
+        {
+          "title": "WHO Brief: Postnatal Care for Mothers and Newborns — Highlights from the WHO 2013 Guidelines",
+          "section": "3-4"
+        },
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "3-4"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "WHO_Brief-postnatal-care-for-mothers-and-newborns-highlights-from-the-WHO-2013-Guidelines.pdf",
+          "Pregnancy WHO article.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q11",
+      "question": "what is postpartum psychosis",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 22768,
+      "answer": "I understand you are looking for information about postpartum psychosis. It is important to know that there are many challenges mothers face during this time, and seeking support is a brave and important step.\n\nBased on the information available, here is what is known about postpartum psychosis:\n\n**What is Postpartum Psychosis?**\n\nPostpartum psychosis is a serious condition that can occur during the postpartum period [1].\n\n*   **Symptoms:** It may present in various forms, including mania, severe depression (which may involve delusions, confusion, or stupor), or acute polymorphic psychosis [1].\n*   **Onset:** The onset usually occurs within the first one to two weeks after the delivery, though it rarely happens within the first two days [1].\n*   **Features:** The clinical features of postpartum psychosis are generally the same as those of corresponding non-puerperal disorders [1].\n*   **Incidence:** The incidence of admission to a hospital for puerperal psychosis is about one per 500 births [6].\n\n**Important Note on Mental Health:**\n\nPlease remember that the range of postpartum psychiatric disorders is wide, and it is not always just \"maternity blues\" [1]. If you are experiencing severe symptoms, or if you are concerned about your mental health, it is very important to seek professional help.\n\nProfessional treatment is often very responsive to these illnesses [1].\n\nIf you need immediate support or guidance, please reach out to a healthcare professional or a mental health service.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Postnatal Mental Disorders",
+          "section": "1"
+        },
+        {
+          "title": "Postnatal Mental Disorders",
+          "section": "1-2"
+        },
+        {
+          "title": "Risk Factors of Postpartum Depression",
+          "section": "1-2"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "CMJ_Postnatal mental disorders.pdf",
+          "Researchgate_Risk Factors of Postpartum Depression.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q12",
+      "question": "how should I care for my newborn's umbilical cord",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 35251,
+      "answer": "It is completely understandable that you are looking for guidance on caring for your newborn. Focusing on these physical needs is a wonderful step.\n\nBased on the provided guidelines, here is a step-by-step guide on how to care for your newborn's umbilical cord.\n\n### Caring for the Newborn’s Umbilical Cord\n\n**1. Keeping the Stump Clean and Covered**\n*   Keep the cord stump loosely covered with a clean cloth [1, 2].\n*   Fold the diaper and clothes below the stump [1, 2].\n*   Do not put anything on the stump [1, 2].\n\n**2. Handling Soiled Areas**\n*   If the stump area becomes soiled, wash it with clean water and soap [1, 2].\n*   After washing, dry the area completely with a clean cloth [1, 2].\n\n**3. Using Antiseptic Care (If Applicable)**\n*   If the birth was at home without a skilled attendant, you may apply 1% chlorhexidine digluconate (gel or liquid) to the stump daily for the first week of life [2].\n\n**4. Hand Hygiene**\n*   Always wash your hands with soap and water before and after caring for the cord stump, and especially after touching the baby’s bottom [1, 2].\n\n***\n\n### Important Information and When to Seek Support\n\nPlease remember that caring for a newborn involves many details. If you are experiencing difficulties or feel overwhelmed while caring for your baby, please know that professional support is available.\n\n**Routine Postnatal Contacts:**\nIt is important to remember the scheduled postnatal contacts:\n*   **First contact:** within 24 hours after childbirth [1].\n*   **Second contact:** on day 3 (48-72 hours) [1].\n*   **Third contact:** between day 7 and 14 after birth [1].\n*   **Final postnatal contact (clinic visit):** at 6 weeks after birth, when your baby will be vaccinated and immunized [1, 2].\n\n**When to Seek Care for Danger Signs:**\nIf you notice any of these signs in your baby, please go to the hospital or health centre immediately, day or night, do not wait:\n*   Difficulty breathing\n*   Fits\n*   Fever\n*   Feels cold\n*   Bleeding\n*   Stops feeding\n*   Diarrhoea [1]\n*   Difficulty feeding\n*   Feeds less than every 5 hours [1, 2]\n\n**If you are struggling with your emotions or finding newborn care difficult, please reach out for help. Talking to a healthcare professional can provide you with the support you need.**\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "162"
+        },
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "167"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "Pregnancy WHO article.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q13",
+      "question": "how often should I breastfeed my newborn",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 30562,
+      "answer": "It is wonderful that you are focusing on feeding your newborn. Remember that the goal is to support the baby’s needs while allowing you to recover.\n\nHere is some guidance based on the information provided about breastfeeding:\n\n**Guidance on Breastfeeding Frequency**\n\n1.  **Feed on Demand, Day and Night:** You should encourage breastfeeding on demand, day and night, as long as the baby wants to feed [1].\n2.  **Frequency Goal:** A small baby should be encouraged to feed, day and night, at least 8 or more times in 24 hours from birth [1].\n3.  **Responding to Cues:** Do not interrupt a feed before the baby wants to feed [1].\n4.  **Stimulation:** Remember that the more the baby feeds, the more milk you will produce, as the baby’s suckling stimulates your milk production [2].\n5.  **Nighttime Care:** At night, allow your baby to sleep with you, ensuring they are within easy reach [2].\n\n**Important Professional Support**\n\nIf you experience any difficulties with breastfeeding, please see your health worker immediately [2]. They can help you with correct positioning and attachment, and they can also connect you with a breastfeeding support group [2].\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "143-144"
+        },
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "168"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "Pregnancy WHO article.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q14",
+      "question": "what are the psychosocial factors affecting mothers after birth",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 41460,
+      "answer": "It sounds like you are navigating a very challenging time. It is completely understandable to feel difficulty when managing newborn care and the emotional changes that come with the postpartum period. Please remember that seeking support is a brave and important step.\n\nBased on the information available, here are some psychosocial factors that can influence a mother's experience after birth, particularly in relation to postpartum depression (PPD) and newborn care.\n\n### 1. The Impact of the Childbirth Experience\n\nThe experience of giving birth can significantly affect a mother's mental well-being and her relationship with her child [1].\n\n*   **Positive Experience:** Mothers who have a positive childbirth experience tend to have increased self-esteem, self-efficacy, stronger maternal and infant attachment, and a better acceptance of the maternal role [1]. This positive experience is also linked to less likelihood of delays or alterations in the growth and development of the child [1].\n*   **Negative Experience:** Conversely, a negative childbirth experience has been linked to several challenges, including breastfeeding problems, poor self-rated health, post-traumatic stress disorder, and postpartum depression (PPD) [1].\n\n### 2. Relational and Social Support Factors\n\nThe quality of a mother's relationships and support network plays a major role in mental health during the postpartum period [2, 3].\n\n*   **Spousal Support:** Spousal support is identified as crucial in preventing PPD [2].\n*   **Social Support:** Low levels of social support are strong predictors of postpartum depression [3].\n*   **Relationship Disturbances:** Postpartum depression is associated with disturbances in the mother-infant relationship, which can have adverse effects on the child’s cognitive and emotional development [3].\n*   **Violence:** Intimate partner violence (domestic violence) may be either a cause or an effect of postpartum depression [3].\n\n### 3. Socioeconomic and Health Risk Factors\n\nSeveral external factors influence the risk of developing postpartum depression [2, 3].\n\n*   **Socioeconomic Status:** Factors like family income level and overall socioeconomic factors contribute to PPD [2]. Mothers from low-income countries are noted as being more vulnerable to depression than those from high-income countries [1].\n*   **History and Events:** A past history of depression, depression or anxiety during pregnancy, experiencing stressful life events during pregnancy or the early postpartum period, and low levels of social support are strong predictors of postpartum depression [3].\n*   **Other Influences:** Other specific factors that contribute to PPD include family type, type of pregnancy, preterm birth, newborn feeding stage, newborn diseases, and lack of social support [2].\n\n***\n\n**A Gentle Note on Professional Support:**\n\nIf you are experiencing feelings of depression or anxiety, or are struggling with the demands of newborn care, it is very important to know that professional help is available and effective [3]. Postpartum depression (PPD) is a recognized mental health concern, and treatment is responsive [1]. Please consider reaching out to a healthcare provider, counselor, or mental health professional who can offer personalized guidance and support for you and your family.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Effect of Childbirth Experience on the Development of Early Postpartum Depression in Mothers Admitted to Postnatal Wards at a Tertiary Care Hospital in Galle, Sri Lanka",
+          "section": "3-4"
+        },
+        {
+          "title": "Risk Factors of Postpartum Depression",
+          "section": "1-2"
+        },
+        {
+          "title": "Postnatal Mental Disorders",
+          "section": "1-2"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "Researcgate_Effect of childbirth experiencet.pdf",
+          "Researchgate_Risk Factors of Postpartum Depression.pdf",
+          "CMJ_Postnatal mental disorders.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q15",
+      "question": "how is depression managed according to mhGAP guidelines",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 32372,
+      "answer": "It is completely understandable that you are seeking guidance during this time. Dealing with the changes of postpartum can be very challenging.\n\nBased on the guidelines provided in the mhGAP framework, particularly regarding the management of perinatal depression, here is some evidence-based guidance on how depression is approached:\n\n### Evidence-Based Management for Perinatal Depression\n\nThe guidance emphasizes a psychosocial approach tailored to the perinatal period [2].\n\n**1. First-Line Management:**\n*   **Psychosocial Interventions:** Psychosocial interventions should be the first-line approach for managing depression during pregnancy and breastfeeding [2].\n*   **Avoid Medication:** Antidepressant medication should be avoided as much as possible in this population [2].\n\n**2. Communication and Support:**\n*   **Empathic Communication:** The approach involves using empathic, clear, and sensitive communication with the woman and their family [2].\n*   **Social Support:** Focus on mobilizing and providing social support systems [2].\n\n**3. Psycho-education and Stigma Reduction:**\n*   **Simplified Language:** Provide psycho-education in a way that avoids over-medicalization [2].\n*   **Use Accessible Terms:** Commonly understood terms such as stress and burden are used instead of terms like \"depressive disorder\" or \"illness\" to help avoid stigma [2].\n\n**4. Therapeutic Tools:**\n*   **Cognitive Behaviour Therapy (CBT):** If available, the approach can use simplified forms of therapy based on Cognitive Behaviour Therapy, which involves using pictures and structured activities [2].\n\n***\n\n**A Gentle Note on Professional Support:**\n\nWhile these guidelines provide important steps for psychosocial management, it is essential to remember that this information is for guidance. Because depression is a serious health condition, it is very important to discuss these feelings and symptoms with a healthcare professional. They can provide personalized, comprehensive care and tailor an intervention plan that is safe and appropriate for your specific needs.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "mhGAP Intervention Guide for Mental, Neurological and Substance Use Disorders in Non-Specialized Health Settings, v2.0",
+          "section": "10"
+        },
+        {
+          "title": "Thinking Healthy: A Manual for Psychosocial Management of Perinatal Depression (WHO mhGAP)",
+          "section": "10"
+        },
+        {
+          "title": "mhGAP Intervention Guide for Mental, Neurological and Substance Use Disorders in Non-Specialized Health Settings, v2.0",
+          "section": "8-10"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "WHO_basic guide-eng.pdf",
+          "WHO_MSD_MER_15.1_eng.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q16",
+      "question": "what nutrition advice is given during pregnancy",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 27304,
+      "answer": "It is completely understandable that you are looking for guidance. While I am here to offer support, please remember that I am not a medical professional. If you are dealing with postpartum depression or any health concerns, it is very important to seek professional support from a doctor or healthcare provider.\n\nBased on the information provided in the context regarding prenatal care, here is the nutrition advice that is typically given:\n\n### Nutrition Advice During Pregnancy\n\nThe guidance focuses on ensuring the mother feels well and strong by focusing on a greater amount and variety of healthy foods [1, 2].\n\n**1. Focus on Variety and Quantity:**\n*   **Eat More:** Advise the woman to eat a greater amount and variety of healthy foods [1, 2].\n*   **Healthy Foods to Include:** This includes foods such as meat, fish, oils, nuts, seeds, cereals, beans, vegetables, cheese, and milk [1, 2].\n*   **Reassurance:** Mothers should be reassured that they can eat any normal foods, as these will not harm the breastfeeding baby [2].\n\n**2. Personalized Counseling:**\n*   **Targeted Counseling:** Spend more time on nutrition counseling, especially with women who are very thin and adolescents [1, 2].\n\n**3. Addressing Food Taboos:**\n*   **Identify and Remove Taboos:** Determine if there are any important taboos about foods that are nutritionally important for good health [1, 2].\n*   **Advise Against Taboos:** Advise the woman against these food taboos [1, 2].\n\n**4. Family Support:**\n*   **Involve Family:** Talk to family members, such as the partner and mother-in-law, to encourage them to help ensure the woman eats enough and avoids hard physical work [1, 2].\n\n***\n\n**Important Note on Professional Support:**\n\nRemember that this information is based on a guide for essential practice. If you are experiencing difficulties with your nutrition, or if you have concerns about your health, please consult with a healthcare professional. They can provide personalized advice and ensure you receive the appropriate support you need.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "56-57"
+        },
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "89-90"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "Pregnancy WHO article.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q17",
+      "question": "what are signs of a high risk pregnancy that need facility delivery",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 26384,
+      "answer": "It is completely understandable that you are looking for information regarding the safest care for you and your baby. When planning for delivery, understanding the importance of professional care is key.\n\nBased on the information provided, here is guidance regarding facility delivery:\n\n### Understanding Facility Delivery\n\nFacility delivery is recommended because it ensures that if complications arise during labor, there are staff, equipment, supplies, and drugs available to provide the best possible care, along with a necessary referral system [2].\n\n### When Facility Delivery is Especially Important\n\nWhile the context does not list a general set of signs for high-risk pregnancy, it highlights situations where facility delivery is strongly advised:\n\n*   **For Women Who Are HIV-Infected:** If a woman is HIV-infected, she needs appropriate ARV treatment for herself and her baby during childbirth [2]. Complications are more common in HIV-infected women and their newborns, and they should deliver in a facility [2].\n\n### Planning Your Delivery and Care\n\nDuring your antenatal care, it is important to:\n\n1.  **Develop a Birth and Emergency Plan:** Use the information and counselling provided to support your interaction with the healthcare team [2].\n2.  **Discuss Complications:** Be aware that complications can develop during delivery, and you should discuss these possibilities with your healthcare providers [2].\n\nRemember that professional support is available to help you through this time. If you have concerns about your pregnancy or need more detailed information, please reach out to your healthcare provider.\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "44-45"
+        },
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "56-57"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "Pregnancy WHO article.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 4,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 4\nHALLUCINATION: no"
+      }
+    },
+    {
+      "id": "q18",
+      "question": "what is a good recipe for pasta",
+      "isCrisis": false,
+      "guardrailZone": "reject",
+      "elapsedMs": 2580,
+      "answer": "I don't have verified information on that. Would you like me to connect you to the 1926 helpline, or ask about something I can help with — postpartum mental health or newborn care?\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [],
+      "citationCheck": null,
+      "judge": null
+    },
+    {
+      "id": "q19",
+      "question": "how do I fix my car engine",
+      "isCrisis": false,
+      "guardrailZone": "reject",
+      "elapsedMs": 896,
+      "answer": "I don't have verified information on that. Would you like me to connect you to the 1926 helpline, or ask about something I can help with — postpartum mental health or newborn care?\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [],
+      "citationCheck": null,
+      "judge": null
+    },
+    {
+      "id": "q20",
+      "question": "how do I bathe my newborn baby",
+      "isCrisis": false,
+      "guardrailZone": "accept",
+      "elapsedMs": 23280,
+      "answer": "It is completely understandable that you are seeking guidance on newborn care. Taking care of yourself while caring for a newborn can be very challenging. Please remember that if you are struggling with feelings like postpartum depression, reaching out to a healthcare professional is a vital step.\n\nHere is guidance on bathing your newborn, based on the information provided:\n\n**Important Safety Guidelines for Bathing:**\n\n*   **Timing:** Do not bathe the baby before 6 hours old, or if the baby is cold [1].\n*   **Temperature:** Ensure the room is warm when changing, washing, bathing, and examining a small baby [1].\n\n**Steps for Bathing and Aftercare:**\n\n1.  **Bathing:** Bathe your baby when necessary [2].\n2.  **Drying and Warming:** After bathing, thoroughly dry your baby. Then, dress and keep her/him warm [2].\n3.  **Washing:** If the baby's bottom is soiled, wash it and dry it thoroughly [2].\n4.  **Hand Hygiene:** Always wash your hands with soap and water before and after handling your baby, especially after touching her/his bottom [2].\n\n**Remember to Keep Your Newborn Warm:**\n\n*   Newborns need more clothing than other children or adults [2].\n*   If the baby feels cold, you may need to ensure the room is warm, or cover the baby with an extra blanket [2].\n\nIf you have any concerns about your baby's feeding, breathing, or general well-being, please seek help from your health centre as soon as possible [2].\n\nI'm a support tool, not a substitute for professional medical care.",
+      "sources": [
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "151-152"
+        },
+        {
+          "title": "Pregnancy, Childbirth, Postpartum and Newborn Care: A Guide for Essential Practice (WHO/UNFPA/UNICEF, 3rd Ed.)",
+          "section": "167"
+        }
+      ],
+      "citationCheck": {
+        "citedFilesMatch": true,
+        "retrievedSourceFiles": [
+          "Pregnancy WHO article.pdf"
+        ]
+      },
+      "judge": {
+        "faithfulness": 5,
+        "answerRelevance": 5,
+        "hallucination": "no",
+        "raw": "FAITHFULNESS: 5\nANSWER_RELEVANCE: 5\nHALLUCINATION: no"
+      }
+    }
+  ],
+  "aggregate": {
+    "numQuestions": 20,
+    "p50LatencyMs": 27524,
+    "p95LatencyMs": 41820,
+    "meanFaithfulness": 4.888888888888888,
+    "meanAnswerRelevance": 4.944444444444444,
+    "hallucinationRate": 0,
+    "citationAccuracy": 1
+  }
+}

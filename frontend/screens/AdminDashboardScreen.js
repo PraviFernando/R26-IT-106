@@ -2,14 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
     View, Text, ScrollView, TouchableOpacity, StyleSheet,
     ActivityIndicator, Modal, TextInput, Alert, RefreshControl,
-    Dimensions,
+    KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import api, { setAuthToken } from '../services/api';
 import { useAuth } from '../context/AuthContext';
-
-const { width } = Dimensions.get('window');
+import { useResponsive } from '../hooks/useResponsive';
+import { ContentWell } from '../components/ScreenContainer';
 
 const ROLES = ['patient', 'midwife', 'admin', 'manager', 'doctor'];
 const ROLE_COLORS = {
@@ -28,9 +28,9 @@ const ROLE_ICONS = {
 };
 
 // ─── Stat Card ────────────────────────────────
-function StatCard({ icon, label, value, color }) {
+function StatCard({ icon, label, value, color, width }) {
     return (
-        <View style={[styles.statCard, { borderTopColor: color }]}>
+        <View style={[styles.statCard, { borderTopColor: color, width }]}>
             <Text style={styles.statIcon}>{icon}</Text>
             <Text style={[styles.statValue, { color }]}>{value}</Text>
             <Text style={styles.statLabel}>{label}</Text>
@@ -51,10 +51,22 @@ function UserRow({ user, onEdit, onDelete }) {
             <View style={styles.userInfo}>
                 <Text style={styles.userName}>{user.username}</Text>
                 <Text style={styles.userEmail} numberOfLines={1}>{user.email}</Text>
-                <View style={[styles.roleBadge, { backgroundColor: roleColor + '22' }]}>
-                    <Text style={[styles.roleBadgeText, { color: roleColor }]}>
-                        {roleIcon} {user.role}
-                    </Text>
+                {user.district && <Text style={styles.userDistrict}>📍 {user.district}</Text>}
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                    <View style={[styles.roleBadge, { backgroundColor: roleColor + '22' }]}>
+                        <Text style={[styles.roleBadgeText, { color: roleColor }]}>
+                            {roleIcon} {user.role}
+                        </Text>
+                    </View>
+                    <View style={[styles.statusBadge, { backgroundColor: user.isOnline ? '#DCFCE7' : '#F3F4F6' }]}>
+                        <View style={[styles.statusDot, { backgroundColor: user.isOnline ? '#10B981' : '#9CA3AF' }]} />
+                        <Text style={[styles.statusText, { color: user.isOnline ? '#166534' : '#4B5563' }]}>
+                            {user.isOnline ? 'Online' : 'Offline'}
+                        </Text>
+                    </View>
+                    {user.deviceType && (
+                        <Text style={styles.deviceText} numberOfLines={1}>📱 {user.deviceType.split(' ')[0]}</Text>
+                    )}
                 </View>
             </View>
             <View style={styles.userActions}>
@@ -73,14 +85,24 @@ function UserRow({ user, onEdit, onDelete }) {
 function EditModal({ visible, user, onClose, onSave }) {
     const [username, setUsername] = useState('');
     const [role, setRole] = useState('patient');
+    const [district, setDistrict] = useState('');
 
     useEffect(() => {
-        if (user) { setUsername(user.username); setRole(user.role); }
+        if (user) { setUsername(user.username); setRole(user.role); setDistrict(user.district || ''); }
     }, [user]);
 
     return (
         <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
             <View style={styles.modalOverlay}>
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
                 <View style={styles.modalCard}>
                     <Text style={styles.modalTitle}>✏️ Edit User</Text>
 
@@ -92,6 +114,19 @@ function EditModal({ visible, user, onClose, onSave }) {
                         placeholder="Username"
                         placeholderTextColor="#9CA3AF"
                     />
+
+                    {role === 'midwife' && (
+                        <>
+                            <Text style={styles.modalLabel}>District (for Midwives)</Text>
+                            <TextInput
+                                style={styles.modalInput}
+                                value={district}
+                                onChangeText={setDistrict}
+                                placeholder="e.g. Colombo"
+                                placeholderTextColor="#9CA3AF"
+                            />
+                        </>
+                    )}
 
                     <Text style={styles.modalLabel}>Role</Text>
                     <View style={styles.roleGrid}>
@@ -112,12 +147,14 @@ function EditModal({ visible, user, onClose, onSave }) {
                         <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
                             <Text style={styles.cancelBtnText}>Cancel</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.saveBtn} onPress={() => onSave({ username, role })}>
+                        <TouchableOpacity style={styles.saveBtn} onPress={() => onSave({ username, role, district })}>
                             <Text style={styles.saveBtnText}>Save</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
+                </ScrollView>
             </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 }
@@ -128,6 +165,7 @@ function CreateModal({ visible, onClose, onCreated }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('patient');
+    const [district, setDistrict] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handleCreate = async () => {
@@ -137,9 +175,9 @@ function CreateModal({ visible, onClose, onCreated }) {
         }
         setLoading(true);
         try {
-            await api.post('/admin/users', { username, email, password, role });
+            await api.post('/admin/users', { username, email, password, role, district });
             Toast.show({ type: 'success', text1: '✅ User created', position: 'top' });
-            setUsername(''); setEmail(''); setPassword(''); setRole('patient');
+            setUsername(''); setEmail(''); setPassword(''); setRole('patient'); setDistrict('');
             onCreated();
             onClose();
         } catch (err) {
@@ -151,8 +189,16 @@ function CreateModal({ visible, onClose, onCreated }) {
 
     return (
         <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
             <View style={styles.modalOverlay}>
-                <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}>
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
                     <View style={styles.modalCard}>
                         <Text style={styles.modalTitle}>➕ Create User</Text>
 
@@ -175,6 +221,19 @@ function CreateModal({ visible, onClose, onCreated }) {
                                 />
                             </View>
                         ))}
+
+                        {role === 'midwife' && (
+                            <>
+                                <Text style={styles.modalLabel}>District (for Midwives)</Text>
+                                <TextInput
+                                    style={styles.modalInput}
+                                    value={district}
+                                    onChangeText={setDistrict}
+                                    placeholder="e.g. Colombo"
+                                    placeholderTextColor="#9CA3AF"
+                                />
+                            </>
+                        )}
 
                         <Text style={styles.modalLabel}>Role</Text>
                         <View style={styles.roleGrid}>
@@ -202,6 +261,7 @@ function CreateModal({ visible, onClose, onCreated }) {
                     </View>
                 </ScrollView>
             </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 }
@@ -209,6 +269,9 @@ function CreateModal({ visible, onClose, onCreated }) {
 // ─── MAIN SCREEN ──────────────────────────────
 export default function AdminDashboardScreen({ navigation }) {
     const { user: authUser, token, logout } = useAuth();
+    const r = useResponsive();
+    const statCols = r.gridColumns(150, 10, 4);
+    const statCardW = r.tileWidth(statCols, 10);
     const [stats, setStats] = useState(null);
     const [users, setUsers] = useState([]);
     const [filter, setFilter] = useState('all');
@@ -275,21 +338,27 @@ export default function AdminDashboardScreen({ navigation }) {
     };
 
     const filteredUsers = users
-        .filter(u => filter === 'all' || u.role === filter)
+        .filter(u => {
+            if (filter === 'all') return true;
+            if (filter === 'online') return u.isOnline;
+            return u.role === filter;
+        })
         .filter(u =>
             u.username?.toLowerCase().includes(searchText.toLowerCase()) ||
-            u.email?.toLowerCase().includes(searchText.toLowerCase())
+            u.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+            (u.district && u.district.toLowerCase().includes(searchText.toLowerCase()))
         );
 
     const filterTabs = [
         { key: 'all', label: 'All', icon: '👥' },
+        { key: 'online', label: 'Online Users', icon: '🟢' },
         { key: 'patient', label: 'Patients', icon: '🤰' },
         { key: 'midwife', label: 'Midwives', icon: '👩‍⚕️' },
         { key: 'admin', label: 'Admins', icon: '🛡️' },
     ];
 
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView style={styles.safe} edges={['top']}>
             {/* ── Header ── */}
             <View style={styles.header}>
                 <View>
@@ -301,18 +370,20 @@ export default function AdminDashboardScreen({ navigation }) {
                 </TouchableOpacity>
             </View>
 
+          <View style={styles.body}>
             <ScrollView
-                contentContainerStyle={styles.scroll}
+                contentContainerStyle={{ paddingTop: 16, paddingBottom: r.insets.bottom + 32 }}
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#7C3AED']} />}
             >
+              <ContentWell maxWidth="wide">
                 {/* ── Stats ── */}
                 {stats && (
                     <View style={styles.statsRow}>
-                        <StatCard icon="👥" label="Total Users" value={stats.totalUsers} color="#7C3AED" />
-                        <StatCard icon="🤰" label="Patients" value={stats.totalPatients} color="#10B981" />
-                        <StatCard icon="👩‍⚕️" label="Midwives" value={stats.totalMidwives} color="#0EA5E9" />
-                        <StatCard icon="🛡️" label="Admins" value={stats.totalAdmins} color="#F59E0B" />
+                        <StatCard icon="👥" label="Total Users" value={stats.totalUsers} color="#7C3AED" width={statCardW} />
+                        <StatCard icon="🤰" label="Patients" value={stats.totalPatients} color="#10B981" width={statCardW} />
+                        <StatCard icon="👩‍⚕️" label="Midwives" value={stats.totalMidwives} color="#0EA5E9" width={statCardW} />
+                        <StatCard icon="🛡️" label="Admins" value={stats.totalAdmins} color="#F59E0B" width={statCardW} />
                     </View>
                 )}
 
@@ -372,8 +443,9 @@ export default function AdminDashboardScreen({ navigation }) {
                     ))
                 )}
 
-                <View style={{ height: 32 }} />
+              </ContentWell>
             </ScrollView>
+          </View>
 
             {/* ── Modals ── */}
             <EditModal
@@ -396,7 +468,8 @@ export default function AdminDashboardScreen({ navigation }) {
 // ─── Styles ───────────────────────────────────
 const PURPLE = '#7C3AED';
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: '#F3F4F6' },
+    safe: { flex: 1, backgroundColor: PURPLE },
+    body: { flex: 1, backgroundColor: '#F3F4F6' },
 
     // Header
     header: {
@@ -411,14 +484,11 @@ const styles = StyleSheet.create({
     },
     logoutText: { color: '#fff', fontWeight: '700', fontSize: 13 },
 
-    // Scroll
-    scroll: { paddingHorizontal: 16, paddingTop: 16 },
-
     // Stats
     statsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
     statCard: {
         backgroundColor: '#fff', borderRadius: 14, padding: 14,
-        width: (width - 48) / 2, borderTopWidth: 4,
+        borderTopWidth: 4,
         elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.07, shadowRadius: 4, alignItems: 'center',
     },
@@ -485,7 +555,7 @@ const styles = StyleSheet.create({
 
     // Modal
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 24 },
-    modalCard: { backgroundColor: '#fff', borderRadius: 20, padding: 24 },
+    modalCard: { backgroundColor: '#fff', borderRadius: 20, padding: 24, width: '100%', maxWidth: 460, alignSelf: 'center' },
     modalTitle: { fontSize: 20, fontWeight: '800', color: '#111827', marginBottom: 16 },
     modalLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 },
     modalInput: {

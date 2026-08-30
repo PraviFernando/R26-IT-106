@@ -6,15 +6,12 @@ import {
     TouchableOpacity,
     StyleSheet,
     ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import api, { setAuthToken } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
+import ScreenContainer from '../components/ScreenContainer';
 
 export default function LoginScreen({ navigation }) {
     const { t, i18n } = useTranslation();
@@ -78,16 +75,14 @@ export default function LoginScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={{ flex: 1 }}
-            >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    keyboardShouldPersistTaps="handled"
-                >
-                    <View style={{ position: 'absolute', top: 30, right: 20, zIndex: 10 }}>
+        <ScreenContainer
+            style={styles.container}
+            maxWidth={460}
+            edges={['top', 'bottom']}
+            keyboardAvoiding
+            contentContainerStyle={styles.scrollContent}
+        >
+                    <View style={{ position: 'absolute', top: 8, right: 0, zIndex: 10 }}>
                         <TouchableOpacity onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')} style={{ paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#EDE9FE', borderRadius: 16 }}>
                             <Text style={{ fontWeight: 'bold', color: '#7C3AED', fontSize: 14 }}>{i18n.language === 'en' ? 'සිං' : 'EN'}</Text>
                         </TouchableOpacity>
@@ -181,10 +176,8 @@ export default function LoginScreen({ navigation }) {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
             <Toast />
-        </SafeAreaView>
+        </ScreenContainer>
     );
 }
 
@@ -196,9 +189,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F3F4F6',
     },
     scrollContent: {
-        flexGrow: 1,
         justifyContent: 'center',
-        paddingHorizontal: 20,
         paddingVertical: 32,
     },
     topBanner: {

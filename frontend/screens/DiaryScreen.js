@@ -10,7 +10,7 @@ import {
     ActivityIndicator,
     Modal,
     Image,
-    Dimensions
+    KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -20,10 +20,9 @@ import api from '../services/api';
 import { transliterate } from '../services/sinhalaTransliteration';
 import SinhalaKeyboard from '../components/SinhalaKeyboard';
 import { useTranslation } from 'react-i18next';
+import { useResponsive } from '../hooks/useResponsive';
 
-const { width } = Dimensions.get('window');
-
-// ─── helpers ────────────────────────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────────────────
 const toDateString = (d) => {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -55,14 +54,10 @@ const getMonthName = (dateStr) => {
 const analyzeSentiment = (text) => {
     if (!text || text.trim().length === 0) return 'Skipped';
     const lower = text.toLowerCase();
-
-    // Simple Keyword based Sentiment Analysis
     const posWords = ['good', 'great', 'happy', 'better', 'love', 'amazing', 'excellent', 'hope', 'eager', 'content', 'relief', 'smile', 'joy', 'blessed'];
     const negWords = ['sad', 'bad', 'down', 'stress', 'anxious', 'depress', 'tired', 'hate', 'cry', 'pain', 'worst', 'fear', 'overwhelm', 'alone', 'angry'];
 
-    let posCount = 0;
-    let negCount = 0;
-
+    let posCount = 0, negCount = 0;
     posWords.forEach(w => { if (lower.includes(w)) posCount++; });
     negWords.forEach(w => { if (lower.includes(w)) negCount++; });
 
@@ -92,6 +87,7 @@ const today = toDateString(new Date());
 
 export default function DiaryScreen({ navigation }) {
     const { t, i18n } = useTranslation();
+    const r = useResponsive();
     const [selectedDate, setSelectedDate] = useState(today);
     const [content, setContent] = useState('');
     const [isLocked, setIsLocked] = useState(false);
@@ -122,12 +118,13 @@ export default function DiaryScreen({ navigation }) {
     const [sinhalaMode, setSinhalaMode] = useState(false);
     const [showVisualKeyboard, setShowVisualKeyboard] = useState(false);
 
-    // Time
     const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
 
     const debounceRef = useRef(null);
     const recognitionRef = useRef(null);
     const contentRef = useRef('');
+
+    const isToday = selectedDate === today;
 
     useEffect(() => {
         contentRef.current = content;
@@ -136,7 +133,7 @@ export default function DiaryScreen({ navigation }) {
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentTime(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-        }, 30000); // update every 30s
+        }, 30000);
         return () => clearInterval(timer);
     }, []);
 
@@ -184,63 +181,44 @@ export default function DiaryScreen({ navigation }) {
         } catch (_) { }
     };
 
-    const handleUnlockSubmit = async () => {
-        if (!passwordInput.trim()) return;
+    const saveDiary = async (text, locked = isLocked, theme = currentTheme, mediaList = media, m = mood, s = sentiment) => {
         try {
-            if (needsSetup) {
-                await api.post('/diary/auth/set', { password: passwordInput });
-                Toast.show({ type: 'success', text1: 'Password Set', position: 'top' });
-                setNeedsSetup(false);
-                setIsUnlocked(true);
-                setPasswordModalVisible(false);
-                setPasswordInput('');
-                if (!isLocked) toggleLock();
-            } else {
-                const res = await api.post('/diary/auth/check', { password: passwordInput });
-                if (res.data.valid) {
-                    setIsUnlocked(true);
-                    setPasswordModalVisible(false);
-                    setPasswordInput('');
-                    if (!isLocked && !isUnlocked) {
-                        setIsLocked(true);
-                        saveDiary(content, true, currentTheme, media, mood, sentiment);
-                    }
-                } else if (res.data.needsSetup) {
-                    setNeedsSetup(true);
-                } else {
-                    Toast.show({ type: 'error', text1: 'Incorrect Password', position: 'top' });
-                }
-            }
+            await api.post('/diary', {
+                date: selectedDate,
+                content: text,
+                isLocked: locked,
+                theme,
+                media: mediaList,
+                mood: m,
+                sentiment: s
+            });
+            setSaveStatus('saved');
+            loadAllDates();
+            setTimeout(() => setSaveStatus('idle'), 2000);
         } catch (err) {
-            Toast.show({ type: 'error', text1: 'Error verifying password.', position: 'top' });
-        }
-    };
-
-    const toggleLock = async () => {
-        if (isLocked) {
-            setIsLocked(false);
-            saveDiary(content, false, currentTheme, media, mood, sentiment);
-            Toast.show({ type: 'info', text1: 'Entry Unlocked', position: 'top' });
-        } else {
-            try {
-                const res = await api.post('/diary/auth/check', { password: '' });
-                if (res.data.needsSetup) {
-                    setNeedsSetup(true);
-                    setPasswordModalVisible(true);
-                } else {
-                    setPasswordModalVisible(true);
-                    setIsUnlocked(false);
-                }
-            } catch (err) {
-                if (err.response?.status === 401) {
-                    setPasswordModalVisible(true);
-                    setIsUnlocked(false);
-                }
-            }
+            setSaveStatus('error');
+            const errorMsg = err.response?.data?.message || 'Failed to save diary';
+            Toast.show({
+                type: 'error',
+                text1: 'Save Failed',
+                text2: errorMsg,
+                position: 'top',
+                visibilityTime: 3000,
+            });
         }
     };
 
     const handleContentChange = (text) => {
+        if (!isToday) {
+            Toast.show({
+                type: 'info',
+                text1: 'Cannot Edit',
+                text2: 'You can only edit today\'s diary entry',
+                position: 'top',
+            });
+            return;
+        }
+
         let newText = text;
         if (sinhalaMode && text.length > content.length) {
             const lastChar = text[text.length - 1];
@@ -257,41 +235,32 @@ export default function DiaryScreen({ navigation }) {
                 }
             }
         }
+
         setContent(newText);
         const newSentiment = analyzeSentiment(newText);
         setSentiment(newSentiment);
+
         setSaveStatus('saving');
         if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => saveDiary(newText, isLocked, currentTheme, media, mood, newSentiment), 1500);
-    };
-
-    const saveDiary = async (text, locked = isLocked, theme = currentTheme, mediaList = media, m = mood, s = sentiment) => {
-        try {
-            await api.post('/diary', { date: selectedDate, content: text, isLocked: locked, theme, media: mediaList, mood: m, sentiment: s });
-            setSaveStatus('saved');
-            loadAllDates();
-            setTimeout(() => setSaveStatus('idle'), 2500);
-        } catch (err) {
-            setSaveStatus('error');
-        }
-    };
-
-    const changeMood = (m) => {
-        setMood(m);
-        setSaveStatus('saving');
-        saveDiary(content, isLocked, currentTheme, media, m, sentiment);
-    };
-
-    const changeTheme = (newTheme) => {
-        setCurrentTheme(newTheme);
-        setSaveStatus('saving');
-        saveDiary(content, isLocked, newTheme, media, mood, sentiment);
+        debounceRef.current = setTimeout(() => {
+            saveDiary(newText, isLocked, currentTheme, media, mood, newSentiment);
+        }, 1500);
     };
 
     const addMedia = async (type) => {
+        if (!isToday) {
+            Toast.show({
+                type: 'info',
+                text1: 'Not Allowed',
+                text2: 'You can only add media to today\'s entry',
+                position: 'top',
+            });
+            return;
+        }
+
         try {
             if (type === 'location') {
-                const newMedia = [...media, { type, url: 'geo:0,0', name: `Location` }];
+                const newMedia = [...media, { type, url: 'geo:0,0', name: `Location ${new Date().toLocaleTimeString()}` }];
                 setMedia(newMedia);
                 saveDiary(content, isLocked, currentTheme, newMedia, mood, sentiment);
                 return;
@@ -309,41 +278,80 @@ export default function DiaryScreen({ navigation }) {
             setMedia(newMedia);
             saveDiary(content, isLocked, currentTheme, newMedia, mood, sentiment);
         } catch (err) {
-            Toast.show({ type: 'error', text1: 'Error adding file.', position: 'top' });
+            Toast.show({ type: 'error', text1: 'Error adding file', position: 'top' });
         }
     };
 
     const removeMedia = (index) => {
+        if (!isToday) {
+            Toast.show({ type: 'info', text1: 'Not Allowed', text2: 'You can only edit today\'s entry' });
+            return;
+        }
         const newMedia = [...media];
         newMedia.splice(index, 1);
         setMedia(newMedia);
         saveDiary(content, isLocked, currentTheme, newMedia, mood, sentiment);
     };
 
-    const startListening = useCallback(() => {
-        if (Platform.OS !== 'web') {
-            Toast.show({ type: 'info', text1: 'Voice input is available on the web version.', position: 'top' });
+    const changeMood = (m) => {
+        if (!isToday) {
+            Toast.show({ type: 'info', text1: 'Cannot Edit', text2: 'Only today\'s entry can be modified' });
             return;
         }
+        setMood(m);
+        saveDiary(content, isLocked, currentTheme, media, m, sentiment);
+    };
+
+    const changeTheme = (newTheme) => {
+        if (!isToday) {
+            Toast.show({ type: 'info', text1: 'Cannot Edit', text2: 'Only today\'s entry can be modified' });
+            return;
+        }
+        setCurrentTheme(newTheme);
+        saveDiary(content, isLocked, newTheme, media, mood, sentiment);
+    };
+
+    // ====================== VOICE RECOGNITION ======================
+    const startListening = useCallback(() => {
+        if (Platform.OS !== 'web') {
+            Toast.show({ type: 'info', text1: 'Voice input is only available on Web version', position: 'top' });
+            return;
+        }
+
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) return;
+        if (!SR) {
+            Toast.show({ type: 'error', text1: 'Speech Recognition not supported', position: 'top' });
+            return;
+        }
+
         if (recognitionRef.current) recognitionRef.current.stop();
+
         const recognition = new SR();
         recognition.continuous = true;
         recognition.interimResults = true;
         recognition.lang = sinhalaMode ? 'si-LK' : 'en-US';
+
         recognitionRef.current = recognition;
         let accumulatedTranscript = '';
-        recognition.onstart = () => { setIsListening(true); setInterimTranscript(''); };
+
+        recognition.onstart = () => {
+            setIsListening(true);
+            setInterimTranscript('');
+        };
+
         recognition.onresult = (e) => {
             let interim = '';
             for (let i = e.resultIndex; i < e.results.length; i++) {
                 const transcript = e.results[i][0].transcript;
-                if (e.results[i].isFinal) accumulatedTranscript += transcript + ' ';
-                else interim += transcript;
+                if (e.results[i].isFinal) {
+                    accumulatedTranscript += transcript + ' ';
+                } else {
+                    interim += transcript;
+                }
             }
             setInterimTranscript(interim);
         };
+
         recognition.onend = () => {
             setIsListening(false);
             setInterimTranscript('');
@@ -357,7 +365,9 @@ export default function DiaryScreen({ navigation }) {
     }, [sinhalaMode]);
 
     const stopListening = () => {
-        recognitionRef.current?.stop();
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+        }
         setIsListening(false);
     };
 
@@ -367,12 +377,57 @@ export default function DiaryScreen({ navigation }) {
         handleContentChange(newContent);
     };
 
+    // ====================== PASSWORD FUNCTIONS ======================
+    const handleUnlockSubmit = async () => {
+        if (!passwordInput.trim()) return;
+        try {
+            if (needsSetup) {
+                await api.post('/diary/auth/set', { password: passwordInput });
+                Toast.show({ type: 'success', text1: 'Password Set Successfully' });
+                setNeedsSetup(false);
+                setIsUnlocked(true);
+                setPasswordModalVisible(false);
+                setPasswordInput('');
+            } else {
+                const res = await api.post('/diary/auth/check', { password: passwordInput });
+                if (res.data.valid) {
+                    setIsUnlocked(true);
+                    setPasswordModalVisible(false);
+                    setPasswordInput('');
+                } else {
+                    Toast.show({ type: 'error', text1: 'Incorrect Password' });
+                }
+            }
+        } catch (err) {
+            const msg = err.response?.data?.message || 'Something went wrong';
+            Toast.show({ type: 'error', text1: 'Error', text2: msg });
+        }
+    };
+
+    const toggleLock = async () => {
+        if (isLocked) {
+            setIsLocked(false);
+            saveDiary(content, false);
+            Toast.show({ type: 'info', text1: 'Entry Unlocked' });
+        } else {
+            try {
+                const res = await api.post('/diary/auth/check', { password: '' });
+                if (res.data.needsSetup) {
+                    setNeedsSetup(true);
+                }
+                setPasswordModalVisible(true);
+            } catch (err) {
+                setPasswordModalVisible(true);
+            }
+        }
+    };
+
     const tc = THEMES[currentTheme] || THEMES['default'];
 
     return (
         <LinearGradient colors={[tc.bg1, tc.bg2]} style={s.safe}>
-            <SafeAreaView style={{ flex: 1 }}>
-                {/* ── Top App Header ── */}
+            <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+                {/* Header */}
                 <View style={s.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
                         <Text style={[s.backIcon, { color: tc.text }]}>←</Text>
@@ -380,8 +435,8 @@ export default function DiaryScreen({ navigation }) {
                     <View style={s.headerCenter}>
                         <Text style={[s.headerTitle, { color: tc.text }]}>{t('My Diary')}</Text>
                     </View>
-                    <TouchableOpacity 
-                        onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')} 
+                    <TouchableOpacity
+                        onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')}
                         style={s.langBtn}
                     >
                         <Text style={[s.langText, { color: tc.text, backgroundColor: tc.accent + '33' }]}>
@@ -390,28 +445,33 @@ export default function DiaryScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
-
-                    {/* ── Analytics & Insights Dashboard (Dribbble Replicon) ── */}
+              <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              >
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={{ paddingHorizontal: r.hPad, paddingBottom: 40, width: '100%', maxWidth: r.contentMaxWidth('reading'), alignSelf: 'center' }}
+                >
+                    {/* Analytics & Stats */}
                     <View style={s.insightSection}>
-                        <View style={{ flex: 1 }}>
-                            <Text style={[s.insightTitle, { color: tc.text }]}>{t('Analytics & Insights')}</Text>
-                            <Text style={[s.insightSub, { color: tc.text }]}>{getGreeting()}</Text>
-                        </View>
+                        <Text style={[s.insightTitle, { color: tc.text }]}>{t('Analytics & Insights')}</Text>
+                        <Text style={[s.insightSub, { color: tc.text }]}>{getGreeting()}</Text>
                     </View>
 
                     <View style={s.statsCardsRow}>
                         <TouchableOpacity style={{ flex: 1 }} onPress={() => setAllJournalsModalVisible(true)}>
-                            <LinearGradient colors={['#FF9A9E', '#FECFEF']} style={s.statCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                            <LinearGradient colors={['#FF9A9E', '#FECFEF']} style={s.statCard}>
                                 <Text style={s.statNumber}>{stats.totalJournals}</Text>
                                 <Text style={s.statLabel}>{t('Total Journals')}</Text>
                             </LinearGradient>
                         </TouchableOpacity>
-                        <LinearGradient colors={['#fbc2eb', '#a6c1ee']} style={s.statCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                        <LinearGradient colors={['#fbc2eb', '#a6c1ee']} style={s.statCard}>
                             <Text style={s.statNumber}>{stats.totalWords}</Text>
                             <Text style={s.statLabel}>{t('Total Words')}</Text>
                         </LinearGradient>
-                        <LinearGradient colors={['#84fab0', '#8fd3f4']} style={s.statCard} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                        <LinearGradient colors={['#84fab0', '#8fd3f4']} style={s.statCard}>
                             <Text style={[s.statNumber, { fontSize: 18, marginTop: 4 }]}>{currentTime}</Text>
                             <Text style={s.statLabel}>{t('Current Time')}</Text>
                         </LinearGradient>
@@ -435,8 +495,8 @@ export default function DiaryScreen({ navigation }) {
                                     onPress={() => setSelectedDate(ds)}
                                     style={[s.calendarDay, isSelected && [s.calendarDayActive, { backgroundColor: tc.accent }]]}
                                 >
-                                    <Text style={[s.calendarDayName, isSelected && { color: '#FFF' }]}>{getDayName(ds)}</Text>
-                                    <Text style={[s.calendarDayNum, isSelected && { color: '#FFF' }]}>{d.getDate()}</Text>
+                                    <Text numberOfLines={1} adjustsFontSizeToFit style={[s.calendarDayName, isSelected && { color: '#FFF' }]}>{getDayName(ds)}</Text>
+                                    <Text numberOfLines={1} style={[s.calendarDayNum, isSelected && { color: '#FFF' }]}>{d.getDate()}</Text>
                                     {ds === today && <View style={[s.dotIndicator, isSelected ? { backgroundColor: '#FFF' } : { backgroundColor: tc.accent }]} />}
                                 </TouchableOpacity>
                             );
@@ -575,14 +635,28 @@ export default function DiaryScreen({ navigation }) {
                         )}
                     </View>
                 </ScrollView>
+              </KeyboardAvoidingView>
+
+              {showVisualKeyboard && (
+                <SinhalaKeyboard onKeyPress={handleVisualKeyPress} onClose={() => setShowVisualKeyboard(false)} />
+              )}
             </SafeAreaView>
 
+            {/* Password Modal */}
             <Modal visible={passwordModalVisible} transparent animationType="fade" onRequestClose={() => setPasswordModalVisible(false)}>
+              <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
                 <View style={s.modalOverlay}>
                     <View style={s.modalBox}>
                         <Text style={s.modalTitle}>🔒 Diary Security</Text>
                         <Text style={s.modalSubtitle}>{needsSetup ? "Create a simple password." : "Verify your identity."}</Text>
-                        <TextInput style={s.modalInput} placeholder="Password" secureTextEntry value={passwordInput} onChangeText={setPasswordInput} autoFocus />
+                        <TextInput
+                            style={s.modalInput}
+                            placeholder="Password"
+                            secureTextEntry
+                            value={passwordInput}
+                            onChangeText={setPasswordInput}
+                            autoFocus
+                        />
                         <View style={s.modalActions}>
                             <TouchableOpacity style={s.modalCancel} onPress={() => setPasswordModalVisible(false)}>
                                 <Text style={s.modalCancelText}>Cancel</Text>
@@ -593,6 +667,7 @@ export default function DiaryScreen({ navigation }) {
                         </View>
                     </View>
                 </View>
+              </KeyboardAvoidingView>
             </Modal>
 
             {/* Month Picker Modal */}
@@ -633,8 +708,8 @@ export default function DiaryScreen({ navigation }) {
                         <ScrollView style={{ flex: 1 }}>
                             {allDates.length === 0 && <Text style={s.emptyListText}>{t('No journals found.')}</Text>}
                             {allDates.map((item, idx) => (
-                                <TouchableOpacity 
-                                    key={idx} 
+                                <TouchableOpacity
+                                    key={idx}
                                     style={s.journalListItem}
                                     onPress={() => {
                                         setSelectedDate(item.date);
@@ -653,7 +728,6 @@ export default function DiaryScreen({ navigation }) {
                 </View>
             </Modal>
 
-            {showVisualKeyboard && <SinhalaKeyboard onKeyPress={handleVisualKeyPress} onClose={() => setShowVisualKeyboard(false)} />}
             <Toast />
         </LinearGradient>
     );
@@ -678,8 +752,8 @@ const s = StyleSheet.create({
 
     calendarMonthWrap: { alignItems: 'center', marginBottom: 12 },
     calendarMonthTitle: { fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
-    calendarContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
-    calendarDay: { paddingVertical: 12, width: 44, borderRadius: 22, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.4)' },
+    calendarContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 4, marginBottom: 24 },
+    calendarDay: { paddingVertical: 12, flex: 1, minWidth: 0, borderRadius: 18, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.4)' },
     calendarDayActive: { shadowColor: '#A855F7', shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
     calendarDayName: { fontSize: 11, fontWeight: '700', color: '#64748B' },
     calendarDayNum: { fontSize: 16, fontWeight: '800', color: '#1E293B', marginTop: 4 },
@@ -730,8 +804,8 @@ const s = StyleSheet.create({
     mediaBtn: { padding: 8, backgroundColor: '#F8FAFC', borderRadius: 12 },
     mediaIcon: { fontSize: 20 },
 
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
-    modalBox: { backgroundColor: '#FFF', borderRadius: 32, padding: 28, width: 320 },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+    modalBox: { backgroundColor: '#FFF', borderRadius: 32, padding: 28, width: '100%', maxWidth: 340, alignSelf: 'center' },
     modalTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
     modalSubtitle: { fontSize: 14, color: '#64748B', marginBottom: 20 },
     modalInput: { backgroundColor: '#F1F5F9', borderRadius: 16, padding: 16, fontSize: 16, marginBottom: 24 },
@@ -745,7 +819,7 @@ const s = StyleSheet.create({
     langText: { fontSize: 13, fontWeight: '700', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, overflow: 'hidden' },
 
     fullModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-    fullModalBox: { backgroundColor: '#FFF', borderTopLeftRadius: 32, borderTopRightRadius: 32, height: '80%', padding: 24 },
+    fullModalBox: { backgroundColor: '#FFF', borderTopLeftRadius: 32, borderTopRightRadius: 32, height: '80%', padding: 24, width: '100%', maxWidth: 480, alignSelf: 'center' },
     fullModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
     fullModalTitle: { fontSize: 22, fontWeight: '800', color: '#1E293B' },
     fullModalClose: { fontSize: 24, color: '#64748B' },
@@ -755,7 +829,7 @@ const s = StyleSheet.create({
     journalListIcon: { fontSize: 20 },
     emptyListText: { textAlign: 'center', marginTop: 40, color: '#64748B', fontSize: 16 },
 
-    monthPickerBox: { backgroundColor: '#FFF', borderRadius: 24, padding: 24, width: 300 },
+    monthPickerBox: { backgroundColor: '#FFF', borderRadius: 24, padding: 24, width: '100%', maxWidth: 320, alignSelf: 'center' },
     monthOption: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
     monthOptionText: { fontSize: 16, fontWeight: '600', color: '#1E293B', textAlign: 'center' },
 });

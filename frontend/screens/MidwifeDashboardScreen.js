@@ -1,14 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
     View, Text, ScrollView, TouchableOpacity, StyleSheet,
-    ActivityIndicator, RefreshControl, TextInput, Dimensions, Modal,
+    ActivityIndicator, RefreshControl, TextInput, Modal,
+    FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import api, { setAuthToken } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useListContainerStyle } from '../components/ScreenContainer';
 
-const { width } = Dimensions.get('window');
+// ─── Risk Level Colors ─────────────────────────
+const RISK_COLORS = {
+    high: { bg: '#FEE2E2', border: '#EF4444', text: '#991B1B', score: '#EF4444' },
+    medium: { bg: '#FEF3C7', border: '#F59E0B', text: '#92400E', score: '#F59E0B' },
+    low: { bg: '#D1FAE5', border: '#10B981', text: '#065F46', score: '#10B981' },
+};
+
+const RISK_EMOJIS = { high: '🔴', medium: '🟡', low: '🟢' };
+const RISK_LABELS = { high: 'High', medium: 'Medium', low: 'Low' };
 
 // ─── Stat Card ────────────────────────────────
 function StatCard({ icon, label, value, color }) {
@@ -21,25 +31,48 @@ function StatCard({ icon, label, value, color }) {
     );
 }
 
-// ─── Patient Card ─────────────────────────────
-function PatientCard({ patient, onView }) {
+// ─── Patient Card ──────────────────────────────
+function PatientCard({ patient, cardWidth, onView }) {
     const initials = patient.username?.slice(0, 2).toUpperCase() || '??';
-    const joined = new Date(patient.createdAt).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric',
-    });
+    const risk = patient.latestEpdsRisk || 'low';
+    const colors = RISK_COLORS[risk];
+    const emoji = RISK_EMOJIS[risk];
+    const label = RISK_LABELS[risk];
+
     return (
-        <TouchableOpacity style={styles.patientCard} onPress={() => onView(patient)} activeOpacity={0.85}>
-            <View style={styles.patientAvatar}>
-                <Text style={styles.patientAvatarText}>{initials}</Text>
+        <TouchableOpacity
+            style={[
+                styles.patientCard,
+                { width: cardWidth, backgroundColor: colors.bg }
+            ]}
+            onPress={() => onView(patient)}
+            activeOpacity={0.85}
+        >
+            {/* Risk Indicator Bar */}
+            <View style={[styles.riskBar, { backgroundColor: colors.border }]} />
+
+            {/* Avatar */}
+            <View style={[styles.patientAvatar, { backgroundColor: colors.border + '30' }]}>
+                <Text style={[styles.patientAvatarText, { color: colors.border }]}>{initials}</Text>
             </View>
-            <View style={styles.patientInfo}>
-                <Text style={styles.patientName}>{patient.username}</Text>
-                <Text style={styles.patientEmail} numberOfLines={1}>{patient.email}</Text>
-                <Text style={styles.patientJoined}>Joined: {joined}</Text>
+
+            {/* Name */}
+            <Text style={[styles.patientName, { color: colors.text }]} numberOfLines={1}>
+                {patient.username}
+            </Text>
+
+            {/* Risk Badge */}
+            <View style={[styles.riskBadge, { backgroundColor: colors.border + '20' }]}>
+                <Text style={styles.riskEmoji}>{emoji}</Text>
+                <Text style={[styles.riskLabel, { color: colors.text }]}>{label}</Text>
             </View>
-            <View style={styles.patientChevron}>
-                <Text style={styles.chevronText}>›</Text>
-            </View>
+
+            {/* EPDS Score */}
+            {patient.latestEpdsScore !== undefined && (
+                <Text style={[styles.riskScore, { color: colors.score }]}>
+                    {patient.latestEpdsScore}/30
+                </Text>
+            )}
         </TouchableOpacity>
     );
 }
@@ -51,14 +84,30 @@ function PatientModal({ visible, patient, onClose }) {
         day: 'numeric', month: 'long', year: 'numeric',
     });
     const initials = patient.username?.slice(0, 2).toUpperCase() || '??';
+    const risk = patient.latestEpdsRisk || 'low';
+    const colors = RISK_COLORS[risk];
+
     return (
         <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
             <View style={styles.modalOverlay}>
-                <View style={styles.modalCard}>
-                    <View style={styles.modalAvatarBig}>
-                        <Text style={styles.modalAvatarBigText}>{initials}</Text>
+                <View style={[styles.modalCard, { borderTopColor: colors.border, borderTopWidth: 6 }]}>
+                  <ScrollView
+                    style={styles.modalScroll}
+                    contentContainerStyle={styles.modalScrollContent}
+                    showsVerticalScrollIndicator={false}
+                  >
+                    <View style={[styles.modalAvatarBig, { backgroundColor: colors.bg }]}>
+                        <Text style={[styles.modalAvatarBigText, { color: colors.border }]}>{initials}</Text>
                     </View>
                     <Text style={styles.modalName}>{patient.username}</Text>
+
+                    {/* Risk Badge in Modal */}
+                    <View style={[styles.modalRiskBadge, { backgroundColor: colors.bg }]}>
+                        <Text style={styles.modalRiskEmoji}>{RISK_EMOJIS[risk]}</Text>
+                        <Text style={[styles.modalRiskText, { color: colors.text }]}>
+                            {RISK_LABELS[risk]} Risk • Score: {patient.latestEpdsScore || 0}/30
+                        </Text>
+                    </View>
 
                     <View style={styles.detailRow}>
                         <Text style={styles.detailIcon}>📧</Text>
@@ -75,7 +124,78 @@ function PatientModal({ visible, patient, onClose }) {
                         </Text>
                     </View>
 
-                    <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+                    {/* EPDS Details */}
+                    {patient.latestEpdsScore !== undefined && (
+                        <>
+                            <View style={styles.divider} />
+                            <Text style={styles.sectionHeading}>📊 EPDS Assessment</Text>
+                            <View style={styles.detailRow}>
+                                <Text style={styles.detailIcon}>📝</Text>
+                                <Text style={styles.detailText}>Score: {patient.latestEpdsScore}/30</Text>
+                            </View>
+                            <View style={styles.detailRow}>
+                                <Text style={styles.detailIcon}>⚠️</Text>
+                                <Text style={[styles.detailText, {
+                                    color: colors.score,
+                                    fontWeight: '700'
+                                }]}>
+                                    Risk: {patient.latestEpdsRisk?.toUpperCase() || 'UNKNOWN'}
+                                </Text>
+                            </View>
+                            {patient.latestEpdsDate && (
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.detailIcon}>📅</Text>
+                                    <Text style={styles.detailText}>
+                                        Last Screened: {
+                                            new Date(patient.latestEpdsDate).getTime()
+                                                ? new Date(patient.latestEpdsDate).toLocaleDateString('en-GB')
+                                                : patient.latestEpdsDate
+                                        }
+                                    </Text>
+                                </View>
+                            )}
+                        </>
+                    )}
+
+                    {/* Baby Details */}
+                    {patient.babyDetails && Object.keys(patient.babyDetails).length > 0 && (
+                        <>
+                            <View style={styles.divider} />
+                            <Text style={styles.sectionHeading}>👶 Baby Details</Text>
+                            {patient.babyDetails.birthday ? (
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.detailIcon}>🎂</Text>
+                                    <Text style={styles.detailText}>Born: {patient.babyDetails.birthday}</Text>
+                                </View>
+                            ) : null}
+                            {patient.babyDetails.weight ? (
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.detailIcon}>⚖️</Text>
+                                    <Text style={styles.detailText}>Weight: {patient.babyDetails.weight}</Text>
+                                </View>
+                            ) : null}
+                            {patient.babyDetails.height ? (
+                                <View style={styles.detailRow}>
+                                    <Text style={styles.detailIcon}>📏</Text>
+                                    <Text style={styles.detailText}>Height: {patient.babyDetails.height}</Text>
+                                </View>
+                            ) : null}
+
+                            {patient.babyDetails.vaccinations && patient.babyDetails.vaccinations.length > 0 && (
+                                <View style={{ width: '100%', marginTop: 8 }}>
+                                    <Text style={[styles.detailText, { fontWeight: 'bold', marginBottom: 4 }]}>Vaccinations:</Text>
+                                    {patient.babyDetails.vaccinations.map((vac, i) => (
+                                        <Text key={i} style={[styles.detailText, { fontSize: 13, marginLeft: 24, color: '#6B7280' }]}>
+                                            • {vac.name} ({vac.date})
+                                        </Text>
+                                    ))}
+                                </View>
+                            )}
+                        </>
+                    )}
+
+                  </ScrollView>
+                    <TouchableOpacity style={[styles.closeBtn, { backgroundColor: colors.border }]} onPress={onClose}>
                         <Text style={styles.closeBtnText}>Close</Text>
                     </TouchableOpacity>
                 </View>
@@ -131,8 +251,60 @@ export default function MidwifeDashboardScreen({ navigation }) {
         p.email?.toLowerCase().includes(searchText.toLowerCase())
     );
 
+    // Responsive grid: ~2 columns on a phone, 3-4 on a tablet. `key` forces the
+    // FlatList to remount when the column count changes (RN requirement).
+    const {
+        contentContainerStyle: listContentStyle,
+        numColumns,
+        key: gridKey,
+        columnWrapperStyle,
+        tileWidth: cardWidth,
+        columns,
+    } = useListContainerStyle({ maxWidth: 'wide', grid: { minTile: 150, gap: 8, maxCols: 6 } });
+
+    const listHeader = (
+        <>
+            {stats && (
+                <View style={styles.statsRow}>
+                    <StatCard icon="🤰" label="Total Patients" value={stats.totalPatients} color="#10B981" />
+                    <StatCard icon="👩‍⚕️" label="Midwives" value={stats.totalMidwives} color="#0EA5E9" />
+                </View>
+            )}
+
+            <View style={styles.tipBanner}>
+                <Text style={styles.tipIcon}>💡</Text>
+                <Text style={styles.tipText}>
+                    Tap any patient card to view their profile. Cards show risk level with color coding.
+                </Text>
+            </View>
+
+            <View style={styles.searchBox}>
+                <Text style={styles.searchIcon}>🔍</Text>
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search patients…"
+                    placeholderTextColor="#9CA3AF"
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    autoCapitalize="none"
+                />
+                {searchText.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchText('')}>
+                        <Text style={{ fontSize: 18, color: '#9CA3AF' }}>✕</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
+
+            <Text style={styles.sectionTitle}>
+                👤 {filtered.length} Patient{filtered.length !== 1 ? 's' : ''}
+            </Text>
+
+            {loading && <ActivityIndicator size="large" color="#0EA5E9" style={{ marginTop: 40 }} />}
+        </>
+    );
+
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView style={styles.safe} edges={['top']}>
             {/* ── Header ── */}
             <View style={styles.header}>
                 <View>
@@ -144,65 +316,28 @@ export default function MidwifeDashboardScreen({ navigation }) {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView
-                contentContainerStyle={styles.scroll}
-                showsVerticalScrollIndicator={false}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0EA5E9']} />}
-            >
-                {/* ── Stats ── */}
-                {stats && (
-                    <View style={styles.statsRow}>
-                        <StatCard icon="🤰" label="Total Patients" value={stats.totalPatients} color="#10B981" />
-                        <StatCard icon="👩‍⚕️" label="Midwives" value={stats.totalMidwives} color="#0EA5E9" />
-                    </View>
-                )}
-
-                {/* ── Tip Banner ── */}
-                <View style={styles.tipBanner}>
-                    <Text style={styles.tipIcon}>💡</Text>
-                    <Text style={styles.tipText}>
-                        Tap any patient card to view their profile details. Pull down to refresh the list.
-                    </Text>
-                </View>
-
-                {/* ── Search ── */}
-                <View style={styles.searchBox}>
-                    <Text style={styles.searchIcon}>🔍</Text>
-                    <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search patients…"
-                        placeholderTextColor="#9CA3AF"
-                        value={searchText}
-                        onChangeText={setSearchText}
-                        autoCapitalize="none"
-                    />
-                    {searchText.length > 0 && (
-                        <TouchableOpacity onPress={() => setSearchText('')}>
-                            <Text style={{ fontSize: 18, color: '#9CA3AF' }}>✕</Text>
-                        </TouchableOpacity>
+            <View style={styles.body}>
+                <FlatList
+                    data={loading ? [] : filtered}
+                    renderItem={({ item }) => (
+                        <PatientCard patient={item} cardWidth={cardWidth} onView={setSelected} />
                     )}
-                </View>
-
-                {/* ── Patient List ── */}
-                <Text style={styles.sectionTitle}>
-                    {filtered.length} Patient{filtered.length !== 1 ? 's' : ''}
-                </Text>
-
-                {loading ? (
-                    <ActivityIndicator size="large" color="#0EA5E9" style={{ marginTop: 40 }} />
-                ) : filtered.length === 0 ? (
-                    <View style={styles.emptyBox}>
-                        <Text style={styles.emptyIcon}>😶</Text>
-                        <Text style={styles.emptyText}>No patients found</Text>
-                    </View>
-                ) : (
-                    filtered.map(p => (
-                        <PatientCard key={p._id} patient={p} onView={setSelected} />
-                    ))
-                )}
-
-                <View style={{ height: 32 }} />
-            </ScrollView>
+                    keyExtractor={(item) => item._id}
+                    key={gridKey}
+                    numColumns={numColumns}
+                    columnWrapperStyle={columns > 1 ? [styles.gridRow, columnWrapperStyle] : undefined}
+                    ListHeaderComponent={listHeader}
+                    ListEmptyComponent={!loading ? (
+                        <View style={styles.emptyBox}>
+                            <Text style={styles.emptyIcon}>😶</Text>
+                            <Text style={styles.emptyText}>No patients found</Text>
+                        </View>
+                    ) : null}
+                    contentContainerStyle={[{ paddingTop: 16 }, listContentStyle]}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0EA5E9']} />}
+                />
+            </View>
 
             {/* ── Patient Detail Modal ── */}
             <PatientModal
@@ -219,31 +354,46 @@ export default function MidwifeDashboardScreen({ navigation }) {
 // ─── Styles ───────────────────────────────────
 const TEAL = '#0EA5E9';
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: '#F0F9FF' },
+    safe: { flex: 1, backgroundColor: TEAL },
+    body: { flex: 1, backgroundColor: '#F0F9FF' },
 
     // Header
     header: {
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        backgroundColor: TEAL, paddingHorizontal: 20, paddingVertical: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: TEAL,
+        paddingHorizontal: 20,
+        paddingVertical: 16,
     },
     headerTitle: { color: '#fff', fontSize: 20, fontWeight: '800' },
     headerSub: { color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 },
     logoutBtn: {
-        backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 14,
-        paddingVertical: 8, borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 20,
     },
     logoutText: { color: '#fff', fontWeight: '700', fontSize: 13 },
 
-    // Scroll
-    scroll: { paddingHorizontal: 16, paddingTop: 16 },
-
     // Stats
-    statsRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+    statsRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 16
+    },
     statCard: {
-        backgroundColor: '#fff', borderRadius: 14, padding: 14,
-        flex: 1, borderTopWidth: 4, elevation: 2,
-        shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07, shadowRadius: 4, alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 14,
+        padding: 14,
+        flex: 1,
+        borderTopWidth: 4,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.07,
+        shadowRadius: 4,
+        alignItems: 'center',
     },
     statIcon: { fontSize: 26, marginBottom: 6 },
     statValue: { fontSize: 26, fontWeight: '800', marginBottom: 2 },
@@ -251,64 +401,216 @@ const styles = StyleSheet.create({
 
     // Tip banner
     tipBanner: {
-        flexDirection: 'row', alignItems: 'center', backgroundColor: '#E0F2FE',
-        borderRadius: 12, padding: 12, marginBottom: 14, gap: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#E0F2FE',
+        borderRadius: 12,
+        padding: 12,
+        marginBottom: 14,
+        gap: 10,
     },
     tipIcon: { fontSize: 20 },
-    tipText: { flex: 1, fontSize: 13, color: '#0369A1', lineHeight: 18 },
+    tipText: {
+        flex: 1,
+        fontSize: 13,
+        color: '#0369A1',
+        lineHeight: 18
+    },
 
     // Search
     searchBox: {
-        flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
-        borderRadius: 12, paddingHorizontal: 14, marginBottom: 14,
-        elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05, shadowRadius: 4,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        paddingHorizontal: 14,
+        marginBottom: 14,
+        elevation: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
     },
     searchIcon: { fontSize: 18, marginRight: 8 },
-    searchInput: { flex: 1, paddingVertical: 12, fontSize: 14, color: '#111827' },
+    searchInput: {
+        flex: 1,
+        paddingVertical: 12,
+        fontSize: 14,
+        color: '#111827'
+    },
 
     // Section title
-    sectionTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 10 },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#111827',
+        marginBottom: 10
+    },
 
-    // Patient card
+    // ── Grid Layout ──
+    gridRow: {
+        marginBottom: 12,
+        gap: 8,
+    },
+
+    // ── Patient Card ──
     patientCard: {
-        flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff',
-        borderRadius: 14, padding: 14, marginBottom: 10, elevation: 2,
-        shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07, shadowRadius: 4,
+        borderRadius: 14,
+        padding: 10,
+        alignItems: 'center',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        position: 'relative',
+        overflow: 'hidden',
+        minHeight: 150,
+    },
+    riskBar: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 3,
     },
     patientAvatar: {
-        width: 48, height: 48, borderRadius: 24,
-        backgroundColor: '#DBEAFE', alignItems: 'center', justifyContent: 'center', marginRight: 14,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 6,
+        marginTop: 4,
     },
-    patientAvatarText: { color: TEAL, fontWeight: '800', fontSize: 17 },
-    patientInfo: { flex: 1 },
-    patientName: { fontWeight: '700', fontSize: 15, color: '#111827' },
-    patientEmail: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-    patientJoined: { fontSize: 11, color: '#9CA3AF', marginTop: 4 },
-    patientChevron: { paddingLeft: 8 },
-    chevronText: { fontSize: 26, color: '#9CA3AF', fontWeight: '300' },
+    patientAvatarText: {
+        fontWeight: '800',
+        fontSize: 16,
+    },
+    patientName: {
+        fontWeight: '700',
+        fontSize: 12,
+        textAlign: 'center',
+        marginBottom: 3,
+        width: '100%',
+    },
+    riskBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 10,
+        marginBottom: 2,
+        gap: 3,
+    },
+    riskEmoji: { fontSize: 11 },
+    riskLabel: { fontSize: 11, fontWeight: '600' },
+    riskScore: {
+        fontSize: 12,
+        fontWeight: '800',
+        marginTop: 1,
+    },
 
     // Empty
-    emptyBox: { alignItems: 'center', paddingVertical: 48 },
+    emptyBox: {
+        alignItems: 'center',
+        paddingVertical: 48
+    },
     emptyIcon: { fontSize: 48, marginBottom: 12 },
-    emptyText: { fontSize: 16, color: '#6B7280', fontWeight: '600' },
+    emptyText: {
+        fontSize: 16,
+        color: '#6B7280',
+        fontWeight: '600'
+    },
 
-    // Modal
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 28 },
-    modalCard: { backgroundColor: '#fff', borderRadius: 24, padding: 24, alignItems: 'center' },
+    // ── Modal ──
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        padding: 20
+    },
+    modalCard: {
+        backgroundColor: '#fff',
+        borderRadius: 24,
+        padding: 24,
+        alignItems: 'center',
+        maxHeight: '90%',
+        width: '100%',
+        maxWidth: 460,
+        alignSelf: 'center',
+    },
+    modalScroll: { width: '100%', flexShrink: 1 },
+    modalScrollContent: { alignItems: 'center', paddingBottom: 4 },
     modalAvatarBig: {
-        width: 80, height: 80, borderRadius: 40,
-        backgroundColor: '#DBEAFE', alignItems: 'center', justifyContent: 'center', marginBottom: 12,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 12,
     },
-    modalAvatarBigText: { color: TEAL, fontWeight: '800', fontSize: 28 },
-    modalName: { fontSize: 22, fontWeight: '800', color: '#111827', marginBottom: 20 },
-    detailRow: { flexDirection: 'row', alignItems: 'center', width: '100%', marginBottom: 12, gap: 10 },
-    detailIcon: { fontSize: 20 },
-    detailText: { fontSize: 14, color: '#374151' },
+    modalAvatarBigText: {
+        fontWeight: '800',
+        fontSize: 28,
+    },
+    modalName: {
+        fontSize: 22,
+        fontWeight: '800',
+        color: '#111827',
+        marginBottom: 12,
+    },
+    modalRiskBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        marginBottom: 16,
+        gap: 8,
+    },
+    modalRiskEmoji: { fontSize: 16 },
+    modalRiskText: {
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    detailRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        marginBottom: 10,
+        gap: 10,
+    },
+    detailIcon: { fontSize: 18 },
+    detailText: {
+        fontSize: 14,
+        color: '#374151',
+        flex: 1
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#E5E7EB',
+        width: '100%',
+        marginVertical: 12
+    },
+    sectionHeading: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: '#111827',
+        width: '100%',
+        marginBottom: 10,
+    },
     closeBtn: {
-        marginTop: 20, backgroundColor: TEAL, borderRadius: 14,
-        paddingVertical: 13, paddingHorizontal: 40,
+        marginTop: 16,
+        borderRadius: 14,
+        paddingVertical: 13,
+        paddingHorizontal: 40,
+        width: '100%',
+        alignItems: 'center',
     },
-    closeBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+    closeBtnText: {
+        color: '#fff',
+        fontWeight: '700',
+        fontSize: 15
+    },
 });

@@ -1,6 +1,5 @@
 const Diary = require('../models/Diary');
 const User = require('../models/User');
-
 const getDiary = async (req, res, next) => {
     try {
         const { date } = req.params;
@@ -18,8 +17,10 @@ const saveDiary = async (req, res, next) => {
         const { date, content, isLocked, theme, media, mood, sentiment } = req.body;
         const userId = req.user.id;
 
-        if (!date) {
-            return res.status(400).json({ message: 'date is required (YYYY-MM-DD)' });
+        // Validation: Only allow diary entry for today
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (date !== todayStr) {
+            return res.status(400).json({ message: 'Can only edit diary for today' });
         }
 
         const updateData = { content };
