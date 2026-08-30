@@ -297,8 +297,11 @@ const RecommendationsScreen = ({ navigation, route }) => {
   // Quick Assessment State
   const hasAnalysis = Boolean(latestAnalysis);
   const [step, setStep] = useState(1);
-  const [selEmotion, setSelEmotion] = useState('anxious');
-  const [selReason, setSelReason] = useState('baby_crying');
+  const [selEmotion, setSelEmotion] = useState(null);
+  const [selReason, setSelReason] = useState(null);
+  const [showEmotionWarning, setShowEmotionWarning] = useState(false);
+  const [warningTitle, setWarningTitle] = useState('');
+  const [warningText, setWarningText] = useState('');
   const [selHelp, setSelHelp] = useState(['activities', 'baby_care']);
 
   // Screen UI State
@@ -433,6 +436,49 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const handleAssessmentSkip = () => {
     setShowAssessment(false);
     setIsSkipped(true);
+  };
+
+  const handleAssessmentClose = () => {
+    if (step === 1) {
+      const hasSelectedEmotion = selEmotion !== null && selEmotion !== undefined && selEmotion !== '';
+      if (!hasSelectedEmotion) {
+        setWarningTitle(isSinhala ? 'හැඟීමක් තෝරන්න' : 'Select an Emotion');
+        setWarningText(isSinhala ? 'පුද්ගලික නිර්දේශ ලබාගැනීමට, කරුණාකර පළමුව හැඟීමක් තෝරන්න.' : 'To receive personalized recommendations, please select an emotion first.');
+        setShowEmotionWarning(true);
+        return;
+      }
+    } else if (step === 2) {
+      const hasSelectedReason = selReason !== null && selReason !== undefined && selReason !== '';
+      if (!hasSelectedReason) {
+        setWarningTitle(isSinhala ? 'හේතුවක් තෝරන්න' : 'Select a Reason');
+        setWarningText(isSinhala ? 'පුද්ගලික නිර්දේශ ලබාගැනීමට, කරුණාකර පළමුව හේතුවක් තෝරන්න.' : 'To receive personalized recommendations, please select a reason first.');
+        setShowEmotionWarning(true);
+        return;
+      }
+    }
+    handleAssessmentSkip();
+  };
+
+  const handleStep1Next = () => {
+    const hasSelectedEmotion = selEmotion !== null && selEmotion !== undefined && selEmotion !== '';
+    if (!hasSelectedEmotion) {
+      setWarningTitle(isSinhala ? 'හැඟීමක් තෝරන්න' : 'Select an Emotion');
+      setWarningText(isSinhala ? 'පුද්ගලික නිර්දේශ ලබාගැනීමට, කරුණාකර පළමුව හැඟීමක් තෝරන්න.' : 'To receive personalized recommendations, please select an emotion first.');
+      setShowEmotionWarning(true);
+      return;
+    }
+    setStep(2);
+  };
+
+  const handleStep2Submit = () => {
+    const hasSelectedReason = selReason !== null && selReason !== undefined && selReason !== '';
+    if (!hasSelectedReason) {
+      setWarningTitle(isSinhala ? 'හේතුවක් තෝරන්න' : 'Select a Reason');
+      setWarningText(isSinhala ? 'පුද්ගලික නිර්දේශ ලබාගැනීමට, කරුණාකර පළමුව හේතුවක් තෝරන්න.' : 'To receive personalized recommendations, please select a reason first.');
+      setShowEmotionWarning(true);
+      return;
+    }
+    handleAssessmentContinue();
   };
 
   // Feedback handler
@@ -1163,8 +1209,8 @@ const RecommendationsScreen = ({ navigation, route }) => {
           <View style={s.modalCard}>
             {/* Step Indicator */}
             <View style={s.stepIndicatorRow}>
-              <Text style={s.stepIndicatorText}>{isSinhala ? 'පියවර' : 'Step'} {step} / 3</Text>
-              <TouchableOpacity onPress={handleAssessmentSkip}>
+              <Text style={s.stepIndicatorText}>{isSinhala ? 'පියවර' : 'Step'} {step} / 2</Text>
+              <TouchableOpacity onPress={handleAssessmentClose}>
                 <Text style={s.closeModalText}>✕</Text>
               </TouchableOpacity>
             </View>
@@ -1188,10 +1234,10 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   ))}
                 </ScrollView>
                 <View style={s.modalActionRow}>
-                  <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentSkip}>
+                  <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentClose}>
                     <Text style={s.skipBtnText}>{isSinhala ? 'දැන් අවශ්‍ය නැහැ (Skip)' : 'Skip for now'}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={s.modalNextBtn} onPress={() => setStep(2)}>
+                  <TouchableOpacity style={s.modalNextBtn} onPress={handleStep1Next}>
                     <Text style={s.modalNextBtnText}>{isSinhala ? 'ඊළඟ පියවර →' : 'Next Step →'}</Text>
                   </TouchableOpacity>
                 </View>
@@ -1219,51 +1265,38 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   <TouchableOpacity style={s.modalBackBtn} onPress={() => setStep(1)}>
                     <Text style={s.modalBackBtnText}>{isSinhala ? '← ආපසු' : '← Back'}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentSkip}>
+                  <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentClose}>
                     <Text style={s.skipBtnText}>Skip</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={s.modalNextBtn} onPress={() => setStep(3)}>
-                    <Text style={s.modalNextBtnText}>{isSinhala ? 'ඊළඟ පියවර →' : 'Next Step →'}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            {step === 3 && (
-              <View>
-                <Text style={s.modalTitle}>{isSinhala ? 'අද ඔබට අවශ්‍ය උදව් මොනවාද?' : 'What help do you need today?'}</Text>
-                <Text style={s.modalSub}>{isSinhala ? 'ඔබ වඩාත්ම කැමති අංශ තෝරන්න (එකක් හෝ කිහිපයක්).' : 'Select the areas you prefer (one or more).'}</Text>
-                <ScrollView style={{ maxHeight: 220 }}>
-                  {HELP_NEEDED_OPTIONS.map(h => {
-                    const isSel = selHelp.includes(h.key);
-                    return (
-                      <TouchableOpacity
-                        key={h.key}
-                        style={[s.helpOption, isSel && s.helpOptionSel]}
-                        onPress={() => {
-                          if (isSel) setSelHelp(selHelp.filter(k => k !== h.key));
-                          else setSelHelp([...selHelp, h.key]);
-                        }}
-                      >
-                        <Text style={s.checkboxText}>{isSel ? '☑' : '☐'}</Text>
-                        <Text style={s.helpOptionLabel}>{isSinhala ? h.label : (h.labelEn || h.label.split('(')[0].trim())}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-                <View style={s.modalActionRow}>
-                  <TouchableOpacity style={s.modalBackBtn} onPress={() => setStep(2)}>
-                    <Text style={s.modalBackBtnText}>{isSinhala ? '← ආපසු' : '← Back'}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={s.skipBtn} onPress={handleAssessmentSkip}>
-                    <Text style={s.skipBtnText}>Skip</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={s.modalNextBtn} onPress={handleAssessmentContinue}>
+                  <TouchableOpacity style={s.modalNextBtn} onPress={handleStep2Submit}>
                     <Text style={s.modalNextBtnText}>{isSinhala ? 'පුද්ගලික නිර්දේශ බලන්න ✨' : 'View Recommendations ✨'}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
             )}
+          </View>
+        </View>
+      </Modal>
+
+      {/* EMOTION / REASON REQUIRED WARNING MODAL */}
+      <Modal visible={showEmotionWarning} animationType="fade" transparent>
+        <View style={s.modalOverlay}>
+          <View style={s.warningCard}>
+            <Text style={s.warningIcon}>⚠️</Text>
+            <Text style={s.warningTitle}>{warningTitle || (isSinhala ? 'තෝරාගැනීම අවශ්‍යයි' : 'Selection Required')}</Text>
+            <Text style={s.warningText}>
+              {warningText || (isSinhala
+                ? 'පුද්ගලික නිර්දේශ ලබාගැනීමට, කරුණාකර පළමුව තෝරාගැනීමක් කරන්න.'
+                : 'To receive personalized recommendations, please make a selection first.')}
+            </Text>
+            <TouchableOpacity
+              style={s.warningBtn}
+              onPress={() => setShowEmotionWarning(false)}
+            >
+              <Text style={s.warningBtnText}>
+                {isSinhala ? 'තෝරාගැනීම ඉදිරියට' : 'Continue Selecting'}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1483,6 +1516,51 @@ const s = StyleSheet.create({
     color: '#6A4D77',
     marginTop: 3,
     lineHeight: 15,
+  },
+  warningCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: radius.xl,
+    padding: 24,
+    width: '100%',
+    maxWidth: 350,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#EABDE6',
+    ...shadows.card,
+  },
+  warningIcon: {
+    fontSize: 36,
+    marginBottom: 10,
+  },
+  warningTitle: {
+    fontSize: 18,
+    fontFamily: typography.topicFont,
+    fontWeight: '700',
+    color: '#AA60C8',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  warningText: {
+    fontSize: 13,
+    fontFamily: typography.bodyFont,
+    color: '#6A4D77',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  warningBtn: {
+    backgroundColor: '#AA60C8',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: radius.full,
+    width: '100%',
+    alignItems: 'center',
+  },
+  warningBtnText: {
+    color: '#FFFFFF',
+    fontFamily: typography.subTopicFont,
+    fontWeight: '700',
+    fontSize: 14,
   },
 });
 

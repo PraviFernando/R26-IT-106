@@ -74,7 +74,7 @@ export const SI = {
   get skipNow() { return i18n.t('skipNow', { defaultValue: 'දැනට මඟහරින්න' }); },
 
   // Activities
-  get activitiesTitle() { return i18n.t('activitiesTitle', { defaultValue: 'ක්‍රියාකාරකම් සහ ක්‍රීඩා 🌸' }); },
+  get activitiesTitle() { return i18n.t('activitiesTitle', { defaultValue: 'ක්‍රියාකාරකම් සහ ක්‍රීඩා' }); },
   get actSubtitle() { return i18n.t('actSubtitle', { defaultValue: 'සිහිකල්පනා ක්‍රියාකාරකම් 10 සහ ක්‍රීඩා 5' }); },
   get calmGames() { return i18n.t('calmGames', { defaultValue: '🎮 සන්සුන් ක්‍රීඩා' }); },
   get backToActs() { return i18n.t('backToActs', { defaultValue: '← ක්‍රියාකාරකම්' }); },

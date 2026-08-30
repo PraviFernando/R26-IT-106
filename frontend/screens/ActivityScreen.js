@@ -1,6 +1,7 @@
 // ActivityScreen.js — Bloom Postpartum App (Full Sinhala)
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Animated, Modal, Image } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, typography, spacing, radius, shadows } from '../theme';
 import { ALL_ACTIVITIES, NEW_ACTIVITIES } from '../services/activitiesLibrary';
@@ -2938,15 +2939,17 @@ const ALL_GAMES_LIST = [
   { id: 'coin_maze', label: 'කාසි මාලිම', labelEn: 'Collect coins', icon: '🪙', color: ['#FFF9C4', '#FFF3E0'], accent: '#F57F17' },
   { id: 'rotation_puzzle', label: 'කරකැවිල්ල', labelEn: 'Rotate tiles', icon: '🔄', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'sliding_puzzle', label: 'ස්ලයිඩ්', labelEn: 'Slide tiles', icon: '🧩', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
-  { id: 'emotion_journal', label: 'හැඟීම් දිනපොත', labelEn: 'Track your mood', icon: '🎭', color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
-  { id: 'mindful_tap', label: 'සිහිකල්පනාව', labelEn: 'Breathing rhythm', icon: '🌿', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
+  { id: 'write_journal', label: 'දිනපොත ලියන්න', labelEn: 'Write a Journal', icon: '📖', color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
+  { id: 'mindful_tap', label: 'භාවනා ක්‍රියාකාරකම', labelEn: 'Meditation Activity', icon: '🧘', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32' },
   { id: 'mood_board', label: 'මනෝභාව පුවරුව', labelEn: 'Express your mood', icon: '🎨', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'mandala', label: 'මණ්ඩල කලා', labelEn: 'Colour mandalas', icon: '🔮', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'colouring', label: 'රූප පාටකිරීම', labelEn: 'Colouring pages', icon: '🎨', color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
 ];
-const MATURE_IDS = ['emotion_journal', 'mindful_tap', 'mood_board'];
+const MATURE_IDS = ['write_journal', 'mindful_tap', 'self_care'];
 
 const ActivityScreen = ({ navigation, route }) => {
+  const { t, i18n } = useTranslation();
+  const isSinhala = i18n?.language === 'si';
   const [selAct, setSelAct] = useState(null);
   const [selGame, setSelGame] = useState(null);
   const [view, setView] = useState('list');
@@ -3070,6 +3073,7 @@ const ActivityScreen = ({ navigation, route }) => {
         return <RotationPuzzle onGoBack={goBack} />;
       case 'sliding_puzzle':
         return <SlidingPuzzle onGoBack={goBack} />;
+      case 'write_journal':
       case 'emotion_journal':
         return <EmotionJournal onGoBack={goBack} />;
       case 'mindful_tap':
@@ -3123,8 +3127,32 @@ const ActivityScreen = ({ navigation, route }) => {
     <View style={s.container}>
       <LinearGradient colors={['#FAF2FA', '#FFDFEF']} style={s.gradient}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
-          <Text style={s.pageTitle}>ක්‍රියාකාරකම් සහ ක්‍රීඩා 🌸</Text>
-          <Text style={s.pageSub}>ඔබේ යහපැවැත්ම 💜</Text>
+          {/* Top Header Row with Back Button */}
+          <View style={s.topBarRow}>
+            <TouchableOpacity
+              onPress={() => {
+                if (navigation && navigation.canGoBack()) {
+                  navigation.goBack();
+                } else if (navigation) {
+                  navigation.navigate('Dashboard');
+                }
+              }}
+              style={s.backBtn}
+            >
+              <Text style={s.backText}>{isSinhala ? '← ආපසු' : '← Back'}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => i18n && i18n.changeLanguage(isSinhala ? 'en' : 'si')}
+              style={s.langToggleBtn}
+              activeOpacity={0.7}
+            >
+              <Text style={s.langToggleText}>{isSinhala ? 'EN' : 'සිං'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          <Text style={s.pageTitle}>{isSinhala ? 'ක්‍රියාකාරකම් සහ ක්‍රීඩා' : 'Activities & Games'}</Text>
+          <Text style={s.pageSub}>{isSinhala ? 'ඔබේ යහපැවැත්ම 💜' : 'Your Wellbeing 💜'}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Art')} style={s.artBanner}>
             <Text style={s.artBannerIcon}>🎨</Text>
             <View style={s.artBannerInfo}>
@@ -3205,6 +3233,9 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FAF2FA' },
   gradient: { flex: 1 },
   scroll: { padding: spacing.md, paddingTop: 50, paddingBottom: 40 },
+  topBarRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  langToggleBtn: { backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.full, borderWidth: 1, borderColor: '#EABDE6' },
+  langToggleText: { fontSize: 13, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: '#AA60C8' },
   pageTitle: { fontSize: 26, fontFamily: typography.headerFont, fontWeight: '700', color: '#2C1A35', marginBottom: 4 },
   pageSub: { fontSize: 15, fontFamily: typography.bodyFont, color: '#6A4D77', marginBottom: spacing.lg },
   artBanner: {

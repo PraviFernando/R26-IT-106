@@ -175,19 +175,6 @@ const DashboardScreenCopy = ({ navigation }) => {
               </Text>
             </View>
 
-            {/* Risk Level Card */}
-            <View style={[s.riskCard, { backgroundColor: riskBg }]}>
-              <View style={s.riskTop}>
-                <Text style={s.riskCardLabel}>{isSinhala ? 'හැඟීම් අවදානම් මට්ටම' : 'Emotional Risk Level'}</Text>
-                <Text style={[s.riskText, { color: riskColor }]}>
-                  {riskLabelText}
-                </Text>
-              </View>
-              <View style={s.riskBar}>
-                <View style={[s.riskBarFill, { width: `${riskPct}%`, backgroundColor: riskColor }]} />
-              </View>
-              <Text style={[s.riskDesc, { color: riskColor }]}>{riskDesc}</Text>
-            </View>
 
             {/* Support Message Card */}
             <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={s.msgCard}>
@@ -232,29 +219,6 @@ const DashboardScreenCopy = ({ navigation }) => {
             </TouchableOpacity>
           </Animated.View>
 
-          {/* 7-Day Strip */}
-          <View style={s.section}>
-            <Text style={s.sectionTitle}>{isSinhala ? 'මෙම සතිය' : 'This Week'}</Text>
-            <View style={s.weekStrip}>
-              {weekDays.map((d, i) => {
-                const ec = ecMap[d.emotion] || ecMap.stressed;
-                const SI_DAYS = ['ඉරි', 'සඳු', 'අඟ', 'බදා', 'බ්‍රහ', 'සිකු', 'සෙන'];
-                const EN_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                const daysArr = isSinhala ? SI_DAYS : EN_DAYS;
-                const dayIndex = i % 7;
-                const dayDisplay = daysArr[dayIndex] || d.day;
-                const isToday = i === weekDays.length - 1;
-                const displayEmoji = d.emoji || d.mood || ec.emoji;
-                return (
-                  <View key={i} style={[s.dayChip, { backgroundColor: ec.bg }, isToday && s.dayChipToday]}>
-                    <Text style={s.dayEmoji}>{displayEmoji}</Text>
-                    <Text style={[s.dayLabel, isToday && { color: colors.lavenderDark, fontWeight: '800' }]}>{dayDisplay}</Text>
-                    <Text style={s.riskDot}>{d.risk === 'medium' ? '🟡' : '🟢'}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
 
           {/* Quick Actions */}
           <View style={s.section}>
@@ -273,11 +237,6 @@ const DashboardScreenCopy = ({ navigation }) => {
             </View>
           </View>
 
-          {/* Affirmation */}
-          <LinearGradient colors={['#EDE7F6','#FCE4EC']} style={s.affirmCard}>
-            <Text style={s.affirmTitle}>{isSinhala ? 'අදේ ශක්තිය ✨' : 'Today\'s Affirmation ✨'}</Text>
-            <Text style={s.affirmText}>"{affirmation}"</Text>
-          </LinearGradient>
 
           <View style={{ height: 110 }} />
         </ScrollView>
