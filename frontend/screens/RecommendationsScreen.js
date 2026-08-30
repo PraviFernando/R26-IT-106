@@ -780,7 +780,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           </View>
 
-          <Text style={s.title}>{isSinhala ? 'නිර්දේශිත සහන & දැනුම එකතුව 💜' : 'Recommended Relief & Knowledge Collection 💜'}</Text>
+          <Text style={s.title}>{isSinhala ? 'නිර්දේශිත සහන & දැනුම එකතුව' : 'Recommended Relief & Knowledge Collection 💜'}</Text>
 
           {/* Search Bar */}
           <View style={s.searchWrap}>
