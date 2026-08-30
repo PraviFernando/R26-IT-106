@@ -306,7 +306,28 @@ export default function ExerciseProgressScreen({ navigation }) {
                             {isSinhala ? 'ඔබේ ප්‍රගතිය' : 'Your Progress'}
                         </Text>
                     </View>
-                    <View style={styles.backBtnPlaceholder} />
+                    <TouchableOpacity
+                        onPress={() =>
+                            i18n.changeLanguage(
+                                i18n.language === 'en' ? 'si' : 'en'
+                            )
+                        }
+                        style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <Text
+                            style={{
+                                fontWeight: '700',
+                                fontSize: 13,
+                                color: '#7C3AED',
+                                backgroundColor: '#EDE9FE',
+                                paddingHorizontal: 10,
+                                paddingVertical: 4,
+                                borderRadius: 12,
+                            }}
+                        >
+                            {i18n.language === 'en' ? 'සිං' : 'EN'}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>

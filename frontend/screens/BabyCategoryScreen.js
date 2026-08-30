@@ -262,7 +262,28 @@ export default function BabyCategoryScreen({ route, navigation }) {
                     <View style={styles.headerCenter}>
                         <Text style={styles.headerTitle}>{displayName}</Text>
                     </View>
-                    <View style={styles.backBtnPlaceholder} />
+                    <TouchableOpacity
+                        onPress={() =>
+                            i18n.changeLanguage(
+                                i18n.language === 'en' ? 'si' : 'en'
+                            )
+                        }
+                        style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <Text
+                            style={{
+                                fontWeight: '700',
+                                fontSize: 13,
+                                color: '#7C3AED',
+                                backgroundColor: '#EDE9FE',
+                                paddingHorizontal: 10,
+                                paddingVertical: 4,
+                                borderRadius: 12,
+                            }}
+                        >
+                            {i18n.language === 'en' ? 'සිං' : 'EN'}
+                        </Text>
+                    </TouchableOpacity>
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
