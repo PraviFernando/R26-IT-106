@@ -2928,7 +2928,7 @@ const ALL_GAMES_LIST = [
   { id: 'memory_match', label: 'මතක ගැළපීම', labelEn: 'Find pairs', icon: '🃏', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'baby_mood', label: 'ළදරු හැඟීම', labelEn: "Baby's mood", icon: '😊', color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17' },
   { id: 'self_care', label: 'ස්වයං රැකවරණය', labelEn: 'Daily care', icon: '🌿', color: ['#E8F5E9', '#A5D6A7'], accent: '#2E7D32' },
-  { id: 'bubble_pop', label: 'බුබුළු ෆොන්', labelEn: 'Pop flowers only!', icon: '🌸', color: ['#E3F2FD', '#BBDEFB'], accent: '#1565C0' },
+  { id: 'bubble_pop', label: 'බුබුළු පොප්', labelEn: 'Pop flowers only!', icon: '🌸', color: ['#E3F2FD', '#BBDEFB'], accent: '#1565C0' },
   { id: 'word_match', label: 'වචන ගැළපීම', labelEn: 'New words each turn', icon: '💬', color: ['#F3E5F5', '#E1BEE7'], accent: '#7E57C2' },
   { id: 'word_builder', label: 'වචන ගොඩනැගීම', labelEn: 'Build words + hints', icon: '🔠', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'pattern_repeat', label: 'රටාව නැවත', labelEn: 'Memory pattern', icon: '🧠', color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },

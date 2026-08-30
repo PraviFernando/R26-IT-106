@@ -143,12 +143,14 @@ const DashboardScreenCopy = ({ navigation }) => {
           {/* Header */}
           <Animated.View style={[s.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
             <View>
-              <Text style={s.greeting}>{isSinhala ? 'සුභ උදෑසනක් 🌸' : 'Good Morning 🌸'}</Text>
-              <Text style={s.name}>{isSinhala ? 'ආයුබෝවන්,' : 'Hello,'} {user.name}</Text>
+              {!isSinhala && <Text style={s.greeting}>Good Morning 🌸</Text>}
+              <Text style={s.name}>{isSinhala ? 'ආයුබෝවන්' : `Hello, ${user.name}`}</Text>
             </View>
-            <View style={s.avatar}>
-              <Text style={s.avatarText}>{user.name ? user.name[0] : 'S'}</Text>
-            </View>
+            {!isSinhala && (
+              <View style={s.avatar}>
+                <Text style={s.avatarText}>{user.name ? user.name[0] : 'S'}</Text>
+              </View>
+            )}
           </Animated.View>
 
           {/* Preferences prompt */}
@@ -163,8 +165,8 @@ const DashboardScreenCopy = ({ navigation }) => {
 
           {/* Merged Support Screen Contents */}
           <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-            <Text style={s.supportTitle}>{isSinhala ? 'හැඟීම් විශ්ලේෂණය 💜' : 'Emotional Analysis 💜'}</Text>
-            <Text style={s.supportSubtitle}>{isSinhala ? 'ඔබේ දිනපොත කියවා විශ්ලේෂණය කෙරිණි' : 'Your diary entry was read and analyzed'}</Text>
+            {!isSinhala && <Text style={s.supportTitle}>Emotional Analysis 💜</Text>}
+            {!isSinhala && <Text style={s.supportSubtitle}>Your diary entry was read and analyzed</Text>}
 
             {/* System Note */}
             <View style={s.systemNote}>

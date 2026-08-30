@@ -504,7 +504,7 @@ export const getNewRecommendations = (emotion, reason, riskLevel, diaryText = ''
 
 export const ALL_GAMES = [
   { id: 'baby_mood', icon: '😊', label: 'ළදරු හැඟීම', labelEn: 'Baby Cues', color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17' },
-  { id: 'bubble_pop', icon: '🫧', label: 'බුබුළු ෆොන් ෆොන්', labelEn: 'Bubble Pop', color: ['#E3F2FD', '#BBDEFB'], accent: '#1565C0' },
+  { id: 'bubble_pop', icon: '🫧', label: 'බුබුළු පොප්', labelEn: 'Bubble Pop', color: ['#E3F2FD', '#BBDEFB'], accent: '#1565C0' },
   { id: 'memory_match', icon: '🃏', label: 'මතක ගැළපීම', labelEn: 'Memory Match', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'word_match', icon: '💬', label: 'වචන ගැළපීම', labelEn: 'Word Match', color: ['#F3E5F5', '#E1BEE7'], accent: '#7E57C2' },
   { id: 'word_builder', icon: '🔠', label: 'වචන ගොඩනැගීම', labelEn: 'Word Builder', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },

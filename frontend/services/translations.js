@@ -93,8 +93,8 @@ export const SI = {
   get cycle() { return i18n.t('cycle', { defaultValue: 'චක්‍රය' }); },
 
   // Games - Bubble Pop
-  get bubblePop() { return i18n.t('bubblePop', { defaultValue: 'බුබුළු ෆොන් ෆොන් 🫧' }); },
-  get bubblesPopped() { return i18n.t('bubblesPopped', { defaultValue: 'බුබුළු ෆොන් කළා' }); },
+  get bubblePop() { return i18n.t('bubblePop', { defaultValue: 'බුබුළු පොප් 🫧' }); },
+  get bubblesPopped() { return i18n.t('bubblesPopped', { defaultValue: 'බුබුළු පොප් කළා' }); },
   get tapBubbles() { return i18n.t('tapBubbles', { defaultValue: 'සන්සුන් වීමට බුබුළු ස්පර්ශ කරන්න! 💜' }); },
 
   // Games - Word Match
@@ -146,7 +146,7 @@ export const SI = {
   get on3Title() { return i18n.t('on3Title', { defaultValue: 'බුද්ධිමත් නිර්දේශ' }); },
   get on3Sub() { return i18n.t('on3Sub', { defaultValue: 'ඔබේ මනෝභාවය සහ අවදානම් මට්ටම මත — සංගීතය, වීඩියෝ සහ ක්‍රියාකාරකම් නිර්දේශ කෙරේ.' }); },
   get on4Title() { return i18n.t('on4Title', { defaultValue: 'සන්සුන් ක්‍රීඩා සහ ක්‍රියාකාරකම්' }); },
-  get on4Sub() { return i18n.t('on4Sub', { defaultValue: 'බුබුළු ෆොන්, වචන ගළපීම, ළදරු ඇඳුම්, ගස් පිංතාරය, මණ්ඩල — ඔබේ මනස ලිහිල් කිරීමට.' }); },
+  get on4Sub() { return i18n.t('on4Sub', { defaultValue: 'බුබුළු පොප්, වචන ගළපීම, ළදරු ඇඳුම්, ගස් පිංතාරය, මණ්ඩල — ඔබේ මනස ලිහිල් කිරීමට.' }); },
   get on5Title() { return i18n.t('on5Title', { defaultValue: 'ඔබේ මනාපයන්' }); },
   get on5Sub() { return i18n.t('on5Sub', { defaultValue: 'ඔබ ප්‍රිය කරන ක්‍රියාකාරකම් සහ ක්‍රීඩා තෝරන්න — ඒවා පමණක් නිර්දේශ කෙරේ.' }); },
   get getStarted() { return i18n.t('getStarted', { defaultValue: 'ආරම්භ කරන්න 🌸' }); },
