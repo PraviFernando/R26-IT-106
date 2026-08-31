@@ -8,7 +8,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, shadows, radius } from '../theme';
+import { useResponsive } from '../hooks/useResponsive';
 
 import DashboardScreen from '../screens/DashboardScreen copy';
 import RecommendationsScreen from '../screens/RecommendationsScreen';
@@ -30,9 +32,12 @@ const TABS = [
 const CustomTabBar = ({ state, navigation }) => {
   const { i18n } = useTranslation();
   const isSinhala = i18n.language === 'si';
+  const insets = useSafeAreaInsets();
+  const { scale } = useResponsive();
+  const labelStyle = { fontSize: scale(8, { min: 10 }) };
 
   return (
-    <View style={s.wrapper}>
+    <View style={[s.wrapper, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       <View style={s.bar}>
         {state.routes.map((route, i) => {
           const focused = state.index === i;
@@ -45,12 +50,12 @@ const CustomTabBar = ({ state, navigation }) => {
               {focused ? (
                 <LinearGradient colors={[colors.lavenderDark, colors.roseDark]} style={s.activeChip}>
                   <Text style={s.activeIcon}>{tab.icon}</Text>
-                  <Text style={s.activeLabel}>{label}</Text>
+                  <Text style={[s.activeLabel, labelStyle]} numberOfLines={1} adjustsFontSizeToFit>{label}</Text>
                 </LinearGradient>
               ) : (
                 <View style={s.inactiveChip}>
                   <Text style={s.inactiveIcon}>{tab.icon}</Text>
-                  <Text style={s.inactiveLabel}>{label}</Text>
+                  <Text style={[s.inactiveLabel, labelStyle]} numberOfLines={1} adjustsFontSizeToFit>{label}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -78,8 +83,8 @@ const AppNavigator = () => (
 );
 
 const s = StyleSheet.create({
-  wrapper: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 14, paddingBottom: 24, paddingTop: 8 },
-  bar: { flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.97)', borderRadius: 32, paddingVertical: 8, paddingHorizontal: 8, ...shadows.strong, alignItems: 'center' },
+  wrapper: { position: 'absolute', bottom: 0, left: 0, right: 0, paddingHorizontal: 14, paddingTop: 8 },
+  bar: { flexDirection: 'row', width: '100%', maxWidth: 520, alignSelf: 'center', backgroundColor: 'rgba(255,255,255,0.97)', borderRadius: 32, paddingVertical: 8, paddingHorizontal: 8, ...shadows.strong, alignItems: 'center' },
   tab: { flex: 1, alignItems: 'center' },
   activeChip: { borderRadius: 22, paddingVertical: 8, paddingHorizontal: 8, alignItems: 'center', minWidth: 52 },
   activeIcon: { fontSize: 16 },

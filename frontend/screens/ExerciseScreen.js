@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { Camera } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ContentWell } from '../components/ScreenContainer';
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import * as DocumentPicker from 'expo-document-picker';
@@ -364,7 +365,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
             {/* Section: Delivery Info */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>{isSinhala ? 'දරු ප්‍රසූතිය පිළිබඳ තොරතුරු' : 'Delivery Information'}</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? '📅 දරු ප්‍රසූතිය පිළිබඳ තොරතුරු' : '📅 Delivery Information'}</Text>
 
                 {(!user?.deliveryDate) && (
                     <View style={styles.inputGroup}>
@@ -410,7 +411,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                             disabled={!!user?.deliveryType}
                         >
                             <Text style={[styles.optionText, deliveryType === 'normal' && styles.optionTextActive]}>
-                                {isSinhala ? 'සාමාන්ූය' : 'Normal'}
+                                {isSinhala ? '🤱 සාමාන්‍ය' : '🤱 Normal'}
                             </Text>
                         </Pressable>
                         <Pressable
@@ -424,7 +425,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                             disabled={!!user?.deliveryType}
                         >
                             <Text style={[styles.optionText, deliveryType === 'c-section' && styles.optionTextActive]}>
-                                {isSinhala ? 'සිසේරියන්' : 'C-Section'}
+                                {isSinhala ? '🏥 සිසේරියන්' : '🏥 C-Section'}
                             </Text>
                         </Pressable>
                     </View>
@@ -433,7 +434,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
             {/* Section: Pain Conditions */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>{isSinhala ? 'වේදනා තත්ත්වයන්' : 'Pain Conditions'}</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? '⚡ වේදනා තත්ත්වයන්' : '⚡ Pain Conditions'}</Text>
                 <View style={styles.checkboxGroup}>
                     <Pressable style={({ hovered }) => [styles.checkboxRow, hovered && styles.checkboxRowHover]} onPress={() => setPelvicPain(!pelvicPain)}>
                         <View style={[styles.checkbox, pelvicPain && styles.checkboxChecked]}>
@@ -458,7 +459,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
             {/* Section: Other Health Flags */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>{isSinhala ? 'වෙනත් සෞඛ්‍ය ගැටළු' : 'Other Health Conditions'}</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? '🚩 වෙනත් සෞඛ්‍ය ගැටළු' : '🚩 Other Health Conditions'}</Text>
                 <View style={styles.checkboxGroup}>
                     <Pressable style={({ hovered }) => [styles.checkboxRow, hovered && styles.checkboxRowHover]} onPress={() => setBleeding(!bleeding)}>
                         <View style={[styles.checkbox, bleeding && styles.checkboxChecked]}>
@@ -483,7 +484,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 
             {/* Section: Energy & Mobility */}
             <View style={styles.formSection}>
-                <Text style={styles.formSectionLabel}>{isSinhala ? 'ශක්තිය සහ චලන හැකියාව' : 'Energy & Mobility'}</Text>
+                <Text style={styles.formSectionLabel}>{isSinhala ? '⚡ ශක්තිය සහ චලන හැකියාව' : '⚡ Energy & Mobility'}</Text>
 
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>{isSinhala ? 'තෙහෙට්ටුව මට්ටම' : 'Fatigue Level'}</Text>
@@ -512,7 +513,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
                                 onPress={() => setMobility(level)}
                             >
                                 <Text style={[styles.optionText, mobility === level && styles.optionTextActive]}>
-                                    {level === 'very_limited' ? (isSinhala ? 'ඉතා සීමිතයි' : 'Very Limited') : level === 'limited' ? (isSinhala ? 'සීමිතයි' : 'Limited') : (isSinhala ? 'සාමාන්‍යයි' : 'Normal')}
+                                    {level === 'very_limited' ? (isSinhala ? '🦽 ඉතා සීමිතයි' : '🦽 Very Limited') : level === 'limited' ? (isSinhala ? '🚶 සීමිතයි' : '🚶 Limited') : (isSinhala ? '🏃 සාමාන්‍යයි' : '🏃 Normal')}
                                 </Text>
                             </Pressable>
                         ))}
@@ -954,7 +955,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
                                                 onPress={handleStartTracking}
                                             >
                                                 <Text style={styles.aiTrackingBtnText}>
-                                                    {isSinhala ? 'චලන ලුහුබැඳීම ආරම්භ කරන්න' : 'Start Movement Tracking'}
+                                                    {isSinhala ? '🤖 AI චලන ලුහුබැඳීම ආරම්භ කරන්න' : '🤖 Start AI Movement Tracking'}
                                                 </Text>
                                             </Pressable>
                                         )}
@@ -1464,6 +1465,7 @@ export default function ExerciseScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
                 <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+                  <ContentWell maxWidth="wide">
                     {!(showForm || !hasData) && (
                         <Pressable
                             style={({ hovered }) => [
@@ -1611,6 +1613,7 @@ export default function ExerciseScreen({ navigation }) {
                     )}
 
                     <View style={{ height: 40 }} />
+                  </ContentWell>
                 </ScrollView>
             </LinearGradient>
 
@@ -1709,7 +1712,7 @@ const styles = StyleSheet.create({
     headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'center' },
     headerEmoji: { fontSize: 24 },
     headerTitle: { fontSize: 17, fontWeight: '800', color: '#1E293B', textAlign: 'center' },
-    scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
+    scrollContent: { paddingBottom: 40 },
 
     // Progress dashboard (inline on Exercise screen)
     progressContainer: {

@@ -1,22 +1,16 @@
 const EPDSScreening = require('../models/EPDSScreening');
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
 const { spawn } = require('child_process');
 const path = require('path');
 
-// ─── Helper: decode JWT from Authorization header ───────────────────────────
-const getUserId = (req) => {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) throw new Error('No token provided');
-    const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded.id;
-};
-
-// ─── Score → Risk Level ──────────────────────────────────────────────────────
+// ─── Score → Risk Level (fallback when the ML model is unavailable) ────────
+// Standard EPDS thresholds:
+//   0–8   ➜ Low
+//   9–12  ➜ Medium
+//   13–30 ➜ High
 const getRiskLevel = (score) => {
     if (score >= 13) return 'high';
-    if (score >= 10) return 'medium';
+    if (score >= 9) return 'medium';
     return 'low';
 };
 
@@ -44,13 +38,18 @@ const getNextAvailableDate = () => {
 // ─── POST /epds/submit ────────────────────────────────────────────────────────
 const submitScreening = async (req, res) => {
     try {
-        const userId = getUserId(req);
+        const userId = req.user.id;
         const { answers, fullName, age, district, village } = req.body;
 
         // ─── Validate required fields ──────────────────────────────────────
-        if (!answers || !Array.isArray(answers) || answers.length !== 10) {
+        if (
+            !answers ||
+            !Array.isArray(answers) ||
+            answers.length !== 10 ||
+            answers.some((v) => !Number.isInteger(Number(v)) || Number(v) < 0 || Number(v) > 3)
+        ) {
             return res.status(400).json({
-                message: 'Please provide exactly 10 answers.'
+                message: 'Please provide exactly 10 answers, each between 0 and 3.'
             });
         }
 
@@ -194,7 +193,7 @@ const submitScreening = async (req, res) => {
 // ─── GET /epds/history ────────────────────────────────────────────────────────
 const getHistory = async (req, res) => {
     try {
-        const userId = getUserId(req);
+        const userId = req.user.id;
         const history = await EPDSScreening.find({ userId }).sort({ month: -1 }).limit(12);
         return res.status(200).json(history);
     } catch (err) {
@@ -206,7 +205,7 @@ const getHistory = async (req, res) => {
 // ─── GET /epds/current ────────────────────────────────────────────────────────
 const getCurrentMonth = async (req, res) => {
     try {
-        const userId = getUserId(req);
+        const userId = req.user.id;
         const month = getCycleStr();
         const screening = await EPDSScreening.findOne({ userId, month });
         return res.status(200).json(screening || null);
@@ -219,7 +218,7 @@ const getCurrentMonth = async (req, res) => {
 // ─── GET /epds/my-history ────────────────────────────────────────────────────
 const getMyHistory = async (req, res) => {
     try {
-        const userId = getUserId(req);
+        const userId = req.user.id;
         const screenings = await EPDSScreening.find({ userId })
             .sort({ createdAt: -1 })
             .limit(24);
@@ -233,7 +232,7 @@ const getMyHistory = async (req, res) => {
 // ─── GET /epds/my-status ─────────────────────────────────────────────────────
 const getMyStatus = async (req, res) => {
     try {
-        const userId = getUserId(req);
+        const userId = req.user.id;
         const cycle = getCycleStr();
         const screening = await EPDSScreening.findOne({ userId, month: cycle });
         const hasDoneCurrentCycle = !!screening;

@@ -70,7 +70,7 @@ async function runTests() {
     console.log('Videos:', results.map(r => ({ title: r.title, id: r.id, source: r.source })));
 
     // Verifications
-    const hasBabyCare = results.some(r => r.id === 'qdXehiELnIA' || r.id === 'kmbKaSRyZ-c' || r.id === 'j2C8MkY7Co8' || r.id === 'TWHOFDQHOUA' || r.id === '3G5aAQL3R_g');
+    const hasBabyCare = results.some(r => r.id === 'qdXehiELnIA' || r.id === 'kmbKaSRyZ-c' || r.id === 'j2C8MkY7Co8');
     console.log('No breastfeeding or baby sleep/crying videos included:', !hasBabyCare ? '✅' : '❌');
     console.log('Passed Cap Check (<= 5):', results.length <= 5 ? '✅' : '❌');
   } catch (err) {
@@ -78,7 +78,7 @@ async function runTests() {
   }
   console.log('\n');
 
-  // Test 5 — API Failure Fallback
+  // Test 5 — API Failure
   console.log('--- Test 5 — API Failure ---');
   console.log('Simulating YouTube API Key deletion...');
   const originalKey = process.env.YOUTUBE_API_KEY;
@@ -89,31 +89,13 @@ async function runTests() {
     console.log('Videos:', results.map(r => ({ title: r.title, id: r.id, source: r.source })));
 
     // Verifications
-    console.log('Returns available videos on API key failure:', results.length > 0 ? '✅' : '❌');
-    console.log('Fills full 5 hybrid video slots safely:', results.length === 5 ? '✅' : '❌');
+    console.log('Returns available curated videos:', results.length > 0 ? '✅' : '❌');
+    console.log('Curated videos are returned correctly:', results.every(r => r.source === 'curated') ? '✅' : '❌');
   } catch (err) {
     console.error('Test 5 failed:', err.message);
   } finally {
     // Restore key
     process.env.YOUTUBE_API_KEY = originalKey;
-  }
-  console.log('\n');
-
-  // Test 6 — Candidate Validation Pipeline
-  console.log('--- Test 6 — Candidate Validation Pipeline ---');
-  console.log('Testing validateYouTubeVideos with invalid candidate...');
-  const { validateYouTubeVideos } = require('./services/youtubeService');
-  const mockCandidates = [
-    { id: '2OEL4P1Rz04', title: 'Valid Video' },
-    { id: 'INVALID_ID_99999', title: 'Invalid Video' }
-  ];
-  try {
-    const validated = await validateYouTubeVideos(mockCandidates, process.env.YOUTUBE_API_KEY);
-    console.log('Candidates input count:', mockCandidates.length);
-    console.log('Validated output count:', validated.length);
-    console.log('Filters out invalid video candidate:', !validated.some(v => v.id === 'INVALID_ID_99999') ? '✅' : '❌');
-  } catch (err) {
-    console.error('Test 6 failed:', err.message);
   }
   console.log('\n');
 

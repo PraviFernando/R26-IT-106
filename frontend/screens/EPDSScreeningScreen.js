@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -571,6 +572,7 @@ function HistoryModal({ visible, history, questions, onClose }) {
 // ─── MAIN SCREEN ──────────────────────────────────────────────────────────────
 export default function EPDSScreeningScreen({ navigation }) {
     const { t, i18n } = useTranslation();
+    const { user } = useAuth();
     const questions = getQuestions(t);
     const riskConfig = getRiskConfig(t);
 

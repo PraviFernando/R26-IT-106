@@ -56,6 +56,8 @@ const midwifeRouter = require('./routes/midwife');
 const recommendationRouter = require('./routes/recommendation');
 const exerciseRoutes = require('./routes/exercise');
 const babyActivityRouter = require('./routes/babyActivity');
+const chatRouter = require('./routes/chat');
+const speechRouter = require('./routes/speech');
 const epdsRouter = require('./routes/epds');
 
 app.use('/user', userRouter);
@@ -67,6 +69,8 @@ app.use('/midwife', midwifeRouter);
 app.use('/api/recommendations', recommendationRouter);
 app.use('/exercise', exerciseRoutes);
 app.use('/baby-activity', babyActivityRouter);
+app.use('/chat', chatRouter);
+app.use('/speech', speechRouter);
 app.use('/epds', epdsRouter);
 
 // Example protected route

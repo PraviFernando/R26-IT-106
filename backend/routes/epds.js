@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
+const { verifyToken } = require('../middleware/authMiddleware');
 const { submitScreening, getHistory, getCurrentMonth, getMyHistory, getMyStatus } = require('../controllers/epds');
+
+router.use(verifyToken);
 
 // POST /epds/submit    — submit the 10-question EPDS form
 router.post('/submit', submitScreening);

@@ -12,16 +12,13 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, Dimensions, Platform, Alert,
+  View, Text, TouchableOpacity,
+  StyleSheet, Platform, Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import ScreenContainer from '../components/ScreenContainer';
 
-const { width: SCREEN_W } = Dimensions.get('window');
-
-// Canvas fills the screen width (max 560px for tablet)
-const CANVAS_W = Math.min(SCREEN_W - 32, 560);
-const CANVAS_H = CANVAS_W; // square
+const CANVAS_MAX = 560;
 
 // ================================================================
 //  PALETTE  (5 rows × 8 cols — matches coloringonline.com style)
@@ -1165,7 +1162,10 @@ const ColourCanvas = ({ design }) => {
   const [selCol, setSelCol] = useState('#FF0000');
   const [progress, setProgress] = useState(0);
   const [iframeSrc, setIframeSrc] = useState('');
+  const [boxW, setBoxW] = useState(0);
   const isWeb = Platform.OS === 'web';
+  // Square canvas that fits the measured container width (capped for tablets).
+  const canvasSize = boxW > 0 ? Math.min(boxW, CANVAS_MAX) : CANVAS_MAX;
 
   // Rebuild blob URL whenever design changes
   useEffect(() => {
@@ -1208,7 +1208,7 @@ const ColourCanvas = ({ design }) => {
   };
 
   return (
-    <View style={cv.container}>
+    <View style={cv.container} onLayout={(e) => setBoxW(e.nativeEvent.layout.width)}>
       {/* ── Progress bar ── */}
       <View style={cv.progRow}>
         <View style={cv.progBg}>
@@ -1223,10 +1223,11 @@ const ColourCanvas = ({ design }) => {
       </Text>
 
       {/* ── Canvas (iframe) ── */}
-      <View style={[cv.canvasWrap, { width: CANVAS_W, height: CANVAS_H }]}>
+      <View style={[cv.canvasWrap, { width: canvasSize, height: canvasSize }]}>
         {isWeb ? (
           <iframe
             ref={iframeRef}
+            key={Math.round(canvasSize)}
             src={iframeSrc}
             style={{ width: '100%', height: '100%', border: 'none', borderRadius: 12, display: 'block' }}
             title={design.nameEn}
@@ -1344,28 +1345,32 @@ const ArtScreen = ({ navigation, route }) => {
   // ── Colouring view ──
   if (selected) {
     return (
-      <View style={s.root}>
-        <LinearGradient colors={['#F8F4FF', '#FFF0F8']} style={s.flex}>
-          <ScrollView contentContainerStyle={s.scroll} bounces={false}>
+      <ScreenContainer
+        gradient={['#F8F4FF', '#FFF0F8']}
+        edges={['top', 'bottom']}
+        maxWidth="wide"
+        bounces={false}
+        contentContainerStyle={{ paddingTop: 8 }}
+      >
             <TouchableOpacity onPress={() => setSelected(null)} style={s.backBtn}>
               <Text style={s.backTxt}>← ආපසු</Text>
             </TouchableOpacity>
             <Text style={s.pageTitle}>{selected.name}</Text>
             <Text style={s.pageSub}>{selected.nameEn}</Text>
             <ColourCanvas design={selected} />
-            <View style={{ height: 60 }} />
-          </ScrollView>
-        </LinearGradient>
-      </View>
+            <View style={{ height: 40 }} />
+      </ScreenContainer>
     );
   }
 
   // ── Gallery view ──
   return (
-    <View style={s.root}>
-      <LinearGradient colors={['#F8F4FF', '#FFF0F8']} style={s.flex}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
-
+    <ScreenContainer
+      gradient={['#F8F4FF', '#FFF0F8']}
+      edges={['top', 'bottom']}
+      maxWidth="wide"
+      contentContainerStyle={{ paddingTop: 8 }}
+    >
           <TouchableOpacity onPress={() => {
             if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
               navigation.navigate('Tabs', { screen: 'Recommendations' });
@@ -1412,9 +1417,7 @@ const ArtScreen = ({ navigation, route }) => {
           </View>
 
           <View style={{ height: 110 }} />
-        </ScrollView>
-      </LinearGradient>
-    </View>
+    </ScreenContainer>
   );
 };
 
@@ -1422,9 +1425,6 @@ const ArtScreen = ({ navigation, route }) => {
 //  STYLES
 // ================================================================
 const s = StyleSheet.create({
-  root: { flex: 1 },
-  flex: { flex: 1 },
-  scroll: { paddingHorizontal: 16, paddingTop: 52 },
   backBtn: { marginBottom: 12, alignSelf: 'flex-start' },
   backTxt: { color: '#7E57C2', fontWeight: '700', fontSize: 16 },
   pageTitle: { fontSize: 22, fontWeight: '900', color: '#3D2A5E', marginBottom: 4 },
@@ -1439,12 +1439,12 @@ const s = StyleSheet.create({
   tabOn: { backgroundColor: '#7E57C2' },
   tabTxt: { fontSize: 13, fontWeight: '700', color: '#7B6A99' },
   tabTxtOn: { color: 'white' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center' },
 });
 
 const gc = StyleSheet.create({
   card: {
-    width: (SCREEN_W - 44) / 2, borderRadius: 20, padding: 12, alignItems: 'center',
+    flexGrow: 1, flexBasis: 150, maxWidth: 220, borderRadius: 20, padding: 12, alignItems: 'center',
     shadowColor: '#7E57C2', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, elevation: 3
   },
   emojiBox: {

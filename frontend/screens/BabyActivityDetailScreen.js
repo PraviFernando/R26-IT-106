@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     View, Text, ScrollView, TouchableOpacity, StyleSheet,
-    Dimensions, ActivityIndicator, Platform, Animated
+    ActivityIndicator, Platform, Animated, useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,8 +9,7 @@ import { WebView } from 'react-native-webview';
 import { Video, ResizeMode } from 'expo-av';
 import { useTranslation } from 'react-i18next';
 import babyActivityService from '../services/babyActivityService';
-
-const { width } = Dimensions.get('window');
+import { ContentWell } from '../components/ScreenContainer';
 
 // Design tokens
 const COLORS = {
@@ -74,10 +73,37 @@ const LoadingSkeleton = () => (
     </View>
 );
 
+const LanguageToggle = ({ i18n }) => (
+    <TouchableOpacity
+        onPress={() =>
+            i18n.changeLanguage(
+                i18n.language === 'en' ? 'si' : 'en'
+            )
+        }
+        style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
+    >
+        <Text
+            style={{
+                fontWeight: '700',
+                fontSize: 13,
+                color: '#7C3AED',
+                backgroundColor: '#EDE9FE',
+                paddingHorizontal: 10,
+                paddingVertical: 4,
+                borderRadius: 12,
+            }}
+        >
+            {i18n.language === 'en' ? 'සිං' : 'EN'}
+        </Text>
+    </TouchableOpacity>
+);
+
 export default function BabyActivityDetailScreen({ route, navigation }) {
     const { activityId } = route.params;
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
+    const { width: winW } = useWindowDimensions();
+    const wide = winW >= 700;
 
     const [activity, setActivity] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -108,7 +134,7 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.safe}>
+            <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
                 <LinearGradient colors={['#FFF5F7', '#FFEAEF']} style={styles.gradient}>
                     <View style={styles.header}>
                         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
@@ -117,28 +143,7 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
                             </View>
                         </TouchableOpacity>
                         <Text style={styles.headerTitle} numberOfLines={1}>Loading...</Text>
-                        <TouchableOpacity
-                            onPress={() =>
-                                i18n.changeLanguage(
-                                    i18n.language === 'en' ? 'si' : 'en'
-                                )
-                            }
-                            style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
-                        >
-                            <Text
-                                style={{
-                                    fontWeight: '700',
-                                    fontSize: 13,
-                                    color: '#7C3AED',
-                                    backgroundColor: '#EDE9FE',
-                                    paddingHorizontal: 10,
-                                    paddingVertical: 4,
-                                    borderRadius: 12,
-                                }}
-                            >
-                                {i18n.language === 'en' ? 'සිං' : 'EN'}
-                            </Text>
-                        </TouchableOpacity>
+                        <LanguageToggle i18n={i18n} />
                     </View>
                     <LoadingSkeleton />
                 </LinearGradient>
@@ -148,7 +153,7 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
 
     if (!activity) {
         return (
-            <SafeAreaView style={styles.safe}>
+            <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
                 <LinearGradient colors={['#FFF5F7', '#FFEAEF']} style={styles.gradient}>
                     <View style={styles.header}>
                         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
@@ -157,28 +162,7 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
                             </View>
                         </TouchableOpacity>
                         <Text style={styles.headerTitle}>Error</Text>
-                        <TouchableOpacity
-                            onPress={() =>
-                                i18n.changeLanguage(
-                                    i18n.language === 'en' ? 'si' : 'en'
-                                )
-                            }
-                            style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
-                        >
-                            <Text
-                                style={{
-                                    fontWeight: '700',
-                                    fontSize: 13,
-                                    color: '#7C3AED',
-                                    backgroundColor: '#EDE9FE',
-                                    paddingHorizontal: 10,
-                                    paddingVertical: 4,
-                                    borderRadius: 12,
-                                }}
-                            >
-                                {i18n.language === 'en' ? 'සිං' : 'EN'}
-                            </Text>
-                        </TouchableOpacity>
+                        <LanguageToggle i18n={i18n} />
                     </View>
                     <View style={styles.errorContainer}>
                         <Text style={styles.errorEmoji}>😕</Text>
@@ -206,8 +190,8 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
     const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?playsinline=1&controls=1&rel=0` : activity.video_url;
 
     return (
-        <SafeAreaView style={styles.safe}>
-            <LinearGradient colors={['#FFF5F7', '#FFFDFE', '#FFEAEF']} style={styles.gradient}>
+        <LinearGradient colors={['#FFF5F7', '#FFFDFE', '#FFEAEF']} style={styles.gradient}>
+            <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
                 {/* Header */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBackBtn}>
@@ -216,33 +200,13 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
                         </View>
                     </TouchableOpacity>
                     <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
-                    <TouchableOpacity
-                        onPress={() =>
-                            i18n.changeLanguage(
-                                i18n.language === 'en' ? 'si' : 'en'
-                            )
-                        }
-                        style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
-                    >
-                        <Text
-                            style={{
-                                fontWeight: '700',
-                                fontSize: 13,
-                                color: '#7C3AED',
-                                backgroundColor: '#EDE9FE',
-                                paddingHorizontal: 10,
-                                paddingVertical: 4,
-                                borderRadius: 12,
-                            }}
-                        >
-                            {i18n.language === 'en' ? 'සිං' : 'EN'}
-                        </Text>
-                    </TouchableOpacity>
+                    <LanguageToggle i18n={i18n} />
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-                    <View style={styles.splitRow}>
-                        <View style={styles.leftColumn}>
+                  <ContentWell maxWidth={wide ? 760 : 'reading'} padded={false}>
+                    <View style={[styles.splitRow, wide && styles.splitRowWide]}>
+                        <View style={[styles.leftColumn, wide && styles.leftColumnWide]}>
                             {/* Video Player */}
                             <View style={styles.playerContainer}>
                                 {videoId ? (
@@ -281,7 +245,7 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
                             </View>
                         </View>
 
-                        <View style={styles.rightColumn}>
+                        <View style={[styles.rightColumn, wide && styles.rightColumnWide]}>
                             {/* Metadata Card */}
                             <View style={styles.metaContainer}>
                                 <Text style={styles.activityName}>{title}</Text>
@@ -339,15 +303,16 @@ export default function BabyActivityDetailScreen({ route, navigation }) {
                         </View>
                     </View>
                     <View style={{ height: 40 }} />
+                  </ContentWell>
                 </ScrollView>
-            </LinearGradient>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: COLORS.background },
-    gradient: { flex: 1 },
+    safe: { flex: 1 },
+    gradient: { flex: 1, backgroundColor: COLORS.background },
 
     // Header
     header: {
@@ -389,7 +354,8 @@ const styles = StyleSheet.create({
     // Video player
     playerContainer: {
         width: '100%',
-        height: width > 500 ? 380 : 230,
+        aspectRatio: 16 / 9,
+        maxHeight: 420,
         borderRadius: RADIUS.card,
         overflow: 'hidden',
         backgroundColor: '#000',
@@ -397,18 +363,25 @@ const styles = StyleSheet.create({
         ...SHADOW_PINK,
     },
     splitRow: {
-        flexDirection: width > 500 ? 'row' : 'column',
+        flexDirection: 'column',
         width: '100%',
         gap: 20,
         alignItems: 'flex-start',
     },
+    splitRowWide: {
+        flexDirection: 'row',
+    },
     leftColumn: {
-        flex: width > 500 ? 1.2 : 0,
         width: '100%',
     },
+    leftColumnWide: {
+        flex: 1.2,
+    },
     rightColumn: {
-        flex: width > 500 ? 0.8 : 0,
         width: '100%',
+    },
+    rightColumnWide: {
+        flex: 0.8,
     },
     webView: { flex: 1 },
     video: { flex: 1 },

@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-    View, Text, TouchableOpacity, StyleSheet, 
-    TextInput, FlatList, Image, Dimensions, ActivityIndicator, Animated, ScrollView
+import {
+    View, Text, TouchableOpacity, StyleSheet,
+    TextInput, FlatList, Image, ActivityIndicator, Animated, ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import babyActivityService from '../services/babyActivityService';
 import { useAuth } from '../context/AuthContext';
-
-const { width } = Dimensions.get('window');
+import { useResponsive } from '../hooks/useResponsive';
+import { ContentWell } from '../components/ScreenContainer';
 
 const COLORS = {
     primary: '#EC4899',
@@ -74,6 +74,9 @@ const SkeletonCard = () => {
 export default function BabyDevelopmentScreen({ navigation }) {
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
+    const r = useResponsive();
+    const catCols = r.gridColumns(150, 12, 4);
+    const catW = r.tileWidth(catCols, 12);
     const { user } = useAuth();
 
     const getInitialAgeFilter = (deliveryDate) => {
@@ -86,7 +89,7 @@ export default function BabyDevelopmentScreen({ navigation }) {
             if (diffTime < 0) return '0–3 months';
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
             const diffMonths = diffDays / 30;
-            
+
             if (diffMonths >= 0 && diffMonths < 3) {
                 return '0–3 months';
             } else if (diffMonths >= 3 && diffMonths < 6) {
@@ -147,12 +150,12 @@ export default function BabyDevelopmentScreen({ navigation }) {
         const title = isSinhala ? (item.activity_name_sinhala || item.activity_name) : item.activity_name;
         const desc = isSinhala ? (item.short_description_sinhala || item.short_description) : item.short_description;
         const age = isSinhala ? (item.age_stage_sinhala || item.age_stage) : item.age_stage;
-        
+
         const videoId = getYoutubeId(item.video_url);
         const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
 
         return (
-            <TouchableOpacity 
+            <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => navigation.navigate('BabyActivityDetail', { activityId: item._id })}
             >
@@ -191,8 +194,8 @@ export default function BabyDevelopmentScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.safe}>
-            <LinearGradient colors={['#FFF5F7', '#FFFDFE', '#FFEAEF']} style={styles.gradient}>
+        <LinearGradient colors={['#FFF5F7', '#FFFDFE', '#FFEAEF']} style={styles.gradient}>
+            <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
                 {/* Header */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -231,11 +234,12 @@ export default function BabyDevelopmentScreen({ navigation }) {
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+                  <ContentWell maxWidth="wide" padded={false}>
                     <View style={styles.listHeader}>
                         {/* Subtitle */}
                         <Text style={styles.subtitle}>
-                            {isSinhala 
-                                ? 'ඔබේ බිළිඳාගේ මුල් චලනයන් සහ සංවර්ධනය සඳහා මෘදු ක්‍රියාකාරකම්.' 
+                            {isSinhala
+                                ? 'ඔබේ බිළිඳාගේ මුල් චලනයන් සහ සංවර්ධනය සඳහා මෘදු ක්‍රියාකාරකම්.'
                                 : 'Gentle activities for your baby\'s early movements and development.'}
                         </Text>
 
@@ -248,8 +252,8 @@ export default function BabyDevelopmentScreen({ navigation }) {
                                 </Text>
                             </View>
                             <Text style={styles.safetyText}>
-                                {isSinhala 
-                                    ? 'මෙම ක්‍රියාකාරකම් සාමාන්‍ය අධ්‍යාපනික අරමුණු සඳහා වේ. සැමවිටම ඔබේ බිළිඳා දෙස බලා සිටින්න. බිළිඳා අපහසුවෙන් හෝ අසනීපයෙන් සිටී නම් නතර කරන්න.' 
+                                {isSinhala
+                                    ? 'මෙම ක්‍රියාකාරකම් සාමාන්‍ය අධ්‍යාපනික අරමුණු සඳහා වේ. සැමවිටම ඔබේ බිළිඳා දෙස බලා සිටින්න. බිළිඳා අපහසුවෙන් හෝ අසනීපයෙන් සිටී නම් නතර කරන්න.'
                                     : 'These activities are for general educational purposes only. Always supervise your baby. Stop if baby is fussy or unwell.'}
                             </Text>
                         </View>
@@ -262,13 +266,13 @@ export default function BabyDevelopmentScreen({ navigation }) {
                             {CATEGORIES.map((cat) => {
                                 const active = selectedCategory === cat.key;
                                 return (
-                                    <TouchableOpacity 
+                                    <TouchableOpacity
                                         key={cat.key}
-                                        style={[styles.categoryTile, active && styles.categoryTileActive]}
-                                        onPress={() => navigation.navigate('BabyCategory', { 
-                                            categoryKey: cat.key, 
-                                            categoryName: cat.name, 
-                                            categoryNameSi: cat.nameSi 
+                                        style={[styles.categoryTile, { width: catW }, active && styles.categoryTileActive]}
+                                        onPress={() => navigation.navigate('BabyCategory', {
+                                            categoryKey: cat.key,
+                                            categoryName: cat.name,
+                                            categoryNameSi: cat.nameSi
                                         })}
                                         activeOpacity={0.8}
                                     >
@@ -295,16 +299,17 @@ export default function BabyDevelopmentScreen({ navigation }) {
                                 end={{ x: 1, y: 1 }}
                             >
                                 <Text style={styles.quoteText}>
-                                    {isSinhala 
-                                        ? "සෑම සන්ධිස්ථානයක්ම ආදරයෙන් වැළඳගන්න, දිනෙන් දින ප්‍රීතිමත්ව වැඩෙන්න! 🌱💕" 
+                                    {isSinhala
+                                        ? "සෑම සන්ධිස්ථානයක්ම ආදරයෙන් වැළඳගන්න, දිනෙන් දින ප්‍රීතිමත්ව වැඩෙන්න! 🌱💕"
                                         : "Cherishing every milestone, growing stronger and happier day by day! 🌱💕"}
                                 </Text>
                             </LinearGradient>
                         </View>
                     </View>
+                  </ContentWell>
                 </ScrollView>
-            </LinearGradient>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
@@ -361,14 +366,12 @@ const styles = StyleSheet.create({
     sectionLabel: { fontSize: 15, fontWeight: '800', color: COLORS.text, marginBottom: 12 },
 
     // Categories grid
-    categoriesGrid: { 
-        flexDirection: 'row', 
-        flexWrap: 'wrap', 
-        justifyContent: 'space-between',
-        rowGap: 12,
+    categoriesGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 12,
     },
     categoryTile: {
-        width: '48%',
         borderRadius: 24,
         overflow: 'hidden',
         elevation: 3,
@@ -381,23 +384,22 @@ const styles = StyleSheet.create({
         elevation: 5,
         shadowOpacity: 0.14,
     },
-    categoryTileGradient: { 
-        paddingVertical: 14, 
-        paddingHorizontal: 14, 
-        borderRadius: 24, 
+    categoryTileGradient: {
+        paddingVertical: 14,
+        paddingHorizontal: 14,
+        borderRadius: 24,
         minHeight: 110,
     },
     categoryIcon: { fontSize: 26, marginBottom: 6 },
     categoryName: { fontSize: 13, fontWeight: '900', color: COLORS.text, marginBottom: 4 },
     categoryNameActive: { color: '#FFF' },
-    categoryDesc: { fontSize: 10, color: COLORS.textMid, lineHeight: 14 },
+    categoryDesc: { fontSize: 11, color: COLORS.textMid, lineHeight: 15 },
     categoryDescActive: { color: 'rgba(255,255,255,0.85)' },
 
     // Exercise styled cards
     exerciseCard: {
         backgroundColor: 'transparent',
-        width: (width - 60) / 2.3,
-        maxWidth: 400,
+        width: 200,
         marginRight: 14,
         marginBottom: 10,
     },

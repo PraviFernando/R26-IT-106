@@ -16,7 +16,7 @@ import { colors, typography, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
 import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames, getRankedActivities, normalizeReasonKey, normalizeEmotionKey, normalizeRiskLevel } from '../services/activitiesLibrary';
 import { getPersonalizedRecommendations, getRecommendations } from '../services/emotionEngine';
-import { MUSIC_LIBRARY, getMusicForReason, getVideosForReason } from '../services/mediaLibrary';
+import { MUSIC_LIBRARY, VIDEO_LIBRARY, getMusicForReason, getVideosForReason } from '../services/mediaLibrary';
 import { BABY_VIDEO_LIBRARY, getAllBabyVideos } from '../services/babyMediaLibrary';
 import { KNOWLEDGE_CATEGORIES, KNOWLEDGE_RESOURCES } from '../services/knowledgeLibrary';
 import api from '../services/api';
@@ -846,7 +846,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
           </View>
 
           {/* Emergency Medical Callout Banner */}
-          {risk === 'high' && (
+          {(isEmergencyTopic || risk === 'high') && (
             <View style={s.emergencyBanner}>
               <Text style={s.emergencyIcon}>🆘</Text>
               <View style={{ flex: 1 }}>

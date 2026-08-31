@@ -4,7 +4,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { analyzeDiary, getRecommendations } from './emotionEngine.js';
 import { detectBabyTopic } from './babyCareService.js';
-import api from './api.js';
+import api, { setAuthToken } from './api.js';
+import { useAuth } from '../context/AuthContext';
 import { normalizeReasonKey, normalizeEmotionKey, normalizeRiskLevel } from './activitiesLibrary.js';
 
 const AppContext = createContext();
@@ -32,6 +33,7 @@ const INITIAL_MOOD_HISTORY = [
 ];
 
 export const AppProvider = ({ children }) => {
+  const { token } = useAuth();
   const [user] = useState({ name: 'සාරා', weekPostpartum: 6 });
   const [userPreferredActivities, setUserPreferredActivities] = useState([]);
   const [userPreferredGames, setUserPreferredGames] = useState([]);
@@ -62,6 +64,12 @@ export const AppProvider = ({ children }) => {
   }, [latestAnalysis]);
 
   const fetchProgressData = async () => {
+    // Never hit authenticated endpoints before login — the request interceptor
+    // has no token yet and the backend would just 401.
+    if (!token) {
+      setLoadingProgress(false);
+      return;
+    }
     try {
       setLoadingProgress(true);
       setErrorProgress(null);
@@ -119,6 +127,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const fetchCompletedActivities = async () => {
+    if (!token) return [];
     try {
       const d = new Date();
       const todayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -140,9 +149,20 @@ export const AppProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    if (!token) {
+      // Logged out (or not yet logged in): clear any stale data and don't fetch.
+      setProgressDiaries([]);
+      setProgressActivities([]);
+      setCompletedActivities([]);
+      setLoadingProgress(false);
+      setErrorProgress(null);
+      return;
+    }
+    // Keep the axios interceptor in sync with the current session token.
+    setAuthToken(token);
     fetchCompletedActivities();
     fetchProgressData();
-  }, []);
+  }, [token]);
 
   const updateMoodHistory = (analysis) => {
     if (!analysis) return;

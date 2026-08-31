@@ -423,7 +423,7 @@ def get_recommendations(risk, reason, emotion):
     videos = []
 
     lookup_reason = reason
-    if reason in ["baby_crying", "baby_needs", "caring_for_baby"]:
+    if reason in ["baby_crying", "baby_needs", "baby_feeding", "caring_for_baby"]:
         lookup_reason = "bonding_issues"
     elif reason == "baby_sleep":
         lookup_reason = "sleep_problems"

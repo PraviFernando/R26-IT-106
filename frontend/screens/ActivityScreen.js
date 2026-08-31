@@ -8,7 +8,13 @@ import { ALL_ACTIVITIES, NEW_ACTIVITIES } from '../services/activitiesLibrary';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 import useGameSession, { recordActivityApi } from '../hooks/useGameSession';
+import ScreenContainer from '../components/ScreenContainer';
+import { useResponsive } from '../hooks/useResponsive';
 
+// The individual mini-games below size their play areas from this module-level
+// read. The app is portrait-locked on phones so it is stable there; on an iPad
+// in split-view it will not react to a live resize (acceptable for now — the
+// screen shell + game menu below ARE responsive).
 const { width, height } = Dimensions.get('window');
 
 const CongratsPopup = ({
@@ -2945,11 +2951,14 @@ const ALL_GAMES_LIST = [
   { id: 'mandala', label: 'මණ්ඩල කලා', labelEn: 'Colour mandalas', icon: '🔮', color: ['#EDE7F6', '#D1C4E9'], accent: '#7E57C2' },
   { id: 'colouring', label: 'රූප පාටකිරීම', labelEn: 'Colouring pages', icon: '🎨', color: ['#FCE4EC', '#F8BBD9'], accent: '#E91E8C' },
 ];
-const MATURE_IDS = ['self_care', 'bubble_pop', 'word_match', 'memory_match'];
+const MATURE_IDS = ['emotion_journal', 'mindful_tap', 'mood_board'];
 
 const ActivityScreen = ({ navigation, route }) => {
   const { t, i18n } = useTranslation();
   const isSinhala = i18n?.language === 'si';
+  const r = useResponsive();
+  const gameCols = r.gridColumns(150, 12, 4);
+  const gameCardW = r.tileWidth(gameCols, 12);
   const [selAct, setSelAct] = useState(null);
   const [selGame, setSelGame] = useState(null);
   const [view, setView] = useState('list');
@@ -3090,9 +3099,7 @@ const ActivityScreen = ({ navigation, route }) => {
 
   if (view === 'activity' && selAct)
     return (
-      <View style={s.container}>
-        <LinearGradient colors={['#F8F4FF', '#F0FAFF']} style={s.gradient}>
-          <ScrollView contentContainerStyle={s.scroll}>
+      <ScreenContainer gradient={['#F8F4FF', '#F0FAFF']} edges={['top']} tabBar contentContainerStyle={{ paddingTop: 12 }}>
             <TouchableOpacity onPress={handleActivityBack} style={s.backBtn}>
               <Text style={s.backText}>← ආපසු</Text>
             </TouchableOpacity>
@@ -3104,28 +3111,18 @@ const ActivityScreen = ({ navigation, route }) => {
                 <Text style={s.bannerT}>🌸 සම්පූර්ණ! 💜</Text>
               </LinearGradient>
             )}
-            <View style={{ height: 110 }} />
-          </ScrollView>
-        </LinearGradient>
-      </View>
+      </ScreenContainer>
     );
 
   if (view === 'game' && selGame)
     return (
-      <View style={s.container}>
-        <LinearGradient colors={['#F8F4FF', '#F0FAFF']} style={s.gradient}>
-          <ScrollView contentContainerStyle={s.scroll}>
+      <ScreenContainer gradient={['#F8F4FF', '#F0FAFF']} edges={['top']} tabBar contentContainerStyle={{ paddingTop: 12 }}>
             {renderGame(selGame.id)}
-            <View style={{ height: 110 }} />
-          </ScrollView>
-        </LinearGradient>
-      </View>
+      </ScreenContainer>
     );
 
   return (
-    <View style={s.container}>
-      <LinearGradient colors={['#FAF2FA', '#FFDFEF']} style={s.gradient}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
+    <ScreenContainer gradient={['#FAF2FA', '#FFDFEF']} edges={['top']} tabBar contentContainerStyle={{ paddingTop: 12 }}>
           {/* Top Header Row with Back Button */}
           <View style={s.topBarRow}>
             <TouchableOpacity
@@ -3165,7 +3162,7 @@ const ActivityScreen = ({ navigation, route }) => {
             {ALL_GAMES_LIST.filter((g) => MATURE_IDS.includes(g.id)).map((game) => (
               <TouchableOpacity
                 key={game.id}
-                style={s.gameWrap}
+                style={[s.gameWrap, { width: gameCardW }]}
                 onPress={() => {
                   setSelGame(game);
                   setView('game');
@@ -3179,14 +3176,14 @@ const ActivityScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             ))}
           </View>
-          <View style={{ height: 40 }} />
+          <View style={{ height: 24 }} />
           <Text style={[s.sectionLabel, { color: '#2E7D32' }]}>🌿 මනස සැහැල්ලු කිරීම</Text>
           <View style={s.gamesGrid}>
             {ALL_GAMES_LIST.filter((g) => !MATURE_IDS.includes(g.id) && g.id !== 'word_search' && g.id !== 'mandala' && g.id !== 'colouring').map(
               (game) => (
                 <TouchableOpacity
                   key={game.id}
-                  style={s.gameWrap}
+                  style={[s.gameWrap, { width: gameCardW }]}
                   onPress={() => {
                     setSelGame(game);
                     setView('game');
@@ -3201,10 +3198,7 @@ const ActivityScreen = ({ navigation, route }) => {
               )
             )}
           </View>
-          <View style={{ height: 110 }} />
-        </ScrollView>
-      </LinearGradient>
-    </View>
+    </ScreenContainer>
   );
 };
 
@@ -3229,43 +3223,41 @@ const newAct = StyleSheet.create({
 });
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF2FA' },
+  container: { flex: 1 },
   gradient: { flex: 1 },
-  scroll: { padding: spacing.md, paddingTop: 50, paddingBottom: 40 },
+  scroll: { padding: spacing.md, paddingTop: 50 },
   topBarRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   langToggleBtn: { backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.full, borderWidth: 1, borderColor: '#EABDE6' },
-  langToggleText: { fontSize: 13, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: '#AA60C8' },
-  pageTitle: { fontSize: 26, fontFamily: typography.headerFont, fontWeight: '700', color: '#2C1A35', marginBottom: 4 },
-  pageSub: { fontSize: 15, fontFamily: typography.bodyFont, color: '#6A4D77', marginBottom: spacing.lg },
+  langToggleText: { fontSize: 13, fontWeight: '700', color: '#AA60C8' },
+  pageTitle: { fontSize: 26, fontWeight: '900', color: colors.textPrimary, marginBottom: 4 },
+  pageSub: { fontSize: 15, color: colors.textSecondary, marginBottom: spacing.lg },
   artBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFDFEF',
+    backgroundColor: '#FFF9C4',
     padding: spacing.md,
     borderRadius: radius.xl,
     marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: '#EABDE6',
     ...shadows.soft,
   },
   artBannerIcon: { fontSize: 32, marginRight: 12 },
   artBannerInfo: { flex: 1 },
-  artBannerTitle: { fontSize: 17, fontFamily: typography.topicFont, fontWeight: '700', color: '#AA60C8' },
-  artBannerSub: { fontSize: 13, fontFamily: typography.bodyFont, color: '#6A4D77' },
-  artBannerArrow: { fontSize: 20, color: '#AA60C8' },
-  sectionLabel: { fontSize: 18, fontFamily: typography.topicFont, fontWeight: '700', color: '#2C1A35', marginBottom: 12, marginTop: 10 },
-  gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  gameWrap: { width: '48%', minWidth: 135, marginBottom: 14 },
-  gameCard: { padding: 16, borderRadius: radius.lg, alignItems: 'center', borderWidth: 1, borderColor: '#F5D3EE', ...shadows.soft },
+  artBannerTitle: { fontSize: 17, fontWeight: '800', color: '#F57F17' },
+  artBannerSub: { fontSize: 13, color: '#F9A825' },
+  artBannerArrow: { fontSize: 20, color: '#F57F17' },
+  sectionLabel: { fontSize: 18, fontWeight: '900', marginBottom: 12, marginTop: 10 },
+  gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  gameWrap: { marginBottom: 14 },
+  gameCard: { padding: 16, borderRadius: radius.lg, alignItems: 'center', ...shadows.soft },
   gameIcon: { fontSize: 36, marginBottom: 8 },
-  gameLabel: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', textAlign: 'center', color: '#2C1A35' },
-  gameSub: { fontSize: 10, fontFamily: typography.bodyFont, fontWeight: '600', textAlign: 'center', marginTop: 4 },
+  gameLabel: { fontSize: 14, fontWeight: '800', textAlign: 'center', color: colors.textPrimary },
+  gameSub: { fontSize: 10, fontWeight: '700', textAlign: 'center', marginTop: 4 },
   backBtn: { marginBottom: 16, alignSelf: 'flex-start' },
-  backText: { color: '#AA60C8', fontFamily: typography.subTopicFont, fontWeight: '700', fontSize: 16 },
-  actTitle: { fontSize: 24, fontFamily: typography.topicFont, fontWeight: '700', color: '#2C1A35', marginBottom: 6 },
-  actSub: { fontSize: 15, fontFamily: typography.bodyFont, color: '#6A4D77', marginBottom: 20 },
-  banner: { padding: 16, borderRadius: radius.lg, alignItems: 'center', marginTop: 20, backgroundColor: '#FFDFEF' },
-  bannerT: { fontSize: 16, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#AA60C8' },
+  backText: { color: '#7E57C2', fontWeight: '800', fontSize: 16 },
+  actTitle: { fontSize: 24, fontWeight: '900', color: colors.textPrimary, marginBottom: 6 },
+  actSub: { fontSize: 15, color: colors.textSecondary, marginBottom: 20 },
+  banner: { padding: 16, borderRadius: radius.lg, alignItems: 'center', marginTop: 20 },
+  bannerT: { fontSize: 16, fontWeight: '800', color: '#7E57C2' },
 });
 
 const bx = StyleSheet.create({

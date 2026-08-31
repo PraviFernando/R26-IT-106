@@ -2,14 +2,12 @@
 // PROGRESS SCREEN — ProgressScreen.js  (Postpartum Mom Progress & Badges Dashboard)
 // ================================================================
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { colors, typography, spacing, radius, shadows } from '../theme';
 import { useApp } from '../services/AppContext';
 import { ALL_ACTIVITIES, ALL_GAMES } from '../services/activitiesLibrary';
 import { SI } from '../services/translations';
-
-const { width } = Dimensions.get('window');
+import ScreenContainer from '../components/ScreenContainer';
 
 const moodScore = { happy: 5, stressed: 3, sad: 1, anxious: 2 };
 const emotionConfig = {
@@ -712,9 +710,12 @@ const ProgressScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={s.container}>
-      <LinearGradient colors={['#FAF2FA', '#FFDFEF']} style={s.gradient}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
+    <ScreenContainer
+      gradient={['#FAF2FA', '#FFDFEF']}
+      edges={['top']}
+      tabBar
+      contentContainerStyle={{ paddingTop: 8 }}
+    >
           <Text style={s.title}>{SI.yourJourney}</Text>
 
           {/* Tab Selection */}
@@ -729,18 +730,11 @@ const ProgressScreen = ({ navigation }) => {
 
           {/* Active Tab Screen rendering */}
           {activeTab === 'journey' ? renderJourneyTab() : renderBadgesTab()}
-
-          <View style={{ height: 110 }} />
-        </ScrollView>
-      </LinearGradient>
-    </View>
+    </ScreenContainer>
   );
 };
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF2FA' },
-  gradient: { flex: 1 },
-  scroll: { paddingHorizontal: spacing.md, paddingTop: 60, paddingBottom: 40 },
   title: { fontSize: 26, fontFamily: typography.headerFont, fontWeight: '700', color: '#2C1A35', marginBottom: spacing.md },
   tabRow: { flexDirection: 'row', gap: 10, marginBottom: spacing.lg },
   tabBtn: { flex: 1, paddingVertical: 12, borderRadius: radius.full, backgroundColor: '#FFFFFF', alignItems: 'center', borderWidth: 1, borderColor: '#EABDE6', ...shadows.soft },
@@ -749,7 +743,7 @@ const s = StyleSheet.create({
   tabBtnTextActive: { color: '#FFFFFF', fontWeight: '700' },
   summaryCard: { backgroundColor: '#FFFFFF', borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.md, borderWidth: 1, borderColor: '#F5D3EE', ...shadows.soft },
   sectionHeader: { fontSize: 15, fontFamily: typography.topicFont, fontWeight: '700', color: '#2C1A35', marginBottom: spacing.md },
-  widgetRow: { flexDirection: 'row', paddingTop: 4 },
+  widgetRow: { flexDirection: 'row', flexWrap: 'wrap', paddingTop: 4 },
   widgetCell: { flex: 1, alignItems: 'center', paddingVertical: 6 },
   widgetEmoji: { fontSize: 24, marginBottom: 4 },
   widgetVal: { fontSize: 20, fontFamily: typography.topicFont, fontWeight: '700', color: '#2C1A35' },
