@@ -29,6 +29,7 @@ import { useAuth } from '../context/AuthContext';
 import chatService from '../services/chatService';
 import SinhalaKeyboard from '../components/SinhalaKeyboard';
 import MarkdownText from '../components/MarkdownText';
+import QuickActionsPanel from '../components/QuickActionsPanel';
 import { colors, spacing, radius, shadows } from '../theme';
 
 function formatElapsed(ms) {
@@ -111,8 +112,7 @@ export default function ChatScreen({ navigation }) {
         };
     }, []);
 
-    const handleSend = async () => {
-        const text = input.trim();
+    const sendText = async (text) => {
         if (!text || sending) return;
 
         const userMsg = {
@@ -156,6 +156,15 @@ export default function ChatScreen({ navigation }) {
         } finally {
             setSending(false);
         }
+    };
+
+    const handleSend = () => {
+        const text = input.trim();
+        sendText(text);
+    };
+
+    const handleQuickAction = (text) => {
+        sendText(text);
     };
 
     const handleFeedback = async (messageId, rating) => {
@@ -388,6 +397,11 @@ export default function ChatScreen({ navigation }) {
                                     "Hi, I'm here to help with postpartum mental health and newborn care questions. Ask me anything."
                                 )}
                             </Text>
+                            <QuickActionsPanel
+                                isSinhala={i18n.language === 'si'}
+                                onSelect={handleQuickAction}
+                                disabled={sending}
+                            />
                         </View>
                     }
                 />
