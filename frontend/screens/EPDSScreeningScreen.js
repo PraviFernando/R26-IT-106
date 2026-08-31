@@ -711,6 +711,14 @@ export default function EPDSScreeningScreen({ navigation }) {
         setViewMode('questions');
     };
 
+    const handleSkip = () => {
+        if (navigation.canGoBack()) {
+            navigation.goBack();
+        } else {
+            navigation.navigate('Dashboard');
+        }
+    };
+
     const handleSubmit = async () => {
         if (!fullName.trim() || !age.trim() || !district.trim() || !village.trim()) {
             Toast.show({
@@ -1026,6 +1034,19 @@ export default function EPDSScreeningScreen({ navigation }) {
                             </Text>
                         )}
                     </TouchableOpacity>
+
+                    {/* ─── Skip Option ──────────────────────────────────────────── */}
+                    {!hasDoneCurrentCycle && (
+                        <TouchableOpacity
+                            style={styles.skipBtn}
+                            onPress={handleSkip}
+                            activeOpacity={0.7}
+                        >
+                            <Text style={styles.skipBtnText}>
+                                {t("Skip for now, I don't want to answer")}
+                            </Text>
+                        </TouchableOpacity>
+                    )}
 
                     <View style={{ height: 30 }} />
                 </ScrollView>
@@ -1551,6 +1572,17 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.8)',
         fontSize: screenWidth > 768 ? 13 : 11,
         marginTop: 2
+    },
+    skipBtn: {
+        alignItems: 'center',
+        paddingVertical: 12,
+        marginTop: 4,
+    },
+    skipBtnText: {
+        color: '#9CA3AF',
+        fontSize: screenWidth > 768 ? 14 : 13,
+        fontWeight: '600',
+        textDecorationLine: 'underline',
     },
 
     // ════════ QUESTION FLOW STYLES ════════
