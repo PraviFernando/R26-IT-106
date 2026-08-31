@@ -34,6 +34,11 @@ const getLocalDateStr = (offsetDays = 0) => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+/**
+ * PROGRESS TRACKING ALGORITHM: calculateDiaryStreak()
+ * Calculates consecutive daily diary entries written by the user.
+ * Checks if an entry exists for Today or Yesterday, then iterates backwards.
+ */
 const calculateDiaryStreak = (diaries) => {
   if (!diaries || diaries.length === 0) return 0;
   
@@ -69,6 +74,10 @@ const calculateDiaryStreak = (diaries) => {
   return streak;
 };
 
+/**
+ * PROGRESS TRACKING ALGORITHM: calculateActivityStreak()
+ * Calculates consecutive daily self-care activities/games completed by the user.
+ */
 const calculateActivityStreak = (activities) => {
   if (!activities || activities.length === 0) return 0;
   
@@ -104,6 +113,10 @@ const calculateActivityStreak = (activities) => {
   return streak;
 };
 
+/**
+ * PROGRESS TRACKING ALGORITHM: getMostCommonEmotion()
+ * Aggregates all recorded diary entry emotions to find the dominant mood trend.
+ */
 const getMostCommonEmotion = (diaries) => {
   if (!diaries || diaries.length === 0) return 'දත්ත නැත';
   const counts = {};
@@ -132,7 +145,7 @@ const getMostCommonEmotion = (diaries) => {
   return emotionLabels[maxEmotion] || 'ආතතියයි 😟';
 };
 
-// ── COMPONENT ────────────────────────────────────────────────────
+// ── COMPONENT (Lines 137–827: Renders dashboard, progress bars, emotion distributions, activity history & badges) ──
 
 const ProgressScreen = ({ navigation }) => {
   const { progressDiaries, progressActivities, loadingProgress, errorProgress, fetchProgressData } = useApp();

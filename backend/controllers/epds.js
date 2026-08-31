@@ -192,6 +192,11 @@ const submitScreening = async (req, res) => {
 };
 
 // ─── GET /epds/history ────────────────────────────────────────────────────────
+/**
+ * BACKEND API (EPDS Risk) — getHistory (GET /epds/history)
+ * Lines 194–204: Returns historic EPDS screening scores to set current clinical risk level (low/medium/high).
+ * Used by frontend AppContext.fetchProgressData() to resolve epdsRiskLevel for progress tracking & safety recommendations.
+ */
 const getHistory = async (req, res) => {
     try {
         const userId = getUserId(req);

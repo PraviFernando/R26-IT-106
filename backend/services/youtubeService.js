@@ -1245,7 +1245,7 @@ function scoreApiVideo(video, normReason, normEmotion, babyContext, subIntent = 
   // 1. Hard exclusions
   const negativeKws = [
     'workout', 'weight loss', 'exercise routine', 'pregnancy workout', 'gym', 'fitness',
-    'shorts', '#shorts', 'broken', 'status', 'whatsapp status', 'funny', 'fail', 'movie', 
+    'shorts', '#shorts', 'broken', 'status', 'whatsapp status', 'funny', 'fail', 'movie',
     'trailer', 'music video', 'song cover', 'unrelated', 'comedy', 'prank', 'celebrity',
     'gossip', 'drama', 'official video', 'teaser', 'gaming', 'gameplay', 'lets play',
     'grammarly', 'try grammarly', 'think faster'

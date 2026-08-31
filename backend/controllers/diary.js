@@ -48,6 +48,11 @@ const saveDiary = async (req, res, next) => {
     }
 };
 
+/**
+ * BACKEND API (Diaries) — listDiaryDates (GET /diary)
+ * Lines 51–68: Fetches sorted user diary history & calculates total word count statistics
+ * Used by frontend AppContext.fetchProgressData() for progress tracking, streaks, and stats.
+ */
 const listDiaryDates = async (req, res, next) => {
     try {
         const userId = req.user.id;

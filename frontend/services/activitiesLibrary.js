@@ -1134,16 +1134,25 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
     'journaling', 'write_positive', 'new_gratitude_journal', 'new_positive_affirmations'
   ];
 
+  /**
+   * ACTIVITY RANKING FORMULA:
+   * Scores and ranks self-care activities dynamically using a multi-factor weighting formula.
+   * Formula: Total Score = (Reason Match +15) + (Baby Context Boost +20) + (Emotion Match +18) 
+   *                        + (Risk Level Safety +8 / -50) + (User Preferences +10) 
+   *                        - (History Repetition Penalty -15) - (Unrelated Penalty -12)
+   */
   const ranked = pool.map(act => {
     let score = 0;
 
-    // 1. PRIMARY INTENT / REASON MATCH
+    // STEP 1: PRIMARY INTENT / REASON MATCH (+15 Weight)
+    // Boosts activities mapped directly to the primary maternal reason/issue
     const reasonList = REASON_ACTIVITY_MAP[normReason] || REASON_ACTIVITY_MAP.overwhelmed;
     if (reasonList.includes(act.id)) {
       score += 15;
     }
 
-    // 2. BABY CONTEXT BOOST
+    // STEP 2: BABY CONTEXT BOOST (+20 Weight)
+    // Prioritizes infant observation & maternal bonding activities when baby care concerns are active
     const babyActivities = [
       'baby_mood', 'new_baby_interaction_ideas', 'baby_bonding', 'new_drink_water',
       'baby_cue_observation', 'hunger_cue_observation', 'sleep_cue_observation',
@@ -1153,13 +1162,15 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
       score += 20;
     }
 
-    // 3. EMOTION MATCH (Personalization weight)
+    // STEP 3: EMOTION MATCH (+18 Weight)
+    // Personalizes activity scoring based on current emotional state (happy, sad, anxious, stressed, crying, etc.)
     const emotionList = EMOTION_ACTIVITY_MAP[normEmotion] || EMOTION_ACTIVITY_MAP.stressed;
     if (emotionList.includes(act.id)) {
       score += 18;
     }
 
-    // 4. RISK LEVEL MATCH (Safety Enforcement)
+    // STEP 4: RISK LEVEL MATCH & CLINICAL SAFETY ENFORCEMENT
+    // Enforces safety constraints for high-risk clinical states (+8 for safe breathing/mindfulness, -50 penalty for others)
     if (normRisk === 'high') {
       if (highRiskSafeList.includes(act.id)) {
         score += 8;
@@ -1173,17 +1184,20 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
       score += 4;
     }
 
-    // 5. USER PREFERENCES
+    // STEP 5: USER PREFERENCES BOOST (+10 Weight)
+    // Rewards activities pre-selected by the mother in her onboarding preferences
     if (preferredActivities && preferredActivities.includes(act.id)) {
       score += 10;
     }
 
-    // 6. HISTORY REPETITION PENALTY
+    // STEP 6: HISTORY REPETITION PENALTY (-15 Penalty)
+    // Applies penalty to activities completed earlier today to encourage variety
     if (completedActivities && completedActivities.includes(act.id)) {
       score -= 15;
     }
 
-    // 7. UNRELATED FILTERING
+    // STEP 7: UNRELATED FILTERING (-12 Penalty)
+    // Penalizes activities irrelevant to baby context or active emotion/reason mapping
     const isMapped = reasonList.includes(act.id) || emotionList.includes(act.id);
     if (isBabyActive && !babyActivities.includes(act.id) && !act.id.includes('breathing') && !act.id.includes('meditation') && !act.id.includes('relaxing_music') && !isMapped) {
       score -= 12;
@@ -1195,7 +1209,7 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
     };
   });
 
-  // Sort by score descending, then by activity ID ascending (deterministic)
+  // FINAL SORTING & SELECTION: Sort by score descending, then by activity ID ascending (deterministic)
   ranked.sort((a, b) => (b.score - a.score) || a.id.localeCompare(b.id));
 
   let top4 = ranked.slice(0, 4);

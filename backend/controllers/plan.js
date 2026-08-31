@@ -164,6 +164,11 @@ const getDateActivities = async (req, res, next) => {
 };
 
 // GET /plan/activity/history
+/**
+ * BACKEND API (Activities) — getActivityHistory (GET /plan/activity/history)
+ * Lines 166–201: Returns all completed activity records across user's plans for progress tracking.
+ * Used by frontend AppContext.fetchProgressData() for progress streak and activity badge calculations.
+ */
 const getActivityHistory = async (req, res, next) => {
     try {
         const userId = req.user?.id;
