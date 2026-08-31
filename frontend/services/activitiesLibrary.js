@@ -1033,7 +1033,7 @@ const REASON_ACTIVITY_MAP = {
   sleep_problems: ['new_sleep_reflection', 'new_relaxing_music', 'new_guided_meditation', 'new_deep_breathing', 'rest_meditation', 'night_breathing'],
   loss_of_confidence: ['new_positive_affirmations', 'new_gratitude_journal', 'new_self_care_checklist', 'new_smile_challenge', 'affirmation_activity', 'write_positive'],
   overwhelmed: ['new_box_breathing', 'new_self_care_checklist', 'new_worry_box', 'new_guided_meditation', 'box_breathing', 'guided_meditation', 'short_breathing'],
-  physical_discomfort: ['new_gentle_stretch', 'new_drink_water', 'new_relaxing_music', 'gentle_stretch'],
+  physical_discomfort: ['gentle_stretch', 'new_gentle_stretch', 'new_drink_water', 'new_relaxing_music'],
   negative_thoughts: ['new_deep_breathing', 'new_guided_meditation', 'new_worry_box', 'new_relaxing_music', 'deep_breathing', 'guided_meditation'],
 
   // Baby-focused entries

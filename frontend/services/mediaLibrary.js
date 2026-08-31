@@ -289,6 +289,21 @@ export const VIDEO_LIBRARY = {
     { id: 'vbn2', title: 'අලුත උපන් බබාගේ හැසිරීම් තේරුම් ගැනීම', titleEn: 'Newborn Behavior & Signals', duration: '8 min', emoji: '🍼', url: 'https://youtu.be/ve7yXXRaYT8?si=CFs6Njp60GFDTD_H', source: null },
     { id: 'vbn3', title: 'බබාගේ හැඬීම සහ සංඥා වලට සාර්ථකව ප්‍රතිචාර දැක්වීම', titleEn: 'Soothe & Respond to Baby Crying', duration: '7 min', emoji: '😴', url: 'https://youtu.be/k_FyoBhaFTA?si=EAwpncWybW7DHQ1i', source: null },
   ],
+  // ── DIFFICULTY CARING FOR BABY ─────────────────────────
+  difficulty_caring_for_baby: [
+    { id: 'bc1', title: 'අලුත උපන් බබා සුවපහසුවෙන් බලාගන්නා ආකාරය', titleEn: 'Newborn Care & Handling Basics', duration: '10 min', emoji: '👶', url: 'https://youtu.be/7yxd25nZMaE', thumbnail: 'https://img.youtube.com/vi/7yxd25nZMaE/0.jpg' },
+    { id: 'bc2', title: 'DP Education Health - ළදරු සාත්තු මාර්ගෝපදේශය', titleEn: 'Baby Care Channel', duration: '12 min', emoji: '📺', url: 'https://www.youtube.com/@dpeducationhealth/videos', thumbnail: 'https://img.youtube.com/vi/kmbKaSRyZ-c/0.jpg' },
+    { id: 'bc3', title: 'බබා නැවීම සහ ඩයපර් මාරු කිරීම', titleEn: 'Baby Bathing & Diaper Care Basics', duration: '9 min', emoji: '🛁', url: 'https://youtu.be/40twQSFLHMw', thumbnail: 'https://img.youtube.com/vi/40twQSFLHMw/0.jpg' },
+    { id: 'bc4', title: 'Newborn Baby Handling & Care Tutorial', titleEn: 'Newborn Care Tutorial', duration: '11 min', emoji: '🌸', url: 'https://www.youtube.com/watch?v=SQX5Nwr4ekc', thumbnail: 'https://img.youtube.com/vi/SQX5Nwr4ekc/0.jpg' },
+    { id: 'bc5', title: 'Daily Newborn Care Routine & Tips', titleEn: 'Daily Newborn Care Routine', duration: '8 min', emoji: '🧸', url: 'https://www.youtube.com/watch?v=4SQNqugTUmw', thumbnail: 'https://img.youtube.com/vi/4SQNqugTUmw/0.jpg' }
+  ],
+  caring_for_baby: [
+    { id: 'bc1', title: 'අලුත උපන් බබා සුවපහසුවෙන් බලාගන්නා ආකාරය', titleEn: 'Newborn Care & Handling Basics', duration: '10 min', emoji: '👶', url: 'https://youtu.be/7yxd25nZMaE', thumbnail: 'https://img.youtube.com/vi/7yxd25nZMaE/0.jpg' },
+    { id: 'bc2', title: 'DP Education Health - ළදරු සාත්තු මාර්ගෝපදේශය', titleEn: 'Baby Care Channel', duration: '12 min', emoji: '📺', url: 'https://www.youtube.com/@dpeducationhealth/videos', thumbnail: 'https://img.youtube.com/vi/kmbKaSRyZ-c/0.jpg' },
+    { id: 'bc3', title: 'බබා නැවීම සහ ඩයපර් මාරු කිරීම', titleEn: 'Baby Bathing & Diaper Care Basics', duration: '9 min', emoji: '🛁', url: 'https://youtu.be/40twQSFLHMw', thumbnail: 'https://img.youtube.com/vi/40twQSFLHMw/0.jpg' },
+    { id: 'bc4', title: 'Newborn Baby Handling & Care Tutorial', titleEn: 'Newborn Care Tutorial', duration: '11 min', emoji: '🌸', url: 'https://www.youtube.com/watch?v=SQX5Nwr4ekc', thumbnail: 'https://img.youtube.com/vi/SQX5Nwr4ekc/0.jpg' },
+    { id: 'bc5', title: 'Daily Newborn Care Routine & Tips', titleEn: 'Daily Newborn Care Routine', duration: '8 min', emoji: '🧸', url: 'https://www.youtube.com/watch?v=4SQNqugTUmw', thumbnail: 'https://img.youtube.com/vi/4SQNqugTUmw/0.jpg' }
+  ],
   // ── OVERWHELMED ─────────────────────────────────────────
   overwhelmed: [
     { id: 'vow1', title: 'ආතති සහන වීඩියෝ', titleEn: 'Stress Relief Videos', duration: '8 min', emoji: '🌊', source: null },
@@ -462,8 +477,10 @@ export const getVideosForReason = (finalReason = '', emotion = '', selectedEmoji
   if (targetCategory && !VIDEO_LIBRARY[targetCategory]) {
     if (['mother_sleep', 'mother_sleep_problems', 'sleep'].includes(targetCategory)) {
       targetCategory = 'sleep_problems';
-    } else if (['baby_crying', 'baby_feeding', 'caring_for_baby', 'baby_sleep'].includes(targetCategory)) {
+    } else if (['baby_crying', 'baby_feeding', 'baby_sleep'].includes(targetCategory)) {
       targetCategory = 'bonding_issues';
+    } else if (['caring_for_baby', 'difficulty_caring_for_baby'].includes(targetCategory)) {
+      targetCategory = 'difficulty_caring_for_baby';
     } else if (['baby_health'].includes(targetCategory)) {
       targetCategory = 'anxiety';
     } else if (['feeling_lonely'].includes(targetCategory)) {

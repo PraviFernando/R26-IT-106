@@ -207,6 +207,7 @@ const REASON_KW = {
     'baby keeps waking me up', 'tired because i cant sleep', 'sleep problems',
     'mother sleep problems', 'mothers sleep problems', 'maternal sleep problems',
     'mom sleep problems', 'mother cant sleep', 'mother cannot sleep',
+    'mind keeps running', 'mind keeps running constantly', 'cant sleep even when baby is sleeping', 'cant sleep even when baby',
     'tired mother', 'exhausted mother', 'maternal sleep', 'mothers sleep',
     'mata raata nid naha', 'mata rata nid naha', 'raata nid naha', 'rata nid naha',
     'nid naha', 'nid na', 'nida naha', 'ninda naha', 'raata ninda naha', 'raata nid', 'rata nid',
@@ -477,7 +478,8 @@ export const analyzeDiary = (text) => {
   ]);
 
   // Only override with baby-specific care topics (crying, health, feeding, sleep, needs) if maternal state isn't an explicit primary concern
-  if (babyIntents.baby_related && (!hasMaternalMatch || motherReason === 'fatigue' || motherReason === 'sleep_problems' || (rScores.baby_needs > 0 && rScores.baby_needs >= (rScores[motherReason] || 0)))) {
+  const isMotherSleepExplicit = motherReason === 'sleep_problems' && (norm.includes('cant sleep') || norm.includes('cannot sleep') || norm.includes('can\'t sleep') || norm.includes('mind keeps running') || norm.includes('trouble sleeping') || norm.includes('ninda yanne naha'));
+  if (babyIntents.baby_related && !isMotherSleepExplicit && (!hasMaternalMatch || motherReason === 'fatigue' || motherReason === 'anxiety' || babyIntents.baby_health || (rScores.baby_needs > 0 && rScores.baby_needs >= (rScores[motherReason] || 0)))) {
     const intentsList = [
       { id: 'baby_crying', kws: ['crying', 'cries', 'cry', 'andana', 'andanawa', 'adanawa', 'අඬනවා', 'අඬන', 'ඇඬීම', 'කෑගහනවා'] },
       { id: 'baby_needs', kws: ['needs', 'want', 'wants', 'understand', 'therenne naha', 'therenne na', 'therum ganna baha', 'one kiyala', 'mokakda one', 'monawada one', 'තේරෙන්නේ නැහැ', 'තේරෙන්නේ නෑ', 'ඕන කියලා'] },

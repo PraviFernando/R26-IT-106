@@ -1,5 +1,5 @@
 // ================================================================
-// DASHBOARD SCREEN — DashboardScreen copy.js  (Sinhala UI with Quick Actions)
+// DASHBOARD SCREEN — DashboardScreen copy.js  (Bilingual UI with Quick Actions)
 // ================================================================
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -7,18 +7,13 @@ import {
   View, Text, TouchableOpacity,
   StyleSheet, Animated, StatusBar,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
-import { colors, spacing, radius, shadows } from '../theme';
+import { colors, spacing, radius, shadows, typography } from '../theme';
 import { useApp } from '../services/AppContext';
 import { SI } from '../services/translations';
 import ScreenContainer from '../components/ScreenContainer';
 import { useResponsive } from '../hooks/useResponsive';
-
-const emotionConfig = {
-  happy:    { emoji: '😊', label: SI.happy,    gradient: ['#FFF9C4','#FFF3E0'], color: '#F57F17', bg: '#FFFDE7' },
-  sad:      { emoji: '😔', label: SI.sad,      gradient: ['#E8EAF6','#E3F2FD'], color: '#3949AB', bg: '#EDE7F6' },
-  stressed: { emoji: '😟', label: SI.stressed, gradient: ['#EDE7F6','#FCE4EC'], color: '#7E57C2', bg: '#F3E5F5' },
-};
 
 const emojiFeelingsSI = {
   '😊': 'සතුටුයි',
@@ -31,30 +26,57 @@ const emojiFeelingsSI = {
   '☁️': 'මලානිකයි',
 };
 
-const summaryMessages = {
-  happy:    'ඔබ අද ආලෝකය විහිදිනවා 🌸 ඒ සතුට රක්ෂා කරන්න.',
-  sad:      'දුකක් දැනෙනවා නම් හරි. අපි ඔබ සමඟ ආදරෙන් ඉදිමු 💜',
-  stressed: 'ඔබ ගොඩ දෙයක් රැගෙන ඉදිමු. සන්සුන් දෙයක් සොයා ගනිමු 🌿',
-};
+const emotionConfig = (isSinhala) => ({
+  happy: { emoji: '😊', label: isSinhala ? 'සතුටුයි' : 'Happy', gradient: ['#FFF9C4', '#FFF3E0'], color: '#F57F17', bg: '#FFFDE7' },
+  sad: { emoji: '😔', label: isSinhala ? 'දුකයි' : 'Sad', gradient: ['#E8EAF6', '#E3F2FD'], color: '#3949AB', bg: '#EDE7F6' },
+  stressed: { emoji: '😟', label: isSinhala ? 'ආතතියයි' : 'Stressed', gradient: ['#EDE7F6', '#FCE4EC'], color: '#7E57C2', bg: '#F3E5F5' },
+});
 
-const supportMessages = {
-  happy: { title: 'ඔබ අද දිලිසෙනවා ✨', body: 'ඔබේ ධනාත්මක ශක්තිය ප්‍රමාද යයි — ඔබ සහ ඔබේ දරුවාට. මෙම සතුටු මොහොත ආදරෙන් ගෙවන්න.' },
-  sad: { title: 'ඔබේ හැඟීම් වලංගුයි 🌧️', body: 'දුකක් දැනෙනවා නම් හරිය. අම්මා වීම ලෝකයේ හැහෑ දෙකක් ඇති කාර්යයකි. දැන් ඔබ වෙනුවෙන් ඉඩ ගනිමු.' },
-  stressed: { title: 'ඔබ තනිව නොමැත 💜', body: 'ආතතිය ආදරය — ශ්‍රේෂ්ඨ ගොඩ බිමකට ළඟා වීමට. දැන් ඔබ සඳහා සන්සුන් සහ සහනය සොයා ගනිමු.' },
-};
+const getSupportMessages = (isSinhala) => ({
+  happy: {
+    title: isSinhala ? 'ඔබේ සතුට සුන්දරයි ✨' : 'Your happiness is beautiful ✨',
+    body: isSinhala
+      ? 'අද ඔබට සතුටක් දැනෙන එක වටින දෙයක්. මේ සුන්දර මොහොත ඔබේ බබා සමඟ ආදරයෙන් විඳින්න. 💛'
+      : 'It is wonderful that you are feeling happy today. Cherish this beautiful moment with your baby and enjoy the little things that bring you joy. 💛'
+  },
+  sad: {
+    title: isSinhala ? 'ඔබේ හැඟීම් වැදගත් 💜' : 'Your feelings matter 💜',
+    body: isSinhala
+      ? 'දුකක් හෝ බරක් දැනෙන එක ගැන ඔබට දොස් කියාගන්න එපා. ඔබ තනිවම මේ හැඟීම් දරාගත යුතු නැහැ. අද ඔබ වෙනුවෙන් පොඩි මොහොතක් වෙන් කරගන්න. 🌷'
+      : 'You do not have to blame yourself for feeling sad or overwhelmed. You do not have to carry these feelings alone. Take a small moment for yourself today. 🌷'
+  },
+  stressed: {
+    title: isSinhala ? 'ටිකක් හුස්ම ගන්න 💜' : 'Take a moment to breathe 💜',
+    body: isSinhala
+      ? 'ඔබට දැන් බොහෝ දේ එකවර දරාගන්න වෙලා ඇති. හැමදේම එකවර විසඳන්න අවශ්‍ය නැහැ. ටිකෙන් ටික ඉදිරියට යන්න — ඔබ ඔබට හිතනවාට වඩා ශක්තිමත්. 🌿'
+      : 'You may be carrying a lot right now. You do not have to solve everything at once. Take it one step at a time — you are stronger than you may feel right now. 🌿'
+  },
+});
+
+const affirmationsEN = [
+  "You are doing an amazing job. The world knows the love you give to your baby.",
+  "There is no perfect mother — only a real mother. And that's you.",
+  "Resting is not giving up. It is gathering strength for what is ahead.",
+  "You grew a human being. Think kindly of yourself today.",
+  "Your baby needs you — exactly you.",
+  "Healing is not linear. Every single day counts.",
+  "You are not alone. Mothers all over the world are with you."
+];
 
 const DashboardScreenCopy = ({ navigation }) => {
   const { user, latestAnalysis, moodHistory, preferencesSet, simulateNextDiary, nextDemoPreview } = useApp();
+  const { i18n } = useTranslation();
+  const isSinhala = i18n?.language === 'si';
   const [processing, setProcessing] = useState(false);
   const r = useResponsive();
   const quickCols = r.gridColumns(150, 10, 4);
   const quickCardW = r.tileWidth(quickCols, 10);
-  const fadeAnim  = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim,  { toValue: 1, duration: 700, useNativeDriver: true }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true }),
       Animated.timing(slideAnim, { toValue: 0, duration: 700, useNativeDriver: true }),
     ]).start();
   }, []);
@@ -64,29 +86,37 @@ const DashboardScreenCopy = ({ navigation }) => {
     setTimeout(() => { simulateNextDiary(); setProcessing(false); }, 600);
   };
 
-  const affirmation = SI.affirmations[new Date().getDay() % SI.affirmations.length];
-  const emotion  = latestAnalysis?.detectedEmotion || 'stressed';
-  const risk     = latestAnalysis?.riskLevel || 'low';
-  const ec       = emotionConfig[emotion] || emotionConfig.stressed;
+  const affirmationsList = isSinhala ? SI.affirmations : affirmationsEN;
+  const affirmation = affirmationsList[new Date().getDay() % affirmationsList.length];
+
+  const emotion = latestAnalysis?.detectedEmotion || 'stressed';
+  const risk = latestAnalysis?.riskLevel || 'low';
+  const ecMap = emotionConfig(isSinhala);
+  const ec = ecMap[emotion] || ecMap.stressed;
   const selectedEmoji = latestAnalysis?.mood || ec.emoji;
-  const selectedFeeling = emojiFeelingsSI[selectedEmoji] || ec.label;
+  const selectedFeeling = (isSinhala && emojiFeelingsSI[selectedEmoji]) || ec.label;
   const weekDays = moodHistory.slice(-7);
 
-  const msg = supportMessages[emotion] || supportMessages.stressed;
+  const supportMsgs = getSupportMessages(isSinhala);
+  const msg = supportMsgs[emotion] || supportMsgs.stressed;
   const riskPct = risk === 'high' ? 90 : (risk === 'medium' ? 65 : 30);
   const riskColor = risk === 'high' ? '#D32F2F' : (risk === 'medium' ? colors.riskMediumDark : colors.riskLowDark);
   const riskBg = risk === 'high' ? '#FFEBEE' : (risk === 'medium' ? '#FFFDE7' : '#E8F5E9');
   const riskDesc = risk === 'high'
-    ? 'අධික අවදානම් මට්ටමක් හඳුනාගෙන ඇත. කරුණාකර වහාම සහාය පතන්න. 💖'
-    : (risk === 'medium' ? 'ඔබට දැන් ඉතිරි ආධාරක ශ්‍රේෂ්ඨ 💛' : 'ඔබ ශ්‍රේෂ්ඨව ගෙවනවා. දිගටම! 💚');
-  const riskLabelText = risk === 'high' ? (SI.highRisk || '🔴 අධික අවදානම') : (risk === 'medium' ? 'මධ්‍යම' : 'අඩු');
+    ? (isSinhala ? 'අධික අවදානම් මට්ටමක් හඳුනාගෙන ඇත. කරුණාකර වහාම සහාය පතන්න. 💖' : 'A high risk level has been detected. Please reach out for support right away. 💖')
+    : (risk === 'medium'
+      ? (isSinhala ? 'ඔබට දැන් ඉතිරි ආධාරක ශ්‍රේෂ්ඨ 💛' : 'A little extra support could help you right now. 💛')
+      : (isSinhala ? 'ඔබ ශ්‍රේෂ්ඨව ගෙවනවා. දිගටම! 💚' : 'You are doing great. Keep going! 💚'));
+  const riskLabelText = risk === 'high'
+    ? (isSinhala ? (SI.highRisk || '🔴 අධික අවදානම') : 'High')
+    : (risk === 'medium' ? (isSinhala ? 'මධ්‍යම' : 'Medium') : (isSinhala ? 'අඩු' : 'Low'));
 
   // Quick Actions with proper navigation
   const quickActions = [
-    { icon: '🎵', label: 'සංගීතය',     color: colors.lavenderLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Recommendations', params: { tab: 'music' } } } },
-    { icon: '🧘', label: 'ක්‍රියාකාරකම්', color: colors.roseLight,     nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Activity' } } },
-    { icon: '🎮', label: 'ක්‍රීඩා',      color: colors.mintLight,     nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Activity' } } },
-    { icon: '📊', label: 'ප්‍රගතිය',    color: colors.peach,         nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Progress' } } },
+    { icon: '🎵', label: isSinhala ? 'සංගීතය' : 'Music', color: colors.lavenderLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Recommendations', params: { tab: 'music' } } } },
+    { icon: '🧘', label: isSinhala ? 'ක්‍රියාකාරකම්' : 'Activities', color: colors.roseLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Activity' } } },
+    { icon: '🎮', label: isSinhala ? 'ක්‍රීඩා' : 'Games', color: colors.mintLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Activity' } } },
+    { icon: '📊', label: isSinhala ? 'ප්‍රගතිය' : 'Progress', color: colors.peach, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Progress' } } },
   ];
 
   return (
@@ -98,180 +128,203 @@ const DashboardScreenCopy = ({ navigation }) => {
     >
       <StatusBar barStyle="dark-content" />
 
-          {/* Back Button */}
-          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-            <Text style={s.backText}>← ආපසු</Text>
-          </TouchableOpacity>
+      {/* Back + Language Toggle */}
+      <View style={s.topBarRow}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+          <Text style={s.backText}>{isSinhala ? '← ආපසු' : '← Back'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={s.langToggleBtn}
+          onPress={() => i18n && i18n.changeLanguage(isSinhala ? 'en' : 'si')}
+        >
+          <Text style={s.langToggleText}>{isSinhala ? 'EN' : 'සිං'}</Text>
+        </TouchableOpacity>
+      </View>
 
-          {/* Header */}
-          <Animated.View style={[s.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-            <View>
-              <Text style={s.greeting}>{SI.goodMorning}</Text>
-              <Text style={s.name}>{SI.hi} {user.name}</Text>
+      {/* Header */}
+      <Animated.View style={[s.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+        <View>
+          <Text style={s.greeting}>{SI.goodMorning}</Text>
+          <Text style={s.name}>{SI.hi} {user.name}</Text>
+        </View>
+        <View style={s.avatar}>
+          <Text style={s.avatarText}>{user.name[0]}</Text>
+        </View>
+      </Animated.View>
+
+      {/* Preferences prompt */}
+      {!preferencesSet && (
+        <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'Preferences' })} style={s.prefBanner}>
+          <Text style={s.prefBannerText}>✨ ඔබේ ආධාර පෞද්ගලිකෘත කරන්න — ඔබේ කැමති ක්‍රියාකාරකම් තෝරන්න</Text>
+          <Text style={s.prefArrow}>→</Text>
+        </TouchableOpacity>
+      )}
+
+      {/* Merged Support Screen Contents */}
+      <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+        <Text style={s.supportTitle}>{SI.emotionalAnalysis}</Text>
+        <Text style={s.supportSubtitle}>{SI.diaryProcessed}</Text>
+
+        {/* System Note */}
+        <View style={s.systemNote}>
+          <Text style={s.systemNoteText}>{SI.systemNote}</Text>
+        </View>
+
+        {/* Detected Mood Card */}
+        <LinearGradient colors={ec.gradient} style={s.moodCard}>
+          <Text style={s.moodCardLabel}>{SI.detectedMood}</Text>
+          <View style={s.moodRow}>
+            <Text style={s.moodEmojiBig}>{selectedEmoji}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.moodName, { color: ec.color }]}>{selectedFeeling}</Text>
+              <Text style={s.moodSub}>{SI.diaryProcessed}</Text>
             </View>
-            <View style={s.avatar}>
-              <Text style={s.avatarText}>{user.name[0]}</Text>
-            </View>
-          </Animated.View>
+          </View>
+        </LinearGradient>
 
-          {/* Preferences prompt */}
-          {!preferencesSet && (
-            <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'Preferences' })} style={s.prefBanner}>
-              <Text style={s.prefBannerText}>✨ ඔබේ ආධාර පෞද්ගලිකෘත කරන්න — ඔබේ කැමති ක්‍රියාකාරකම් තෝරන්න</Text>
-              <Text style={s.prefArrow}>→</Text>
-            </TouchableOpacity>
-          )}
+        {/* Risk Level Card */}
+        <View style={[s.riskCard, { backgroundColor: riskBg, borderColor: risk === 'high' ? '#EF9A9A' : 'transparent', borderWidth: risk === 'high' ? 1.5 : 0 }]}>
+          <View style={s.riskTop}>
+            <Text style={s.riskCardLabel}>{SI.riskLevel}</Text>
+            <Text style={[s.riskText, { color: riskColor }]}>
+              {riskLabelText}
+            </Text>
+          </View>
+          <View style={s.riskBar}>
+            <View style={[s.riskBarFill, { width: `${riskPct}%`, backgroundColor: riskColor }]} />
+          </View>
+          <Text style={[s.riskDesc, { color: riskColor }]}>{riskDesc}</Text>
+        </View>
 
-          {/* Merged Support Screen Contents */}
-          <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-            <Text style={s.supportTitle}>{SI.emotionalAnalysis}</Text>
-            <Text style={s.supportSubtitle}>{SI.diaryProcessed}</Text>
+        {/* Support Message Card */}
+        <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={s.msgCard}>
+          <Text style={s.msgTitle}>{msg.title}</Text>
+          <Text style={s.msgBody}>{msg.body}</Text>
+        </LinearGradient>
 
-            {/* System Note */}
-            <View style={s.systemNote}>
-              <Text style={s.systemNoteText}>{SI.systemNote}</Text>
-            </View>
+        {/* Urgency Card */}
+        {risk === 'medium' && (
+          <View style={s.urgencyCard}>
+            <Text style={s.urgencyIcon}>💛</Text>
+            <Text style={s.urgencyText}>{SI.mediumRiskMsg}</Text>
+          </View>
+        )}
 
-            {/* Detected Mood Card */}
-            <LinearGradient colors={ec.gradient} style={s.moodCard}>
-              <Text style={s.moodCardLabel}>{SI.detectedMood}</Text>
-              <View style={s.moodRow}>
-                <Text style={s.moodEmojiBig}>{selectedEmoji}</Text>
-                <View style={{ flex: 1 }}>
-                  <Text style={[s.moodName, { color: ec.color }]}>{selectedFeeling}</Text>
-                  <Text style={s.moodSub}>{SI.diaryProcessed}</Text>
-                </View>
-              </View>
-            </LinearGradient>
-
-            {/* Risk Level Card */}
-            <View style={[s.riskCard, { backgroundColor: riskBg, borderColor: risk === 'high' ? '#EF9A9A' : 'transparent', borderWidth: risk === 'high' ? 1.5 : 0 }]}>
-              <View style={s.riskTop}>
-                <Text style={s.riskCardLabel}>{SI.riskLevel}</Text>
-                <Text style={[s.riskText, { color: riskColor }]}>
-                  {riskLabelText}
-                </Text>
-              </View>
-              <View style={s.riskBar}>
-                <View style={[s.riskBarFill, { width: `${riskPct}%`, backgroundColor: riskColor }]} />
-              </View>
-              <Text style={[s.riskDesc, { color: riskColor }]}>{riskDesc}</Text>
-            </View>
-
-            {/* Support Message Card */}
-            <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={s.msgCard}>
-              <Text style={s.msgTitle}>{msg.title}</Text>
-              <Text style={s.msgBody}>{msg.body}</Text>
-            </LinearGradient>
-
-            {/* Urgency Card */}
-            {risk === 'medium' && (
-              <View style={s.urgencyCard}>
-                <Text style={s.urgencyIcon}>💛</Text>
-                <Text style={s.urgencyText}>{SI.mediumRiskMsg}</Text>
-              </View>
-            )}
-
-            {/* Get Recommendations Button (Replaces View Plan) */}
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate('Main', {
-                  screen: 'Tabs',
-                  params: {
-                    screen: 'Recommendations',
-                    params: {
-                      riskLevel: latestAnalysis?.riskLevel,
-                      emotion: latestAnalysis?.detectedEmotion,
-                      primaryReason: latestAnalysis?.primaryReason,
-                    }
-                  }
-                })
+        {/* Get Recommendations Button (Replaces View Plan) */}
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('Main', {
+              screen: 'Tabs',
+              params: {
+                screen: 'Recommendations',
+                params: {
+                  riskLevel: latestAnalysis?.riskLevel,
+                  emotion: latestAnalysis?.detectedEmotion,
+                  primaryReason: latestAnalysis?.primaryReason,
+                }
               }
-              style={s.recBtn}
-            >
-              <LinearGradient
-                colors={['#8E24AA', '#D81B60']}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
-                style={s.recBtnInner}
-              >
-                <Text style={s.recBtnText}>{SI.getSupport}</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </Animated.View>
-
-          {/* Common Activities & Games Button */}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Activity' } })}
-            style={s.commonActBanner}
+            })
+          }
+          style={s.recBtn}
+        >
+          <LinearGradient
+            colors={['#8E24AA', '#D81B60']}
+            start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+            style={s.recBtnInner}
           >
-            <Text style={s.commonActIcon}>🎮</Text>
-            <View style={s.commonActInfo}>
-              <Text style={s.commonActTitle}>ක්‍රියාකාරකම් සහ ක්‍රීඩා</Text>
-              <Text style={s.commonActSub}>සන්සුන් ක්‍රියාකාරකම් සහ ක්‍රීඩා වෙත පිවිසෙන්න</Text>
-            </View>
-            <Text style={s.commonActArrow}>→</Text>
-          </TouchableOpacity>
-
-          {/* 7-Day Strip */}
-          <View style={s.section}>
-            <Text style={s.sectionTitle}>{SI.thisWeek}</Text>
-            <View style={s.weekStrip}>
-              {weekDays.map((d, i) => {
-                const e = emotionConfig[d.emotion] || emotionConfig.stressed;
-                const SI_DAYS = ['ඉරි', 'සඳු', 'අඟ', 'බදා', 'බ්‍රහ', 'සිකු', 'සෙන'];
-                const todayDayName = SI_DAYS[new Date().getDay()];
-                const isToday = d.day === todayDayName;
-                const displayEmoji = d.emoji || d.mood || e.emoji;
-                return (
-                  <View key={i} style={[s.dayChip, { backgroundColor: e.bg }, isToday && s.dayChipToday]}>
-                    <Text style={s.dayEmoji}>{displayEmoji}</Text>
-                    <Text style={[s.dayLabel, isToday && { color: colors.lavenderDark, fontWeight: '800' }]}>{d.day}</Text>
-                    <Text style={s.riskDot}>{d.risk === 'medium' ? '🟡' : '🟢'}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-
-          {/* Quick Actions */}
-          <View style={s.section}>
-            <Text style={s.sectionTitle}>{SI.quickSupport}</Text>
-            <View style={s.quickGrid}>
-              {quickActions.map((a, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={[s.quickCard, { width: quickCardW, backgroundColor: a.color }]}
-                  onPress={() => navigation.navigate(a.nav, a.params)}
-                >
-                  <Text style={s.quickIcon}>{a.icon}</Text>
-                  <Text style={s.quickLabel}>{a.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Affirmation */}
-          <LinearGradient colors={['#EDE7F6','#FCE4EC']} style={s.affirmCard}>
-            <Text style={s.affirmTitle}>{SI.todaysAffirm}</Text>
-            <Text style={s.affirmText}>"{affirmation}"</Text>
+            <Text style={s.recBtnText}>{SI.getSupport}</Text>
           </LinearGradient>
+        </TouchableOpacity>
+      </Animated.View>
 
-          {/* Demo Simulator */}
-          <View style={s.demoSection}>
-            <Text style={s.demoTitle}>{SI.simulateDiary}</Text>
-            <Text style={s.demoPreview}>ඊළඟ: "{nextDemoPreview?.slice(0, 60)}..."</Text>
-            <TouchableOpacity style={s.demoBtn} onPress={handleSimulate} disabled={processing}>
-              <Text style={s.demoBtnText}>{processing ? 'විශ්ලේෂණය කරමින්...' : SI.processNewEntry}</Text>
-            </TouchableOpacity>
+      {/* Common Activities & Games Button */}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Activity' } })}
+        style={s.commonActBanner}
+        activeOpacity={0.8}
+      >
+        <LinearGradient
+          colors={['#EDE7F6', '#FCE4EC']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={s.commonActInner}
+        >
+          <Text style={s.commonActIcon}>🎮</Text>
+          <View style={s.commonActInfo}>
+            <Text style={s.commonActTitle}>
+              {isSinhala ? 'ක්‍රියාකාරකම් සහ ක්‍රීඩා' : 'Common Activities & Games'}
+            </Text>
+            <Text style={s.commonActSub}>
+              {isSinhala ? 'සන්සුන් ක්‍රියාකාරකම් සහ ක්‍රීඩා වෙත පිවිසෙන්න' : 'Access common activities and games'}
+            </Text>
           </View>
+          <Text style={s.commonActArrow}>→</Text>
+        </LinearGradient>
+      </TouchableOpacity>
+
+      {/* 7-Day Strip */}
+      <View style={s.section}>
+        <Text style={s.sectionTitle}>{SI.thisWeek}</Text>
+        <View style={s.weekStrip}>
+          {weekDays.map((d, i) => {
+            const e = ecMap[d.emotion] || ecMap.stressed;
+            const SI_DAYS = ['ඉරි', 'සඳු', 'අඟ', 'බදා', 'බ්‍රහ', 'සිකු', 'සෙන'];
+            const todayDayName = SI_DAYS[new Date().getDay()];
+            const isToday = d.day === todayDayName;
+            const displayEmoji = d.emoji || d.mood || e.emoji;
+            return (
+              <View key={i} style={[s.dayChip, { backgroundColor: e.bg }, isToday && s.dayChipToday]}>
+                <Text style={s.dayEmoji}>{displayEmoji}</Text>
+                <Text style={[s.dayLabel, isToday && { color: colors.lavenderDark, fontWeight: '800' }]}>{d.day}</Text>
+                <Text style={s.riskDot}>{d.risk === 'medium' ? '🟡' : '🟢'}</Text>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+
+      {/* Quick Actions */}
+      <View style={s.section}>
+        <Text style={s.sectionTitle}>{SI.quickSupport}</Text>
+        <View style={s.quickGrid}>
+          {quickActions.map((a, i) => (
+            <TouchableOpacity
+              key={i}
+              style={[s.quickCard, { width: quickCardW, backgroundColor: a.color }]}
+              onPress={() => navigation.navigate(a.nav, a.params)}
+            >
+              <Text style={s.quickIcon}>{a.icon}</Text>
+              <Text style={s.quickLabel}>{a.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Affirmation */}
+      <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={s.affirmCard}>
+        <Text style={s.affirmTitle}>{SI.todaysAffirm}</Text>
+        <Text style={s.affirmText}>"{affirmation}"</Text>
+      </LinearGradient>
+
+      {/* Demo Simulator */}
+      <View style={s.demoSection}>
+        <Text style={s.demoTitle}>{SI.simulateDiary}</Text>
+        <Text style={s.demoPreview}>{isSinhala ? 'ඊළඟ' : 'Next'}: "{nextDemoPreview?.slice(0, 60)}..."</Text>
+        <TouchableOpacity style={s.demoBtn} onPress={handleSimulate} disabled={processing}>
+          <Text style={s.demoBtnText}>{processing ? (isSinhala ? 'විශ්ලේෂණය කරමින්...' : 'Analyzing...') : SI.processNewEntry}</Text>
+        </TouchableOpacity>
+      </View>
 
     </ScreenContainer>
   );
 };
 
 const s = StyleSheet.create({
-  backBtn:        { marginBottom: 12, alignSelf: 'flex-start' },
-  backText:       { color: colors.lavenderDark, fontWeight: '700', fontSize: 16 },
+  topBarRow:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  backBtn:        { alignSelf: 'flex-start' },
+  backText:       { color: colors.lavenderDark, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', fontSize: 16 },
+  langToggleBtn:  { backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.full, borderWidth: 1, borderColor: colors.lavenderMid },
+  langToggleText: { fontSize: 13, fontFamily: typography ? typography.subTopicFont : 'sans-serif', fontWeight: '700', color: colors.lavenderDark },
   header:         { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.lg },
   greeting:       { fontSize: 13, color: colors.textSecondary, fontWeight: '600' },
   name:           { fontSize: 26, fontWeight: '900', color: colors.textPrimary, marginTop: 2 },
@@ -284,7 +337,8 @@ const s = StyleSheet.create({
   emotionCard:    { borderRadius: radius.xl, padding: spacing.lg, marginBottom: spacing.lg, ...shadows.card },
   emotionTop:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: spacing.sm },
   emotionLeft:    { flex: 1 },
-  commonActBanner:{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#FCE4EC', borderRadius: radius.xl, padding: spacing.md, marginBottom: spacing.lg, borderWidth: 1.5, borderColor: '#F8BBD9', ...shadows.soft },
+  commonActBanner:{ borderRadius: radius.xl, overflow: 'hidden', marginBottom: spacing.lg, borderWidth: 1.5, borderColor: '#F8BBD9', ...shadows.soft },
+  commonActInner: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 18 },
   commonActIcon:  { fontSize: 32, marginRight: 12 },
   commonActInfo:  { flex: 1 },
   commonActTitle: { fontSize: 16, fontWeight: '700', color: '#8E24AA' },

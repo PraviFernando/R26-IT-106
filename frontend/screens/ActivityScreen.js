@@ -2604,6 +2604,7 @@ const moodCards = [
   { id: 'lonely', emoji: '🧍', label: 'තනිවෙලා', color: ['#E1BEE7', '#CE93D8'], reflection: 'ඔබ තනිවී නැත, අප සැමවිටම ඔබ සමඟයි 💜' }
 ];
 
+// PERICARE: Reflective journaling is separate from the clinical Diary/risk-analysis pipeline.
 const EmotionJournal = ({ onGoBack }) => {
   const session = useGameSession({ gameId: 'emotion_journal', gameName: 'හැඟීම් දිනපොත', icon: '🎭', onGoBack });
   const [selected, setSelected] = useState(null);
@@ -3034,21 +3035,29 @@ const ActivityScreen = ({ navigation, route }) => {
 
   const goBack = () => {
     if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
-      navigation.navigate('Recommendations');
+      navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Recommendations' } });
       return;
     }
-    if (route?.params?.gameId || route?.params?.activityId) {
-      if (navigation.canGoBack()) {
-        navigation.goBack();
-      } else {
-        navigation.navigate('Home');
+    if (view === 'game' || view === 'activity') {
+      if (route?.params?.gameId || route?.params?.activityId) {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation.navigate('Home');
+        }
+        return;
       }
+      setView('list');
+      setSelAct(null);
+      setSelGame(null);
+      setDone(false);
       return;
     }
-    setView('list');
-    setSelAct(null);
-    setSelGame(null);
-    setDone(false);
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+      return;
+    }
+    navigation.navigate('Home');
   };
 
   const renderGame = (id) => {
@@ -3177,9 +3186,84 @@ const ActivityScreen = ({ navigation, route }) => {
             ))}
           </View>
           <View style={{ height: 24 }} />
-          <Text style={[s.sectionLabel, { color: '#2E7D32' }]}>🌿 මනස සැහැල්ලු කිරීම</Text>
+          {/* General Practical Activities */}
+          <Text style={[s.sectionLabel, { color: '#8E24AA' }]}>🌸 සාමාන්‍ය සුවපහසු ක්‍රියාකාරකම්</Text>
           <View style={s.gamesGrid}>
-            {ALL_GAMES_LIST.filter((g) => !MATURE_IDS.includes(g.id) && g.id !== 'word_search' && g.id !== 'mandala' && g.id !== 'colouring').map(
+            {/* 1. 📝 Reflective Journaling */}
+            <TouchableOpacity
+              style={s.gameWrap}
+              onPress={() => {
+                setSelGame({ id: 'emotion_journal', label: 'හැඟීම් දිනපොත', labelEn: 'Reflective Journaling', icon: '📝' });
+                setView('game');
+              }}
+            >
+              <LinearGradient colors={['#FCE4EC', '#F8BBD9']} style={s.gameCard}>
+                <Text style={s.gameIcon}>📝</Text>
+                <Text style={s.gameLabel}>{isSinhala ? 'දිනපොත් සටහන' : 'Reflective Writing'}</Text>
+                <Text style={[s.gameSub, { color: '#C2185B' }]}>{isSinhala ? 'සිතුවිලි සටහන් කරන්න' : 'Reflective Journaling'}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* 2. 🧘 Meditation / Mindfulness */}
+            <TouchableOpacity
+              style={s.gameWrap}
+              onPress={() => {
+                setSelGame({ id: 'mindful_tap', label: 'සිහිකල්පනාව', labelEn: 'Meditation & Mindfulness', icon: '🧘' });
+                setView('game');
+              }}
+            >
+              <LinearGradient colors={['#E8EAF6', '#C5CAE9']} style={s.gameCard}>
+                <Text style={s.gameIcon}>🧘</Text>
+                <Text style={s.gameLabel}>{isSinhala ? 'සිහිකල්පනාව' : 'Mindfulness'}</Text>
+                <Text style={[s.gameSub, { color: '#3949AB' }]}>{isSinhala ? 'සිත සන්සුන් කිරීම' : 'Meditation & Calming'}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* 3. 🌬️ Deep Breathing / Relaxation */}
+            <TouchableOpacity
+              style={s.gameWrap}
+              onPress={() => {
+                setSelAct({
+                  id: 'breathing_478', icon: '🌬️', label: '4-7-8 හුස්ම ගැනීම', labelEn: '4-7-8 Breathing', desc: 'කාංසාව ක්ෂණිකව සන්සිඳවීම',
+                  type: 'breathing',
+                  phases: [
+                    { name: 'හුස්ම ගන්න', seconds: 4, instruction: 'නාසය දිගේ සෙමෙන් හුස්ම ගන්න', scale: 1.6 },
+                    { name: 'රඳවා ගන්න', seconds: 7, instruction: 'හුස්ම මෘදුව රඳවා ගන්න', scale: 1.6 },
+                    { name: 'හුස්ම පහලට දමන්න', seconds: 8, instruction: 'මුඛය දිගේ සෙමෙන් හුස්ම පහලට දමන්න', scale: 1.0 },
+                  ],
+                  cycles: 4,
+                });
+                setView('activity');
+              }}
+            >
+              <LinearGradient colors={['#EDE7F6', '#D1C4E9']} style={s.gameCard}>
+                <Text style={s.gameIcon}>🌬️</Text>
+                <Text style={s.gameLabel}>{isSinhala ? '4-7-8 හුස්ම ගැනීම' : 'Deep Breathing'}</Text>
+                <Text style={[s.gameSub, { color: '#7E57C2' }]}>{isSinhala ? 'ශ්වසන සුවය' : 'Breathing Relaxation'}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* 4. 🌿 Calming Self-Care */}
+            <TouchableOpacity
+              style={s.gameWrap}
+              onPress={() => {
+                setSelGame({ id: 'self_care', label: 'ස්වයං රැකවරණය', labelEn: 'Daily Self-Care', icon: '🌿' });
+                setView('game');
+              }}
+            >
+              <LinearGradient colors={['#E8F5E9', '#A5D6A7']} style={s.gameCard}>
+                <Text style={s.gameIcon}>🌿</Text>
+                <Text style={s.gameLabel}>{isSinhala ? 'ස්වයං රැකවරණය' : 'Self-Care'}</Text>
+                <Text style={[s.gameSub, { color: '#2E7D32' }]}>{isSinhala ? 'සුවසෙත ලබාගන්න' : 'Daily Calming Care'}</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+
+          {/* All Other Mind Relaxing Games */}
+          <View style={{ height: 30 }} />
+          <Text style={[s.sectionLabel, { color: '#2E7D32' }]}>🧩 මනස සැහැල්ලු කිරීමේ ක්‍රීඩා</Text>
+          <View style={s.gamesGrid}>
+            {ALL_GAMES_LIST.filter((g) => !MATURE_IDS.includes(g.id) && g.id !== 'mandala' && g.id !== 'colouring' && g.id !== 'emotion_journal' && g.id !== 'mindful_tap' && g.id !== 'self_care').map(
               (game) => (
                 <TouchableOpacity
                   key={game.id}

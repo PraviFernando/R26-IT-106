@@ -86,13 +86,16 @@ const RISK_CFG = {
 };
 
 const openYouTube = async (itemOrUrl, title, titleEn) => {
-  let url = typeof itemOrUrl === 'string' ? itemOrUrl : itemOrUrl?.url;
+  let rawUrl = typeof itemOrUrl === 'string' ? itemOrUrl : itemOrUrl?.url;
+  let ytId = typeof itemOrUrl === 'object' ? extractYouTubeId(itemOrUrl?.url || itemOrUrl?.id) : extractYouTubeId(itemOrUrl);
+  let url = rawUrl || (ytId ? `https://www.youtube.com/watch?v=${ytId}` : null);
+
   let searchTitle = typeof itemOrUrl === 'object'
     ? (itemOrUrl?.titleEn || itemOrUrl?.title || itemOrUrl?.label)
     : (titleEn || title);
 
   if (!url && searchTitle) {
-    url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTitle + ' music video relaxation')}`;
+    url = `https://www.youtube.com/results?search_query=${encodeURIComponent(searchTitle)}`;
   }
 
   if (!url) {
@@ -100,12 +103,7 @@ const openYouTube = async (itemOrUrl, title, titleEn) => {
   }
 
   try {
-    const canOpen = await Linking.canOpenURL(url).catch(() => false);
-    if (canOpen || url.startsWith('http') || url.startsWith('tel:')) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert('සබැඳිය', `තොරතුරු: ${url}`);
-    }
+    await Linking.openURL(url);
   } catch (e) {
     console.error('Error opening URL:', e);
     Alert.alert('දෝෂයක්', 'සබැඳිය විවෘත කළ නොහැකි විය.');
@@ -1124,17 +1122,25 @@ const RecommendationsScreen = ({ navigation, route }) => {
                         const badgeBg = isCurated ? '#EDE7F6' : isApi ? '#FFEBEE' : '#E0F2FE';
                         const badgeCol = isCurated ? '#6A1B9A' : isApi ? '#C62828' : '#0369A1';
 
+                        const ytId = extractYouTubeId(video.url || video.id);
+                        const videoUrl = video.url || (ytId ? `https://www.youtube.com/watch?v=${ytId}` : null);
+                        const rawThumb = video.thumbnail || (ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null);
+
                         return (
-                          <TouchableOpacity key={extractYouTubeId(video.url) || video.id || `v-${idx}`} style={s.mediaCard} onPress={() => openYouTube(video)}>
-                            {video.thumbnail ? (
-                              <Image source={{ uri: video.thumbnail }} style={s.videoThumb} />
+                          <TouchableOpacity key={ytId || video.id || `v-${idx}`} style={s.mediaCard} onPress={() => openYouTube(videoUrl || video)}>
+                            {rawThumb ? (
+                              <View style={{ position: 'relative' }}>
+                                <Image source={{ uri: rawThumb }} style={s.videoThumb} />
+                                <View style={s.playOverlay}>
+                                  <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '700' }}>▶</Text>
+                                </View>
+                              </View>
                             ) : (
                               <View style={[s.mediaIcon, { backgroundColor: colors.roseLight }]}>
                                 <Text style={s.mediaEmoji}>🎬</Text>
                               </View>
                             )}
                             <View style={s.mediaInfo}>
-
                               <Text style={s.mediaTitle} numberOfLines={2}>{video.title}</Text>
                               <Text style={s.mediaSub} numberOfLines={1}>{video.channelTitle || 'YouTube'}</Text>
                               <Text style={s.videoDesc} numberOfLines={2}>{video.description}</Text>
@@ -1149,6 +1155,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 {/* 5. KNOWLEDGE HUB TAB */}
                 {tab === 'knowledge' && (
                   <View>
+
                     <Text style={s.tabIntro}>{isSinhala ? 'කේන්ද්‍රීය දැනුම පියස 📚 (උපරිම 5)' : 'Central Knowledge Hub 📚 (Max 5)'}</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.videoTabsScroll}>
                       {KNOWLEDGE_CATEGORIES.map(cat => (
@@ -1326,6 +1333,11 @@ const s = StyleSheet.create({
   emergencyIcon: { fontSize: 24 },
   emergencyTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#D32F2F', marginBottom: 2 },
   emergencyText: { fontSize: 11, fontFamily: typography.bodyFont, color: '#B71C1C', lineHeight: 17 },
+  crisisKnowledgeCard: { backgroundColor: '#FFF5F5', borderWidth: 1.5, borderColor: '#FFCDD2', borderRadius: radius.lg, padding: 14, marginBottom: 16 },
+  crisisKnowledgeTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#D32F2F', marginBottom: 10 },
+  crisisKnowledgeBox: { backgroundColor: '#FFFFFF', borderRadius: 8, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: '#FFEBEE' },
+  crisisKnowledgeItemTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#C62828', marginBottom: 3 },
+  crisisKnowledgeItemDesc: { fontSize: 11, fontFamily: typography.bodyFont, color: '#5D4037', lineHeight: 17 },
   detectedTopicsBanner: { backgroundColor: '#FFDFEF', borderWidth: 1.5, borderColor: '#EABDE6', borderRadius: radius.lg, padding: 14, marginBottom: 16 },
   detectedTopicsTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#AA60C8', marginBottom: 6 },
   topicBadgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
@@ -1366,6 +1378,17 @@ const s = StyleSheet.create({
     height: 60,
     borderRadius: 10,
     marginRight: 12,
+  },
+  playOverlay: {
+    position: 'absolute',
+    top: 18,
+    left: 28,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   videoDesc: {
     fontSize: 11,
