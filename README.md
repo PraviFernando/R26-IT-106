@@ -20,6 +20,42 @@ Database: MongoDB
 Machine Learning: Python and Random Forest
 Version Control: Git and GitHub
 
+# Machine Learning Approach
+
+The depression screening component uses a Random Forest classification model to classify screening-related input data into predefined risk categories.
+General Development Process
+Collect and review the available dataset.
+Clean and preprocess the data.
+Prepare relevant features for model training.
+Split the data into appropriate training and evaluation sets.
+Train the Random Forest model.
+Evaluate model performance using classification metrics.
+Integrate the model with the application backend.
+Test the classification workflow and result presentation.
+
+Model performance should be evaluated using suitable metrics such as accuracy, precision, recall, and F1-score. Reported results should reflect the actual experimental evaluation.
+
+# Install Frontend and Backend Dependencies
+
+Navigate to the relevant frontend and backend directories and install their dependencies.
+
+npm install
+
+Run this command separately in each applicable Node.js project directory.
+
+Configure the Environment
+
+Create the required environment configuration using the project's example configuration, if available. Configure the database connection and other required service settings.
+Do not commit passwords, API keys, database credentials, or other secrets to GitHub.
+
+# Run the Application
+
+Use the start commands defined in the relevant package.json files. For an Expo frontend, the project may use:
+
+npx expo start
+
+# For the backend, use the start script defined in its package.json.
+
 # Purpose
 
 The component aims to provide accessible, technology-assisted postpartum depression screening and support for mothers in Sri Lanka. It is intended to complement professional assessment and does not replace diagnosis or treatment by qualified healthcare professionals.
