@@ -74,8 +74,6 @@ Component Name: Personalized Emotional Support Recommendation System
 
 Researcher: De Silva S. R. N.
 
-Student ID: IT22284884
-
 Parent Project: PeriCare – AI-Based Postpartum Depression Screening and Support System
 
 Research Area: Artificial Intelligence, Natural Language Processing, and Context-Aware Recommendation Systems
