@@ -67,3 +67,54 @@ npx expo start
 # Purpose
 
 The component aims to provide accessible, technology-assisted postpartum depression screening and support for mothers in Sri Lanka. It is intended to complement professional assessment and does not replace diagnosis or treatment by qualified healthcare professionals.
+
+
+2. Individual Component Details
+Component Name: Personalized Emotional Support Recommendation System
+
+Researcher: De Silva S. R. N.
+
+Student ID: IT22284884
+
+Parent Project: PeriCare – AI-Based Postpartum Depression Screening and Support System
+
+Research Area: Artificial Intelligence, Natural Language Processing, and Context-Aware Recommendation Systems
+
+Component Description
+This component processes maternal diary information to identify emotional states and the concerns described by the mother. It uses the available classification services and contextual information to select and rank suitable emotional support resources.
+The recommendation system can provide resources such as relaxation activities, breathing exercises, meditation, motivational content, educational videos, games, and other suitable well-being activities, depending on the resources available in the application.
+It also considers baby-related concerns when selecting baby-care resources, helping ensure that recommendations are relevant to the mother's actual situation.
+
+3. Key Features
+Multilingual Diary Analysis: Supports the intended processing of English, Sinhala Unicode, and Singlish diary entries, subject to the capabilities of the implemented classification pipeline.
+Emotion Classification: Identifies emotional categories such as Happy, Sad, Stressed, and Anxious using the implemented emotion-analysis component.
+Concern Identification: Identifies relevant concerns, such as loneliness, fatigue, anxiety, sleep problems, lack of support, and baby-care difficulties.
+Context-Aware Recommendations: Uses available emotional, personal, and contextual information to select relevant support resources.
+Risk-Aware Recommendations: Uses the EPDS risk information supplied by the screening component when applying the recommendation system's eligibility and safety rules.
+Personalized Activities: Provides suitable activities based on the available user preferences and contextual information.
+Baby-Related Recommendations: Selects relevant baby-care resources when the diary indicates a baby-related concern.
+Media and Educational Resources: Supports the presentation of available videos and other curated resources, depending on the implemented media-retrieval functionality.
+
+Activity History Awareness: Can consider previous activity completion information when this information is available to the recommendation logic.
+
+Integration with PeriCare: Functions as an individual component within the broader postpartum support application.
+
+4. Technologies Used
+The following technologies are associated with the PeriCare project. Confirm the exact dependencies and implementation details in the component's source code before treating this list as the final technology inventory.
+
+Area	Technology
+Mobile application	React Native and Expo
+Frontend programming	JavaScript
+Machine learning and text processing	Python
+Classification service	Python with Flask, if used by the current implementation
+Backend integration	Node.js and Express.js, where required by the integrated application
+Database	MongoDB, where used by the integrated application
+Machine learning libraries	Scikit-learn and TF-IDF, if used by the current models
+Data and recommendation resources	Curated resource datasets and application libraries
+Version control	Git and GitHub
+
+5. System Inputs and Outputs
+Inputs
+The component may use the following information, depending on availability within the integrated application:
+Maternal diary text.
+Parent Project: PeriCare – AI-Based Postpartum Depression Screening and Support System
