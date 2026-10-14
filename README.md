@@ -294,3 +294,118 @@ This component operates within the PeriCare application and shares its user acco
 The component provides general exercise guidance only and does not replace advice from doctors, midwives, or physiotherapists.
 
 Researcher: Perera K.T.S.N
+
+
+
+
+
+# 4. Individual Component Details
+
+## Assigned Component: AI-Powered Postpartum Depression Support Chatbot
+
+### Kavindu Jayawardhana IT22186423
+
+**Parent Project:** PeriCare – AI-Based Postpartum Depression Screening and Support System
+
+## 1. Project Overview
+
+Description: This component is an AI-powered chatbot designed to provide postpartum mothers with information, guidance, and non-clinical emotional support related to postpartum depression and maternal mental health. It uses a Retrieval-Augmented Generation (RAG) architecture to retrieve relevant information from a curated knowledge base and generate contextually relevant responses. The system integrates Pinecone for vector-based knowledge retrieval and Ollama for local Large Language Model (LLM) response generation. It also incorporates text normalization, domain validation, greeting detection, and crisis detection mechanisms to improve the relevance and safety of chatbot interactions. The component supports English and Sinhala, including Sinhala Unicode input and Singlish text normalization, and integrates with the overall PeriCare application.
+
+## 2. Key Features
+
+AI-powered conversational support for postpartum mothers.
+Retrieval-Augmented Generation (RAG) for context-aware response generation.
+Pinecone vector database integration for retrieving relevant knowledge.
+Ollama integration for local Large Language Model response generation.
+Multilingual text processing for English and Sinhala inputs.
+Singlish text normalization to improve input processing.
+Domain validation to identify relevant maternal mental health queries.
+Greeting detection for handling introductory messages.
+Crisis detection for identifying potentially concerning messages.
+Conversation history management for contextual follow-up responses.
+Risk-aware response generation using available user risk information.
+Knowledge-based responses using curated postpartum mental health resources.
+
+## 3. Technologies Used
+
+Frontend: React Native and Expo
+Backend: Node.js and Express.js
+Database: MongoDB
+Large Language Model Runtime: Ollama
+Language Model: gemma3n:e2b
+Retrieval-Augmented Generation: RAG
+Vector Database: Pinecone
+Embedding Model: multilingual-e5-large
+Text Processing: JavaScript and Sinhala/Singlish normalization
+Version Control: Git and GitHub
+
+## 4. System Workflow
+
+The chatbot follows a Retrieval-Augmented Generation (RAG) workflow to process user queries and generate responses.
+
+1. Receive a message from the user through the chatbot interface.
+2. Normalize and process the input text.
+3. Detect crisis-related messages and greetings before performing knowledge retrieval.
+4. Classify the query according to the relevant domain.
+5. Generate a query embedding using Pinecone's hosted embedding model.
+6. Retrieve relevant knowledge-base content from the Pinecone vector index.
+7. Apply retrieval guardrails to determine whether the retrieved information is sufficiently relevant.
+8. Construct a prompt using the retrieved context, conversation history, risk-level information, and language instructions.
+9. Generate a response using the Ollama-hosted language model when the query is eligible for generation.
+10. Return the response to the user and store the conversation in MongoDB, subject to the implemented crisis-message handling rules.
+
+## 5. System Inputs and Outputs
+
+### Inputs
+
+User questions related to postpartum depression and maternal mental health.
+English and Sinhala text messages.
+Sinhala Unicode and Singlish input.
+Follow-up questions and conversation history.
+Available user depression risk-level information.
+Relevant information from the curated knowledge base.
+
+### Outputs
+
+Contextually relevant chatbot responses.
+Information retrieved from the postpartum mental health knowledge base.
+General emotional support and self-care guidance.
+Responses in the supported conversation language.
+Appropriate crisis-related safety responses.
+Relevant source information associated with retrieved knowledge, where provided by the implementation.
+
+## 6. RAG-Based Chatbot Approach
+
+The chatbot uses a Retrieval-Augmented Generation (RAG) approach to combine information retrieval with Large Language Model response generation.
+
+The knowledge base contains relevant postpartum mental health resources, including curated research documents and healthcare information. These documents are processed into smaller text chunks and indexed in Pinecone for semantic retrieval.
+
+When a user submits a question, the system processes the query and retrieves relevant information from the Pinecone vector database. The retrieval process uses the multilingual-e5-large embedding model and applies domain filtering, duplicate-source limits, and relevance-based guardrails. The most relevant retrieved information is then included in the prompt supplied to the Ollama language model.
+
+The system also incorporates crisis detection, greeting detection, language instructions, conversation history, and risk-aware response guidance to support appropriate chatbot interactions.
+
+## 7. Main Files
+
+Backend: backend/controllers/chat.js
+RAG Configuration: backend/config/ragConfig.js
+Response Generation: backend/services/rag/generationService.js
+Knowledge Retrieval: backend/services/rag/retrievalService.js
+Pinecone Integration: backend/services/rag/pineconeClient.js
+Ollama Integration: backend/services/rag/ollamaClient.js
+Context Construction: backend/services/rag/contextBuilder.js
+Prompt Templates: backend/services/rag/promptTemplates.js
+Text Normalization: backend/services/rag/textNormalize.js
+Domain Validation: backend/services/rag/domainGate.js
+Crisis Detection: backend/services/rag/crisisDetector.js
+Greeting Detection: backend/services/rag/greetingDetector.js
+Language Script Detection: backend/services/rag/scriptDetect.js
+Risk-Level Handling: backend/services/rag/riskLevelService.js
+Chat Message Model: backend/models/ChatMessage.js
+
+## 8. Integration with PeriCare
+
+The AI-Powered Postpartum Depression Support Chatbot operates as an individual component within the PeriCare application. It complements the depression screening and classification, personalized emotional support recommendation, and postpartum exercise components by providing a conversational interface through which mothers can obtain relevant information and guidance.
+
+The chatbot uses available user risk-level information to support risk-aware response generation and stores conversation messages in MongoDB. Pinecone provides semantic knowledge retrieval, while Ollama generates responses using the retrieved context.
+
+The component provides informational and non-clinical emotional support. It does not replace professional medical assessment, diagnosis, or treatment. Crisis-related responses are handled through the implemented safety mechanisms, with the aim of directing users toward appropriate assistance when necessary.
