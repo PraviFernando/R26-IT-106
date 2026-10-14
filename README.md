@@ -251,3 +251,76 @@ The **Personalized Emotional Support Recommendation System** operates as an indi
 
 It integrates with available diary analysis services, screening information, backend services, and recommendation resources to provide contextually relevant emotional support and educational content for postpartum mothers.
 
+
+
+# 3. Individual Component Details
+## Component Name: Safety-First Personalised Postpartum Exercise Recommendation and Real-Time Movement Accuracy Tracking
+### Perera K.T.S.N
+**Parent Project:** PeriCare – AI-Based Postpartum Depression Screening and Support System
+
+## 1. Project Overview
+
+The **Safety-First Personalised Postpartum Exercise Recommendation and Real-Time Movement Accuracy Tracking** component helps postpartum mothers exercise safely during recovery.
+
+It collects daily health information, applies safety rules based on delivery type, weeks after delivery, bleeding complications, and doctor restrictions, and then recommends suitable exercises using a machine learning model. While the mother performs an exercise, the camera-based movement tracker compares her posture with the reference movement in real time and provides accuracy feedback. Sessions are timed with a built-in stopwatch, and results are saved to track progress over time.
+
+## 2. Key Features
+
+- **Daily Health Data Collection:** Records weeks after delivery, delivery type (normal / C-section), pelvic, back, and abdominal pain, fatigue, mobility, bleeding complications, doctor restrictions, and willingness to exercise.
+- **Safety-First Evaluation:** Blocks exercise when a doctor has restricted it, and limits recommendations to breathing or gentle activities when there are bleeding complications or within the first 6 weeks after a C-section.
+- **Personalised Exercise Recommendations:** A Random Forest model recommends suitable postpartum exercises with demonstration videos.
+- **Real-Time Movement Accuracy Tracking:** Uses MediaPipe Pose to detect body landmarks and compares joint angles and posture against the reference movement, showing live accuracy scores and corrective feedback.
+- **Stopwatch / Session Timer:** Tracks exercise duration with start, pause, and stop controls.
+- **Progress Tracking:** Stores exercise records and movement sessions and displays progress, accuracy, and completion history.
+- **Sinhala and English Support:** Safety messages and movement feedback are available in both languages.
+
+## 3. System Workflow
+
+1. The mother submits her daily health information.
+2. The system evaluates safety status (safe, limited, or blocked).
+3. If exercise is allowed, the recommendation model suggests suitable exercises.
+4. The mother selects an exercise and watches the demonstration video.
+5. The movement tracker monitors her posture through the camera and calculates accuracy in real time, while the stopwatch records the duration.
+6. The session result (duration, accuracy, completion) is saved.
+7. Progress is displayed through the progress screens.
+
+## 4. Technologies Used
+
+- **Mobile Application:** React Native and Expo
+- **Pose Estimation:** MediaPipe Pose (running inside a WebView)
+- **Backend:** Node.js and Express.js
+- **Database:** MongoDB
+- **Machine Learning:** Python, Scikit-learn (Random Forest), Pandas, Joblib
+- **Version Control:** Git and GitHub
+
+## 5. System Inputs and Outputs
+
+### Inputs
+
+- Weeks after delivery and delivery type
+- Pain levels (pelvic, back, abdominal)
+- Fatigue level, mobility level, and willingness to exercise
+- Bleeding complications, doctor restrictions, and muscle weakness
+- Live camera feed during exercise
+
+### Outputs
+
+- Safety status and safety message
+- Personalised exercise recommendations with videos
+- Real-time movement accuracy and corrective feedback
+- Exercise duration
+- Progress history and accuracy summaries
+
+## 6. Main Files
+
+- **Backend:** `backend/controllers/exercise.js`, `backend/routes/exercise.js`, `backend/models/Exercise.js`, `backend/models/ExerciseRecord.js`, `backend/models/ExerciseMovementSession.js`
+- **Frontend:** `frontend/screens/ExerciseScreen.js`, `frontend/screens/MovementTrackingScreen.js`, `frontend/screens/ExerciseProgressScreen.js`, `frontend/screens/ProgressScreen.js`, `frontend/services/exerciseService.js`
+- **Machine Learning:** `ml_training/train_exercise_recommendation_model.py`, `ml_training/train_exercise_model.py`
+
+## 7. Integration with PeriCare
+
+This component operates within the PeriCare application and shares its user accounts, backend, and database. It supports mothers' physical recovery, which complements the emotional and mental health support provided by the other components.
+
+The component provides general exercise guidance only and does not replace advice from doctors, midwives, or physiotherapists.
+
+Researcher: Perera K.T.S.N
