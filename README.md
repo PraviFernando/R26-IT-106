@@ -68,82 +68,156 @@ npx expo start
 
 The component aims to provide accessible, technology-assisted postpartum depression screening and support for mothers in Sri Lanka. It is intended to complement professional assessment and does not replace diagnosis or treatment by qualified healthcare professionals.
 
+# 2. Individual Component Details
+
+## 4. Technologies Used
+
+The component operates within the shared PeriCare technology stack.
+
+- **Mobile Application:** React Native and Expo
+- **Frontend Programming:** JavaScript
+- **Backend:** Node.js and Express.js
+- **Machine Learning and Text Processing:** Python and Scikit-learn
+- **Natural Language Processing:** TF-IDF and implemented text-classification methods
+- **Machine Learning Models:** Random Forest and rule-based classification, where implemented
+- **Database:** MongoDB
+- **AI Service Integration:** Flask, where used by the implementation
+- **Recommendation Resources:** Curated datasets and application media libraries
+- **Version Control:** Git and GitHub
+
+## 5. System Inputs and Outputs
+
+### Inputs
+
+- Maternal diary text
+- Detected emotional category and identified concern
+- EPDS-derived screening risk information
+- User-selected preferences
+- Baby-related contextual information
+- Previous activity completion information, where available
+- Available emotional support and educational resources
+
+### Outputs
+
+- Emotion and concern classification results, where provided
+- Personalized emotional support activities
+- Relevant educational and media resources
+- Baby-care recommendations when appropriate
+- Recommendations selected according to implemented eligibility and safety rules
+
+## 6. Recommendation Approach
+
+The component uses a **context-aware recommendation approach** to select and prioritize emotional support resources for postpartum mothers.
+
+Rather than relying exclusively on emotional classification, the recommendation process considers available contextual information, including:
+
+- **Emotional State:** The emotion identified from the maternal diary.
+- **Primary Concern:** The concern or difficulty expressed by the mother.
+- **Screening Risk Level:** The EPDS-derived risk information supplied by the screening component.
+- **Personal Preferences:** The mother's available activity and content preferences.
+- **Baby-Related Context:** Relevant baby-care concerns identified from the diary.
+
+The implemented classification services and recommendation logic work together to identify suitable resources from the application's available content libraries.
+
+The system provides **non-clinical emotional support** and does not diagnose postpartum depression, prescribe treatment, or replace professional healthcare guidance.
+
+## 7. Integration with PeriCare
+
+The **Personalized Emotional Support Recommendation System** operates as an individual component within the PeriCare application.
+
+It integrates with available diary analysis services, screening information, backend services, and recommendation resources to provide contextually relevant emotional support and educational content for postpartum mothers.
 
 
 
-2. Individual Component Details
-Component Name: Personalized Emotional Support Recommendation System
 
-Researcher: De Silva S. R. N.
+#2. Individual Component Details
+# Personalized Emotional Support Recommendation System
 
-Parent Project: PeriCare – AI-Based Postpartum Depression Screening and Support System
+###De Silva S.R.N
+**Parent Project:** PeriCare – AI-Based Postpartum Depression Screening and Support System
 
-Research Area: Artificial Intelligence, Natural Language Processing, and Context-Aware Recommendation Systems
+## 1. Project Overview
 
-1. Project Overview
-The Personalized Emotional Support Recommendation System is an AI-based component of PeriCare designed to provide context-aware emotional support resources for postpartum mothers.
-The component analyzes maternal diary entries using the available emotion and concern classification services. It considers relevant contextual information, screening risk levels, personal preferences, and baby-related concerns to select suitable emotional well-being activities and educational resources.
-The system aims to provide personalized, non-clinical support rather than generic recommendations, helping mothers access resources that are relevant to their emotional states and individual situations.
+The **Personalized Emotional Support Recommendation System** is an AI-based component of PeriCare designed to provide **context-aware emotional support resources** for postpartum mothers.
 
-2. Key Features
-Multilingual Diary Analysis: Supports the intended processing of English, Sinhala Unicode, and Singlish through the implemented analysis pipeline.
-Emotion and Concern Classification: Identifies emotional states and relevant concerns using the available classification services.
-Context-Aware Recommendations: Selects suitable support resources based on diary information, preferences, and contextual details.
-Risk-Aware Personalization: Uses available EPDS-derived risk information to apply recommendation eligibility and safety rules.
-Personalized Emotional Support: Recommends available relaxation activities, breathing exercises, meditation, motivational content, games, and educational resources.
-Baby-Care Recommendations: Provides relevant baby-care resources when the mother's diary indicates baby-related concerns.
-Activity History Awareness: Can use previous activity completion information when supported by the recommendation logic.
+The component analyzes maternal diary entries using available emotion and concern classification services. It considers relevant contextual information, screening risk levels, personal preferences, and baby-related concerns to select suitable emotional well-being activities and educational resources.
 
-3. System Workflow
+The system aims to provide personalized, non-clinical support rather than generic recommendations, helping mothers access resources relevant to their emotional states and individual situations.
+
+## 2. Key Features
+
+- **Multilingual Diary Analysis:** Supports the intended processing of English, Sinhala Unicode, and Singlish through the implemented analysis pipeline.
+- **Emotion and Concern Classification:** Identifies emotional states and relevant concerns using available classification services.
+- **Context-Aware Recommendations:** Selects suitable support resources based on diary information, preferences, and contextual details.
+- **Risk-Aware Personalization:** Uses available EPDS-derived risk information to apply recommendation eligibility and safety rules.
+- **Personalized Emotional Support:** Recommends available relaxation activities, breathing exercises, meditation, motivational content, games, and educational resources.
+- **Baby-Care Recommendations:** Provides relevant baby-care resources when the diary indicates baby-related concerns.
+- **Activity History Awareness:** Considers previous activity completion information when supported by the recommendation logic.
+
+## 3. System Workflow
+
 The component follows a context-aware recommendation workflow:
-Receive maternal diary entries and relevant user information.
-Obtain emotion and concern classification results from the available analysis services.
-Retrieve relevant screening risk information and personal preferences.
-Identify suitable emotional support activities and educational resources based on the available context.
-Apply recommendation eligibility rules and rank suitable resources using the implemented logic.
-Present personalized recommendations within the PeriCare application.
-The recommendations are intended to support emotional well-being and do not replace professional medical assessment or treatment.
 
-4. Technologies Used
-The component is developed within the shared PeriCare technology stack:
-Mobile Application: React Native and Expo
-Frontend Programming: JavaScript
-Backend: Node.js and Express.js
-Machine Learning and Text Processing: Python and Scikit-learn
-Natural Language Processing: TF-IDF and the implemented text-classification methods
-Machine Learning Models: Random Forest and rule-based classification, where implemented
-Database: MongoDB
+1. Receive maternal diary entries and relevant user information.
+2. Obtain emotion and concern classification results from available analysis services.
+3. Retrieve relevant screening risk information and personal preferences.
+4. Identify suitable emotional support activities and educational resources based on the available context.
+5. Apply recommendation eligibility rules and rank suitable resources using the implemented logic.
+6. Present personalized recommendations within the PeriCare application.
 
-AI Service Integration: Flask, where used by the implemented service
-Data and Resources: Curated recommendation datasets and application media libraries
-Version Control: Git and GitHub
+## 4. Technologies Used
 
-5. System Inputs and Outputs
-Inputs
-Maternal diary text
-Detected emotion and identified concern
-EPDS-derived risk information
-User-selected preferences
-Baby-related contextual information
-Previous activity completion information, where available
-Available emotional support and educational resources
+The component operates within the shared PeriCare technology stack.
 
-Outputs
-Emotion and concern classification results, where provided
-Personalized emotional support activities
-Contextually relevant educational and media resources
-Baby-care recommendations when relevant
-Recommendations selected according to implemented eligibility and safety rules
+- **Mobile Application:** React Native and Expo
+- **Frontend Programming:** JavaScript
+- **Backend:** Node.js and Express.js
+- **Machine Learning and Text Processing:** Python and Scikit-learn
+- **Natural Language Processing:** TF-IDF and implemented text-classification methods
+- **Machine Learning Models:** Random Forest and rule-based classification, where implemented
+- **Database:** MongoDB
+- **AI Service Integration:** Flask, where used by the implementation
+- **Recommendation Resources:** Curated datasets and application media libraries
+- **Version Control:** Git and GitHub
 
-6. Recommendation Approach
-The component uses a context-aware approach to select and prioritize emotional support resources for postpartum mothers.
-Rather than relying exclusively on emotional classification, the recommendation process considers available contextual information, including the mother's primary concern, personal preferences, screening risk level, and baby-related needs.
-The implemented classification services and recommendation logic work together to identify relevant resources from the application's available content libraries.
-The system is intended for non-clinical emotional support. It does not diagnose postpartum depression, prescribe treatment, or replace guidance from qualified healthcare professionals.
+## 5. System Inputs and Outputs
 
-7. Integration with PeriCare
-The Personalized Emotional Support Recommendation System operates as an individual component within the PeriCare application. It integrates with the available diary analysis, screening information, backend services, and recommendation resources to deliver contextually relevant support to postpartum mothers.
+### Inputs
 
+- Maternal diary text
+- Detected emotional category and identified concern
+- EPDS-derived screening risk information
+- User-selected preferences
+- Baby-related contextual information
+- Previous activity completion information, where available
+- Available emotional support and educational resources
 
+### Outputs
 
-Component Description
+- Emotion and concern classification results, where provided
+- Personalized emotional support activities
+- Relevant educational and media resources
+- Baby-care recommendations when appropriate
+- Recommendations selected according to implemented eligibility and safety rules
+
+## 6. Recommendation Approach
+
+The component uses a **context-aware recommendation approach** to select and prioritize emotional support resources for postpartum mothers.
+
+Rather than relying exclusively on emotional classification, the recommendation process considers available contextual information, including:
+
+- **Emotional State:** The emotion identified from the maternal diary.
+- **Primary Concern:** The concern or difficulty expressed by the mother.
+- **Screening Risk Level:** The EPDS-derived risk information supplied by the screening component.
+- **Personal Preferences:** The mother's available activity and content preferences.
+- **Baby-Related Context:** Relevant baby-care concerns identified from the diary.
+
+The implemented classification services and recommendation logic work together to identify suitable resources from the application's available content libraries.
+
+The system provides **non-clinical emotional support** and does not diagnose postpartum depression, prescribe treatment, or replace professional healthcare guidance.
+
+## 7. Integration with PeriCare
+
+The **Personalized Emotional Support Recommendation System** operates as an individual component within the PeriCare application.
+
+It integrates with available diary analysis services, screening information, backend services, and recommendation resources to provide contextually relevant emotional support and educational content for postpartum mothers.
