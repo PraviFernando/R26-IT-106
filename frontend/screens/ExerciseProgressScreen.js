@@ -7,10 +7,11 @@ import exerciseService from '../services/exerciseService';
 import ScreenContainer from '../components/ScreenContainer';
 import ExerciseWatchHistory from './ExerciseWatchHistory';
 
-const todayStr = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
+// YYYY-MM-DD in local time (toISOString would use UTC and shift days in Sri Lanka)
+const toLocalDateStr = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+const todayStr = () => toLocalDateStr(new Date());
 
 export default function ExerciseProgressScreen({ navigation, route }) {
     const { t, i18n } = useTranslation();
@@ -42,7 +43,11 @@ export default function ExerciseProgressScreen({ navigation, route }) {
     const getChartData = (dataArray, filter) => {
         if (!dataArray || dataArray.length === 0) return [];
         const limit = filter === 'weekly' ? 7 : filter === 'monthly' ? 30 : filter === 'last3months' ? 90 : filter === 'last6months' ? 180 : 365;
-        const sliced = dataArray.slice(-limit);
+        // Keep entries from the last `limit` calendar days (not the last `limit` entries)
+        const start = new Date();
+        start.setDate(start.getDate() - (limit - 1));
+        const startStr = toLocalDateStr(start);
+        const sliced = dataArray.filter(item => item.date >= startStr);
 
         if (sliced.length <= 8) return sliced;
 
@@ -116,7 +121,7 @@ export default function ExerciseProgressScreen({ navigation, route }) {
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
             d.setDate(today.getDate() - i);
-            const dStr = d.toISOString().split('T')[0];
+            const dStr = toLocalDateStr(d);
             const isCompleted = completedDates.has(dStr);
             const dayName = d.toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', { weekday: 'short' });
             const dayNum = d.getDate();

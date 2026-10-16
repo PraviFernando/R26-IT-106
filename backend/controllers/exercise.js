@@ -8,6 +8,7 @@ const ExerciseWatchHistory = require('../models/ExerciseWatchHistory');
 const EPDSScreening = require('../models/EPDSScreening');
 const MLPredictionService = require('../services/mlPredictionService');
 const axios = require('axios');
+const mongoose = require('mongoose');
 
 // YouTube Search Queries Mapping
 const QUERY_MAP = {
@@ -97,6 +98,10 @@ const parseDurationStr = (dStr) => {
     }
     return parseInt(str) * 60 || 600;
 };
+
+// YYYY-MM-DD in the server's local time zone (matches the app's local todayStr; toISOString would use UTC)
+const toLocalDateStr = (d) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 // Clinical Safety evaluation function
 const evaluateSafetyStatus = (weeks, deliveryType, bleeding, doctorRestrictions) => {
@@ -304,11 +309,13 @@ const submitHealthData = async (req, res, next) => {
         }
 
         // 3. YouTube API integration to fetch matching videos
+        // A doctor's restriction blocks exercise entirely, so no videos are recommended or saved
+        const isBlocked = healthData.safetyStatus === 'blocked';
         let recommendedExercises = [];
         const searchQuery = QUERY_MAP[exerciseCategory];
         const youtubeApiKey = process.env.YOUTUBE_API_KEY;
 
-        if (youtubeApiKey) {
+        if (youtubeApiKey && !isBlocked) {
             try {
                 const ytResponse = await axios.get('https://www.googleapis.com/youtube/v3/search', {
                     params: {
@@ -360,8 +367,8 @@ const submitHealthData = async (req, res, next) => {
         }
 
         // If API search yielded no videos, fetch our pre-compiled fallback videos
-        if (recommendedExercises.length === 0) {
-            recommendedExercises = FALLBACK_VIDEOS[exerciseCategory].map(vid => ({
+        if (recommendedExercises.length === 0 && !isBlocked) {
+            recommendedExercises = (FALLBACK_VIDEOS[exerciseCategory] || []).map(vid => ({
                 customName: vid.name,
                 videoUrl: vid.videoUrl,
                 type: 'youtube_fallback',
@@ -482,7 +489,9 @@ const getRecommendations = async (req, res, next) => {
         }
 
         // Pad recommendations pool up to 10 for backward compatibility with old 5-video records
-        if (healthData.recommendedExercises && healthData.recommendedExercises.length < 10) {
+        // Never pad a blocked (doctor-restricted) user or an empty list; empty means "no exercises" on purpose
+        if (healthData.safetyStatus !== 'blocked' && healthData.recommendedExercises &&
+            healthData.recommendedExercises.length > 0 && healthData.recommendedExercises.length < 10) {
             // Find category
             const sampleRec = healthData.recommendedExercises[0];
             const exerciseCategory = (sampleRec && sampleRec.category) ? sampleRec.category : 3;
@@ -531,16 +540,38 @@ const saveExerciseRecord = async (req, res, next) => {
             date, exerciseId, customActivityName, status, accuracy,
             durationCompleted, userFeedback, liked,
             actualDuration, recommendedDuration, videoDuration,
-            pain, difficulty, feelingAfter
+            pain, difficulty, feelingAfter, adherenceScore, performanceMetrics
         } = req.body;
 
-        // Adherence score calculation
+        // Durations may arrive as minutes or "mm:ss"; store minutes as numbers
+        const toMinutes = (v) => {
+            if (v === undefined || v === null || v === '') return undefined;
+            if (typeof v === 'number') return v;
+            return Math.round(parseDurationStr(v) / 60 * 10) / 10;
+        };
+        const actualMins = toMinutes(actualDuration);
+        const recommendedMins = toMinutes(recommendedDuration);
+        const completedMins = toMinutes(durationCompleted);
+
+        // Adherence score calculation (capped at 100%)
         let calculatedAdherence = 0;
-        if (recommendedDuration > 0) {
-            calculatedAdherence = Math.round((actualDuration / recommendedDuration) * 100);
-        } else if (durationCompleted > 0) {
+        if (recommendedMins > 0 && actualMins !== undefined) {
+            calculatedAdherence = Math.round((actualMins / recommendedMins) * 100);
+        } else if (typeof adherenceScore === 'number') {
+            calculatedAdherence = Math.round(adherenceScore);
+        } else if (completedMins > 0) {
             calculatedAdherence = 100;
         }
+        calculatedAdherence = Math.min(100, Math.max(0, calculatedAdherence));
+
+        // One record per exercise per day: when a later save (e.g. movement tracking or video auto-complete)
+        // has no stopwatch time, keep the stopwatch time/adherence already recorded, and never un-complete it
+        const existing = await ExerciseRecord.findOne({ userId, date, customActivityName });
+        const keepStopwatch = existing && existing.actualDuration !== undefined && existing.actualDuration !== null && actualMins === undefined;
+        if (keepStopwatch) {
+            calculatedAdherence = existing.adherenceScore ?? calculatedAdherence;
+        }
+        const finalStatus = existing && existing.status === 'completed' ? 'completed' : status;
 
         // Get daily health inputs
         const healthData = await PostpartumHealthData.findOne({ userId, date });
@@ -560,15 +591,17 @@ const saveExerciseRecord = async (req, res, next) => {
         const record = await ExerciseRecord.findOneAndUpdate(
             { userId, date, customActivityName },
             {
-                userId, date, exerciseId, customActivityName, status, accuracy,
-                durationCompleted: actualDuration || durationCompleted,
+                userId, date, exerciseId, customActivityName, status: finalStatus, accuracy,
+                durationCompleted: keepStopwatch ? existing.durationCompleted : (actualMins ?? completedMins),
                 userFeedback, liked, updatedAt: Date.now(),
-                actualDuration, recommendedDuration, videoDuration,
+                ...(keepStopwatch ? {} : { actualDuration: actualMins, recommendedDuration: recommendedMins }),
+                videoDuration: toMinutes(videoDuration),
+                ...(performanceMetrics ? { performanceMetrics } : {}),
                 pain, difficulty, feelingAfter,
                 adherenceScore: calculatedAdherence,
                 intelligentFeedback
             },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         res.json({ success: true, record });
@@ -591,7 +624,7 @@ const uploadVideo = async (req, res, next) => {
         const record = await ExerciseRecord.findOneAndUpdate(
             { userId, date, customActivityName },
             { videoUrl: videoUri, accuracy: mockAccuracy, feedback: mockFeedback },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         res.json({
@@ -614,7 +647,7 @@ const getProgress = async (req, res, next) => {
 
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - Number(days));
-        const startDateStr = startDate.toISOString().split('T')[0];
+        const startDateStr = toLocalDateStr(startDate);
 
         const records = await ExerciseRecord.find({
             userId,
@@ -628,49 +661,43 @@ const getProgress = async (req, res, next) => {
 
         const completedRecords = records.filter(r => r.status === 'completed');
 
-        // Calculate streak
+        // Calculate streaks over consecutive local calendar days
+        const completedDates = new Set(completedRecords.map(r => r.date));
+        const today = new Date();
+        const dayStr = (offset) => {
+            const d = new Date(today);
+            d.setDate(today.getDate() - offset);
+            return toLocalDateStr(d);
+        };
+
+        // Current streak counts back from today; if today is not done yet, yesterday keeps it alive
         let currentStreak = 0;
+        let offset = completedDates.has(dayStr(0)) ? 0 : 1;
+        while (offset <= Number(days) && completedDates.has(dayStr(offset))) {
+            currentStreak++;
+            offset++;
+        }
+
         let bestStreak = 0;
         let tempStreak = 0;
-        const completedDates = new Set(completedRecords.map(r => r.date));
-
-        const today = new Date();
-        for (let i = 0; i <= Number(days); i++) {
-            const d = new Date();
-            d.setDate(today.getDate() - i);
-            const dStr = d.toISOString().split('T')[0];
-            if (completedDates.has(dStr)) {
+        for (let i = Number(days); i >= 0; i--) {
+            if (completedDates.has(dayStr(i))) {
                 tempStreak++;
-                if (tempStreak > bestStreak) bestStreak = tempStreak;
+                bestStreak = Math.max(bestStreak, tempStreak);
             } else {
-                if (i === 0 || i === 1) {
-                    currentStreak = tempStreak;
-                }
                 tempStreak = 0;
             }
         }
-        if (currentStreak === 0 && tempStreak > 0) {
-            currentStreak = tempStreak;
-        }
 
-        // Missed sessions
+        // Missed sessions in the last 7 days (excluding today)
         let missedSessions = 0;
         for (let i = 1; i <= 7; i++) {
-            const d = new Date();
-            d.setDate(today.getDate() - i);
-            const dStr = d.toISOString().split('T')[0];
-            if (!completedDates.has(dStr)) {
-                missedSessions++;
-            }
+            if (!completedDates.has(dayStr(i))) missedSessions++;
         }
 
         // Weekly participation percentage
-        const weeklyCompletedDays = new Set(completedRecords.filter(r => {
-            const rDate = new Date(r.date);
-            const diffTime = Math.abs(today - rDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays <= 7;
-        }).map(r => r.date)).size;
+        const weekStartStr = dayStr(6);
+        const weeklyCompletedDays = new Set(completedRecords.filter(r => r.date >= weekStartStr).map(r => r.date)).size;
         const weeklyCompletionRate = Math.min(100, Math.round((weeklyCompletedDays / 7) * 100));
 
         // Average exercise duration
@@ -679,8 +706,8 @@ const getProgress = async (req, res, next) => {
 
         // Recovery Trend Analysis
         const threeWeeksAgo = new Date();
-        threeWeeksAgo.setDate(today.getDate() - 21);
-        const threeWeeksAgoStr = threeWeeksAgo.toISOString().split('T')[0];
+        threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
+        const threeWeeksAgoStr = toLocalDateStr(threeWeeksAgo);
 
         const healthRecords = await PostpartumHealthData.find({
             userId,
@@ -712,7 +739,7 @@ const getProgress = async (req, res, next) => {
             }
         }
 
-        const progressData = completedRecords.map(r => {
+        const recordScores = completedRecords.map(r => {
             // Dynamic progress score based on accuracy (if video was analyzed), stopwatch time (adherence), and feedback
             let score = r.accuracy;
             
@@ -730,7 +757,7 @@ const getProgress = async (req, res, next) => {
             if (r.difficulty === 'Hard') {
                 score = Math.max(20, score - 10); // difficulty adjustment
             }
-            if (r.feelingAfter === 'Good' || r.feelingAfter === 'Excellent') {
+            if (r.feelingAfter === 'Better') {
                 score = Math.min(100, score + 5); // feeling after bonus
             }
             
@@ -739,6 +766,18 @@ const getProgress = async (req, res, next) => {
                 avgAccuracy: Math.min(100, Math.max(0, Math.round(score)))
             };
         });
+
+        // One point per day (average of that day's sessions) so charts are by day, not by workout
+        const scoresByDay = {};
+        recordScores.forEach(({ date, avgAccuracy }) => {
+            if (!scoresByDay[date]) scoresByDay[date] = { sum: 0, count: 0 };
+            scoresByDay[date].sum += avgAccuracy;
+            scoresByDay[date].count += 1;
+        });
+        const progressData = Object.keys(scoresByDay).sort().map(date => ({
+            date,
+            avgAccuracy: Math.round(scoresByDay[date].sum / scoresByDay[date].count)
+        }));
 
         // Compute movement tracking statistics
         const completedMovementSessions = movementSessions.filter(s => s.completed);
@@ -762,7 +801,7 @@ const getProgress = async (req, res, next) => {
         // Group movement sessions by date to calculate average score per day for Weekly Movement Trend
         const movementProgressMap = {};
         completedMovementSessions.forEach(s => {
-            const dateStr = s.timestamp ? s.timestamp.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+            const dateStr = toLocalDateStr(s.timestamp || new Date());
             if (!movementProgressMap[dateStr]) {
                 movementProgressMap[dateStr] = { sum: 0, count: 0 };
             }
@@ -778,7 +817,7 @@ const getProgress = async (req, res, next) => {
         // Group movement sessions by date to calculate average accuracy per day for Weekly Accuracy Trend
         const accuracyProgressMap = {};
         completedMovementSessions.forEach(s => {
-            const dateStr = s.timestamp ? s.timestamp.toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+            const dateStr = toLocalDateStr(s.timestamp || new Date());
             if (!accuracyProgressMap[dateStr]) {
                 accuracyProgressMap[dateStr] = { sum: 0, count: 0 };
             }
@@ -856,7 +895,7 @@ const updateRecommendationProgress = async (req, res, next) => {
         const healthData = await PostpartumHealthData.findOne({ userId, date });
         if (healthData) {
             healthData.recommendedExercises = healthData.recommendedExercises.map(rec => {
-                const match = rec.videoUrl === videoUrl || rec.customName === customName;
+                const match = (videoUrl && rec.videoUrl === videoUrl) || (customName && rec.customName === customName);
                 if (match) {
                     rec.watchPercentage = Number(watchPercentage || 0);
                     if (rec.watchPercentage >= 80) {
@@ -892,8 +931,17 @@ const saveMovementSession = async (req, res, next) => {
             averageRangeOfMotion, averageJointAccuracy
         } = req.body;
 
+        if (!sessionId) {
+            return res.status(400).json({ success: false, message: 'sessionId is required' });
+        }
+        // Never let one user overwrite another user's session
+        const owner = await ExerciseMovementSession.findOne({ sessionId }).select('userId');
+        if (owner && owner.userId !== String(userId)) {
+            return res.status(403).json({ success: false, message: 'Not allowed to modify this session' });
+        }
+
         const session = await ExerciseMovementSession.findOneAndUpdate(
-            { sessionId },
+            { sessionId, userId },
             {
                 sessionId,
                 userId,
@@ -914,7 +962,7 @@ const saveMovementSession = async (req, res, next) => {
                 averageJointAccuracy: averageJointAccuracy || 0,
                 timestamp: new Date()
             },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         res.json({ success: true, session });
@@ -929,7 +977,8 @@ const saveMovementSession = async (req, res, next) => {
 const getMovementSessions = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const sessions = await ExerciseMovementSession.find({ userId }).sort({ timestamp: -1 });
+        const limit = Math.min(500, Math.max(1, parseInt(req.query.limit) || 100));
+        const sessions = await ExerciseMovementSession.find({ userId }).sort({ timestamp: -1 }).limit(limit);
         res.json({ success: true, sessions });
     } catch (err) {
         next(err);
@@ -953,23 +1002,36 @@ const upsertWatchHistory = async (req, res, next) => {
 
         const key = videoId || videoUrl;
         const pct = Math.min(100, Math.max(0, Number(watchPercentage) || 0));
-        const existing = await ExerciseWatchHistory.findOne({ userId, videoId: key });
-        const best = Math.max(existing ? existing.watchPercentage : 0, pct);
+        // Duration may arrive as minutes (15) or "mm:ss" / "h:mm:ss" from YouTube; store whole minutes
+        const durationMins = duration ? Math.max(1, Math.round(parseDurationStr(duration) / 60)) : undefined;
+        const fields = { videoUrl, title, thumbnailUrl, channelTitle, category, lastPercentage: pct, watchedAt: new Date() };
+        if (durationMins) fields.duration = durationMins;
 
-        const entry = await ExerciseWatchHistory.findOneAndUpdate(
-            { userId, videoId: key },
-            {
-                $set: {
-                    videoUrl, title, thumbnailUrl, channelTitle, category, duration,
-                    watchPercentage: best,
-                    lastPercentage: pct,
-                    completed: best >= 80,
-                    watchedAt: new Date()
-                },
-                ...(existing && newSession ? { $inc: { watchCount: 1 } } : {})
-            },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
+        const filter = { userId, videoId: key };
+        // Atomic: $max keeps the highest percentage reached; watchCount starts at 1 on insert
+        const upsertOnce = () => ExerciseWatchHistory.findOneAndUpdate(
+            filter,
+            { $set: fields, $max: { watchPercentage: pct } },
+            { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true, includeResultMetadata: true }
         );
+
+        let result;
+        try {
+            result = await upsertOnce();
+        } catch (err) {
+            // Two concurrent first saves can both try to insert; the loser retries as an update
+            if (err.code !== 11000) throw err;
+            result = await upsertOnce();
+        }
+
+        let entry = result.value;
+        const inserted = !!(result.lastErrorObject && result.lastErrorObject.upserted);
+        const update = {};
+        if (!inserted && newSession) update.$inc = { watchCount: 1 };
+        if (entry.completed !== (entry.watchPercentage >= 80)) update.$set = { completed: entry.watchPercentage >= 80 };
+        if (Object.keys(update).length) {
+            entry = await ExerciseWatchHistory.findOneAndUpdate(filter, update, { returnDocument: 'after' });
+        }
 
         res.json({ success: true, entry });
     } catch (err) {
@@ -1012,6 +1074,9 @@ const getWatchHistory = async (req, res, next) => {
  */
 const deleteWatchHistoryItem = async (req, res, next) => {
     try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(404).json({ success: false, message: 'History item not found' });
+        }
         const result = await ExerciseWatchHistory.deleteOne({ _id: req.params.id, userId: req.user.id });
         if (result.deletedCount === 0) {
             return res.status(404).json({ success: false, message: 'History item not found' });

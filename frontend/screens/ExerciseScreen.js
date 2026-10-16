@@ -27,6 +27,16 @@ const todayStr = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+// 15 -> 15, "12:34" -> 12.6, "1:02:00" -> 62 (minutes)
+const durationToMinutes = (value) => {
+    if (value === undefined || value === null || value === '') return 0;
+    if (typeof value === 'number') return value;
+    const parts = String(value).split(':').map(n => parseInt(n, 10) || 0);
+    if (parts.length === 1) return parts[0];
+    const secs = parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : parts[0] * 60 + parts[1];
+    return Math.round(secs / 60 * 10) / 10;
+};
+
 const getTranslatedFeedback = (feedback, isSinhala) => {
     if (!feedback) return '';
     if (!isSinhala) return feedback;
@@ -90,21 +100,39 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
     const embedUrl = getEmbedUrl(url);
     const videoId = embedUrl.split('youtube.com/embed/')[1]?.split('?')[0];
 
+    // Web: read real playback position from the YouTube iframe (enablejsapi) instead of counting seconds,
+    // so pausing or never pressing play does not advance progress.
+    const iframeRef = useRef(null);
+    const onProgressRef = useRef(onProgress);
+    onProgressRef.current = onProgress;
+    const webEmbedUrl = embedUrl.includes('youtube.com/embed/')
+        ? `${embedUrl}${embedUrl.includes('?') ? '&' : '?'}enablejsapi=1`
+        : embedUrl;
+
     useEffect(() => {
-        if (Platform.OS === 'web' && onProgress) {
-            const totalSecs = parseDurationToSeconds(duration);
-            let elapsed = 0;
-            const timer = setInterval(() => {
-                elapsed += 1;
-                const pct = (elapsed / totalSecs) * 100;
-                onProgress(pct);
-                if (pct >= 100) {
-                    clearInterval(timer);
-                }
-            }, 1000);
-            return () => clearInterval(timer);
-        }
-    }, [url, duration]);
+        if (Platform.OS !== 'web') return;
+        let duration = 0;
+        const handleMessage = (event) => {
+            if (!iframeRef.current || event.source !== iframeRef.current.contentWindow) return;
+            if (typeof event.origin !== 'string' || !event.origin.includes('youtube')) return;
+            let data;
+            try { data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data; } catch (e) { return; }
+            const info = data && data.info;
+            if (!info || !onProgressRef.current) return;
+            if (info.duration) duration = info.duration;
+            if (info.playerState === 0) onProgressRef.current(100); // ended
+            else if (typeof info.currentTime === 'number' && duration > 0) {
+                onProgressRef.current((info.currentTime / duration) * 100);
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, [url]);
+
+    const startListeningToIframe = () => {
+        // Ask the YouTube player to start sending 'infoDelivery' events (currentTime, duration, state)
+        iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');
+    };
 
     if (!embedUrl.includes('youtube.com/embed/')) {
         return (
@@ -219,7 +247,9 @@ const YouTubePlayer = ({ url, duration, style, onProgress }) => {
             )}
             {Platform.OS === 'web' ? (
                 <iframe
-                    src={embedUrl}
+                    ref={iframeRef}
+                    src={webEmbedUrl}
+                    onLoad={startListeningToIframe}
                     style={{ flex: 1, border: 'none', width: '100%', height: '100%' }}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
@@ -611,6 +641,8 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
             navigation.navigate('MovementTracking', {
                 exerciseId: exercise.exerciseId || 'EX_MOCK',
                 exerciseName: getTrackingExerciseName(title),
+                // The card's own name, so the saved record completes this card
+                cardName: exercise.customName || exercise.name,
                 videoUrl: videoUrl
             });
         } else {
@@ -627,6 +659,9 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
     const [stopwatchTime, setStopwatchTime] = useState(0);
     const [isStopwatchRunning, setIsStopwatchRunning] = useState(false);
     const stopwatchIntervalRef = useRef(null);
+
+    // Stop the stopwatch if the card unmounts (e.g. it moves to the Completed tab)
+    useEffect(() => () => clearInterval(stopwatchIntervalRef.current), []);
 
     // Feedback Questions state
     const [showQuestionsModal, setShowQuestionsModal] = useState(false);
@@ -746,7 +781,7 @@ const ExerciseCard = ({ exercise, onComplete, onUploadVideo, isCompleted, onProg
         }
 
         const feedbackData = {
-            actualDuration: actualMins || 1, // ensure at least 1 min if completed
+            actualDuration: actualMins, // real stopwatch time; 0 if stopped immediately
             recommendedDuration: recMins || 10,
             videoDuration: recMins || 10,
             pain: painRating || "No",
@@ -1211,6 +1246,26 @@ export default function ExerciseScreen({ navigation }) {
         fetchLatestUser();
     }, []);
 
+    // Refresh when coming back from another screen (e.g. Movement Tracking saved a completed session)
+    const hasFocusedRef = useRef(false);
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            if (!hasFocusedRef.current) {
+                hasFocusedRef.current = true;
+                return;
+            }
+            loadRecommendations();
+            loadProgress();
+        });
+        return unsubscribe;
+    }, [navigation]);
+
+    // Latest recommendations for callbacks that may have been created in an earlier render
+    const recommendationsRef = useRef(recommendations);
+    recommendationsRef.current = recommendations;
+    // Exercises already auto-completed in this session, so completion is saved only once
+    const autoCompletedRef = useRef(new Set());
+
     const fetchLatestUser = async () => {
         try {
             const response = await api.get('/user/me');
@@ -1301,6 +1356,7 @@ export default function ExerciseScreen({ navigation }) {
                     watchPercentage: 0
                 }));
                 setRecommendations(resetRecs);
+                autoCompletedRef.current.clear();
                 setActiveTab('todo');
                 setHasData(true);
                 setShowForm(false);
@@ -1340,7 +1396,8 @@ export default function ExerciseScreen({ navigation }) {
                 exerciseId: exercise.exerciseId || null,
                 customActivityName: exercise.customName || exercise.name,
                 status: 'completed',
-                durationCompleted: exercise.duration || 15,
+                // Video durations can be "mm:ss"; convert to minutes so the backend can store a number
+                durationCompleted: durationToMinutes(exercise.duration) || 15,
                 liked: true,
                 ...feedbackData
             });
@@ -1384,23 +1441,55 @@ export default function ExerciseScreen({ navigation }) {
         const last = watchHistoryRef.current[videoUrl];
         const pct = Math.min(100, Math.round(percentage));
 
-        // Save on first progress tick (new session), then every 10s, and always on finish
-        const isNewSession = !last || now - last.time > 5 * 60 * 1000;
-        if (!isNewSession && now - last.time < 10000 && !(pct >= 100 && last.pct < 100)) return;
-        watchHistoryRef.current[videoUrl] = { time: now, pct };
-
-        exerciseService.saveWatchHistory({
+        const payload = {
             videoId,
             videoUrl,
             title: exercise.customName || exercise.name || details.name,
             thumbnailUrl: videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : null,
             channelTitle: exercise.channelTitle,
             category: exercise.category || details.category,
-            duration: Number(exercise.duration || details.duration) || undefined,
+            // Minutes or "mm:ss" — the backend normalises it
+            duration: exercise.duration || details.duration || undefined,
             watchPercentage: pct,
-            newSession: isNewSession
-        }).catch(err => console.error('Failed to save watch history:', err.message));
+            newSession: false
+        };
+
+        // Save on first progress tick (new session), then every 10s, and always on finish
+        const isNewSession = !last || now - last.time > 5 * 60 * 1000;
+        if (!isNewSession && now - last.time < 10000 && !(pct >= 100 && last.pct < 100)) {
+            // Throttled: keep the latest progress and save it when the 10s window ends
+            last.pending = payload;
+            if (!last.timer) {
+                last.timer = setTimeout(() => flushWatchHistory(videoUrl), 10000 - (now - last.time));
+            }
+            return;
+        }
+        if (last && last.timer) clearTimeout(last.timer);
+        watchHistoryRef.current[videoUrl] = { time: now, pct };
+        sendWatchHistory({ ...payload, newSession: isNewSession });
     };
+
+    const sendWatchHistory = (payload) => {
+        exerciseService.saveWatchHistory(payload)
+            .catch(err => console.error('Failed to save watch history:', err.message));
+    };
+
+    const flushWatchHistory = (videoUrl) => {
+        const entry = watchHistoryRef.current[videoUrl];
+        if (!entry || !entry.pending) return;
+        const payload = entry.pending;
+        watchHistoryRef.current[videoUrl] = { time: Date.now(), pct: payload.watchPercentage };
+        sendWatchHistory(payload);
+    };
+
+    // Save any throttled progress when leaving the screen
+    useEffect(() => () => {
+        Object.keys(watchHistoryRef.current).forEach(url => {
+            const entry = watchHistoryRef.current[url];
+            if (entry.timer) clearTimeout(entry.timer);
+            flushWatchHistory(url);
+        });
+    }, []);
 
     const handleProgressUpdate = async (exercise, percentage) => {
         logWatchHistory(exercise, percentage);
@@ -1414,7 +1503,10 @@ export default function ExerciseScreen({ navigation }) {
         );
 
         // If user watched more than 80% of the video, automatically mark it as completed!
-        const isAlreadyCompleted = recommendations.find(rec => {
+        // Read the latest list through a ref (this callback can be from an older render) and
+        // remember auto-completions so the save and toast happen only once per exercise.
+        const completionKey = exercise.exerciseId || exercise.videoUrl || exercise.customName;
+        const isAlreadyCompleted = autoCompletedRef.current.has(completionKey) || recommendationsRef.current.some(rec => {
             const match = exercise.exerciseId
                 ? rec.exerciseId === exercise.exerciseId
                 : (rec.customName === exercise.customName || rec.videoUrl === exercise.videoUrl);
@@ -1422,6 +1514,7 @@ export default function ExerciseScreen({ navigation }) {
         });
 
         if (percentage >= 80 && !isAlreadyCompleted) {
+            autoCompletedRef.current.add(completionKey);
             console.log(`[Progress Track] Auto-completing exercise: ${exercise.customName || exercise.name} at ${percentage.toFixed(1)}%`);
 
             // Instantly update local state so the card moves to the Completed tab in the exact same millisecond
@@ -1582,7 +1675,7 @@ export default function ExerciseScreen({ navigation }) {
                                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
                                         {recommendations.filter(rec => !rec.completed).slice(0, 5).map((rec, idx) => (
                                             <ExerciseCard
-                                                key={idx}
+                                                key={rec.exerciseId || rec.videoUrl || rec.customName || idx}
                                                 exercise={rec}
                                                 onComplete={handleCompleteExercise}
                                                 onUploadVideo={handleUploadVideo}
@@ -1605,7 +1698,7 @@ export default function ExerciseScreen({ navigation }) {
                                     <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
                                         {recommendations.filter(rec => rec.completed).map((rec, idx) => (
                                             <ExerciseCard
-                                                key={idx}
+                                                key={rec.exerciseId || rec.videoUrl || rec.customName || idx}
                                                 exercise={rec}
                                                 onComplete={handleCompleteExercise}
                                                 onUploadVideo={handleUploadVideo}

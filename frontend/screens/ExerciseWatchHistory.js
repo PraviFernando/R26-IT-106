@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     View, Text, TouchableOpacity, StyleSheet, ActivityIndicator,
     Image, TextInput, Alert, Modal, Platform
@@ -60,22 +60,34 @@ export default function ExerciseWatchHistory({ isSinhala }) {
     const [query, setQuery] = useState('');
     const [playing, setPlaying] = useState(null);
 
-    const load = useCallback(async (pageNum = 1, q = query) => {
+    // Each request gets an id; responses from an older request (e.g. a previous search) are ignored
+    const requestIdRef = useRef(0);
+
+    const load = useCallback(async (pageNum = 1) => {
+        const requestId = ++requestIdRef.current;
         try {
             pageNum === 1 ? setLoading(true) : setLoadingMore(true);
-            const data = await exerciseService.getWatchHistory({ page: pageNum, limit: PAGE_SIZE, search: q });
-            setItems(prev => (pageNum === 1 ? data.items : [...prev, ...data.items]));
+            const data = await exerciseService.getWatchHistory({ page: pageNum, limit: PAGE_SIZE, search: query });
+            if (requestId !== requestIdRef.current) return;
+            setItems(prev => {
+                if (pageNum === 1) return data.items;
+                // Deletes or re-watches shift the pages, so skip anything already shown
+                const seen = new Set(prev.map(i => i._id));
+                return [...prev, ...data.items.filter(i => !seen.has(i._id))];
+            });
             setHasMore(!!data.hasMore);
             setPage(pageNum);
         } catch (err) {
-            console.error('Failed to load watch history:', err.message);
+            if (requestId === requestIdRef.current) console.error('Failed to load watch history:', err.message);
         } finally {
-            setLoading(false);
-            setLoadingMore(false);
+            if (requestId === requestIdRef.current) {
+                setLoading(false);
+                setLoadingMore(false);
+            }
         }
     }, [query]);
 
-    useEffect(() => { load(1, query); }, [query]);
+    useEffect(() => { load(1); }, [load]);
 
     // Debounce the search box
     useEffect(() => {

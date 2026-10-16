@@ -18,7 +18,7 @@ const generateSessionId = () => {
 };
 
 export default function MovementTrackingScreen({ route, navigation }) {
-    const { exerciseId, exerciseName, videoUrl } = route.params;
+    const { exerciseId, exerciseName, videoUrl, cardName } = route.params;
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
     const r = useResponsive();
@@ -78,6 +78,12 @@ export default function MovementTrackingScreen({ route, navigation }) {
 
     const webViewRef = useRef(null);
     const videoRef = useRef(null);
+    // Web: the pose-tracking iframe (not the YouTube demo iframe) receives PAUSE/RESUME
+    const cameraIframeRef = useRef(null);
+    const isPausedRef = useRef(false);
+    const timerStartedRef = useRef(false);
+    // Running average of the live score, so the saved score reflects the whole session
+    const scoreSamplesRef = useRef({ sum: 0, count: 0 });
 
     const playDemoVideo = () => {
         if (Platform.OS === 'web') {
@@ -113,9 +119,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     };
 
-    // Start Timer
+    // Timer starts when the camera and pose model are ready (READY message), not while loading
     useEffect(() => {
-        startTimer();
         return () => stopTimer();
     }, []);
 
@@ -151,11 +156,13 @@ export default function MovementTrackingScreen({ route, navigation }) {
     const togglePause = () => {
         if (isPaused) {
             // Resume
+            isPausedRef.current = false;
             setIsPaused(false);
             startTimer();
             sendMessageToWebView({ type: 'RESUME' });
         } else {
             // Pause
+            isPausedRef.current = true;
             setIsPaused(true);
             stopTimer();
             setPauseCount(prev => prev + 1);
@@ -164,6 +171,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
     };
 
     const handleFinish = () => {
+        isPausedRef.current = true;
         stopTimer();
         sendMessageToWebView({ type: 'PAUSE' });
         setShowSummaryModal(true);
@@ -171,7 +179,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
 
     const sendMessageToWebView = (msg) => {
         if (Platform.OS === 'web') {
-            const iframe = document.querySelector('iframe');
+            const iframe = cameraIframeRef.current;
             if (iframe && iframe.contentWindow) {
                 iframe.contentWindow.postMessage(JSON.stringify(msg), '*');
             }
@@ -187,6 +195,10 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 case 'READY':
                     setLoading(false);
                     setStatus('Body Detected');
+                    if (!timerStartedRef.current && !isPausedRef.current) {
+                        timerStartedRef.current = true;
+                        startTimer();
+                    }
                     break;
                 case 'STATUS':
                     setStatus(data.status);
@@ -196,6 +208,10 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     break;
                 case 'LIVE_SCORE':
                     setLiveScore(data.score);
+                    if (!isPausedRef.current && typeof data.score === 'number' && data.score > 0) {
+                        scoreSamplesRef.current.sum += data.score;
+                        scoreSamplesRef.current.count += 1;
+                    }
                     if (data.stability !== undefined) {
                         setStability(data.stability);
                     }
@@ -295,16 +311,22 @@ export default function MovementTrackingScreen({ route, navigation }) {
         setSaving(true);
         try {
             const sanitizedExerciseId = (exerciseId && exerciseId !== 'EX_MOCK' && exerciseId.match(/^[0-9a-fA-F]{24}$/)) ? exerciseId : undefined;
+            const samples = scoreSamplesRef.current;
+            const sessionScore = samples.count > 0 ? Math.round(samples.sum / samples.count) : liveScore;
+            // Needs real movement: 5 reps, or at least 1 rep over a minute of tracking
+            const isCompleted = reps >= 5 || (reps >= 1 && timeElapsed >= 60);
+            const now = new Date();
+            const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
             await exerciseService.saveMovementSession({
                 sessionId,
                 exerciseId: sanitizedExerciseId,
                 exerciseName,
-                movementScore: liveScore,
+                movementScore: sessionScore,
                 repetitions: reps,
                 activeDuration: timeElapsed,
                 pauseCount,
-                completed: reps >= 5 || timeElapsed >= 60, // simple threshold for completion
+                completed: isCompleted,
                 pain: painRating === 'Yes',
                 difficulty: difficultyRating,
                 postWorkoutFeeling: feelingRating,
@@ -317,16 +339,17 @@ export default function MovementTrackingScreen({ route, navigation }) {
 
             // Auto-complete the exercise card in ExerciseScreen as well
             await exerciseService.saveExerciseRecord({
-                date: new Date().toISOString().split('T')[0],
+                date: localDate,
                 exerciseId: sanitizedExerciseId,
-                customActivityName: exerciseName,
-                status: 'completed',
+                // Use the recommendation card's name so that card is marked completed
+                customActivityName: cardName || exerciseName,
+                status: isCompleted ? 'completed' : 'pending',
                 durationCompleted: Math.round(timeElapsed / 60) || 1,
                 liked: true,
                 pain: painRating,
                 difficulty: difficultyRating,
                 feelingAfter: feelingRating,
-                adherenceScore: liveScore,
+                adherenceScore: sessionScore,
                 accuracy: averageAccuracy,
                 performanceMetrics: {
                     postureScore: postureMatch,
@@ -1256,6 +1279,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
 
                     {Platform.OS === 'web' ? (
                         <iframe
+                            ref={cameraIframeRef}
                             srcDoc={localHtmlString}
                             style={{ width: '100%', height: '100%', border: 'none', borderRadius: 28 }}
                             allow="camera; microphone"
