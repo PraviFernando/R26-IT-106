@@ -9,13 +9,30 @@ const EPDSScreening = require('../models/EPDSScreening');
 const MLPredictionService = require('../services/mlPredictionService');
 const axios = require('axios');
 const mongoose = require('mongoose');
+const CFG = require('../config/exerciseConfig');
+const { parseDurationStr, toMinutes, toLocalDateStr, isValidDateStr, toBool, decodeHtml } = require('../utils/exerciseUtils');
+const { buildVideoQueries } = require('../utils/exerciseVideoQueries');
 
-// YouTube Search Queries Mapping
-const QUERY_MAP = {
-    1: "postpartum bedrest breathing exercises",
-    2: "postpartum gentle mobility exercises",
-    3: "postpartum core strength exercises",
-    4: "postpartum functional workout exercises"
+const FATIGUE_LEVELS = ['low', 'medium', 'high'];
+const MOBILITY_LEVELS = ['very_limited', 'limited', 'normal'];
+const WILLINGNESS_LEVELS = ['low', 'medium', 'high'];
+const DELIVERY_TYPES = ['normal', 'c-section', 'c_section'];
+const RECORD_STATUSES = ['pending', 'completed', 'skipped', 'restricted'];
+const DIFFICULTIES = ['Easy', 'Moderate', 'Hard'];
+const FEELINGS = ['Better', 'Same', 'Tired'];
+
+// Returns an error message for the first invalid field, or null when the body is valid
+const validateHealthData = (body) => {
+    if (!isValidDateStr(body.date)) return 'date is required in YYYY-MM-DD format';
+    const w = body.weeksAfterDelivery;
+    if (w !== undefined && w !== null && w !== '' && (!Number.isFinite(Number(w)) || Number(w) < 0 || Number(w) > 104)) {
+        return 'weeksAfterDelivery must be a number between 0 and 104';
+    }
+    if (body.deliveryType && !DELIVERY_TYPES.includes(body.deliveryType)) return 'deliveryType must be normal or c-section';
+    if (body.fatigueLevel && !FATIGUE_LEVELS.includes(body.fatigueLevel)) return 'fatigueLevel must be low, medium or high';
+    if (body.mobilityLevel && !MOBILITY_LEVELS.includes(body.mobilityLevel)) return 'mobilityLevel must be very_limited, limited or normal';
+    if (body.willingnessToExercise && !WILLINGNESS_LEVELS.includes(body.willingnessToExercise)) return 'willingnessToExercise must be low, medium or high';
+    return null;
 };
 
 // Fallback dynamic videos in case YouTube API is unavailable
@@ -74,7 +91,7 @@ const FALLBACK_VIDEOS = {
 const parseISO8601Duration = (durationStr) => {
     const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
     const matches = durationStr.match(regex);
-    if (!matches) return '10:00';
+    if (!matches) return CFG.DEFAULT_VIDEO_DURATION;
     const hours = matches[1] ? parseInt(matches[1]) : 0;
     const minutes = matches[2] ? parseInt(matches[2]) : 0;
     const seconds = matches[3] ? parseInt(matches[3]) : 0;
@@ -88,42 +105,31 @@ const parseISO8601Duration = (durationStr) => {
     return result;
 };
 
-const parseDurationStr = (dStr) => {
-    if (!dStr) return 600;
-    const str = String(dStr);
-    if (str.includes(':')) {
-        const parts = str.split(':');
-        if (parts.length === 2) return parseInt(parts[0]) * 60 + parseInt(parts[1]);
-        if (parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
-    }
-    return parseInt(str) * 60 || 600;
-};
-
-// YYYY-MM-DD in the server's local time zone (matches the app's local todayStr; toISOString would use UTC)
-const toLocalDateStr = (d) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-
 // Clinical Safety evaluation function
 const evaluateSafetyStatus = (weeks, deliveryType, bleeding, doctorRestrictions) => {
     let safetyStatus = 'safe';
+    let safetyCode = null;
     let safetyMessage = '';
     let safetyMessageSi = '';
 
     if (doctorRestrictions) {
         safetyStatus = 'blocked';
+        safetyCode = 'doctor_restricted';
         safetyMessage = 'Doctor has restricted exercise. Please follow medical advice.';
         safetyMessageSi = 'වෛද්‍යවරයා ව්‍යායාම සීමා කර ඇත. කරුණාකර වෛද්‍ය උපදෙස් අනුගමනය කරන්න.';
     } else if (bleeding) {
         safetyStatus = 'limited';
+        safetyCode = 'bleeding';
         safetyMessage = 'Only breathing exercises are recommended due to bleeding complications. Please consult your doctor.';
         safetyMessageSi = 'රුධිර වහනය හේතුවෙන් මෘදු ශ්වසන ව්‍යායාම පමණක් නිර්දේශ කෙරේ. කරුණාකර ඔබේ වෛද්‍යවරයා හමුවන්න.';
-    } else if (deliveryType === 'c-section' && weeks < 6) {
+    } else if (deliveryType === 'c-section' && weeks < CFG.C_SECTION_RECOVERY_WEEKS) {
         safetyStatus = 'limited';
+        safetyCode = 'c_section_early';
         safetyMessage = 'Only breathing, gentle mobility, and light walking exercises are recommended within the first 6 weeks of a C-section. Please consult your doctor.';
         safetyMessageSi = 'සිසේරියන් සැත්කමකින් පසු පළමු සති 6 තුළ ශ්වසන ව්‍යායාම, මෘදු චලන සහ සැහැල්ලු ඇවිදීමේ ව්‍යායාම පමණක් නිර්දේශ කෙරේ. කරුණාකර ඔබේ වෛද්‍යවරයා හමුවන්න.';
     }
 
-    return { safetyStatus, safetyMessage, safetyMessageSi };
+    return { safetyStatus, safetyCode, safetyMessage, safetyMessageSi };
 };
 
 // Bilingual Mood Detection Function (English/Sinhala)
@@ -171,6 +177,10 @@ const applyDiaryRules = (exerciseCategory, mood) => {
 const submitHealthData = async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const validationError = validateHealthData(req.body);
+        if (validationError) {
+            return res.status(400).json({ success: false, message: validationError });
+        }
         const {
             date, weeksAfterDelivery, deliveryDate, deliveryType, pelvicPain, backPain, abdominalPain,
             bleedingComplications, doctorRestrictions, fatigueLevel, mobilityLevel,
@@ -211,16 +221,16 @@ const submitHealthData = async (req, res, next) => {
             userId,
             date,
             deliveryDate: finalDeliveryDate,
-            weeksAfterDelivery: finalWeeks || weeksAfterDelivery || 0,
-            deliveryType: finalDeliveryType,
-            pelvicPain: pelvicPain === true || pelvicPain === 'true',
-            backPain: backPain === true || backPain === 'true',
-            abdominalPain: abdominalPain === true || abdominalPain === 'true',
-            bleedingComplications: bleedingComplications === true || bleedingComplications === 'true',
-            doctorRestrictions: doctorRestrictions === true || doctorRestrictions === 'true',
+            weeksAfterDelivery: Number(finalWeeks || weeksAfterDelivery || 0),
+            deliveryType: finalDeliveryType === 'c_section' ? 'c-section' : finalDeliveryType,
+            pelvicPain: toBool(pelvicPain),
+            backPain: toBool(backPain),
+            abdominalPain: toBool(abdominalPain),
+            bleedingComplications: toBool(bleedingComplications),
+            doctorRestrictions: toBool(doctorRestrictions),
             fatigueLevel: fatigueLevel || 'low',
             mobilityLevel: mobilityLevel || 'normal',
-            muscleWeakness: muscleWeakness || false,
+            muscleWeakness: toBool(muscleWeakness),
             willingnessToExercise: willingnessToExercise || 'medium',
             mood: mood || '😊',
             sentiment: sentiment || 'Neutral',
@@ -248,6 +258,7 @@ const submitHealthData = async (req, res, next) => {
             const fallback = MLPredictionService.fallbackPrediction(healthData);
             riskScore = fallback.riskLevel;
             exerciseCategory = fallback.exerciseCategory;
+            mlPredictionData = fallback;
         }
 
         // 2. No safety overrides to match Excel predictions directly
@@ -264,7 +275,7 @@ const submitHealthData = async (req, res, next) => {
 
         // Smart Feedback adaptation: check last exercise session
         const lastExercise = await ExerciseRecord.findOne({ userId }).sort({ createdAt: -1 });
-        if (lastExercise && (lastExercise.pain === 'Yes' || lastExercise.difficulty === 'Hard' || (lastExercise.adherenceScore !== undefined && lastExercise.adherenceScore < 50))) {
+        if (lastExercise && (lastExercise.pain === 'Yes' || lastExercise.difficulty === 'Hard' || (lastExercise.adherenceScore !== undefined && lastExercise.adherenceScore < CFG.LOW_ADHERENCE_PERCENT))) {
             exerciseCategory = Math.max(1, exerciseCategory - 1);
             console.log(`[AI Adaptation] Adjusted next session intensity down to Category ${exerciseCategory} due to previous pain/difficulty/incomplete session.`);
         }
@@ -279,13 +290,13 @@ const submitHealthData = async (req, res, next) => {
         if (healthData.bleedingComplications) {
             exerciseCategory = 1; // Cap at Category 1 (Bedrest/Breathing) due to bleeding
             isOverridden = true;
-        } else if (healthData.deliveryType === 'c-section' && healthData.weeksAfterDelivery < 6) {
+        } else if (healthData.deliveryType === 'c-section' && healthData.weeksAfterDelivery < CFG.C_SECTION_RECOVERY_WEEKS) {
             exerciseCategory = Math.min(exerciseCategory, 2); // Cap at Category 2 (Gentle Mobility) for C-section under 6 weeks
             isOverridden = true;
-        } else if (symptomsCount >= 3) {
+        } else if (symptomsCount >= CFG.SEVERE_SYMPTOM_COUNT) {
             exerciseCategory = 1; // Cap at Category 1 (Bedrest/Breathing)
             isOverridden = true;
-        } else if (healthData.mobilityLevel === 'very_limited' || healthData.fatigueLevel === 'high' || symptomsCount === 2) {
+        } else if (healthData.mobilityLevel === 'very_limited' || healthData.fatigueLevel === 'high' || symptomsCount === CFG.MODERATE_SYMPTOM_COUNT) {
             exerciseCategory = Math.min(exerciseCategory, 2); // Cap at Category 2 (Gentle Mobility)
             isOverridden = true;
         }
@@ -298,12 +309,14 @@ const submitHealthData = async (req, res, next) => {
             healthData.doctorRestrictions
         );
         healthData.safetyStatus = safetyEval.safetyStatus;
+        let safetyCode = safetyEval.safetyCode;
         healthData.safetyMessage = safetyEval.safetyMessage;
         healthData.safetyMessageSi = safetyEval.safetyMessageSi;
 
         // If category was adjusted due to symptoms, update safety status to 'limited'
         if (isOverridden && healthData.safetyStatus === 'safe') {
             healthData.safetyStatus = 'limited';
+            safetyCode = 'symptoms_adjusted';
             healthData.safetyMessage = 'Exercise category adjusted to Gentle Mobility due to fatigue, pain, or mobility limitations.';
             healthData.safetyMessageSi = 'තෙහෙට්ටුව, වේදනාව හෝ චලන සීමාවන් හේතුවෙන් ව්‍යායාම මට්ටම මෘදු ව්‍යායාම දක්වා සකස් කර ඇත.';
         }
@@ -312,31 +325,33 @@ const submitHealthData = async (req, res, next) => {
         // A doctor's restriction blocks exercise entirely, so no videos are recommended or saved
         const isBlocked = healthData.safetyStatus === 'blocked';
         let recommendedExercises = [];
-        const searchQuery = QUERY_MAP[exerciseCategory];
         const youtubeApiKey = process.env.YOUTUBE_API_KEY;
+        // Searches depend on the category AND the form (C-section, pain areas, energy, mood), see utils/exerciseVideoQueries.js
+        const videoQueries = buildVideoQueries(exerciseCategory, { ...healthData, detectedMood });
 
         if (youtubeApiKey && !isBlocked) {
             try {
-                const ytResponse = await axios.get('https://www.googleapis.com/youtube/v3/search', {
-                    params: {
-                        part: 'snippet',
-                        maxResults: 25,
-                        q: searchQuery,
-                        type: 'video',
-                        key: youtubeApiKey
-                    }
-                });
-
-                if (ytResponse.data && ytResponse.data.items) {
-                    const videoIds = ytResponse.data.items.map(item => item.id.videoId).join(',');
-
-                    // Query /videos API to retrieve contentDetails (which includes duration)
-                    const detailsResponse = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+                const searches = await Promise.all(videoQueries.map(({ q, focus }) =>
+                    axios.get('https://www.googleapis.com/youtube/v3/search', {
                         params: {
-                            part: 'contentDetails',
-                            id: videoIds,
+                            part: 'snippet',
+                            maxResults: focus ? CFG.FOCUS_YOUTUBE_RESULTS : CFG.MAX_YOUTUBE_RESULTS,
+                            q,
+                            type: 'video',
                             key: youtubeApiKey
                         }
+                    }).then(r => ({ focus, items: (r.data && r.data.items) || [] }))
+                      .catch(err => {
+                          console.error(`YouTube search failed for "${q}":`, err.message);
+                          return { focus, items: [] };
+                      })
+                ));
+
+                const allIds = [...new Set(searches.flatMap(sr => sr.items.map(item => item.id.videoId)).filter(Boolean))];
+                if (allIds.length > 0) {
+                    // Query /videos API to retrieve contentDetails (which includes duration); max 50 ids per call
+                    const detailsResponse = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+                        params: { part: 'contentDetails', id: allIds.slice(0, 50).join(','), key: youtubeApiKey }
                     });
 
                     // Map video ID to its parsed human-readable duration
@@ -347,22 +362,42 @@ const submitHealthData = async (req, res, next) => {
                         });
                     }
 
-                    const mappedVideos = ytResponse.data.items.map(item => ({
-                        customName: item.snippet.title,
+                    const toVideo = (item, focus) => ({
+                        customName: decodeHtml(item.snippet.title),
                         videoUrl: `https://www.youtube.com/embed/${item.id.videoId}`,
                         type: 'youtube_video',
-                        duration: durationMap[item.id.videoId] || '10:00',
-                        channelTitle: item.snippet.channelTitle,
-                        category: exerciseCategory
-                    }));
+                        duration: durationMap[item.id.videoId] || CFG.DEFAULT_VIDEO_DURATION,
+                        channelTitle: decodeHtml(item.snippet.channelTitle),
+                        category: exerciseCategory,
+                        focus: focus || undefined
+                    });
+                    // Exclude YouTube Shorts (videos <= 60 seconds)
+                    const usable = (v) => parseDurationStr(v.duration) > CFG.MIN_VIDEO_SECONDS;
 
-                    // Filter out YouTube Shorts (videos <= 60 seconds) and limit to 10 recommendations
-                    recommendedExercises = mappedVideos
-                        .filter(video => parseDurationStr(video.duration) > 60)
-                        .slice(0, 10);
+                    // Focus videos first (a few per focus search), then fill up with the category search
+                    const seen = new Set();
+                    const take = (video) => {
+                        if (seen.has(video.videoUrl) || !usable(video)) return false;
+                        seen.add(video.videoUrl);
+                        recommendedExercises.push(video);
+                        return true;
+                    };
+                    for (const sr of searches.filter(x => x.focus)) {
+                        let added = 0;
+                        for (const item of sr.items) {
+                            if (added >= CFG.FOCUS_VIDEOS_PER_QUERY) break;
+                            if (take(toVideo(item, sr.focus))) added++;
+                        }
+                    }
+                    for (const item of (searches.find(x => !x.focus) || { items: [] }).items) {
+                        if (recommendedExercises.length >= CFG.RECOMMENDATION_POOL_SIZE) break;
+                        take(toVideo(item, null));
+                    }
+                    recommendedExercises = recommendedExercises.slice(0, CFG.RECOMMENDATION_POOL_SIZE);
                 }
             } catch (ytErr) {
                 console.error('YouTube Data API search failed, loading static list:', ytErr.message);
+                recommendedExercises = [];
             }
         }
 
@@ -372,28 +407,30 @@ const submitHealthData = async (req, res, next) => {
                 customName: vid.name,
                 videoUrl: vid.videoUrl,
                 type: 'youtube_fallback',
-                duration: vid.duration || "10:00",
+                duration: vid.duration || CFG.DEFAULT_VIDEO_DURATION,
                 channelTitle: "Pregnancy & Postpartum TV",
                 category: exerciseCategory
             }));
         }
 
         // Sort and apply personalization adjustment based on movement score
-        const recentMovementSessions = await ExerciseMovementSession.find({ userId, completed: true })
+        const recentMovementSessions = await ExerciseMovementSession.find({ userId: String(userId), completed: true })
             .sort({ timestamp: -1 })
-            .limit(3);
+            .limit(CFG.PERSONALISE_SESSION_COUNT);
 
         let personalizationAdjustment = null;
         let personalizationMessage = '';
         let personalizationMessageSi = '';
 
-        if (recentMovementSessions.length === 3 && recentMovementSessions.every(s => s.movementScore >= 90 && (s.averageAccuracy || 0) >= 90 && s.difficulty === 'Easy')) {
+        const high = CFG.HIGH_PERFORMANCE_SCORE;
+        const low = CFG.LOW_PERFORMANCE_SCORE;
+        if (recentMovementSessions.length === CFG.PERSONALISE_SESSION_COUNT && recentMovementSessions.every(s => s.movementScore >= high && (s.averageAccuracy || 0) >= high && s.difficulty === 'Easy')) {
             personalizationAdjustment = 'longer';
             personalizationMessage = "Great form! Based on your high scores and ease in recent sessions, we've prioritized longer exercise videos for you today.";
             personalizationMessageSi = "විශිෂ්ට ශාරීරික හැඩය! මෑත සැසිවල ඉහළ ලකුණු සහ පහසුව මත පදනම්ව, අපි අද ඔබට දිගු ව්‍යායාම වීඩියෝ නිර්දේශ කර ඇත්තෙමු.";
         } else if (recentMovementSessions.length > 0) {
             const lastSession = recentMovementSessions[0];
-            if (lastSession.movementScore < 70 || (lastSession.averageAccuracy || 0) < 70 || lastSession.pain === true || lastSession.difficulty === 'Hard') {
+            if (lastSession.movementScore < low || (lastSession.averageAccuracy || 0) < low || lastSession.pain === true || lastSession.difficulty === 'Hard') {
                 personalizationAdjustment = 'easier';
                 personalizationMessage = "We noticed some difficulty or pain in your last session. We've prioritized shorter/gentler exercise videos today to support your recovery.";
                 personalizationMessageSi = "පසුගිය සැසියේ යම් අපහසුතාවක් හෝ වේදනාවක් අපි දුටුවෙමු. සුවය ලැබීමට සහාය වීම සඳහා අද කෙටි/මෘදු ව්‍යායාම වීඩියෝ නිර්දේශ කර ඇත.";
@@ -402,13 +439,13 @@ const submitHealthData = async (req, res, next) => {
 
 
         if (personalizationAdjustment === 'longer') {
-            recommendedExercises.sort((a, b) => parseDurationStr(b.duration) - parseDurationStr(a.duration));
+            recommendedExercises.sort((a, b) => (!!b.focus - !!a.focus) || (parseDurationStr(b.duration) - parseDurationStr(a.duration)));
             if (healthData.safetyStatus !== 'blocked') {
                 healthData.safetyMessage = (healthData.safetyMessage ? healthData.safetyMessage + ' ' : '') + personalizationMessage;
                 healthData.safetyMessageSi = (healthData.safetyMessageSi ? healthData.safetyMessageSi + ' ' : '') + personalizationMessageSi;
             }
         } else if (personalizationAdjustment === 'easier') {
-            recommendedExercises.sort((a, b) => parseDurationStr(a.duration) - parseDurationStr(b.duration));
+            recommendedExercises.sort((a, b) => (!!b.focus - !!a.focus) || (parseDurationStr(a.duration) - parseDurationStr(b.duration)));
             if (healthData.safetyStatus !== 'blocked') {
                 healthData.safetyMessage = (healthData.safetyMessage ? healthData.safetyMessage + ' ' : '') + personalizationMessage;
                 healthData.safetyMessageSi = (healthData.safetyMessageSi ? healthData.safetyMessageSi + ' ' : '') + personalizationMessageSi;
@@ -416,6 +453,7 @@ const submitHealthData = async (req, res, next) => {
         }
 
         healthData.recommendedExercises = recommendedExercises;
+        healthData.predictionSource = mlPredictionData && mlPredictionData.source ? mlPredictionData.source : 'rule_fallback';
 
         // Delete any existing health data record for today to ensure new recommendations are clean and not cached/merged
         await PostpartumHealthData.deleteOne({ userId, date });
@@ -427,10 +465,16 @@ const submitHealthData = async (req, res, next) => {
         res.json({
             success: true,
             safetyStatus: healthData.safetyStatus,
+            safetyCode,
+            personalizationCode: personalizationAdjustment ? `personalised_${personalizationAdjustment}` : null,
             safetyMessage: healthData.safetyMessage,
             safetyMessageSi: healthData.safetyMessageSi,
             riskScore: riskScore,
+            riskLabel: mlPredictionData && mlPredictionData.riskLabel,
             exerciseCategory: exerciseCategory,
+            // 'ml_model' when the trained model answered, 'rule_fallback' when the ML API was unavailable
+            predictionSource: healthData.predictionSource,
+            predictionConfidence: mlPredictionData && mlPredictionData.confidence,
             isSafetyOverrideApplied: isOverridden,
             recommendedExercises: recommendedExercises,
             healthDataId: savedData._id,
@@ -491,7 +535,7 @@ const getRecommendations = async (req, res, next) => {
         // Pad recommendations pool up to 10 for backward compatibility with old 5-video records
         // Never pad a blocked (doctor-restricted) user or an empty list; empty means "no exercises" on purpose
         if (healthData.safetyStatus !== 'blocked' && healthData.recommendedExercises &&
-            healthData.recommendedExercises.length > 0 && healthData.recommendedExercises.length < 10) {
+            healthData.recommendedExercises.length > 0 && healthData.recommendedExercises.length < CFG.RECOMMENDATION_POOL_SIZE) {
             // Find category
             const sampleRec = healthData.recommendedExercises[0];
             const exerciseCategory = (sampleRec && sampleRec.category) ? sampleRec.category : 3;
@@ -500,13 +544,13 @@ const getRecommendations = async (req, res, next) => {
             const categoryFallbacks = FALLBACK_VIDEOS[exerciseCategory] || [];
 
             for (const vid of categoryFallbacks) {
-                if (healthData.recommendedExercises.length >= 10) break;
+                if (healthData.recommendedExercises.length >= CFG.RECOMMENDATION_POOL_SIZE) break;
                 if (!currentUrls.has(vid.videoUrl)) {
                     healthData.recommendedExercises.push({
                         customName: vid.name,
                         videoUrl: vid.videoUrl,
                         type: 'youtube_fallback',
-                        duration: vid.duration || "10:00",
+                        duration: vid.duration || CFG.DEFAULT_VIDEO_DURATION,
                         channelTitle: "Pregnancy & Postpartum TV",
                         completed: false,
                         watchPercentage: 0
@@ -521,6 +565,7 @@ const getRecommendations = async (req, res, next) => {
         res.json({
             recommendations: healthData.recommendedExercises,
             hasData: true,
+            predictionSource: healthData.predictionSource || null,
             safetyStatus: healthData.safetyStatus,
             safetyMessage: healthData.safetyMessage,
             safetyMessageSi: healthData.safetyMessageSi
@@ -543,12 +588,14 @@ const saveExerciseRecord = async (req, res, next) => {
             pain, difficulty, feelingAfter, adherenceScore, performanceMetrics
         } = req.body;
 
+        if (!isValidDateStr(date)) return res.status(400).json({ success: false, message: 'date is required in YYYY-MM-DD format' });
+        if (!customActivityName) return res.status(400).json({ success: false, message: 'customActivityName is required' });
+        if (status && !RECORD_STATUSES.includes(status)) return res.status(400).json({ success: false, message: 'invalid status' });
+        if (pain && !['Yes', 'No'].includes(pain)) return res.status(400).json({ success: false, message: 'pain must be Yes or No' });
+        if (difficulty && !DIFFICULTIES.includes(difficulty)) return res.status(400).json({ success: false, message: 'difficulty must be Easy, Moderate or Hard' });
+        if (feelingAfter && !FEELINGS.includes(feelingAfter)) return res.status(400).json({ success: false, message: 'feelingAfter must be Better, Same or Tired' });
+
         // Durations may arrive as minutes or "mm:ss"; store minutes as numbers
-        const toMinutes = (v) => {
-            if (v === undefined || v === null || v === '') return undefined;
-            if (typeof v === 'number') return v;
-            return Math.round(parseDurationStr(v) / 60 * 10) / 10;
-        };
         const actualMins = toMinutes(actualDuration);
         const recommendedMins = toMinutes(recommendedDuration);
         const completedMins = toMinutes(durationCompleted);
@@ -579,12 +626,17 @@ const saveExerciseRecord = async (req, res, next) => {
         const negativeMood = healthData ? (healthData.mood === '😔' || healthData.sentiment === 'Negative Mind' || healthData.detectedMood === 'sad') : false;
 
         // Intelligent Feedback generation
+        // feedbackCode lets the app translate the message without matching the English sentence
         let intelligentFeedback = "";
+        let feedbackCode = "";
         if (pain === "Yes") {
+            feedbackCode = 'pain_rest';
             intelligentFeedback = "You felt pain during exercise. Please rest. Tomorrow's exercises will be adjusted to lower intensity.";
-        } else if (calculatedAdherence < 50 || fatigueHigh || negativeMood) {
+        } else if (calculatedAdherence < CFG.LOW_ADHERENCE_PERCENT || fatigueHigh || negativeMood) {
+            feedbackCode = 'fatigue_lower';
             intelligentFeedback = "You may be experiencing fatigue. Tomorrow’s exercises will be adjusted to lower intensity.";
         } else {
+            feedbackCode = 'excellent';
             intelligentFeedback = "Excellent progress. You may continue with the current exercise plan.";
         }
 
@@ -599,7 +651,8 @@ const saveExerciseRecord = async (req, res, next) => {
                 ...(performanceMetrics ? { performanceMetrics } : {}),
                 pain, difficulty, feelingAfter,
                 adherenceScore: calculatedAdherence,
-                intelligentFeedback
+                intelligentFeedback,
+                feedbackCode
             },
             { upsert: true, returnDocument: 'after' }
         );
@@ -618,6 +671,9 @@ const uploadVideo = async (req, res, next) => {
         const userId = req.user.id;
         const { date, customActivityName, videoUri } = req.body;
 
+        // DEMO ONLY: no real video analysis is performed. The accuracy below is simulated and the
+        // response is flagged with isDemo so the app can label it. Real form feedback comes from
+        // live movement tracking (MovementTrackingScreen + /exercise/movement-session).
         const mockAccuracy = 70 + Math.floor(Math.random() * 25);
         const mockFeedback = mockAccuracy > 80 ? 'Excellent form!' : 'Good try! Keep practicing.';
 
@@ -629,6 +685,7 @@ const uploadVideo = async (req, res, next) => {
 
         res.json({
             success: true,
+            isDemo: true,
             accuracy: mockAccuracy,
             feedback: mockFeedback
         });
@@ -655,7 +712,7 @@ const getProgress = async (req, res, next) => {
         }).sort({ date: 1 });
 
         const movementSessions = await ExerciseMovementSession.find({
-            userId,
+            userId: String(userId),
             createdAt: { $gte: startDate }
         }).sort({ createdAt: 1 });
 
@@ -706,7 +763,7 @@ const getProgress = async (req, res, next) => {
 
         // Recovery Trend Analysis
         const threeWeeksAgo = new Date();
-        threeWeeksAgo.setDate(threeWeeksAgo.getDate() - 21);
+        threeWeeksAgo.setDate(threeWeeksAgo.getDate() - CFG.RECOVERY_TREND_DAYS);
         const threeWeeksAgoStr = toLocalDateStr(threeWeeksAgo);
 
         const healthRecords = await PostpartumHealthData.find({
@@ -715,26 +772,31 @@ const getProgress = async (req, res, next) => {
         }).sort({ date: 1 });
 
         let recoveryTrend = "No data yet to detect recovery trend. Keep logging daily health inputs.";
-        if (completedRecords.length > 0 && healthRecords.length >= 3) {
+        let recoveryTrendCode = 'no_data';
+        if (completedRecords.length > 0 && healthRecords.length >= CFG.MIN_HEALTH_RECORDS_FOR_TREND) {
             const firstThird = healthRecords.slice(0, Math.ceil(healthRecords.length / 3));
             const lastThird = healthRecords.slice(-Math.ceil(healthRecords.length / 3));
 
             const fatigueScore = { 'low': 1, 'medium': 2, 'high': 3 };
             const mobilityScore = { 'very_limited': 1, 'limited': 2, 'normal': 3 };
 
-            const firstFatigueAvg = firstThird.reduce((sum, r) => sum + fatigueScore[r.fatigueLevel], 0) / firstThird.length;
-            const lastFatigueAvg = lastThird.reduce((sum, r) => sum + fatigueScore[r.fatigueLevel], 0) / lastThird.length;
-
-            const firstMobilityAvg = firstThird.reduce((sum, r) => sum + mobilityScore[r.mobilityLevel], 0) / firstThird.length;
-            const lastMobilityAvg = lastThird.reduce((sum, r) => sum + mobilityScore[r.mobilityLevel], 0) / lastThird.length;
+            const avg = (rows, map, key, fallback) => rows.reduce((sum, r) => sum + (map[r[key]] ?? fallback), 0) / rows.length;
+            const firstFatigueAvg = avg(firstThird, fatigueScore, 'fatigueLevel', 1);
+            const lastFatigueAvg = avg(lastThird, fatigueScore, 'fatigueLevel', 1);
+            const firstMobilityAvg = avg(firstThird, mobilityScore, 'mobilityLevel', 3);
+            const lastMobilityAvg = avg(lastThird, mobilityScore, 'mobilityLevel', 3);
 
             if (lastFatigueAvg < firstFatigueAvg && lastMobilityAvg > firstMobilityAvg) {
+                recoveryTrendCode = 'fatigue_down_mobility_up';
                 recoveryTrend = "Fantastic recovery trend detected! Over the past few weeks, your fatigue has decreased and your mobility has improved.";
             } else if (lastFatigueAvg < firstFatigueAvg) {
+                recoveryTrendCode = 'fatigue_down';
                 recoveryTrend = "Positive trend: Your fatigue level has been decreasing over the last 3 weeks.";
             } else if (lastMobilityAvg > firstMobilityAvg) {
+                recoveryTrendCode = 'mobility_up';
                 recoveryTrend = "Positive trend: Your mobility is improving over the last 3 weeks.";
             } else {
+                recoveryTrendCode = 'stable';
                 recoveryTrend = "Stable recovery pattern. Rest and follow recommendations daily.";
             }
         }
@@ -752,13 +814,13 @@ const getProgress = async (req, res, next) => {
             
             // Adjust based on feedback (pain, difficulty, feeling after)
             if (r.pain === 'Yes') {
-                score = Math.max(20, score - 15); // pain penalty
+                score = Math.max(CFG.PROGRESS_MIN_SCORE, score - CFG.PROGRESS_PAIN_PENALTY); // pain penalty
             }
             if (r.difficulty === 'Hard') {
-                score = Math.max(20, score - 10); // difficulty adjustment
+                score = Math.max(CFG.PROGRESS_MIN_SCORE, score - CFG.PROGRESS_HARD_PENALTY); // difficulty adjustment
             }
             if (r.feelingAfter === 'Better') {
-                score = Math.min(100, score + 5); // feeling after bonus
+                score = Math.min(100, score + CFG.PROGRESS_FEELING_BONUS); // feeling after bonus
             }
             
             return {
@@ -841,6 +903,7 @@ const getProgress = async (req, res, next) => {
             weeklyCompletionRate,
             averageDuration,
             recoveryTrend,
+            recoveryTrendCode,
             // Movement tracked stats
             averageMovementScore,
             bestMovementScore,
@@ -898,7 +961,7 @@ const updateRecommendationProgress = async (req, res, next) => {
                 const match = (videoUrl && rec.videoUrl === videoUrl) || (customName && rec.customName === customName);
                 if (match) {
                     rec.watchPercentage = Number(watchPercentage || 0);
-                    if (rec.watchPercentage >= 80) {
+                    if (rec.watchPercentage >= CFG.WATCH_COMPLETE_PERCENT) {
                         rec.completed = true;
                     }
                 }
@@ -934,6 +997,16 @@ const saveMovementSession = async (req, res, next) => {
         if (!sessionId) {
             return res.status(400).json({ success: false, message: 'sessionId is required' });
         }
+        if (!exerciseName) return res.status(400).json({ success: false, message: 'exerciseName is required' });
+        const inRange = (v, min, max) => v === undefined || (Number.isFinite(Number(v)) && Number(v) >= min && Number(v) <= max);
+        if (!inRange(movementScore, 0, 100) || !inRange(averageAccuracy, 0, 100)) {
+            return res.status(400).json({ success: false, message: 'movementScore and averageAccuracy must be between 0 and 100' });
+        }
+        if (!inRange(repetitions, 0, 10000) || !inRange(activeDuration, 0, 86400)) {
+            return res.status(400).json({ success: false, message: 'repetitions and activeDuration must be positive numbers' });
+        }
+        if (difficulty && !DIFFICULTIES.includes(difficulty)) return res.status(400).json({ success: false, message: 'difficulty must be Easy, Moderate or Hard' });
+        if (postWorkoutFeeling && !FEELINGS.includes(postWorkoutFeeling)) return res.status(400).json({ success: false, message: 'postWorkoutFeeling must be Better, Same or Tired' });
         // Never let one user overwrite another user's session
         const owner = await ExerciseMovementSession.findOne({ sessionId }).select('userId');
         if (owner && owner.userId !== String(userId)) {
@@ -941,10 +1014,10 @@ const saveMovementSession = async (req, res, next) => {
         }
 
         const session = await ExerciseMovementSession.findOneAndUpdate(
-            { sessionId, userId },
+            { sessionId, userId: String(userId) },
             {
                 sessionId,
-                userId,
+                userId: String(userId),
                 exerciseId,
                 exerciseName,
                 movementScore,
@@ -978,7 +1051,7 @@ const getMovementSessions = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const limit = Math.min(500, Math.max(1, parseInt(req.query.limit) || 100));
-        const sessions = await ExerciseMovementSession.find({ userId }).sort({ timestamp: -1 }).limit(limit);
+        const sessions = await ExerciseMovementSession.find({ userId: String(userId) }).sort({ timestamp: -1 }).limit(limit);
         res.json({ success: true, sessions });
     } catch (err) {
         next(err);
@@ -1028,7 +1101,8 @@ const upsertWatchHistory = async (req, res, next) => {
         const inserted = !!(result.lastErrorObject && result.lastErrorObject.upserted);
         const update = {};
         if (!inserted && newSession) update.$inc = { watchCount: 1 };
-        if (entry.completed !== (entry.watchPercentage >= 80)) update.$set = { completed: entry.watchPercentage >= 80 };
+        const isComplete = entry.watchPercentage >= CFG.WATCH_COMPLETE_PERCENT;
+        if (entry.completed !== isComplete) update.$set = { completed: isComplete };
         if (Object.keys(update).length) {
             entry = await ExerciseWatchHistory.findOneAndUpdate(filter, update, { returnDocument: 'after' });
         }

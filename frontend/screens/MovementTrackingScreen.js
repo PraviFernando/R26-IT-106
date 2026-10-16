@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    View, Text, StyleSheet, TouchableOpacity, Modal,
+    View, Text, StyleSheet, Modal,
     Alert, ActivityIndicator, Platform,
     Pressable, ScrollView
 } from 'react-native';
@@ -11,11 +11,20 @@ import exerciseService from '../services/exerciseService';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../theme';
 import { useResponsive } from '../hooks/useResponsive';
+import { todayStr, formatTime, getYoutubeEmbedUrl } from '../utils/exerciseUtils';
+import { C, T, Card, SectionTitle, OptionRow, PrimaryButton, SecondaryButton, CircleButton, StatTile, Icon } from '../components/exercise/ui';
+import { MOVEMENT_COMPLETE_REPS, MOVEMENT_MIN_REPS, MOVEMENT_MIN_SECONDS } from '../utils/exerciseConfig';
 
 // Generate unique session ID
 const generateSessionId = () => {
     return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
 };
+
+// Demo video: autoplay muted with the JS API enabled so play/pause commands work
+const getEmbedUrl = (url) => getYoutubeEmbedUrl(url,
+    url && url.includes('youtube.com/embed/')
+        ? 'enablejsapi=1&autoplay=1&mute=1'
+        : 'playsinline=1&controls=1&rel=0&modestbranding=1&enablejsapi=1&autoplay=1&mute=1');
 
 export default function MovementTrackingScreen({ route, navigation }) {
     const { exerciseId, exerciseName, videoUrl, cardName } = route.params;
@@ -24,27 +33,6 @@ export default function MovementTrackingScreen({ route, navigation }) {
     const r = useResponsive();
     const isLargeScreen = r.isTablet;
 
-    const getEmbedUrl = (url) => {
-        if (!url) return '';
-        let videoId = '';
-        if (url.includes('youtube.com/embed/')) {
-            const separator = url.includes('?') ? '&' : '?';
-            return `${url}${separator}enablejsapi=1&autoplay=1&mute=1`;
-        }
-        if (url.includes('youtu.be/')) {
-            videoId = url.split('youtu.be/')[1]?.split('?')[0];
-        } else if (url.includes('youtube.com/watch')) {
-            const parts = url.split('?');
-            if (parts.length > 1) {
-                const urlParams = new URLSearchParams(parts[1]);
-                videoId = urlParams.get('v');
-            }
-        }
-        if (videoId) {
-            return `https://www.youtube.com/embed/${videoId}?playsinline=1&controls=1&rel=0&modestbranding=1&enablejsapi=1&autoplay=1&mute=1`;
-        }
-        return url;
-    };
 
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState('Initializing...');
@@ -253,11 +241,6 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     };
 
-    const formatTime = (totalSeconds) => {
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    };
 
     // Calculate score feedback message
     const getScoreFeedback = (score) => {
@@ -313,10 +296,9 @@ export default function MovementTrackingScreen({ route, navigation }) {
             const sanitizedExerciseId = (exerciseId && exerciseId !== 'EX_MOCK' && exerciseId.match(/^[0-9a-fA-F]{24}$/)) ? exerciseId : undefined;
             const samples = scoreSamplesRef.current;
             const sessionScore = samples.count > 0 ? Math.round(samples.sum / samples.count) : liveScore;
-            // Needs real movement: 5 reps, or at least 1 rep over a minute of tracking
-            const isCompleted = reps >= 5 || (reps >= 1 && timeElapsed >= 60);
-            const now = new Date();
-            const localDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            // Needs real movement: enough reps, or a few reps over a minimum tracking time
+            const isCompleted = reps >= MOVEMENT_COMPLETE_REPS || (reps >= MOVEMENT_MIN_REPS && timeElapsed >= MOVEMENT_MIN_SECONDS);
+            const localDate = todayStr();
 
             await exerciseService.saveMovementSession({
                 sessionId,
@@ -1205,267 +1187,182 @@ export default function MovementTrackingScreen({ route, navigation }) {
     </html>
     `;
 
+    const tr = (en, si) => (isSinhala ? si : en);
+    const statusColor = getStatusColor(status);
+    const surveyReady = painRating && difficultyRating && feelingRating;
+
     return (
-        <SafeAreaView style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                    <Text style={styles.backIcon}>←</Text>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>{exerciseName}</Text>
-                <TouchableOpacity
-                    onPress={() =>
-                        i18n.changeLanguage(
-                            i18n.language === 'en' ? 'si' : 'en'
-                        )
-                    }
-                    style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
-                >
-                    <Text
-                        style={{
-                            fontWeight: '700',
-                            fontSize: 13,
-                            color: '#7C3AED',
-                            backgroundColor: '#EDE9FE',
-                            paddingHorizontal: 10,
-                            paddingVertical: 4,
-                            borderRadius: 12,
-                        }}
-                    >
-                        {i18n.language === 'en' ? 'සිං' : 'EN'}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Split Screen Container */}
-            <View style={[styles.splitScreenContainer, { flexDirection: isLargeScreen ? 'row' : 'column' }]}>
-                {/* Side 1: Exercise Demo Video */}
-                <View style={styles.videoHalf} pointerEvents={Platform.OS === 'web' ? 'none' : 'auto'}>
-                    {videoUrl ? (
-                        Platform.OS === 'web' ? (
-                            <iframe
-                                src={getEmbedUrl(videoUrl)}
-                                style={{ width: '100%', height: '100%', border: 'none', borderRadius: 28, pointerEvents: 'auto' }}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            />
-                        ) : (
-                            <WebView
-                                ref={videoRef}
-                                originWhitelist={['*']}
-                                source={{ uri: getEmbedUrl(videoUrl) }}
-                                style={styles.exerciseWebView}
-                                javaScriptEnabled={true}
-                                domStorageEnabled={true}
-                                allowsInlineMediaPlayback={true}
-                                mediaPlaybackRequiresUserAction={false}
-                            />
-                        )
-                    ) : (
-                        <View style={styles.noVideoContainer}>
-                            <Text style={styles.noVideoText}>No demo video available</Text>
-                        </View>
-                    )}
-                </View>
-
-                {/* Side 2: Camera Feed / WebView */}
-                <View style={styles.cameraHalf}>
-                    {loading && (
-                        <View style={styles.loadingContainer}>
-                            <ActivityIndicator size="large" color="#7C3AED" />
-                            <Text style={styles.loadingText}>Loading AI movement models...</Text>
-                        </View>
-                    )}
-
-                    {Platform.OS === 'web' ? (
-                        <iframe
-                            ref={cameraIframeRef}
-                            srcDoc={localHtmlString}
-                            style={{ width: '100%', height: '100%', border: 'none', borderRadius: 28 }}
-                            allow="camera; microphone"
-                        />
-                    ) : (
-                        <WebView
-                            ref={webViewRef}
-                            originWhitelist={['*']}
-                            source={{ html: localHtmlString }}
-                            style={styles.webView}
-                            onMessage={handleWebViewMessage}
-                            javaScriptEnabled={true}
-                            domStorageEnabled={true}
-                            mediaPlaybackRequiresUserAction={false}
-                            allowsInlineMediaPlayback={true}
-                        />
-                    )}
-
-                    {/* Low visibility indicator */}
-                    {visibilityWarning !== '' && (
-                        <View style={styles.warningBanner}>
-                            <Text style={styles.warningText}>⚠️ {visibilityWarning}</Text>
-                        </View>
-                    )}
-                </View>
-            </View>
-
-            {/* Real-time Feedback Banner */}
-            <View style={styles.feedbackBanner}>
-                <Text style={styles.feedbackText}>{getTranslatedFeedback(feedbackMessage)}</Text>
-            </View>
-
-            {/* Dashboard Statistics */}
-            <View style={styles.statsCard}>
-                <View style={styles.statRow}>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>{isSinhala ? 'කාලය' : 'Timer'}</Text>
-                        <Text style={styles.statValue}>{formatTime(timeElapsed)}</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>{isSinhala ? 'නිරවද්‍යතාවය' : 'Accuracy'}</Text>
-                        <Text style={[styles.statValue, { color: colors.primary }]}>{liveScore}%</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>{isSinhala ? 'වීඩියෝ ගැළපීම' : 'Video Match'}</Text>
-                        <Text style={[styles.statValue, { color: colors.secondary }]}>{postureMatch}%</Text>
+        <SafeAreaView style={[styles.container, { backgroundColor: C.bg }]}>
+            <View style={ms.header}>
+                <CircleButton icon="back" onPress={() => navigation.goBack()} label={tr('Back', 'ආපසු')} />
+                <View style={{ flex: 1 }}>
+                    <Text style={ms.title} numberOfLines={1}>{exerciseName}</Text>
+                    <View style={ms.statusRow}>
+                        <View style={[ms.dot, { backgroundColor: statusColor }]} />
+                        <Text style={ms.statusText} numberOfLines={1}>{getTranslatedStatus(status)}</Text>
                     </View>
                 </View>
-                <View style={styles.statusRow}>
-                    <View style={[styles.statusDot, { backgroundColor: getStatusColor(status) }]} />
-                    <Text style={styles.statusText}>{isSinhala ? 'තත්ත්වය: ' : 'Status: '}{getTranslatedStatus(status)}</Text>
-                </View>
-            </View>
-
-            {/* Controls */}
-            <View style={styles.controlsRow}>
-                <Pressable 
-                    style={({ hovered }) => [
-                        styles.controlBtn, 
-                        isPaused 
-                            ? { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0', borderWidth: 1.5 } 
-                            : { backgroundColor: colors.bgTint, borderColor: colors.accent, borderWidth: 1.5 },
-                        hovered && styles.controlBtnHover
-                    ]} 
-                    onPress={togglePause}
+                <Text style={ms.timer} accessibilityLabel={tr('Time', 'කාලය')}>{formatTime(timeElapsed)}</Text>
+                <Pressable
+                    onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')}
+                    accessibilityRole="button"
+                    accessibilityLabel={tr('Switch language', 'භාෂාව මාරු කරන්න')}
+                    style={ms.lang}
                 >
-                    <Text style={[styles.controlBtnText, isPaused ? { color: '#059669' } : { color: colors.primary }]}>
-                        {isPaused 
-                            ? (isSinhala ? '▶️ නැවත අරඹන්න' : '▶ Resume') 
-                            : (isSinhala ? '⏸️ විරාමය' : '⏸ Pause')}
-                    </Text>
-                </Pressable>
-                <Pressable 
-                    style={({ hovered }) => [
-                        styles.controlBtn, 
-                        styles.finishBtn,
-                        hovered && styles.controlBtnHover
-                    ]} 
-                    onPress={handleFinish}
-                >
-                    <Text style={[styles.controlBtnText, styles.finishBtnText]}>{isSinhala ? '⏹️ අවසන් කරන්න' : '⏹️ Finish'}</Text>
+                    <Text style={ms.langText}>{i18n.language === 'en' ? 'සිං' : 'EN'}</Text>
                 </Pressable>
             </View>
+
+            <ScrollView contentContainerStyle={ms.scroll} showsVerticalScrollIndicator={false}>
+                <View style={[ms.split, isLargeScreen && ms.splitWide]}>
+                    {/* Demo video */}
+                    <View style={[ms.pane, isLargeScreen && { flex: 1 }]}>
+                        <Text style={ms.paneLabel}>{tr('Demo video', 'ආදර්ශ වීඩියෝව')}</Text>
+                        <View style={[ms.video, { height: isLargeScreen ? 340 : 200 }]} pointerEvents={Platform.OS === 'web' ? 'none' : 'auto'}>
+                            {videoUrl ? (
+                                Platform.OS === 'web' ? (
+                                    <iframe
+                                        src={getEmbedUrl(videoUrl)}
+                                        style={{ width: '100%', height: '100%', border: 'none', borderRadius: 22, pointerEvents: 'auto' }}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    />
+                                ) : (
+                                    <WebView
+                                        ref={videoRef}
+                                        originWhitelist={['*']}
+                                        source={{ uri: getEmbedUrl(videoUrl) }}
+                                        style={styles.exerciseWebView}
+                                        javaScriptEnabled={true}
+                                        domStorageEnabled={true}
+                                        allowsInlineMediaPlayback={true}
+                                        mediaPlaybackRequiresUserAction={false}
+                                    />
+                                )
+                            ) : (
+                                <View style={ms.center}><Text style={ms.mutedOnDark}>{tr('No demo video available', 'ආදර්ශ වීඩියෝවක් නැත')}</Text></View>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Camera */}
+                    <View style={[ms.pane, isLargeScreen && { flex: 1 }]}>
+                        <Text style={ms.paneLabel}>{tr('Your camera', 'ඔබේ කැමරාව')}</Text>
+                        <View style={[ms.camera, { height: isLargeScreen ? 340 : 300 }]}>
+                            {loading && (
+                                <View style={ms.loading}>
+                                    <ActivityIndicator size="large" color={C.secondary} />
+                                    <Text style={ms.mutedOnDark}>{tr('Loading AI movement models...', 'AI චලන ආකෘති පූරණය වෙමින්...')}</Text>
+                                </View>
+                            )}
+                            {Platform.OS === 'web' ? (
+                                <iframe
+                                    ref={cameraIframeRef}
+                                    srcDoc={localHtmlString}
+                                    style={{ width: '100%', height: '100%', border: 'none', borderRadius: 22 }}
+                                    allow="camera; microphone"
+                                />
+                            ) : (
+                                <WebView
+                                    ref={webViewRef}
+                                    originWhitelist={['*']}
+                                    source={{ html: localHtmlString }}
+                                    style={styles.webView}
+                                    onMessage={handleWebViewMessage}
+                                    javaScriptEnabled={true}
+                                    domStorageEnabled={true}
+                                    mediaPlaybackRequiresUserAction={false}
+                                    allowsInlineMediaPlayback={true}
+                                />
+                            )}
+                            <View style={[ms.overlayChip, { left: 12 }]} pointerEvents="none">
+                                <Text style={ms.chipLabel}>{tr('REPS', 'වට')}</Text>
+                                <Text style={ms.chipValue}>{reps}</Text>
+                            </View>
+                            <View style={[ms.overlayChip, { right: 12, alignItems: 'flex-end' }]} pointerEvents="none">
+                                <Text style={ms.chipLabel}>{tr('FORM', 'නිරවද්‍යතාව')}</Text>
+                                <Text style={[ms.chipValue, { color: C.primaryDark }]}>{liveScore}%</Text>
+                            </View>
+                            {visibilityWarning !== '' && (
+                                <View style={ms.warning} pointerEvents="none">
+                                    <Text style={ms.warningText}>{getTranslatedFeedback(visibilityWarning)}</Text>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+                </View>
+
+                <View style={ms.feedback}>
+                    <Icon name="chat" size={22} color={C.primaryDark} />
+                    <Text style={ms.feedbackText}>{getTranslatedFeedback(feedbackMessage)}</Text>
+                </View>
+
+                <View style={ms.stats}>
+                    <StatTile value={`${liveScore}%`} label={tr('Accuracy', 'නිරවද්‍යතාවය')} style={ms.stat} />
+                    <StatTile value={`${postureMatch}%`} label={tr('Video match', 'වීඩියෝ ගැළපීම')} style={ms.stat} />
+                    <StatTile value={`${stability}%`} label={tr('Steadiness', 'ස්ථායීතාවය')} style={ms.stat} />
+                    <StatTile value={`${correctReps} / ${reps}`} label={tr('Correct reps', 'නිවැරදි වට')} style={ms.stat} />
+                </View>
+
+                <View style={ms.controls}>
+                    <SecondaryButton
+                        style={{ flex: 1 }}
+                        icon={isPaused ? 'play' : 'pause'}
+                        title={isPaused ? tr('Resume', 'නැවත අරඹන්න') : tr('Pause', 'විරාමය')}
+                        onPress={togglePause}
+                    />
+                    <PrimaryButton style={{ flex: 1 }} icon="check" title={tr('Finish', 'අවසන් කරන්න')} onPress={handleFinish} />
+                </View>
+
+                <Text style={ms.privacy}>{tr('The camera is used only to detect body movement during exercise.', 'ව්‍යායාම අතරතුර ශරීර චලනය හඳුනා ගැනීමට පමණක් කැමරාව භාවිතා කෙරේ.')}</Text>
+            </ScrollView>
 
             <Modal visible={showSummaryModal} transparent animationType="slide">
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
-                            <Text style={styles.summaryTitle}>{isSinhala ? 'ව්‍යායාම සාරාංශය' : 'Exercise Summary'}</Text>
-
-                            {/* Stats Cards */}
-                            <View style={styles.summaryStatsRow}>
-                                <View style={styles.summaryStatBox}>
-                                    <Text style={styles.summaryStatVal}>{liveScore}%</Text>
-                                    <Text style={styles.summaryStatLbl}>{isSinhala ? 'ලකුණු' : 'Score'}</Text>
-                                </View>
-                                <View style={styles.summaryStatBox}>
-                                    <Text style={styles.summaryStatVal}>{reps}</Text>
-                                    <Text style={styles.summaryStatLbl}>{isSinhala ? 'වට' : 'Reps'}</Text>
-                                </View>
-                                <View style={styles.summaryStatBox}>
-                                    <Text style={styles.summaryStatVal}>{formatTime(timeElapsed)}</Text>
-                                    <Text style={styles.summaryStatLbl}>{isSinhala ? 'කාලය' : 'Duration'}</Text>
-                                </View>
-                                {(exerciseName === 'Bird Dog' || exerciseName.toLowerCase().includes('bird')) && (
-                                    <View style={styles.summaryStatBox}>
-                                        <Text style={styles.summaryStatVal}>{stability}%</Text>
-                                        <Text style={styles.summaryStatLbl}>{isSinhala ? 'ස්ථායීතාවය' : 'Stability'}</Text>
-                                    </View>
-                                )}
+                <View style={ms.overlay}>
+                    <View style={ms.sheet}>
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={ms.sheetContent}>
+                            <View style={ms.doneHead}>
+                                <View style={ms.doneIcon}><Icon name="check" size={34} color={C.primaryDark} /></View>
+                                <Text style={ms.doneTitle}>{tr('Exercise summary', 'ව්‍යායාම සාරාංශය')}</Text>
+                                <Text style={ms.doneText}>{getScoreFeedback(liveScore)}</Text>
                             </View>
 
-                            {/* Score Feedback adaptation */}
-                            <View style={styles.feedbackMsgBox}>
-                                <Text style={styles.feedbackMsgTitle}>{isSinhala ? 'කාර්ය සාධන මට්ටම' : 'Performance Rating'}</Text>
-                                <Text style={styles.feedbackMsgText}>"{getScoreFeedback(liveScore)}"</Text>
+                            <View style={ms.stats}>
+                                <StatTile value={`${liveScore}%`} label={tr('Score', 'ලකුණු')} style={ms.stat} />
+                                <StatTile value={String(reps)} label={tr('Reps', 'වට')} style={ms.stat} />
+                                <StatTile value={formatTime(timeElapsed)} label={tr('Duration', 'කාලය')} style={ms.stat} />
                             </View>
 
-                            {/* Survey Questions */}
-                            <View style={styles.surveyContainer}>
-                                <Text style={styles.surveyHeader}>{isSinhala ? 'ව්‍යායාමයෙන් පසු ප්‍රතිපෝෂණය' : 'Post-Workout Feedback'}</Text>
+                            <Card style={ms.q}>
+                                <SectionTitle>{tr('Did anything hurt?', 'කිසියම් වේදනාවක් දැනුණාද?')}</SectionTitle>
+                                <OptionRow value={painRating} onChange={setPainRating} options={[
+                                    { value: 'No', label: tr('No', 'නැත') },
+                                    { value: 'Yes', label: tr('Yes', 'ඔව්') },
+                                ]} />
+                            </Card>
+                            <Card style={ms.q}>
+                                <SectionTitle>{tr('How hard was it?', 'කෙතරම් අපහසු වීද?')}</SectionTitle>
+                                <OptionRow value={difficultyRating} onChange={setDifficultyRating} options={[
+                                    { value: 'Easy', label: tr('Easy', 'පහසුයි') },
+                                    { value: 'Moderate', label: tr('Okay', 'මධ්‍යම') },
+                                    { value: 'Hard', label: tr('Hard', 'අපහසුයි') },
+                                ]} />
+                            </Card>
+                            <Card style={ms.q}>
+                                <SectionTitle>{tr('How do you feel now?', 'දැන් ඔබට දැනෙන්නේ කෙසේද?')}</SectionTitle>
+                                <OptionRow value={feelingRating} onChange={setFeelingRating} options={[
+                                    { value: 'Better', label: tr('Better', 'සුවදායකයි') },
+                                    { value: 'Same', label: tr('Same', 'වෙනසක් නැත') },
+                                    { value: 'Tired', label: tr('Tired', 'තෙහෙට්ටුයි') },
+                                ]} />
+                            </Card>
 
-                                {/* Q1: Pain */}
-                                <Text style={styles.surveyQuestion}>{isSinhala ? '1. ව්‍යායාම අතරතුර ඔබට වේදනාකාරී බවක් දැනුණාද?' : '1. Did you feel pain during exercise?'}</Text>
-                                <View style={styles.surveyAnswersRow}>
-                                    {['Yes', 'No'].map(ans => (
-                                        <TouchableOpacity
-                                            key={ans}
-                                            style={[styles.surveyAnsBtn, painRating === ans && styles.surveyAnsBtnActive]}
-                                            onPress={() => setPainRating(ans)}
-                                        >
-                                            <Text style={[styles.surveyAnsText, painRating === ans && styles.surveyAnsTextActive]}>
-                                                {isSinhala ? (ans === 'Yes' ? 'ඔව්' : 'නැත') : ans}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-
-                                {/* Q2: Difficulty */}
-                                <Text style={styles.surveyQuestion}>{isSinhala ? '2. ව්‍යායාමය කෙතරම් අපහසු වීද?' : '2. How difficult was the exercise?'}</Text>
-                                <View style={styles.surveyAnswersRow}>
-                                    {['Easy', 'Moderate', 'Hard'].map(ans => (
-                                        <TouchableOpacity
-                                            key={ans}
-                                            style={[styles.surveyAnsBtn, difficultyRating === ans && styles.surveyAnsBtnActive]}
-                                            onPress={() => setDifficultyRating(ans)}
-                                        >
-                                            <Text style={[styles.surveyAnsText, difficultyRating === ans && styles.surveyAnsTextActive]}>
-                                                {isSinhala ? (ans === 'Easy' ? 'පහසුයි' : ans === 'Moderate' ? 'මධ්‍යම' : 'අපහසුයි') : ans}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-
-                                {/* Q3: Feeling */}
-                                <Text style={styles.surveyQuestion}>{isSinhala ? '3. ව්‍යායාමයෙන් පසු ඔබට දැනෙන්නේ කෙසේද?' : '3. How do you feel after exercise?'}</Text>
-                                <View style={styles.surveyAnswersRow}>
-                                    {['Better', 'Same', 'Tired'].map(ans => (
-                                        <TouchableOpacity
-                                            key={ans}
-                                            style={[styles.surveyAnsBtn, feelingRating === ans && styles.surveyAnsBtnActive]}
-                                            onPress={() => setFeelingRating(ans)}
-                                        >
-                                            <Text style={[styles.surveyAnsText, feelingRating === ans && styles.surveyAnsTextActive]}>
-                                                {isSinhala ? (ans === 'Better' ? 'සුවදායකයි' : ans === 'Same' ? 'වෙනසක් නැත' : 'තෙහෙට්ටුයි') : ans}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            </View>
-
-                            {/* Submit Button */}
-                            <TouchableOpacity
-                                style={[
-                                    styles.submitBtn,
-                                    (!painRating || !difficultyRating || !feelingRating) && { opacity: 0.5 }
-                                ]}
-                                disabled={!painRating || !difficultyRating || !feelingRating || saving}
+                            <PrimaryButton
+                                title={tr('Save workout session', 'ව්‍යායාම සැසිය සුරකින්න')}
                                 onPress={submitWorkoutSession}
-                            >
-                                {saving ? (
-                                    <ActivityIndicator color="#FFF" />
-                                ) : (
-                                    <Text style={styles.submitBtnText}>{isSinhala ? 'ව්‍යායාම සැසිය සුරකින්න' : 'Save Workout Session'}</Text>
-                                )}
-                            </TouchableOpacity>
+                                loading={saving}
+                                disabled={!surveyReady}
+                            />
                         </ScrollView>
                     </View>
                 </View>
@@ -1473,6 +1370,47 @@ export default function MovementTrackingScreen({ route, navigation }) {
         </SafeAreaView>
     );
 }
+
+// Layout for the redesigned movement tracking screen (PeriCare exercise mockups)
+const ms = StyleSheet.create({
+    header: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 12 },
+    title: { ...T.heading, fontSize: 18, color: C.text },
+    statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    dot: { width: 8, height: 8, borderRadius: 4 },
+    statusText: { ...T.semi, fontSize: 12, color: C.textSub },
+    timer: { ...T.heading, fontSize: 18, color: C.text, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, overflow: 'hidden', fontVariant: ['tabular-nums'] },
+    lang: { minHeight: 44, minWidth: 44, paddingHorizontal: 10, borderRadius: 22, backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: C.control, alignItems: 'center', justifyContent: 'center' },
+    langText: { ...T.bold, fontSize: 13, color: C.primaryDark },
+    scroll: { paddingHorizontal: 16, paddingBottom: 32, gap: 14, maxWidth: 1280, width: '100%', alignSelf: 'center' },
+    split: { gap: 14 },
+    splitWide: { flexDirection: 'row' },
+    pane: { gap: 8 },
+    paneLabel: { ...T.bold, fontSize: 13, color: C.textSub },
+    video: { borderRadius: 22, overflow: 'hidden', backgroundColor: C.video },
+    camera: { borderRadius: 22, overflow: 'hidden', backgroundColor: '#3A2547' },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    mutedOnDark: { ...T.semi, fontSize: 13, color: C.control, textAlign: 'center' },
+    loading: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', gap: 10, zIndex: 2, backgroundColor: 'rgba(44,26,53,0.6)' },
+    overlayChip: { position: 'absolute', top: 12, backgroundColor: 'rgba(250,242,250,0.95)', borderRadius: 16, paddingHorizontal: 14, paddingVertical: 6, zIndex: 3 },
+    chipLabel: { ...T.bold, fontSize: 11, color: C.textSub },
+    chipValue: { ...T.heading, fontSize: 24, color: C.text },
+    warning: { position: 'absolute', left: 12, right: 12, bottom: 12, backgroundColor: C.warnBg, borderRadius: 14, padding: 10, zIndex: 3 },
+    warningText: { ...T.semi, fontSize: 13, color: C.text, textAlign: 'center' },
+    feedback: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.tint, borderRadius: 20, padding: 14 },
+    feedbackText: { flex: 1, ...T.semi, fontSize: 15, lineHeight: 21, color: C.primaryDark },
+    stats: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    stat: { flexBasis: 140, flexGrow: 1 },
+    controls: { flexDirection: 'row', gap: 12 },
+    privacy: { ...T.medium, fontSize: 12, color: C.textSub, textAlign: 'center' },
+    overlay: { flex: 1, backgroundColor: 'rgba(44,26,53,0.45)', justifyContent: 'flex-end', alignItems: 'center' },
+    sheet: { width: '100%', maxWidth: 560, maxHeight: '96%', backgroundColor: C.bg, borderTopLeftRadius: 28, borderTopRightRadius: 28 },
+    sheetContent: { padding: 20, gap: 14 },
+    doneHead: { alignItems: 'center', gap: 8 },
+    doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: C.tint, alignItems: 'center', justifyContent: 'center' },
+    doneTitle: { ...T.heading, fontSize: 22, color: C.text },
+    doneText: { ...T.medium, fontSize: 14, color: C.textSub, textAlign: 'center' },
+    q: { gap: 12 },
+});
 
 const styles = StyleSheet.create({
     container: {

@@ -5,23 +5,26 @@ const ML_API_URL = process.env.ML_API_URL || 'http://127.0.0.1:5001';
 class MLPredictionService {
     
     /**
-     * Map string inputs to numeric features expected by ML model
+     * Map the health form to the exact numeric features the model was trained on
+     * (same encoding as ml_training/relabel_dataset.py and predict_api.py).
      */
     static preprocessFeatures(healthData) {
+        const flag = (v) => (v === true || v === 'true' || v === 1) ? 1 : 0;
+        const weeks = Math.round(Number(healthData.weeksAfterDelivery));
         const fatigueMap = { 'low': 0, 'medium': 1, 'high': 2 };
         const mobilityMap = { 'very_limited': 0, 'limited': 1, 'normal': 2 };
         const willingnessMap = { 'low': 0, 'medium': 1, 'high': 2 };
         const epdsMap = { 'low': 0, 'medium': 1, 'moderate': 1, 'high': 2 };
         
         return {
-            weeks_after_delivery: Number(healthData.weeksAfterDelivery || 0),
+            weeks_after_delivery: Number.isFinite(weeks) ? Math.min(104, Math.max(0, weeks)) : 0,
             delivery_type: (healthData.deliveryType === 'c-section' || healthData.deliveryType === 'c_section') ? 1 : 0,
-            pelvic_pain: healthData.pelvicPain ? 1 : 0,
-            back_pain: healthData.backPain ? 1 : 0,
-            abdominal_pain: healthData.abdominalPain ? 1 : 0,
-            bleeding: healthData.bleedingComplications ? 1 : 0,
-            doctor_restrictions: healthData.doctorRestrictions ? 1 : 0,
-            muscle_weakness: healthData.muscleWeakness ? 1 : 0,
+            pelvic_pain: flag(healthData.pelvicPain),
+            back_pain: flag(healthData.backPain),
+            abdominal_pain: flag(healthData.abdominalPain),
+            bleeding: flag(healthData.bleedingComplications),
+            doctor_restrictions: flag(healthData.doctorRestrictions),
+            muscle_weakness: flag(healthData.muscleWeakness),
             fatigue_level: fatigueMap[healthData.fatigueLevel] ?? 0,
             mobility_level: mobilityMap[healthData.mobilityLevel] ?? 2,
             willingness: willingnessMap[healthData.willingnessToExercise] ?? 1,
@@ -45,9 +48,13 @@ class MLPredictionService {
             if (response.data.success) {
                 return {
                     success: true,
-                    riskLevel: response.data.risk_score, // returns numeric score (0: High, 1: Low, 2: Medium)
-                    exerciseCategory: response.data.exercise_category, // returns category (1-4)
-                    categoryDescription: response.data.category_description
+                    riskLevel: response.data.risk_score, // numeric risk: 0 = Low, 1 = Medium, 2 = High
+                    riskLabel: response.data.risk_label,
+                    exerciseCategory: response.data.exercise_category, // category 1-4
+                    categoryDescription: response.data.category_description,
+                    confidence: response.data.category_confidence,
+                    isFallback: false,
+                    source: 'ml_model'
                 };
             } else {
                 throw new Error(response.data.error);
@@ -59,41 +66,34 @@ class MLPredictionService {
     }
     
     /**
-     * Fallback prediction when Flask server is offline.
-     * Calculates risk score and category based on symptoms.
+     * Fallback prediction when the Flask ML API is offline.
+     * Uses exactly the clinical labelling rules the model was trained on
+     * (ml_training/relabel_dataset.py, documented in docs/exercise-clinical-rules.md),
+     * so the fallback and the model give the same answer for the same inputs.
      */
     static fallbackPrediction(healthData) {
-        let riskScore = 0; // Default to Low risk (0)
-        let exerciseCategory = 3; // Default to Strength & Core (3)
-        
-        const symptomsCount = 
-            (healthData.pelvicPain ? 1 : 0) +
-            (healthData.backPain ? 1 : 0) +
-            (healthData.abdominalPain ? 1 : 0) +
-            (healthData.muscleWeakness ? 1 : 0);
+        const f = this.preprocessFeatures(healthData);
+        const weeks = f.weeks_after_delivery;
+        const symptoms = f.pelvic_pain + f.back_pain + f.abdominal_pain + f.muscle_weakness;
+        const cSection = f.delivery_type === 1;
 
-        // High risk checks
-        if (healthData.doctorRestrictions || 
-            healthData.bleedingComplications || 
-            (healthData.deliveryType === 'c-section' && healthData.weeksAfterDelivery < 6) ||
-            symptomsCount >= 3) {
-            riskScore = 2; // High risk (2)
-            exerciseCategory = 1; // Bedrest (1)
-        }
-        // Medium risk / Early postpartum checks (Weeks 1-2)
-        else if (healthData.weeksAfterDelivery <= 2 || symptomsCount === 2 || healthData.fatigueLevel === 'high' || healthData.mobilityLevel === 'limited' || healthData.mobilityLevel === 'very_limited') {
-            riskScore = 1; // Medium risk (1)
-            exerciseCategory = 2; // Gentle Mobility (2)
-        }
-        // Healthy / low risk / Fully recovered checks (Weeks >= 8)
-        else if (healthData.weeksAfterDelivery >= 8 && healthData.mobilityLevel === 'normal' && healthData.fatigueLevel === 'low') {
-            riskScore = 0; // Low risk (0)
-            exerciseCategory = (healthData.epdsRiskLevel === 'high') ? 3 : 4; // High EPDS drops full functional to Strength & Core
-        }
-        // Healthy / intermediate checks (Weeks 3-7)
-        else {
-            riskScore = 0; // Low risk (0)
-            exerciseCategory = 3; // Strength & Core (3)
+        // Risk: 0 Low, 1 Medium, 2 High
+        let riskScore = 0;
+        if (f.doctor_restrictions || f.bleeding || symptoms >= 3) riskScore = 2;
+        else if (weeks <= 2 || symptoms === 2 || f.fatigue_level === 2 || f.mobility_level === 0 ||
+            f.epds_risk_level === 2 || (cSection && weeks < 6)) riskScore = 1;
+
+        let exerciseCategory;
+        if (f.doctor_restrictions || f.bleeding || symptoms >= 3 || weeks <= 2) {
+            exerciseCategory = 1; // hard stop: rest and breathing only
+        } else {
+            exerciseCategory = weeks <= 5 ? 2 : weeks <= 7 ? 3 : 4;
+            if (cSection && weeks < 6) exerciseCategory = Math.min(exerciseCategory, 2);
+            if (symptoms === 2 || f.fatigue_level === 2 || f.mobility_level === 0) exerciseCategory = Math.min(exerciseCategory, 2);
+            // Milder factors lower the level by one each, at most two levels; floor 2
+            const reductions = [symptoms === 1, f.fatigue_level === 1, f.mobility_level === 1, f.willingness === 0, f.epds_risk_level === 2]
+                .filter(Boolean).length;
+            exerciseCategory = Math.max(2, Math.min(4, exerciseCategory - Math.min(reductions, 2)));
         }
 
         const descriptions = {
@@ -106,12 +106,14 @@ class MLPredictionService {
         return {
             success: true,
             riskLevel: riskScore,
-            exerciseCategory: exerciseCategory,
+            riskLabel: ['low', 'medium', 'high'][riskScore],
+            exerciseCategory,
             categoryDescription: descriptions[exerciseCategory],
-            isFallback: true
+            isFallback: true,
+            source: 'rule_fallback'
         };
     }
-    
+
     /**
      * Check if ML API is healthy
      */

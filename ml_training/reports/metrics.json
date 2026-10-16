@@ -1,0 +1,124 @@
+{
+  "rows_used": 5002,
+  "duplicates_removed": 998,
+  "test_size": 1001,
+  "risk_score": {
+    "accuracy": 0.986,
+    "macro_f1": 0.9874,
+    "labels": {
+      "0": "Low",
+      "1": "Medium",
+      "2": "High"
+    },
+    "report": {
+      "Low": {
+        "precision": 0.9546925566343042,
+        "recall": 1.0,
+        "f1-score": 0.9768211920529801,
+        "support": 295.0
+      },
+      "Medium": {
+        "precision": 1.0,
+        "recall": 0.970954356846473,
+        "f1-score": 0.9852631578947368,
+        "support": 482.0
+      },
+      "High": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 224.0
+      },
+      "accuracy": 0.986013986013986,
+      "macro avg": {
+        "precision": 0.9848975188781014,
+        "recall": 0.9903181189488244,
+        "f1-score": 0.9873614499825724,
+        "support": 1001.0
+      },
+      "weighted avg": {
+        "precision": 0.9866476565505692,
+        "recall": 0.986013986013986,
+        "f1-score": 0.986073020740152,
+        "support": 1001.0
+      }
+    }
+  },
+  "exercise_category": {
+    "accuracy": 0.993,
+    "macro_f1": 0.988,
+    "labels": {
+      "1": "Bedrest/Breathing",
+      "2": "Gentle Mobility",
+      "3": "Strength & Core",
+      "4": "Full Functional"
+    },
+    "report": {
+      "Bedrest/Breathing": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 292.0
+      },
+      "Gentle Mobility": {
+        "precision": 1.0,
+        "recall": 0.9885433715220949,
+        "f1-score": 0.994238683127572,
+        "support": 611.0
+      },
+      "Strength & Core": {
+        "precision": 0.9186046511627907,
+        "recall": 1.0,
+        "f1-score": 0.9575757575757575,
+        "support": 79.0
+      },
+      "Full Functional": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 19.0
+      },
+      "accuracy": 0.993006993006993,
+      "macro avg": {
+        "precision": 0.9796511627906976,
+        "recall": 0.9971358428805237,
+        "f1-score": 0.9879536101758324,
+        "support": 1001.0
+      },
+      "weighted avg": {
+        "precision": 0.9935761912506098,
+        "recall": 0.993006993006993,
+        "f1-score": 0.9931351850543769,
+        "support": 1001.0
+      }
+    }
+  },
+  "cross_validation_5fold": {
+    "target_risk_score": {
+      "mean": 0.996,
+      "std": 0.0022
+    },
+    "target_exercise_category": {
+      "mean": 0.9888,
+      "std": 0.0031
+    }
+  },
+  "majority_baseline_accuracy": {
+    "target_risk_score": 0.4815,
+    "target_exercise_category": 0.6104
+  },
+  "feature_importance": {
+    "bleeding": 0.175,
+    "fatigue_level": 0.14,
+    "weeks_after_delivery": 0.126,
+    "doctor_restrictions": 0.122,
+    "mobility_level": 0.0871,
+    "back_pain": 0.0633,
+    "epds_encoded": 0.0609,
+    "pelvic_pain": 0.0579,
+    "muscle_weakness": 0.0572,
+    "abdominal_pain": 0.0561,
+    "willingness": 0.0494,
+    "delivery_type": 0.0051
+  }
+}

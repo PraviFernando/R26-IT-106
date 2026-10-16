@@ -38,6 +38,7 @@ const postpartumHealthDataSchema = new mongoose.Schema({
     safetyStatus: { type: String, enum: ['safe', 'limited', 'blocked'], default: 'safe' },
     safetyMessage: { type: String },
     safetyMessageSi: { type: String },
+    predictionSource: { type: String }, // ml_model | rule_fallback
     
     // Recommendation Result
     recommendedExercises: [{
@@ -49,6 +50,7 @@ const postpartumHealthDataSchema = new mongoose.Schema({
         type: { type: String },
         duration: String,
         category: Number,
+        focus: String, // why this video was chosen: c_section | pelvic_pain | back_pain | core_weakness | low_energy | mood | limited_mobility
         completed: { type: Boolean, default: false },
         watchPercentage: { type: Number, default: 0 }
     }]

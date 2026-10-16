@@ -24,7 +24,8 @@ const exerciseRecordSchema = new mongoose.Schema({
     pain: { type: String }, // "Yes" / "No"
     difficulty: { type: String }, // "Easy" / "Moderate" / "Hard"
     feelingAfter: { type: String }, // "Better" / "Same" / "Tired"
-    intelligentFeedback: { type: String }
+    intelligentFeedback: { type: String },
+    feedbackCode: { type: String } // pain_rest | fatigue_lower | excellent (translated in the app)
 }, { timestamps: true });
 
 module.exports = mongoose.model('ExerciseRecord', exerciseRecordSchema);

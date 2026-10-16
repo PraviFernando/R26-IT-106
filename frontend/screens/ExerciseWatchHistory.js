@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import exerciseService from '../services/exerciseService';
+import { C, T, cardShadow, Icon } from '../components/exercise/ui';
 
 // YouTube-style watch history for exercise videos.
 // Rendered as the "History" tab inside ExerciseProgressScreen.
@@ -169,7 +170,7 @@ export default function ExerciseWatchHistory({ isSinhala }) {
                         <Image source={{ uri: item.thumbnailUrl }} style={styles.thumb} resizeMode="cover" />
                     ) : (
                         <View style={[styles.thumb, styles.thumbPlaceholder]}>
-                            <Text style={{ fontSize: 26 }}>🧘‍♀️</Text>
+                            <Icon name="play" size={26} color={C.primaryDark} />
                         </View>
                     )}
                     {!!item.duration && (
@@ -192,7 +193,7 @@ export default function ExerciseWatchHistory({ isSinhala }) {
                     <View style={styles.badgeRow}>
                         {item.completed ? (
                             <View style={[styles.badge, styles.badgeDone]}>
-                                <Text style={[styles.badgeText, { color: '#047857' }]}>✓ {isSinhala ? 'සම්පූර්ණයි' : 'Completed'}</Text>
+                                <Text style={[styles.badgeText, { color: C.success }]}>{isSinhala ? 'සම්පූර්ණයි' : 'Completed'}</Text>
                             </View>
                         ) : (
                             <View style={styles.badge}>
@@ -202,8 +203,8 @@ export default function ExerciseWatchHistory({ isSinhala }) {
                     </View>
                 </View>
 
-                <TouchableOpacity onPress={() => removeItem(item)} style={styles.removeBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                    <Text style={styles.removeIcon}>✕</Text>
+                <TouchableOpacity onPress={() => removeItem(item)} style={styles.removeBtn} accessibilityRole="button" accessibilityLabel={isSinhala ? 'ඉතිහාසයෙන් ඉවත් කරන්න' : 'Remove from history'}>
+                    <Icon name="close" size={16} color={C.textSub} />
                 </TouchableOpacity>
             </TouchableOpacity>
         );
@@ -241,7 +242,7 @@ export default function ExerciseWatchHistory({ isSinhala }) {
                 <ActivityIndicator size="large" color="#4F46E5" style={{ marginTop: 40 }} />
             ) : items.length === 0 ? (
                 <View style={styles.empty}>
-                    <Text style={styles.emptyEmoji}>📺</Text>
+                    <View style={styles.emptyIcon}><Icon name="clock" size={30} color={C.primaryDark} /></View>
                     <Text style={styles.emptyTitle}>
                         {query
                             ? (isSinhala ? 'ගැළපෙන වීඩියෝ නැත' : 'No matching videos')
@@ -278,8 +279,8 @@ export default function ExerciseWatchHistory({ isSinhala }) {
                     <View style={styles.modalCard}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle} numberOfLines={2}>{playing?.title}</Text>
-                            <TouchableOpacity onPress={closeVideo} style={styles.modalClose}>
-                                <Text style={styles.removeIcon}>✕</Text>
+                            <TouchableOpacity onPress={closeVideo} style={styles.modalClose} accessibilityRole="button" accessibilityLabel={isSinhala ? 'වසන්න' : 'Close video'}>
+                                <Icon name="close" size={16} color={C.textSub} />
                             </TouchableOpacity>
                         </View>
                         <View style={styles.player}>
@@ -314,47 +315,48 @@ export default function ExerciseWatchHistory({ isSinhala }) {
 
 const styles = StyleSheet.create({
     container: { marginTop: 4 },
-    toolbar: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 14 },
+    toolbar: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' },
     search: {
-        flex: 1, backgroundColor: '#F8FAFC', borderRadius: 14, borderWidth: 1, borderColor: '#E2E8F0',
-        paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: '#0F172A'
+        flex: 1, minWidth: 220, minHeight: 46, backgroundColor: '#FFFFFF', borderRadius: 23, borderWidth: 1.5, borderColor: C.control,
+        paddingHorizontal: 16, fontSize: 14, ...T.medium, color: C.text
     },
-    clearBtn: { paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, backgroundColor: '#FEF2F2' },
-    clearText: { color: '#DC2626', fontWeight: '700', fontSize: 12 },
-    groupLabel: { fontSize: 15, fontWeight: '900', color: '#0F172A', marginBottom: 10, marginTop: 6 },
+    clearBtn: { minHeight: 46, paddingHorizontal: 16, borderRadius: 23, backgroundColor: C.dangerBg, justifyContent: 'center' },
+    clearText: { color: C.danger, ...T.bold, fontSize: 13 },
+    groupLabel: { fontSize: 15, ...T.headingSemi, color: C.textSub, marginBottom: 10, marginTop: 6 },
     card: {
-        flexDirection: 'row', gap: 12, marginBottom: 14, padding: 8, borderRadius: 16,
-        backgroundColor: '#FFF', borderWidth: 1, borderColor: 'rgba(79,70,229,0.08)'
+        flexDirection: 'row', gap: 12, marginBottom: 12, padding: 10, borderRadius: 20, alignItems: 'center',
+        backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border, ...cardShadow
     },
-    thumbWrap: { width: 150, aspectRatio: 16 / 9, borderRadius: 12, overflow: 'hidden', backgroundColor: '#E2E8F0' },
+    thumbWrap: { width: 132, aspectRatio: 16 / 9, borderRadius: 14, overflow: 'hidden', backgroundColor: C.control },
     thumb: { width: '100%', height: '100%' },
-    thumbPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#EEF2FF' },
+    thumbPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: C.tint },
     durationBadge: {
-        position: 'absolute', right: 6, bottom: 8, backgroundColor: 'rgba(0,0,0,0.8)',
-        paddingHorizontal: 5, paddingVertical: 1, borderRadius: 4
+        position: 'absolute', right: 6, bottom: 9, backgroundColor: 'rgba(44,26,53,0.8)',
+        paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6
     },
-    durationText: { color: '#FFF', fontSize: 10, fontWeight: '700' },
-    progressTrack: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 4, backgroundColor: 'rgba(255,255,255,0.5)' },
-    progressFill: { height: '100%', backgroundColor: '#EF4444' },
-    info: { flex: 1, justifyContent: 'center' },
-    title: { fontSize: 14, fontWeight: '700', color: '#0F172A', marginBottom: 4 },
-    meta: { fontSize: 12, color: '#64748B', marginBottom: 2 },
+    durationText: { color: '#FFFFFF', fontSize: 10, ...T.bold },
+    progressTrack: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 5, backgroundColor: 'rgba(255,255,255,0.6)' },
+    progressFill: { height: '100%', backgroundColor: C.primaryDark },
+    info: { flex: 1, justifyContent: 'center', gap: 3 },
+    title: { fontSize: 14, ...T.semi, color: C.text },
+    meta: { fontSize: 12, ...T.medium, color: C.textSub },
     badgeRow: { flexDirection: 'row', marginTop: 4 },
-    badge: { backgroundColor: '#EEF2FF', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
-    badgeDone: { backgroundColor: '#D1FAE5' },
-    badgeText: { fontSize: 11, fontWeight: '700', color: '#4F46E5' },
-    removeBtn: { padding: 4, alignSelf: 'flex-start' },
-    removeIcon: { fontSize: 14, color: '#94A3B8', fontWeight: '900' },
-    empty: { alignItems: 'center', paddingVertical: 40 },
+    badge: { backgroundColor: C.tint, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10 },
+    badgeDone: { backgroundColor: C.successBg },
+    badgeText: { fontSize: 11, ...T.bold, color: C.primaryDark },
+    removeBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', alignSelf: 'center' },
+    removeIcon: { fontSize: 14, color: C.textSub },
+    empty: { alignItems: 'center', paddingVertical: 40, gap: 6 },
+    emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.tint, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
     emptyEmoji: { fontSize: 44, marginBottom: 10 },
-    emptyTitle: { fontSize: 16, fontWeight: '800', color: '#0F172A' },
-    emptySub: { fontSize: 13, color: '#64748B', marginTop: 6, textAlign: 'center' },
-    moreBtn: { alignItems: 'center', padding: 12, borderRadius: 14, backgroundColor: '#EEF2FF', marginTop: 4 },
-    moreText: { color: '#4F46E5', fontWeight: '800' },
-    modalBackdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.75)', justifyContent: 'center', padding: 16 },
-    modalCard: { backgroundColor: '#FFF', borderRadius: 20, overflow: 'hidden', width: '100%', maxWidth: 800, alignSelf: 'center' },
+    emptyTitle: { fontSize: 17, ...T.heading, color: C.text },
+    emptySub: { fontSize: 13, ...T.medium, color: C.textSub, textAlign: 'center' },
+    moreBtn: { alignItems: 'center', justifyContent: 'center', minHeight: 48, borderRadius: 24, borderWidth: 1.5, borderColor: C.primary, backgroundColor: '#FFFFFF', marginTop: 4 },
+    moreText: { color: C.primaryDark, ...T.bold },
+    modalBackdrop: { flex: 1, backgroundColor: 'rgba(44,26,53,0.6)', justifyContent: 'center', padding: 16 },
+    modalCard: { backgroundColor: C.bg, borderRadius: 24, overflow: 'hidden', width: '100%', maxWidth: 860, alignSelf: 'center' },
     modalHeader: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 10 },
-    modalTitle: { flex: 1, fontSize: 15, fontWeight: '800', color: '#0F172A' },
-    modalClose: { padding: 6 },
-    player: { width: '100%', aspectRatio: 16 / 9, backgroundColor: '#000' }
+    modalTitle: { flex: 1, fontSize: 16, ...T.heading, color: C.text },
+    modalClose: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: C.control },
+    player: { width: '100%', aspectRatio: 16 / 9, backgroundColor: C.video }
 });
