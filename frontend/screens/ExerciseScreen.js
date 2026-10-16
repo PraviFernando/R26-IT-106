@@ -1370,7 +1370,40 @@ export default function ExerciseScreen({ navigation }) {
         }
     };
 
+    // Watch history: remember when each video was last saved so we only hit the API every ~10s
+    const watchHistoryRef = useRef({});
+
+    const logWatchHistory = (exercise, percentage) => {
+        const details = exercise.exerciseDetails || {};
+        const videoUrl = exercise.videoUrl || details.videoUrl;
+        if (!videoUrl) return;
+
+        const idMatch = videoUrl.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/);
+        const videoId = idMatch && idMatch[2].length === 11 ? idMatch[2] : '';
+        const now = Date.now();
+        const last = watchHistoryRef.current[videoUrl];
+        const pct = Math.min(100, Math.round(percentage));
+
+        // Save on first progress tick (new session), then every 10s, and always on finish
+        const isNewSession = !last || now - last.time > 5 * 60 * 1000;
+        if (!isNewSession && now - last.time < 10000 && !(pct >= 100 && last.pct < 100)) return;
+        watchHistoryRef.current[videoUrl] = { time: now, pct };
+
+        exerciseService.saveWatchHistory({
+            videoId,
+            videoUrl,
+            title: exercise.customName || exercise.name || details.name,
+            thumbnailUrl: videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : null,
+            channelTitle: exercise.channelTitle,
+            category: exercise.category || details.category,
+            duration: Number(exercise.duration || details.duration) || undefined,
+            watchPercentage: pct,
+            newSession: isNewSession
+        }).catch(err => console.error('Failed to save watch history:', err.message));
+    };
+
     const handleProgressUpdate = async (exercise, percentage) => {
+        logWatchHistory(exercise, percentage);
         setRecommendations(prev =>
             prev.map(rec => {
                 const match = exercise.exerciseId
@@ -1482,6 +1515,28 @@ export default function ExerciseScreen({ navigation }) {
                                         {isSinhala
                                             ? 'ක්‍රියාකාරකම්, අනුකූලතාවය සහ සුවය ලැබීමේ ප්‍රවණතා බලන්න →'
                                             : 'View activities, consistency and recovery trends →'}
+                                    </Text>
+                                </View>
+                            </LinearGradient>
+                        </Pressable>
+                    )}
+
+                    {!(showForm || !hasData) && (
+                        <Pressable
+                            style={({ hovered }) => [
+                                styles.viewProgressBtn,
+                                hovered && styles.viewProgressBtnHover
+                            ]}
+                            onPress={() => navigation.navigate('ExerciseProgress', { tab: 'history' })}
+                        >
+                            <LinearGradient colors={[colors.white, colors.lavenderLight]} style={styles.viewProgressBtnGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+                                <Text style={styles.viewProgressBtnEmoji}>🕘</Text>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.viewProgressBtnTitle}>{isSinhala ? 'නැරඹූ ඉතිහාසය' : 'Watch History'}</Text>
+                                    <Text style={styles.viewProgressBtnSub}>
+                                        {isSinhala
+                                            ? 'ඔබ නැරඹූ ව්‍යායාම වීඩියෝ නැවත බලන්න →'
+                                            : 'See and replay exercise videos you watched →'}
                                     </Text>
                                 </View>
                             </LinearGradient>

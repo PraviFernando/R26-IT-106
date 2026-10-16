@@ -12,7 +12,11 @@ const {
     submitFeedback,
     updateRecommendationProgress,
     saveMovementSession,
-    getMovementSessions
+    getMovementSessions,
+    upsertWatchHistory,
+    getWatchHistory,
+    deleteWatchHistoryItem,
+    clearWatchHistory
 } = require('../controllers/exercise');
 
 // All exercise routes require authentication
@@ -32,6 +36,12 @@ router.post('/record', saveExerciseRecord);
 // Movement sessions
 router.post('/movement-session', saveMovementSession);
 router.get('/movement-sessions', getMovementSessions);
+
+// Watch history (YouTube-style)
+router.post('/watch-history', upsertWatchHistory);
+router.get('/watch-history', getWatchHistory);
+router.delete('/watch-history/:id', deleteWatchHistoryItem);
+router.delete('/watch-history', clearWatchHistory);
 
 // Feedback submissions
 router.post('/feedback', submitFeedback);

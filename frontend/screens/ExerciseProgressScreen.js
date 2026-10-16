@@ -5,13 +5,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import exerciseService from '../services/exerciseService';
 import ScreenContainer from '../components/ScreenContainer';
+import ExerciseWatchHistory from './ExerciseWatchHistory';
 
 const todayStr = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-export default function ExerciseProgressScreen({ navigation }) {
+export default function ExerciseProgressScreen({ navigation, route }) {
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
 
@@ -28,6 +29,7 @@ export default function ExerciseProgressScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
     const [selectedFilter, setSelectedFilter] = useState('weekly');
     const [showDropdown, setShowDropdown] = useState(false);
+    const [activeTab, setActiveTab] = useState(route?.params?.tab === 'history' ? 'history' : 'progress');
 
     // Chart width measured from the card it lives in (progressContainer padding 22
     // + trendlineCard padding 16), so charts fit the centered column at any width.
@@ -386,7 +388,26 @@ export default function ExerciseProgressScreen({ navigation }) {
             maxWidth="wide"
             contentContainerStyle={{ paddingTop: 8 }}
         >
-            {loading ? (
+            <View style={styles.tabBar}>
+                {[
+                    { key: 'progress', label: isSinhala ? '📊 ප්‍රගතිය' : '📊 Progress' },
+                    { key: 'history', label: isSinhala ? '🕘 නැරඹූ ඉතිහාසය' : '🕘 Watch History' }
+                ].map(tab => (
+                    <TouchableOpacity
+                        key={tab.key}
+                        style={[styles.tabBtn, activeTab === tab.key && styles.tabBtnActive]}
+                        onPress={() => setActiveTab(tab.key)}
+                    >
+                        <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>{tab.label}</Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
+
+            {activeTab === 'history' ? (
+                <View style={styles.progressContainer}>
+                    <ExerciseWatchHistory isSinhala={isSinhala} />
+                </View>
+            ) : loading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#4F46E5" />
                     <Text style={styles.loadingText}>Loading progress data...</Text>
@@ -519,6 +540,16 @@ const styles = StyleSheet.create({
     headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'center' },
     headerEmoji: { fontSize: 24 },
     headerTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A', textAlign: 'center' },
+    tabBar: {
+        flexDirection: 'row', backgroundColor: '#EEF2FF', borderRadius: 16, padding: 4, gap: 4,
+    },
+    tabBtn: { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
+    tabBtnActive: {
+        backgroundColor: '#FFF', elevation: 2, shadowColor: '#4F46E5', shadowOpacity: 0.12,
+        shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
+    },
+    tabText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
+    tabTextActive: { color: '#4F46E5' },
     loadingContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 100 },
     loadingText: { fontSize: 14, color: '#64748B', marginTop: 12 },
     errorText: { fontSize: 14, color: '#EF4444', textAlign: 'center', marginTop: 60 },

@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Diary = require('../models/Diary');
 const Feedback = require('../models/Feedback');
 const ExerciseMovementSession = require('../models/ExerciseMovementSession');
+const ExerciseWatchHistory = require('../models/ExerciseWatchHistory');
 const EPDSScreening = require('../models/EPDSScreening');
 const MLPredictionService = require('../services/mlPredictionService');
 const axios = require('axios');
@@ -935,6 +936,104 @@ const getMovementSessions = async (req, res, next) => {
     }
 };
 
+/**
+ * POST /exercise/watch-history - Add or update a watched video in the user's history
+ */
+const upsertWatchHistory = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const {
+            videoId, videoUrl, title, thumbnailUrl, channelTitle,
+            category, duration, watchPercentage, newSession
+        } = req.body;
+
+        if (!videoUrl) {
+            return res.status(400).json({ success: false, message: 'videoUrl is required' });
+        }
+
+        const key = videoId || videoUrl;
+        const pct = Math.min(100, Math.max(0, Number(watchPercentage) || 0));
+        const existing = await ExerciseWatchHistory.findOne({ userId, videoId: key });
+        const best = Math.max(existing ? existing.watchPercentage : 0, pct);
+
+        const entry = await ExerciseWatchHistory.findOneAndUpdate(
+            { userId, videoId: key },
+            {
+                $set: {
+                    videoUrl, title, thumbnailUrl, channelTitle, category, duration,
+                    watchPercentage: best,
+                    lastPercentage: pct,
+                    completed: best >= 80,
+                    watchedAt: new Date()
+                },
+                ...(existing && newSession ? { $inc: { watchCount: 1 } } : {})
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+
+        res.json({ success: true, entry });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * GET /exercise/watch-history?page=1&limit=20&search= - Watch history, newest first
+ */
+const getWatchHistory = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+        const search = String(req.query.search || '').trim();
+
+        const filter = { userId };
+        if (search) {
+            const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filter.title = { $regex: escaped, $options: 'i' };
+        }
+
+        const [items, total] = await Promise.all([
+            ExerciseWatchHistory.find(filter)
+                .sort({ watchedAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit),
+            ExerciseWatchHistory.countDocuments(filter)
+        ]);
+
+        res.json({ success: true, items, total, page, hasMore: page * limit < total });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * DELETE /exercise/watch-history/:id - Remove one video from history
+ */
+const deleteWatchHistoryItem = async (req, res, next) => {
+    try {
+        const result = await ExerciseWatchHistory.deleteOne({ _id: req.params.id, userId: req.user.id });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'History item not found' });
+        }
+        res.json({ success: true });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * DELETE /exercise/watch-history - Clear the user's whole watch history
+ */
+const clearWatchHistory = async (req, res, next) => {
+    try {
+        const result = await ExerciseWatchHistory.deleteMany({ userId: req.user.id });
+        res.json({ success: true, deleted: result.deletedCount });
+    } catch (err) {
+        next(err);
+    }
+};
+
 module.exports = {
     submitHealthData,
     getHealthData,
@@ -947,5 +1046,9 @@ module.exports = {
     submitFeedback,
     updateRecommendationProgress,
     saveMovementSession,
-    getMovementSessions
+    getMovementSessions,
+    upsertWatchHistory,
+    getWatchHistory,
+    deleteWatchHistoryItem,
+    clearWatchHistory
 };

@@ -53,6 +53,30 @@ const exerciseService = {
     getMovementSessions: async () => {
         const response = await api.get('/exercise/movement-sessions');
         return response.data;
+    },
+
+    // Add or update a watched video in the user's watch history
+    saveWatchHistory: async (data) => {
+        const response = await api.post('/exercise/watch-history', data);
+        return response.data;
+    },
+
+    // Get watch history (newest first, paginated)
+    getWatchHistory: async ({ page = 1, limit = 20, search = '' } = {}) => {
+        const response = await api.get('/exercise/watch-history', { params: { page, limit, search } });
+        return response.data;
+    },
+
+    // Remove one video from watch history
+    deleteWatchHistoryItem: async (id) => {
+        const response = await api.delete(`/exercise/watch-history/${id}`);
+        return response.data;
+    },
+
+    // Clear the whole watch history
+    clearWatchHistory: async () => {
+        const response = await api.delete('/exercise/watch-history');
+        return response.data;
     }
 };
 
