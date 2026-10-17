@@ -550,4 +550,124 @@ export const getVideosForReason = (finalReason = '', emotion = '', selectedEmoji
     videosList: fullVideos,
     videos: cappedVideos
   };
+};
+
+// ================================================================
+// DEDICATED MUSIC CATALOG & CATEGORIES FOR MUSIC LIBRARY SCREEN
+// ================================================================
+
+export const MUSIC_CATEGORIES = [
+  { id: 'all', titleSi: 'සියලුම සංගීතය', titleEn: 'All Music', icon: '🎵', badge: 'All' },
+  { id: 'baby_sleep', titleSi: 'ළදරු නිදන සංගීතය', titleEn: 'Baby Sleep Music', icon: '👶', badge: 'Sleep' },
+  { id: 'calm_relaxation', titleSi: 'සන්සුන් සහ විවේක', titleEn: 'Calm & Relaxation', icon: '🌸', badge: 'Calm' },
+  { id: 'piano', titleSi: 'පියානෝ සංගීතය', titleEn: 'Piano Music', icon: '🎹', badge: 'Piano' },
+  { id: 'meditation_breathing', titleSi: 'භාවනා සහ හුස්ම', titleEn: 'Meditation & Breathing', icon: '🧘', badge: 'Zen' },
+  { id: 'nature_sounds', titleSi: 'ස්වභාවික ශබ්ද', titleEn: 'Nature Sounds', icon: '🌿', badge: 'Nature' },
+];
+
+const TRACK_METADATA_EXTRAS = {
+  // Baby Sleep
+  bo2: { category: 'baby_sleep', categories: ['baby_sleep'], descEn: 'Gentle traditional lullaby for baby bedtime.', descSi: 'බබාට සුවදායී නින්දක් සඳහා සාම්ප්‍රදායික මෘදු නැලවිලි ගීය.' },
+  bo3: { category: 'baby_sleep', categories: ['baby_sleep'], descEn: 'Peaceful bedtime melody to help baby drift to sleep.', descSi: 'බබා සුවසේ නිදි කරවන සාමකාමී නැලවිලි ගීය.' },
+  bo1: { category: 'baby_sleep', categories: ['baby_sleep', 'calm_relaxation'], descEn: 'Loving melodies celebrating the special bond with your baby.', descSi: 'අම්මා සහ බබා අතර ආදරණීය බැඳීම ශක්තිමත් කරන තනු.' },
+  bo7: { category: 'baby_sleep', categories: ['baby_sleep'], descEn: 'Soothing heartbeat and womb-like sounds for newborn calm.', descSi: 'අලුත උපන් බිළිඳා සනසවන හදගැස්ම සහ කුසෙහි ශබ්ද.' },
+  bo6: { category: 'baby_sleep', categories: ['baby_sleep'], descEn: 'Tender lullaby expressing warmth, comfort and love.', descSi: 'උණුසුම සහ සෙනෙහස පිරි මෘදු නැලවිලි ගීය.' },
+  bo9: { category: 'baby_sleep', categories: ['baby_sleep'], descEn: 'Gentle bedtime music evoking safety and security.', descSi: 'සුරක්ෂිතභාවය සහ සැනසීම දනවන මෘදු නිදන සංගීතය.' },
+  sl5: { category: 'baby_sleep', categories: ['baby_sleep', 'calm_relaxation'], descEn: 'Calming lullaby offering rest for both mother and baby.', descSi: 'මවට සහ බිළිඳාට විවේකය සලසන සැනසිලිදායක නැලවිලි ගීය.' },
+  sl4: { category: 'baby_sleep', categories: ['baby_sleep', 'nature_sounds'], descEn: 'Gentle ambient soundscape designed for uninterrupted sleep.', descSi: 'සුවදායී බාධාවකින් තොර නින්දක් සඳහා සන්සුන් ශබ්ද.' },
+  fa8: { category: 'baby_sleep', categories: ['baby_sleep'], descEn: 'Continuous white noise to soothe and settle sleeping babies.', descSi: 'නින්ද නොයන බබා සනසවන සුදු ශබ්ද තරංග.' },
+  bo8: { category: 'baby_sleep', categories: ['baby_sleep', 'calm_relaxation'], descEn: 'Soft instrumental sounds creating a tranquil bedtime atmosphere.', descSi: 'නිදන වේලාව සන්සුන් කරන මුදු සංගීත තනුව.' },
+  bo5: { category: 'baby_sleep', categories: ['baby_sleep'], descEn: 'Joyful yet calming melody for cheerful bedtime moments.', descSi: 'සතුට සහ සැනසුම ගෙනදෙන මුදු ගීතය.' },
+  sl1: { category: 'baby_sleep', categories: ['baby_sleep', 'calm_relaxation'], descEn: 'Deeply relaxing music designed to induce peaceful sleep.', descSi: 'ගැඹුරු සුවදායී නින්දක් ළඟා කරදෙන සංගීතය.' },
+  sl7: { category: 'baby_sleep', categories: ['baby_sleep', 'calm_relaxation'], descEn: 'Extended calming session for continuous deep rest.', descSi: 'දීර්ඝ විවේකයක් සහ ගැඹුරු නින්දක් සඳහා සංගීතය.' },
+  sl3: { category: 'baby_sleep', categories: ['baby_sleep', 'calm_relaxation'], descEn: 'Tranquil evening lull easing the transition to night.', descSi: 'රාත්‍රිය නිස්කලංක කරන සාමකාමී සංගීතය.' },
+  fa4: { category: 'baby_sleep', categories: ['baby_sleep', 'calm_relaxation'], descEn: 'Tranquil evening melody for unwinding and deep rest.', descSi: 'සුව නින්දකට මනස සැහැල්ලු කරන රාත්‍රී සංගීතය.' },
+
+  // Piano
+  lo2: { category: 'piano', categories: ['piano', 'calm_relaxation'], descEn: 'Soft solo piano keys designed to relieve tension and stress.', descSi: 'ආතතිය සහ පීඩනය දුරු කරන මෘදු පියානෝ තනු.' },
+  fa5: { category: 'piano', categories: ['piano', 'calm_relaxation'], descEn: 'Delicate acoustic piano melody for quiet reflection.', descSi: 'නිහඬ මොහොතක් විඳගැනීම සඳහා සියුම් පියානෝ වාදනය.' },
+  ow6: { category: 'piano', categories: ['piano', 'calm_relaxation'], descEn: 'Slow, steady piano chords soothing an overwhelmed mind.', descSi: 'වෙහෙසට පත් මනස සනසන මන්දගාමී පියානෝ තනුව.' },
+  sl10: { category: 'piano', categories: ['piano', 'baby_sleep'], descEn: 'Bedtime piano instrumental for drifting into peaceful slumber.', descSi: 'සුව නින්දකට මග පාදන සන්සුන් පියානෝ වාදනය.' },
+  lo1: { category: 'piano', categories: ['piano', 'calm_relaxation'], descEn: 'Heartfelt piano instrumental offering comfort and connection.', descSi: 'හුදකලාව මකා සැනසුම දෙන සංවේදී පියානෝ තනුව.' },
+
+  // Nature Sounds
+  fa2: { category: 'nature_sounds', categories: ['nature_sounds'], descEn: 'Gentle forest morning with cheerful bird song.', descSi: 'කුරුල්ලන්ගේ මිහිරි නාදය සමඟ උදෑසන වනගත සුවය.' },
+  fa3: { category: 'nature_sounds', categories: ['nature_sounds', 'baby_sleep'], descEn: 'Rhythmic sea waves crashing softly on the shoreline.', descSi: 'වෙරළට ගලන රිද්මයානුකූල මෘදු සාගර රළ හඬ.' },
+  fa7: { category: 'nature_sounds', categories: ['nature_sounds', 'baby_sleep'], descEn: 'Soothing patter of raindrops falling on lush green leaves.', descSi: 'තුරුපත් මත පතිත වන සිසිල් වැසි බිංදු හඬ.' },
+  fa10: { category: 'nature_sounds', categories: ['nature_sounds'], descEn: 'Low-frequency delta waves blended with gentle water sounds.', descSi: 'ගැඹුරු සුවදායී විවේකයක් සලසන නින්දේ රළ.' },
+  an3: { category: 'nature_sounds', categories: ['nature_sounds', 'meditation_breathing'], descEn: 'Tranquil ocean ambience easing anxiety and restlessness.', descSi: 'කාංසාව දුරු කරන සාමකාමී සාගර නාදය.' },
+  an6: { category: 'nature_sounds', categories: ['nature_sounds', 'meditation_breathing'], descEn: 'Deep woodland breeze rustling through tall trees.', descSi: 'වන පෙත මැදින් හමන සුවදායී සිසිල් සුළං හඬ.' },
+  an9: { category: 'nature_sounds', categories: ['nature_sounds'], descEn: 'Open field breeze with delicate ambient nature sounds.', descSi: 'සාමකාමී හරිත තණබිමක ස්වභාවික සුන්දරත්වය.' },
+  sl2: { category: 'nature_sounds', categories: ['nature_sounds', 'baby_sleep'], descEn: 'Pure steady rainfall masking background household noise.', descSi: 'අවට ඝෝෂාවන් මකාදමන අඛණ්ඩ වැසි හඬ.' },
+  sl6: { category: 'nature_sounds', categories: ['nature_sounds'], descEn: 'Continuous calming tides washing away daily fatigue.', descSi: 'දවසේ වෙහෙස නිවාලන අඛණ්ඩ රළ පෙළ.' },
+  sl9: { category: 'nature_sounds', categories: ['nature_sounds', 'baby_sleep'], descEn: 'Continuous coastal ocean soundscape for deep overnight rest.', descSi: 'රාත්‍රී සුව නින්දක් සඳහා අඛණ්ඩ සාගර රළ හඬ.' },
+  ow1: { category: 'nature_sounds', categories: ['nature_sounds'], descEn: 'Harmonious blend of outdoor ambient elements.', descSi: 'සොබාදහමේ සියලු අංග එක්තැන් වූ සුවදායී නාදය.' },
+  ow3: { category: 'nature_sounds', categories: ['nature_sounds'], descEn: 'Deep natural woods with calming wildlife and gentle breeze.', descSi: 'වන සතුන් සහ ගහකොළවල සන්සුන් ස්වභාවික ශබ්ද.' },
+  ow8: { category: 'nature_sounds', categories: ['nature_sounds'], descEn: 'Cozy indoor sensation of soft rain and whispering wind.', descSi: 'සිත සනසවන මෘදු සුළඟ සහ වැසි වැටෙන නාදය.' },
+  ow10: { category: 'nature_sounds', categories: ['nature_sounds'], descEn: 'Peaceful dawn atmosphere at the ocean edge.', descSi: 'අලුයම මුහුදු වෙරළක නිස්කලංක සාමකාමී බව.' },
+  ow7: { category: 'nature_sounds', categories: ['nature_sounds', 'meditation_breathing'], descEn: 'Soft ripples of a quiet lake calming racing thoughts.', descSi: 'කැළඹුණු සිත නිවන නිශ්චල විලක දිය රැළි.' },
+
+  // Meditation & Breathing
+  an1: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Harmonic tones guiding deep relaxation and centeredness.', descSi: 'සිත එකඟ කරගැනීමට සහ ගැඹුරු විවේකයට භාවනා සංගීතය.' },
+  an2: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Naturally tuned acoustic frequencies relieving tension.', descSi: 'ස්වභාවික සංඛ්‍යාත ඔස්සේ සිරුරේ පීඩනය මුදාහරින නාදය.' },
+  an4: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Resonant acoustic bowls creating a mindful sound sanctuary.', descSi: 'සිතේ සමාධිය සහ සැනසුම වඩවන ටිබෙටන් නාද රටා.' },
+  an5: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Gentle bamboo flute melodies perfect for breathing exercises.', descSi: 'හුස්ම ගැනීමේ අභ්‍යාස සඳහා මෘදු බටනලා තනු.' },
+  an8: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Binaural delta frequencies calming brain activity.', descSi: 'මොළයේ ක්‍රියාකාරිත්වය සන්සුන් කරන ඩෙල්ටා තරංග.' },
+  an10: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Guided ambient music promoting stillness and balance.', descSi: 'මානසික සමතුලිතතාවය සහ නිශ්චලතාවය වඩවන සංගීතය.' },
+  ls5: { category: 'meditation_breathing', categories: ['meditation_breathing', 'calm_relaxation'], descEn: 'Mindful instrumentation empowering self-compassion.', descSi: 'ආත්ම විශ්වාසය සහ අභ්‍යන්තර ශක්තිය පුබුදුවන තනුව.' },
+  ow5: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Deep soothing frequency session for instant calm.', descSi: 'ක්ෂණික සන්සුන් බවක් ලබාදෙන සුවදායී සංඛ්‍යාත.' },
+  ow9: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Short ambient pause to anchor in the present moment.', descSi: 'වර්තමාන මොහොතේ ජීවත්වීමට සිත යොමුකරන සංගීතය.' },
+  pd2: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Healing acoustic frequencies comforting postpartum strain.', descSi: 'පශ්චාත් ප්‍රසව පීඩනය සමනය කරන සුවදායී ස්වර.' },
+  pd6: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Gentle body-scan background music releasing physical strain.', descSi: 'ශාරීරික විඩාව සහ ආතතිය සමනය කරන පසුබිම් සංගීතය.' },
+  sl8: { category: 'meditation_breathing', categories: ['meditation_breathing'], descEn: 'Twilight meditation track winding down a busy day.', descSi: 'වෙහෙසකර දිනය අවසානයේ මනස සැහැල්ලු කරන භාවනාව.' },
+};
+
+function inferCategoryForTrack(track) {
+  const text = ((track.titleEn || '') + ' ' + (track.title || '')).toLowerCase();
+  if (text.includes('lullaby') || text.includes('නැලවිලි') || text.includes('baby') || text.includes('ළදරු') || text.includes('sleep') || text.includes('නින්ද') || text.includes('white noise') || text.includes('white sound')) {
+    return 'baby_sleep';
+  }
+  if (text.includes('piano') || text.includes('පියානෝ')) {
+    return 'piano';
+  }
+  if (text.includes('nature') || text.includes('rain') || text.includes('ocean') || text.includes('waves') || text.includes('forest') || text.includes('birds') || text.includes('water') || text.includes('රළ') || text.includes('වැසි') || text.includes('වනාන්තර') || text.includes('ස්වභාව') || text.includes('ජල')) {
+    return 'nature_sounds';
+  }
+  if (text.includes('meditation') || text.includes('breath') || text.includes('frequency') || text.includes('432hz') || text.includes('bowl') || text.includes('delta') || text.includes('mindful') || text.includes('භාවනා') || text.includes('හුස්ම') || text.includes('සංඛ්‍යාත')) {
+    return 'meditation_breathing';
+  }
+  return 'calm_relaxation';
+}
+
+export const getAllMusicCatalog = () => {
+  const allTracks = [];
+  const seen = new Set();
+  
+  for (const [groupKey, list] of Object.entries(MUSIC_LIBRARY)) {
+    if (!Array.isArray(list)) continue;
+    for (const track of list) {
+      if (!track || !track.id || seen.has(track.id)) continue;
+      seen.add(track.id);
+      
+      const extra = TRACK_METADATA_EXTRAS[track.id] || {};
+      const primaryCat = extra.category || inferCategoryForTrack(track);
+      const categories = extra.categories || [primaryCat];
+      
+      allTracks.push({
+        ...track,
+        category: primaryCat,
+        categories,
+        description: extra.descEn || 'Peaceful music to comfort your mind and soul.',
+        descriptionSi: extra.descSi || 'සිත සහ මනස සනසවන සන්සුන් සංගීත තනුව.',
+        isPlayableAudio: Boolean(track.source),
+      });
+    }
+  }
+  return allTracks;
+};
+
+export const getMusicByCategory = (categoryId = 'all') => {
+  const all = getAllMusicCatalog();
+  if (!categoryId || categoryId === 'all') return all;
+  return all.filter(t => t.category === categoryId || (Array.isArray(t.categories) && t.categories.includes(categoryId)));
 };

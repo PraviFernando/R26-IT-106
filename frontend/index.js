@@ -8,14 +8,20 @@ import App from './App';
 // etc.) and cannot be fixed in user code. They are harmless console noise.
 if (Platform.OS === 'web') {
     const SUPPRESSED = [
-        '"shadow*" style props are deprecated',
-        'props.pointerEvents is deprecated',
-        'Invalid DOM property `transform-origin`',
+        'shadow*',
+        'textShadow*',
+        'pointerEvents',
+        'Invalid DOM property',
+        'React does not recognize',
+        'Failed prop type',
+        'Expo AV has been deprecated',
     ];
     const _warn = console.warn.bind(console);
     const _error = console.error.bind(console);
-    const shouldSuppress = (args) =>
-        SUPPRESSED.some((s) => String(args[0]).includes(s));
+    const shouldSuppress = (args) => {
+        const fullMsg = args.map((a) => (typeof a === 'object' ? (a?.message || JSON.stringify(a)) : String(a))).join(' ');
+        return SUPPRESSED.some((s) => fullMsg.includes(s));
+    };
 
     console.warn = (...args) => { if (!shouldSuppress(args)) _warn(...args); };
     console.error = (...args) => { if (!shouldSuppress(args)) _error(...args); };
