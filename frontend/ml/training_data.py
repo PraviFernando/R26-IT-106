@@ -236,6 +236,21 @@ LONELINESS_TEXTS = [
     "\u0db8\u0db8 \u0daf\u0dc0\u0dc3 \u0db4\u0dd4\u0dbb\u0dcf\u0db8 \u0d9c\u0daf\u0dbb \u0dad\u0db1\u0dd2\u0dba\u0db8 \u0db8\u0da7 \u0dc4\u0dbb\u0dd2\u0db8 \u0db4\u0dcf\u0dbd\u0dd4\u0dba\u0dd2",
     "\u0d9a\u0dd2\u0dc3\u0dd2\u0db8 \u0d9a\u0dd9\u0db1\u0dd9\u0d9a\u0dca \u0db8\u0d9c\u0dda \u0daf\u0dd4\u0d9a \u0d85\u0dc4\u0db1\u0dca\u0db1\u0dda \u0db1\u0dda",
     "\u0db8\u0db8 \u0dad\u0db1\u0dd2\u0dc0\u0dda\u0dbd\u0dcf \u0d89\u0db1\u0dca\u0db1\u0dc0\u0dcf \u0dc0\u0d9c\u0dda \u0daf\u0dd0\u0db1\u0dd9\u0db1\u0dc0\u0dcf",
+    "මගේ ගෙදර කිසිම කෙනෙක් නෑ මට හරිම පාළුයි",  # merged from Kavindu-integration
+    "කවුරුත් මාව බලන්න එන්නේ නෑ මට තනිවෙලා වගේ දැනෙනවා",  # merged from Kavindu-integration
+    "මගේ සැමියා වැඩට ගියාම මම මුළු දවසම තනියම",  # merged from Kavindu-integration
+    "මගේ යාළුවෝ කවුරුත් දැන් මාත් එක්ක කතා කරන්නේ නෑ",  # merged from Kavindu-integration
+    "මට කතා කරන්න කෙනෙක් නෑ මගේ සිත හිස් වෙලා",  # merged from Kavindu-integration
+    "මම දවස පුරාම ගෙදර තනියම මට හරිම පාළුයි",  # merged from Kavindu-integration
+    "කිසිම කෙනෙක් මගේ දුක අහන්නේ නෑ",  # merged from Kavindu-integration
+    "මම තනිවෙලා ඉන්නවා වගේ දැනෙනවා",  # merged from Kavindu-integration
+    "mata harima paluyi kauruth naha",  # merged from Kavindu-integration
+    "mage husband wadata giyama mata harima taniyen",  # merged from Kavindu-integration
+    "mata katha karanna kauruth naha",  # merged from Kavindu-integration
+    "kudawath mawa balanna enne naha",  # merged from Kavindu-integration
+    "mama dawasa purama gedara taniyen paluyi",  # merged from Kavindu-integration
+    "mage yaluwo kauruth dan naha",  # merged from Kavindu-integration
+    "mata taniyen inna baha",  # merged from Kavindu-integration
 ]
 LONELINESS_REASONS = ["loneliness"] * len(LONELINESS_TEXTS)
 LONELINESS_EMOTIONS = ["sad"] * len(LONELINESS_TEXTS)
@@ -422,6 +437,19 @@ FATIGUE_TEXTS = [
     "kisima deyak karanna shakthiyak naha",
     "mama godak wehesa wela innawa",
     "mata anga duluwaya kisima deyak karanna baha",
+    "I need to sleep so badly but I cannot get a break",  # merged from Kavindu-integration
+    "I have been surviving on barely any sleep for months",  # merged from Kavindu-integration
+    "I feel like I need a week of sleep just to recover",  # merged from Kavindu-integration
+    "I feel hollow and empty from the lack of sleep",  # merged from Kavindu-integration
+    "මට අද හරිම මහන්සියි කිසිම ශක්තියක් නෑ",  # merged from Kavindu-integration
+    "මගේ ඇඟට කිසිම පණක් නෑ මට ගොඩක් වෙහෙසයි",  # merged from Kavindu-integration
+    "මට නින්ද මදි නිසා හරිම අමාරුයි",  # merged from Kavindu-integration
+    "මගේ මුළු ඇඟම රිදෙනවා මහන්සිය වැඩියි",  # merged from Kavindu-integration
+    "මම ගොඩක් වෙහෙස වෙලා ඉන්නේ",  # merged from Kavindu-integration
+    "මට පොඩි විවේකයක්වත් නෑ",  # merged from Kavindu-integration
+    "මහන්සිය වැඩි කම නිසා මට මුකුත් කරන්න බෑ",  # merged from Kavindu-integration
+    "mata ninda madi nisa harima amaruwi",  # merged from Kavindu-integration
+    "mage mulu angama ridenawa",  # merged from Kavindu-integration
 ]
 FATIGUE_REASONS = ["fatigue"] * len(FATIGUE_TEXTS)
 FATIGUE_EMOTIONS = ["stressed"] * len(FATIGUE_TEXTS)
@@ -637,6 +665,13 @@ ANXIETY_TEXTS = [
     "baba aya kiyada kiyala baya hithenawa",
     "mata panikkuwa denna pewthiwa",
     "hitha nadur nowi duwanawa kanasallaten",
+    "මට ලොකු බයක් දැනෙනවා මොනවා වෙයිද කියලා",  # merged from Kavindu-integration
+    "මගේ හෘද ස්පන්දනය වැඩි වෙලා මට කාංසාවයි",  # merged from Kavindu-integration
+    "මම හැමදේම ගැන ඕනවට වඩා හිතනවා",  # merged from Kavindu-integration
+    "මට බයයි බබාට යම් දෙයක් වෙයි කියලා",  # merged from Kavindu-integration
+    "මගේ සිතට කිසිම සහනයක් නෑ බය හිතෙනවා",  # merged from Kavindu-integration
+    "මගේ මනස කලබල වෙලා",  # merged from Kavindu-integration
+    "මට හැමවෙලේම ලොකු බයක් තියෙනවා",  # merged from Kavindu-integration
 ]
 ANXIETY_REASONS = ["anxiety"] * len(ANXIETY_TEXTS)
 ANXIETY_EMOTIONS = ["anxious"] * len(ANXIETY_TEXTS)
@@ -897,6 +932,15 @@ BONDING_TEXTS = [
     "I feel disconnected from my baby and I struggle to feel that motherly affection. It makes me feel terribly guilty.",
     "මට බබා එක්ක ලොකු බැඳීමක් දැනෙන්නේ නැහැ. මම හොඳ අම්මා කෙනෙක් නෙවෙයිද කියලා හිතෙනවා.",
     "mata baby ekka loku bandeemak danenne na, baby langa hitiyath wenas feeling ekak enne."
+    "මගේ බබා අද ගොඩක් අඬනවා ඇයි කියලා මට තේරෙන්නේ නැහැ",  # merged from Kavindu-integration
+    "මගේ බබා නිතරම අඬනවා මට තේරෙන්නේ නෑ මොනවා කරන්නද කියලා",  # merged from Kavindu-integration
+    "මට බබා එක්ක ලොකු ආදරයක් දැනෙන්නේ නෑ",  # merged from Kavindu-integration
+    "මගේ බබාට මම ලං වෙලා නෑ වගේ දැනෙනවා",  # merged from Kavindu-integration
+    "මම බබා දිහා බැලුවාම හිස් බවක් දැනෙනවා",  # merged from Kavindu-integration
+    "මගේ බබා ගොඩක් අඬනවා එයාට මොනවද ඕන කියලා මට තේරෙන්නේ නැහැ",  # merged from Kavindu-integration
+    "mage baba godak andanawa eyata monawada one kiyala mata therenne naha",  # merged from Kavindu-integration
+    "mage baba nitharama andanawa ai kiyala mata therenne naha",  # merged from Kavindu-integration
+    "mage baba godak adanawa mata therum ganna baha",  # merged from Kavindu-integration
 ]
 BONDING_REASONS = ["bonding_issues"] * len(BONDING_TEXTS)
 BONDING_EMOTIONS = ["sad"] * len(BONDING_TEXTS)
@@ -1100,6 +1144,7 @@ SUPPORT_TEXTS = [
     "mama taniyen baba balanna one kavuruth naha",
     "mage husband gedara awat help karanne naha",
     "mata udaw iguwat kavuruth nehawa kiuwe",
+    "මගේ සැමියා මට කිසිම උදව්වක් කරන්නේ නැහැ",  # merged from Kavindu-integration
 ]
 SUPPORT_REASONS = ["lack_of_support"] * len(SUPPORT_TEXTS)
 SUPPORT_EMOTIONS = ["sad"] * len(SUPPORT_TEXTS)
@@ -1498,6 +1543,9 @@ SLEEP_TEXTS = [
     "postpartum insomnia making me lie awake for hours",
     "රාත්‍රී නින්ද අහිමි වීම නිසා මානසිකව පීඩනයක් දැනෙනවා",
     "raata hariyata nindak nathuwa aharala inna wela",
+    "My baby wakes up constantly and I have no energy left",  # merged from Kavindu-integration
+    "මම නිදි නැතුව මුළු රෑම ඉන්නවා",  # merged from Kavindu-integration
+    "මට නින්දක් නැතුව ඔළුව රිදෙනවා",  # merged from Kavindu-integration
 ]
 SLEEP_REASONS = ["sleep_problems"] * len(SLEEP_TEXTS)
 SLEEP_EMOTIONS = ["stressed"] * len(SLEEP_TEXTS)
@@ -1682,6 +1730,10 @@ CONFIDENCE_TEXTS = [
     "mata amma kenek widihata mage vishwasa aduyi parenting skills gana doubt",
     "baba care karanna mata self confidence naha mama fail amma kenek wage",
     "baba balaganna mata puluwanda kiyala wiswasayak naha parenting doubt",
+    "මට මං ගැන කිසිම විශ්වාසයක් නැහැ",  # merged from Kavindu-integration
+    "අනිත් අම්මලා වගේ මට හොඳට කරන්න බෑ",  # merged from Kavindu-integration
+    "මට කිසිම ආත්ම විශ්වාසයක් නෑ",  # merged from Kavindu-integration
+    "මම අසාර්ථක අම්මා කෙනෙක්",  # merged from Kavindu-integration
 ]
 CONFIDENCE_REASONS = ["loss_of_confidence"] * len(CONFIDENCE_TEXTS)
 CONFIDENCE_EMOTIONS = ["sad"] * len(CONFIDENCE_TEXTS)
@@ -1807,6 +1859,9 @@ OVERWHELMED_TEXTS = [
     "hama paththenma mata wada enawa wage danenawa",
     "karanna thiyena wada pramanaya dakinnakota mama kalabala wenawa",
     "hamadema manage karanna amarui mata godak overload wela",
+    "මට පීඩනය වැඩියි මට මුකුත් කරගන්න බෑ",  # merged from Kavindu-integration
+    "මට ඔළුව විකාර වෙනවා වැඩ වැඩියි",  # merged from Kavindu-integration
+    "මම නිතරම කලබල වෙනවා දරාගන්න බෑ",  # merged from Kavindu-integration
 ]
 OVERWHELMED_REASONS = ["overwhelmed"] * len(OVERWHELMED_TEXTS)
 OVERWHELMED_EMOTIONS = ["stressed"] * len(OVERWHELMED_TEXTS)
@@ -1914,6 +1969,11 @@ PHYSICAL_TEXTS = [
     "healing after birth is painful and my whole body aches",
     "දරු ප්‍රසූතියෙන් පසු ඇඟ කැක්කුම සහ මැහුම් වේදනාව",
     "body recovery post delivery is sore and aching",
+    "මගේ සැත්කම කළ තැන ගොඩක් රිදෙනවා",  # merged from Kavindu-integration
+    "මගේ මුළු ඇඟම කැක්කුමයි අමාරුයි",  # merged from Kavindu-integration
+    "මට තුවාලය නිසා ඇවිදින්නත් බෑ",  # merged from Kavindu-integration
+    "මගේ කොන්ද ගොඩක් රිදෙනවා",  # merged from Kavindu-integration
+    "මට ශාරීරිකව ගොඩක් වේදනායි",  # merged from Kavindu-integration
 ]
 PHYSICAL_REASONS = ["physical_discomfort"] * len(PHYSICAL_TEXTS)
 PHYSICAL_EMOTIONS = ["stressed"] * len(PHYSICAL_TEXTS)
@@ -2092,6 +2152,11 @@ NEGATIVE_TEXTS = [
     "mama nathi wuna nama hoda wei kiyala hithenne",
     "mata kisima asa naha jeewithe gena",
     "anduru hithuwili enawa stop karanna baha",
+    "මට ජීවිතේ එපා වෙලා මැරෙන්න හිතෙනවා",  # merged from Kavindu-integration
+    "මට අඳුරු සිතුවිලි එනවා මට බයයි",  # merged from Kavindu-integration
+    "මම නැති වුණොත් ඔක්කොම හොඳ වෙයි",  # merged from Kavindu-integration
+    "මට කිසිම බලාපොරොත්තුවක් නෑ",  # merged from Kavindu-integration
+    "මට ජීවත් වෙන්න හිතෙන්නේ නෑ",  # merged from Kavindu-integration
 ]
 NEGATIVE_REASONS = ["negative_thoughts"] * len(NEGATIVE_TEXTS)
 NEGATIVE_EMOTIONS = ["sad"] * len(NEGATIVE_TEXTS)
@@ -2239,6 +2304,9 @@ HAPPY_TEXTS = [
     "baba ekka hoda connection ekak danunu dawasak ada",
     "feeling wonderful and content with motherhood today",
 
+    "Today I smiled and laughed and it felt so good",  # merged from Kavindu-integration
+    "අද හරිම ලස්සන දවසක් මම සන්තෝෂෙන් ඉන්නේ",  # merged from Kavindu-integration
+    "අද මගේ සිතට ලොකු සහනයක් තියෙනවා",  # merged from Kavindu-integration
 ]
 HAPPY_REASONS = ["loneliness"] * len(HAPPY_TEXTS)   # fallback reason for happy
 HAPPY_EMOTIONS = ["happy"] * len(HAPPY_TEXTS)

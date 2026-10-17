@@ -76,6 +76,7 @@ const userSchema = new mongoose.Schema({
   isOnline: { type: Boolean, default: false },
   lastLogin: { type: Date },
   deviceType: { type: String, trim: true },
+
   // ── Password Reset ─────────────────────────────────────────────────────────
   resetPasswordCode: { type: String },
   resetPasswordExpires: { type: Date },

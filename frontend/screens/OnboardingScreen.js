@@ -79,8 +79,8 @@ export default function OnboardingScreen({ navigation }) {
     // ── Animated transition between steps
     const goToStep = (next) => {
         Animated.sequence([
-            Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: false }),
-            Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: false }),
+            Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: true }),
+            Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: true }),
         ]).start();
         setTimeout(() => setStep(next), 150);
     };

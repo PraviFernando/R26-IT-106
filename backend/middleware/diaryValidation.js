@@ -26,7 +26,7 @@ const diaryValidationRules = [
 
     body('mood')
         .optional()
-        .isString()
+        .isIn(['😊', '😌', '😔', '😪', '😠', '🌈', '🌟', '☁️'])
         .withMessage('Invalid mood'),
 
     body('sentiment')
@@ -44,7 +44,8 @@ const diaryValidationRules = [
         }),
 ];
 
-// Check if date is valid (today or past date, not future)
+// Check if date is today (supports both local and UTC "today" so users near
+// the midnight boundary aren't incorrectly blocked)
 const isTodayValidation = (req, res, next) => {
     const { date } = req.body || req.params;
     if (!date) return next();
@@ -56,18 +57,14 @@ const isTodayValidation = (req, res, next) => {
     const localD = String(now.getDate()).padStart(2, '0');
     const localToday = `${localY}-${localM}-${localD}`;
 
-    // If date matches local today or UTC today, allow
+    // Allow if date matches either local or UTC "today"
     if (date === utcToday || date === localToday) {
         return next();
     }
 
-    // Only reject if the date is strictly in the future relative to both local and UTC
-    if (date > localToday && date > utcToday) {
-        return res.status(400).json({
-            message: 'You cannot create or edit diary entries for future dates'
-        });
-    }
-    next();
+    return res.status(400).json({
+        message: 'You can only create or edit diary entry for today'
+    });
 };
 
 // Validation Result Handler

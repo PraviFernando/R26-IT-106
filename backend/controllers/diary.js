@@ -17,7 +17,9 @@ const saveDiary = async (req, res, next) => {
         const { date, content, isLocked, theme, media, mood, sentiment } = req.body;
         const userId = req.user.id;
 
-        // Validation: Block future dates while supporting both local and UTC timezone dates
+        // Validation: Only allow diary entry for today, while supporting both
+        // local and UTC timezone dates so users near the midnight boundary
+        // aren't incorrectly blocked.
         const now = new Date();
         const utcToday = now.toISOString().split('T')[0];
         const localY = now.getFullYear();
@@ -25,8 +27,8 @@ const saveDiary = async (req, res, next) => {
         const localD = String(now.getDate()).padStart(2, '0');
         const localToday = `${localY}-${localM}-${localD}`;
 
-        if (date > localToday && date > utcToday) {
-            return res.status(400).json({ message: 'Cannot edit diary for future dates' });
+        if (date !== localToday && date !== utcToday) {
+            return res.status(400).json({ message: 'Can only edit diary for today' });
         }
 
         const updateData = { content };

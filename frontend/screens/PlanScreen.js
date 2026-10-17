@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
     View, Text, TextInput, TouchableOpacity, StyleSheet,
-    ScrollView, ActivityIndicator, Modal, FlatList, Alert, Dimensions
+    ScrollView, ActivityIndicator, Modal, FlatList, Alert, Dimensions,
+    KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 import { LinearGradient } from 'expo-linear-gradient';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
 import SinhalaKeyboard from '../components/SinhalaKeyboard';
+import { useResponsive } from '../hooks/useResponsive';
 import { transliterate } from '../services/sinhalaTransliteration';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -39,8 +42,18 @@ const TIME_SECTIONS = [
     { key: 'Morning', label: '🌅 Morning', bg: '#FFFBEB', accent: '#F59E0B' },
     { key: 'Midday', label: '☀️ Midday', bg: '#F0F9FF', accent: '#0EA5E9' },
     { key: 'Afternoon', label: '🌤️ Afternoon', bg: '#F5F3FF', accent: '#8B5CF6' },
+    { key: 'Evening', label: '🌆 Evening', bg: '#FEF2F2', accent: '#EF4444' },
     { key: 'Night', label: '🌙 Night', bg: '#EFF6FF', accent: '#1D4ED8' },
 ];
+
+// Any activity whose time-of-day isn't one of the sections above (e.g. items added
+// from the chat "add to routine" card, or legacy records) still needs a home.
+const TIME_KEYS = TIME_SECTIONS.map(s => s.key);
+const normalizeTimeOfDay = (tod) => {
+    if (TIME_KEYS.includes(tod)) return tod;
+    const map = { Noon: 'Midday', Dawn: 'Morning', Dusk: 'Evening', Bedtime: 'Night', Anytime: 'Morning' };
+    return map[tod] || 'Morning';
+};
 
 const ICON_OPTIONS = ['🧘', '🏃', '🎨', '📚', '💬', '🥗', '🛁', '😴', '🌸', '💊', '🎵', '🌳', '✍️', '🧶', '☕', '🏊', '🌬️', '🧹', '🌻', '💆'];
 
@@ -56,6 +69,7 @@ const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${Stri
 // ─────────────────────────────────────────────────────────────────────────────
 export default function PlanScreen({ navigation }) {
     const { t, i18n } = useTranslation();
+    const r = useResponsive();
     const now = new Date();
     const [year, setYear] = useState(now.getFullYear());
     const [month, setMonth] = useState(now.getMonth() + 1);
@@ -116,6 +130,15 @@ export default function PlanScreen({ navigation }) {
 
     useEffect(() => { loadMonthData(); }, [loadMonthData]);
     useEffect(() => { loadDayData(selectedDate); }, [loadDayData, selectedDate]);
+
+    // Re-fetch whenever the screen regains focus, so activities added elsewhere
+    // (e.g. the chat "Add to today's routine" card) show up on return without a reload.
+    useFocusEffect(
+        useCallback(() => {
+            loadDayData(selectedDate);
+            loadMonthData();
+        }, [loadDayData, loadMonthData, selectedDate])
+    );
 
     // Cleanup timer on unmount
     useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
@@ -185,49 +208,65 @@ export default function PlanScreen({ navigation }) {
         await toggleActivity(notification.activity);
     };
 
+    // Re-fetch whenever the screen regains focus, so activities added elsewhere
+    // (e.g. the chat "Add to today's routine" card) show up on return without a reload.
+    useFocusEffect(
+        useCallback(() => {
+            loadDayData(selectedDate);
+            loadMonthData();
+        }, [loadDayData, loadMonthData, selectedDate])
+    );
+
+    // Cleanup timer on unmount
+    useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current); }, []);
+
     // ── Merged activities (defaults + saved records) ─────────────────
     const mergedActivities = useMemo(() => {
+        const defaultIds = new Set(DEFAULT_ACTIVITIES.map(a => a.id));
         const defaults = DEFAULT_ACTIVITIES.map(act => {
             const rec = dayRecords.find(r => r.activityId === act.id);
             return { ...act, _recId: rec?._id || null, completed: rec?.completed || false, timerSeconds: rec?.timerSeconds || 0, isCustom: false };
         });
-        // Append custom activities saved for this day
-        const customs = dayRecords
-            .filter(r => r.isCustom)
+        // Append every saved record that ISN'T one of the built-in defaults — this
+        // covers user-created custom activities AND activities added from elsewhere
+        // (e.g. the chat "Add to today's routine" card, saved with isCustom: false).
+        const extras = dayRecords
+            .filter(r => !defaultIds.has(r.activityId))
             .map(r => ({
                 id: r.activityId,
-                name: r.activityName,
-                timeOfDay: r.timeOfDay,
+                name: r.activityName || 'Activity',
+                timeOfDay: normalizeTimeOfDay(r.timeOfDay),
                 icon: r.icon || '🌟',
                 suggestedMin: 0,
                 useTimer: false,
                 description: r.note || '',
-                color: '#9C27B0',
+                color: r.isCustom ? '#9C27B0' : '#7C3AED',
                 _recId: r._id,
                 completed: r.completed,
                 timerSeconds: r.timerSeconds || 0,
-                isCustom: true,
+                isCustom: !!r.isCustom,
             }));
-        return [...defaults, ...customs];
+        return [...defaults, ...extras];
     }, [dayRecords]);
 
     // ── Calendar completion map ───────────────────────────────────────────────
     const completionByDate = useMemo(() => {
+        const defaultIds = new Set(DEFAULT_ACTIVITIES.map(a => a.id));
         const map = {};
         monthRecords.forEach(r => {
             const ds = r.date;
             if (!map[ds]) {
-                map[ds] = { completed: 0, customs: 0 };
+                map[ds] = { completed: 0, extras: 0 };
             }
             if (r.completed) map[ds].completed++;
-            if (r.isCustom) map[ds].customs++;
+            if (!defaultIds.has(r.activityId)) map[ds].extras++;
         });
         // Convert to final structure with total
         const finalMap = {};
         Object.keys(map).forEach(ds => {
             finalMap[ds] = {
                 completed: map[ds].completed,
-                total: DEFAULT_ACTIVITIES.length + map[ds].customs
+                total: DEFAULT_ACTIVITIES.length + map[ds].extras
             };
         });
         return finalMap;
@@ -279,7 +318,7 @@ export default function PlanScreen({ navigation }) {
         }
     };
 
-    // ── Save custom activity ────────────────────────────────────────────────
+    // ── Save custom activity ─────────────────────────────────────────────────
     const saveCustomActivity = async () => {
         if (!customForm.name.trim()) {
             Toast.show({ type: 'error', text1: t('Name Required'), text2: t('Please enter an activity name.'), position: 'top' });
@@ -506,7 +545,7 @@ export default function PlanScreen({ navigation }) {
 
     return (
         <LinearGradient colors={['#F5F3FF', '#FFFFFF']} style={{ flex: 1 }}>
-            <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]}>
+            <SafeAreaView style={[s.safe, { backgroundColor: 'transparent' }]} edges={['top', 'bottom']}>
                 {/* ── Header ── */}
                 <View style={s.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
@@ -528,7 +567,11 @@ export default function PlanScreen({ navigation }) {
                     </View>
                 </View>
 
-                <ScrollView style={s.body} showsVerticalScrollIndicator={false}>
+                <ScrollView
+                    style={s.body}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingHorizontal: r.hPad, width: '100%', maxWidth: r.contentMaxWidth('wide'), alignSelf: 'center', paddingBottom: r.insets.bottom + 24 }}
+                >
                     {/* ── Relaxing Message ── */}
                     <View style={s.relaxHeader}>
                         <Text style={s.relaxTitle}>{t('Your Gentle Path')}</Text>
@@ -648,8 +691,6 @@ export default function PlanScreen({ navigation }) {
                         </TouchableOpacity>
                     )}
 
-
-
                     <View style={{ height: 32 }} />
                 </ScrollView>
 
@@ -658,6 +699,7 @@ export default function PlanScreen({ navigation }) {
             ═══════════════════════════════════════════════════════════════ */}
                 <Modal visible={showCustomModal} transparent animationType="slide"
                     onRequestClose={() => setShowCustomModal(false)}>
+                  <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
                     <View style={s.modalOverlay}>
                         <View style={s.customBox}>
                             <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="always">
@@ -776,6 +818,7 @@ export default function PlanScreen({ navigation }) {
                             </ScrollView>
                         </View>
                     </View>
+                  </KeyboardAvoidingView>
                 </Modal>
 
                 {/* ═══════════════════════════════════════════════════════════════════
@@ -865,7 +908,7 @@ const s = StyleSheet.create({
     headerBadge: { backgroundColor: PURPLE, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
     headerBadgeText: { color: WHITE, fontSize: 12, fontWeight: '700' },
 
-    body: { flex: 1, paddingHorizontal: 14 },
+    body: { flex: 1 },
 
     // Month Nav
     monthNav: {
@@ -884,7 +927,7 @@ const s = StyleSheet.create({
         elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.06, shadowRadius: 3
     },
     calRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 4 },
-    calDayHdr: { width: 36, textAlign: 'center', fontSize: 11, fontWeight: '700', color: '#9CA3AF' },
+    calDayHdr: { width: '14.28%', textAlign: 'center', fontSize: 11, fontWeight: '700', color: '#9CA3AF' },
     calGrid: { flexDirection: 'row', flexWrap: 'wrap' },
     calCell: { width: '14.28%', aspectRatio: 1, padding: 2 },
     calDayCell: { alignItems: 'center', justifyContent: 'center', borderRadius: 8 },
@@ -962,8 +1005,8 @@ const s = StyleSheet.create({
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
 
     // Timer Modal
-    timerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
-    timerBox: { backgroundColor: WHITE, borderRadius: 28, padding: 28, width: 320, alignItems: 'center' },
+    timerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+    timerBox: { backgroundColor: WHITE, borderRadius: 28, padding: 28, width: '100%', maxWidth: 340, alignSelf: 'center', alignItems: 'center' },
     timerIcon: { fontSize: 48, marginBottom: 8 },
     timerName: { fontSize: 17, fontWeight: '800', color: '#111827', textAlign: 'center', marginBottom: 4 },
     timerTarget: { fontSize: 12, color: '#9CA3AF', marginBottom: 20 },
@@ -1003,6 +1046,7 @@ const s = StyleSheet.create({
     customBox: {
         backgroundColor: WHITE, borderTopLeftRadius: 28, borderTopRightRadius: 28,
         padding: 24, maxHeight: '92%',
+        width: '100%', maxWidth: 460, alignSelf: 'center',
     },
     customTitle: { fontSize: 18, fontWeight: '800', color: '#111827', marginBottom: 4 },
     customSubtitle: { fontSize: 13, color: '#6B7280', marginBottom: 20 },

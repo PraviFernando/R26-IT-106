@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     View, Text, ScrollView, TouchableOpacity, StyleSheet,
     ActivityIndicator, RefreshControl, TextInput, Modal,
-    FlatList, useWindowDimensions, StatusBar,
+    FlatList, StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import api, { setAuthToken } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useListContainerStyle } from '../components/ScreenContainer';
 
 // ─── EPDS Questions ─────────────────────────
 const EPDS_QUESTIONS = [
@@ -23,10 +24,11 @@ const EPDS_QUESTIONS = [
     '10. The thought of harming myself has occurred to me',
 ];
 
+// ─── Risk Level Colors ─────────────────────────
 const RISK_COLORS = {
-    high: { bg: '#FEF2F2', border: '#EF4444', text: '#991B1B', soft: '#FEE2E2' },
-    medium: { bg: '#FFFBEB', border: '#F59E0B', text: '#92400E', soft: '#FEF3C7' },
-    low: { bg: '#ECFDF5', border: '#10B981', text: '#065F46', soft: '#D1FAE5' },
+    high: { bg: '#FEF2F2', border: '#EF4444', text: '#991B1B', soft: '#FEE2E2', score: '#EF4444' },
+    medium: { bg: '#FFFBEB', border: '#F59E0B', text: '#92400E', soft: '#FEF3C7', score: '#F59E0B' },
+    low: { bg: '#ECFDF5', border: '#10B981', text: '#065F46', soft: '#D1FAE5', score: '#10B981' },
 };
 
 const RISK_EMOJIS = { high: '🔴', medium: '🟡', low: '🟢' };
@@ -90,7 +92,7 @@ function PatientCard({ patient, onView, cardWidth }) {
     );
 }
 
-// ─── Patient Modal ────────────────────────────
+// ─── Patient Detail Modal ─────────────────────
 function PatientModal({ visible, patient, onClose, loadingDetail }) {
     if (!patient) return null;
 
@@ -101,8 +103,14 @@ function PatientModal({ visible, patient, onClose, loadingDetail }) {
     const history = patient.epdsHistory || [];
     const initials = patient.username?.slice(0, 2).toUpperCase() || '??';
     const joined = new Date(patient.createdAt).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric',
+        day: 'numeric', month: 'long', year: 'numeric',
     });
+    const lastScreenedRaw = patient.latestEpds?.date || patient.latestEpdsDate;
+    const lastScreened = lastScreenedRaw
+        ? (new Date(lastScreenedRaw).getTime()
+            ? new Date(lastScreenedRaw).toLocaleDateString('en-GB')
+            : lastScreenedRaw)
+        : null;
 
     return (
         <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -122,6 +130,9 @@ function PatientModal({ visible, patient, onClose, loadingDetail }) {
                                     {RISK_LABELS[risk]} Risk  •  {score ?? 0}/30
                                 </Text>
                             </View>
+                            {lastScreened && (
+                                <Text style={styles.modalLastScreened}>Last Screened: {lastScreened}</Text>
+                            )}
                         </View>
 
                         {/* Info */}
@@ -201,6 +212,16 @@ function PatientModal({ visible, patient, onClose, loadingDetail }) {
                                 {patient.babyDetails.birthday && <InfoRow icon="🎂" text={`Born: ${patient.babyDetails.birthday}`} />}
                                 {patient.babyDetails.weight && <InfoRow icon="⚖️" text={`Weight: ${patient.babyDetails.weight}`} />}
                                 {patient.babyDetails.height && <InfoRow icon="📏" text={`Height: ${patient.babyDetails.height}`} />}
+                                {patient.babyDetails.vaccinations && patient.babyDetails.vaccinations.length > 0 && (
+                                    <View style={{ marginTop: 8 }}>
+                                        <Text style={styles.vaccinationsLabel}>Vaccinations:</Text>
+                                        {patient.babyDetails.vaccinations.map((vac, i) => (
+                                            <Text key={i} style={styles.vaccinationItem}>
+                                                • {vac.name} ({vac.date})
+                                            </Text>
+                                        ))}
+                                    </View>
+                                )}
                             </View>
                         )}
 
@@ -231,7 +252,6 @@ function InfoRow({ icon, text, highlight }) {
 // ─── MAIN SCREEN ──────────────────────────────
 export default function MidwifeDashboardScreen({ navigation }) {
     const { user: authUser, token, logout } = useAuth();
-    const { width } = useWindowDimensions();
 
     const [stats, setStats] = useState(null);
     const [patients, setPatients] = useState([]);
@@ -242,18 +262,16 @@ export default function MidwifeDashboardScreen({ navigation }) {
     const [loadingDetail, setLoadingDetail] = useState(false);
     const [filterRisk, setFilterRisk] = useState('all'); // all | high | medium | low
 
-    const numColumns = useMemo(() => {
-        if (width >= 1100) return 5;
-        if (width >= 800) return 4;
-        if (width >= 560) return 3;
-        return 2;
-    }, [width]);
-
-    const cardWidth = useMemo(() => {
-        const padding = 32;
-        const gap = 12;
-        return (width - padding - gap * (numColumns - 1)) / numColumns;
-    }, [width, numColumns]);
+    // Responsive grid: ~2 columns on a phone, 3-4+ on a tablet. `key` forces the
+    // FlatList to remount when the column count changes (RN requirement).
+    const {
+        contentContainerStyle: listContentStyle,
+        numColumns,
+        key: gridKey,
+        columnWrapperStyle,
+        tileWidth: cardWidth,
+        columns,
+    } = useListContainerStyle({ maxWidth: 'wide', grid: { minTile: 150, gap: 8, maxCols: 6 } });
 
     useEffect(() => {
         if (token) setAuthToken(token);
@@ -272,6 +290,7 @@ export default function MidwifeDashboardScreen({ navigation }) {
                 type: 'error',
                 text1: 'Failed to load data',
                 text2: err.response?.data?.message || 'Please try again',
+                position: 'top',
             });
         } finally {
             setLoading(false);
@@ -281,6 +300,13 @@ export default function MidwifeDashboardScreen({ navigation }) {
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
+    const onRefresh = () => { setRefreshing(true); fetchData(); };
+
+    const handleLogout = () => {
+        logout();
+        navigation.replace('Login');
+    };
+
     const handleViewPatient = async (patient) => {
         setSelected(patient);
         setLoadingDetail(true);
@@ -288,7 +314,7 @@ export default function MidwifeDashboardScreen({ navigation }) {
             const res = await api.get(`/midwife/patients/${patient._id}`);
             setSelected(res.data);
         } catch (err) {
-            // keep existing data
+            // keep existing summary data if the detail fetch fails
         } finally {
             setLoadingDetail(false);
         }
@@ -307,8 +333,67 @@ export default function MidwifeDashboardScreen({ navigation }) {
         });
     }, [patients, searchText, filterRisk]);
 
-    const renderPatient = ({ item }) => (
-        <PatientCard patient={item} onView={handleViewPatient} cardWidth={cardWidth} />
+    const listHeader = (
+        <>
+            {stats && (
+                <View style={styles.statsRow}>
+                    <StatCard icon="🤰" label="Total Patients" value={stats.totalPatients} color="#10B981" />
+                    <StatCard icon="👩‍⚕️" label="Midwives" value={stats.totalMidwives} color="#0EA5E9" />
+                </View>
+            )}
+
+            <View style={styles.tipBanner}>
+                <Text style={styles.tipIcon}>💡</Text>
+                <Text style={styles.tipText}>
+                    Tap any patient card to view their profile. Cards show risk level with color coding.
+                </Text>
+            </View>
+
+            <View style={styles.searchBox}>
+                <Text style={styles.searchIcon}>🔍</Text>
+                <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search by name or email..."
+                    placeholderTextColor="#9CA3AF"
+                    value={searchText}
+                    onChangeText={setSearchText}
+                    autoCapitalize="none"
+                />
+                {searchText.length > 0 && (
+                    <TouchableOpacity onPress={() => setSearchText('')}>
+                        <Text style={{ fontSize: 18, color: '#9CA3AF' }}>✕</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
+
+            {/* Risk Filter Chips */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
+                {['all', 'high', 'medium', 'low'].map(r => (
+                    <TouchableOpacity
+                        key={r}
+                        style={[
+                            styles.filterChip,
+                            filterRisk === r && styles.filterChipActive,
+                            r !== 'all' && filterRisk === r && { backgroundColor: RISK_COLORS[r].border },
+                        ]}
+                        onPress={() => setFilterRisk(r)}
+                    >
+                        <Text style={[
+                            styles.filterChipText,
+                            filterRisk === r && { color: '#fff' },
+                        ]}>
+                            {r === 'all' ? 'All' : `${RISK_EMOJIS[r]} ${RISK_LABELS[r]}`}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+
+            <Text style={styles.sectionTitle}>
+                👤 {filtered.length} Patient{filtered.length !== 1 ? 's' : ''}
+            </Text>
+
+            {loading && <ActivityIndicator size="large" color="#0EA5E9" style={{ marginTop: 40 }} />}
+        </>
     );
 
     return (
@@ -318,94 +403,38 @@ export default function MidwifeDashboardScreen({ navigation }) {
             {/* Header */}
             <View style={styles.header}>
                 <View>
-                    <Text style={styles.headerTitle}>Midwife Portal</Text>
+                    <Text style={styles.headerTitle}>👩‍⚕️ Midwife Portal</Text>
                     <Text style={styles.headerSub}>Welcome, {authUser?.username || 'Midwife'}</Text>
                 </View>
-                <TouchableOpacity style={styles.logoutBtn} onPress={() => { logout(); navigation.replace('Login'); }}>
+                <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
                     <Text style={styles.logoutText}>Sign Out</Text>
                 </TouchableOpacity>
             </View>
 
-            <ScrollView
-                contentContainerStyle={[styles.scroll, { maxWidth: 1200, alignSelf: 'center', width: '100%' }]}
-                showsVerticalScrollIndicator={false}
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} colors={['#0EA5E9']} />}
-            >
-                {/* Stats */}
-                {stats && (
-                    <View style={styles.statsRow}>
-                        <StatCard icon="🤰" label="Patients" value={stats.totalPatients} color="#10B981" />
-                        <StatCard icon="👩‍⚕️" label="Midwives" value={stats.totalMidwives} color="#0EA5E9" />
-                    </View>
-                )}
-
-                {/* Search */}
-                <View style={styles.searchBox}>
-                    <Text style={styles.searchIcon}>🔍</Text>
-                    <TextInput
-                        style={styles.searchInput}
-                        placeholder="Search by name or email..."
-                        placeholderTextColor="#9CA3AF"
-                        value={searchText}
-                        onChangeText={setSearchText}
-                        autoCapitalize="none"
-                    />
-                    {searchText.length > 0 && (
-                        <TouchableOpacity onPress={() => setSearchText('')}>
-                            <Text style={{ color: '#9CA3AF', fontSize: 18 }}>✕</Text>
-                        </TouchableOpacity>
+            <View style={styles.body}>
+                <FlatList
+                    data={loading ? [] : filtered}
+                    renderItem={({ item }) => (
+                        <PatientCard patient={item} cardWidth={cardWidth} onView={handleViewPatient} />
                     )}
-                </View>
+                    keyExtractor={(item) => item._id}
+                    key={gridKey}
+                    numColumns={numColumns}
+                    columnWrapperStyle={columns > 1 ? [styles.gridRow, columnWrapperStyle] : undefined}
+                    ListHeaderComponent={listHeader}
+                    ListEmptyComponent={!loading ? (
+                        <View style={styles.emptyBox}>
+                            <Text style={styles.emptyIcon}>😶</Text>
+                            <Text style={styles.emptyText}>No patients found</Text>
+                        </View>
+                    ) : null}
+                    contentContainerStyle={[{ paddingTop: 16 }, listContentStyle]}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0EA5E9']} />}
+                />
+            </View>
 
-                {/* Risk Filter Chips */}
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
-                    {['all', 'high', 'medium', 'low'].map(r => (
-                        <TouchableOpacity
-                            key={r}
-                            style={[
-                                styles.filterChip,
-                                filterRisk === r && styles.filterChipActive,
-                                r !== 'all' && filterRisk === r && { backgroundColor: RISK_COLORS[r].border },
-                            ]}
-                            onPress={() => setFilterRisk(r)}
-                        >
-                            <Text style={[
-                                styles.filterChipText,
-                                filterRisk === r && { color: '#fff' },
-                            ]}>
-                                {r === 'all' ? 'All' : `${RISK_EMOJIS[r]} ${RISK_LABELS[r]}`}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-
-                {/* Count */}
-                <Text style={styles.sectionTitle}>
-                    {filtered.length} Patient{filtered.length !== 1 ? 's' : ''}
-                </Text>
-
-                {/* Grid */}
-                {loading ? (
-                    <ActivityIndicator size="large" color="#0EA5E9" style={{ marginTop: 50 }} />
-                ) : filtered.length === 0 ? (
-                    <View style={styles.empty}>
-                        <Text style={styles.emptyIcon}>🔍</Text>
-                        <Text style={styles.emptyText}>No patients found</Text>
-                    </View>
-                ) : (
-                    <FlatList
-                        data={filtered}
-                        renderItem={renderPatient}
-                        keyExtractor={item => item._id}
-                        numColumns={numColumns}
-                        key={numColumns}
-                        columnWrapperStyle={numColumns > 1 ? styles.gridRow : null}
-                        scrollEnabled={false}
-                        contentContainerStyle={{ paddingBottom: 20 }}
-                    />
-                )}
-            </ScrollView>
-
+            {/* Patient Detail Modal */}
             <PatientModal
                 visible={!!selected}
                 patient={selected}
@@ -419,18 +448,21 @@ export default function MidwifeDashboardScreen({ navigation }) {
 }
 
 // ─── Styles ───────────────────────────────────
+const TEAL = '#0EA5E9';
+
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: '#F8FAFC' },
+    safe: { flex: 1, backgroundColor: TEAL },
+    body: { flex: 1, backgroundColor: '#F8FAFC' },
 
     header: {
-        backgroundColor: '#0EA5E9',
+        backgroundColor: TEAL,
         paddingHorizontal: 20,
         paddingVertical: 18,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
-    headerTitle: { color: '#fff', fontSize: 22, fontWeight: '800' },
+    headerTitle: { color: '#fff', fontSize: 20, fontWeight: '800' },
     headerSub: { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 2 },
     logoutBtn: {
         backgroundColor: 'rgba(255,255,255,0.2)',
@@ -439,8 +471,6 @@ const styles = StyleSheet.create({
         borderRadius: 20,
     },
     logoutText: { color: '#fff', fontWeight: '600', fontSize: 13 },
-
-    scroll: { paddingHorizontal: 16, paddingTop: 16 },
 
     statsRow: { flexDirection: 'row', gap: 12, marginBottom: 16 },
     statCard: {
@@ -461,6 +491,24 @@ const styles = StyleSheet.create({
     statIcon: { fontSize: 28 },
     statValue: { fontSize: 24, fontWeight: '800' },
     statLabel: { fontSize: 12, color: '#64748B', marginTop: 1 },
+
+    // Tip banner
+    tipBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#E0F2FE',
+        borderRadius: 12,
+        padding: 12,
+        marginBottom: 14,
+        gap: 10,
+    },
+    tipIcon: { fontSize: 20 },
+    tipText: {
+        flex: 1,
+        fontSize: 13,
+        color: '#0369A1',
+        lineHeight: 18,
+    },
 
     searchBox: {
         flexDirection: 'row',
@@ -522,7 +570,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     avatarText: { fontWeight: '800', fontSize: 17 },
-    patientName: { fontWeight: '700', fontSize: 13, textAlign: 'center', marginBottom: 6 },
+    patientName: { fontWeight: '700', fontSize: 13, textAlign: 'center', marginBottom: 6, width: '100%' },
     riskPill: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -536,7 +584,7 @@ const styles = StyleSheet.create({
     riskPillText: { fontSize: 11, fontWeight: '600' },
     scoreText: { fontSize: 13, fontWeight: '800', marginTop: 2 },
 
-    empty: { alignItems: 'center', paddingVertical: 60 },
+    emptyBox: { alignItems: 'center', paddingVertical: 60 },
     emptyIcon: { fontSize: 48, marginBottom: 12 },
     emptyText: { fontSize: 16, color: '#64748B', fontWeight: '500' },
 
@@ -578,6 +626,7 @@ const styles = StyleSheet.create({
         gap: 8,
     },
     modalRiskText: { fontSize: 14, fontWeight: '700' },
+    modalLastScreened: { fontSize: 12, color: '#64748B', marginTop: 8, fontWeight: '500' },
 
     infoSection: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4 },
     infoRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10, gap: 10 },
@@ -585,7 +634,6 @@ const styles = StyleSheet.create({
     infoText: { fontSize: 14, color: '#334155', flex: 1 },
 
     section: { paddingHorizontal: 20, marginTop: 8 },
-    sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0F172A', marginBottom: 12 },
 
     questionCard: {
         backgroundColor: '#F8FAFC',
@@ -616,6 +664,9 @@ const styles = StyleSheet.create({
     historyMonth: { fontWeight: '700', fontSize: 14, color: '#0F172A' },
     historyScore: { fontWeight: '700', fontSize: 13 },
     historyAnswers: { fontSize: 12, color: '#64748B' },
+
+    vaccinationsLabel: { fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 4 },
+    vaccinationItem: { fontSize: 13, marginLeft: 24, color: '#6B7280', marginBottom: 2 },
 
     closeBtn: {
         marginHorizontal: 20,

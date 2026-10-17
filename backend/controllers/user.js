@@ -259,7 +259,7 @@ const addGrowthRecord = async (req, res, next) => {
 
     await user.save();
     const updatedUser = await User.findById(req.user.id).select('-password');
-    res.status(200).json({ message: 'Growth record added successfully', user: updatedUser });
+    res.status(200).json({ message: 'Growth measurement added successfully', user: updatedUser });
   } catch (error) {
     next(error);
   }
@@ -400,4 +400,3 @@ module.exports = {
   forgotPassword,
   resetPassword,
 };
-

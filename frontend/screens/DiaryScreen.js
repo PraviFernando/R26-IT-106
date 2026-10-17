@@ -10,7 +10,7 @@ import {
     ActivityIndicator,
     Modal,
     Image,
-    Dimensions
+    KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -22,8 +22,7 @@ import SinhalaKeyboard from '../components/SinhalaKeyboard';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../services/AppContext';
 import { EMOTION_OPTIONS } from '../constants/emotions';
-
-const { width } = Dimensions.get('window');
+import { useResponsive } from '../hooks/useResponsive';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const toDateString = (d) => {
@@ -89,6 +88,7 @@ const today = toDateString(new Date());
 export default function DiaryScreen({ navigation }) {
     const { t, i18n } = useTranslation();
     const { processDiary } = useApp();
+    const r = useResponsive();
     const [selectedDate, setSelectedDate] = useState(today);
     const [content, setContent] = useState('');
     const [isLocked, setIsLocked] = useState(false);
@@ -459,7 +459,7 @@ export default function DiaryScreen({ navigation }) {
 
     return (
         <LinearGradient colors={[tc.bg1, tc.bg2]} style={s.safe}>
-            <SafeAreaView style={{ flex: 1 }}>
+            <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
                 {/* Header */}
                 <View style={s.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
@@ -478,7 +478,15 @@ export default function DiaryScreen({ navigation }) {
                     </TouchableOpacity>
                 </View>
 
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
+              <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              >
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={{ paddingHorizontal: r.hPad, paddingBottom: 40, width: '100%', maxWidth: r.contentMaxWidth('reading'), alignSelf: 'center' }}
+                >
                     {/* Analytics & Stats */}
                     <View style={s.insightSection}>
                         <Text style={[s.insightTitle, { color: tc.text }]}>{t('Analytics & Insights')}</Text>
@@ -520,8 +528,8 @@ export default function DiaryScreen({ navigation }) {
                                     onPress={() => setSelectedDate(ds)}
                                     style={[s.calendarDay, isSelected && [s.calendarDayActive, { backgroundColor: tc.accent }]]}
                                 >
-                                    <Text style={[s.calendarDayName, isSelected && { color: '#FFF' }]}>{getDayName(ds)}</Text>
-                                    <Text style={[s.calendarDayNum, isSelected && { color: '#FFF' }]}>{d.getDate()}</Text>
+                                    <Text numberOfLines={1} adjustsFontSizeToFit style={[s.calendarDayName, isSelected && { color: '#FFF' }]}>{getDayName(ds)}</Text>
+                                    <Text numberOfLines={1} style={[s.calendarDayNum, isSelected && { color: '#FFF' }]}>{d.getDate()}</Text>
                                     {ds === today && <View style={[s.dotIndicator, isSelected ? { backgroundColor: '#FFF' } : { backgroundColor: tc.accent }]} />}
                                 </TouchableOpacity>
                             );
@@ -643,8 +651,8 @@ export default function DiaryScreen({ navigation }) {
                                     textAlignVertical="top"
                                 />
 
-                                <TouchableOpacity 
-                                    style={[s.recBtn, { backgroundColor: tc.accent }]} 
+                                <TouchableOpacity
+                                    style={[s.recBtn, { backgroundColor: tc.accent }]}
                                     onPress={handleViewRecommendations}
                                     activeOpacity={0.8}
                                 >
@@ -670,10 +678,16 @@ export default function DiaryScreen({ navigation }) {
                         )}
                     </View>
                 </ScrollView>
+              </KeyboardAvoidingView>
+
+              {showVisualKeyboard && (
+                <SinhalaKeyboard onKeyPress={handleVisualKeyPress} onClose={() => setShowVisualKeyboard(false)} />
+              )}
             </SafeAreaView>
 
             {/* Password Modal */}
             <Modal visible={passwordModalVisible} transparent animationType="fade" onRequestClose={() => setPasswordModalVisible(false)}>
+              <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
                 <View style={s.modalOverlay}>
                     <View style={s.modalBox}>
                         <Text style={s.modalTitle}>🔒 Diary Security</Text>
@@ -696,6 +710,7 @@ export default function DiaryScreen({ navigation }) {
                         </View>
                     </View>
                 </View>
+              </KeyboardAvoidingView>
             </Modal>
 
             {/* Month Picker Modal */}
@@ -756,7 +771,6 @@ export default function DiaryScreen({ navigation }) {
                 </View>
             </Modal>
 
-            {showVisualKeyboard && <SinhalaKeyboard onKeyPress={handleVisualKeyPress} onClose={() => setShowVisualKeyboard(false)} />}
             <Toast />
         </LinearGradient>
     );
@@ -774,18 +788,18 @@ const s = StyleSheet.create({
     insightTitle: { fontSize: 22, fontWeight: '800' },
     insightSub: { fontSize: 13, opacity: 0.6, marginTop: 4, fontWeight: '500' },
 
-    statsCardsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 20 },
-    statCard: { flex: 1, minWidth: width < 600 ? 95 : 120, paddingVertical: 14, paddingHorizontal: 8, borderRadius: 20, alignItems: 'center', elevation: 3, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, shadowOffset: { height: 5, width: 0 } },
-    statNumber: { fontSize: width < 600 ? 18 : 24, fontWeight: '900', color: '#FFF' },
-    statLabel: { fontSize: width < 600 ? 10 : 11, color: '#FFF', fontWeight: '700', marginTop: 4, textAlign: 'center' },
+    statsCardsRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
+    statCard: { flex: 1, paddingVertical: 18, paddingHorizontal: 12, borderRadius: 24, alignItems: 'center', elevation: 3, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, shadowOffset: { height: 5, width: 0 } },
+    statNumber: { fontSize: 24, fontWeight: '900', color: '#FFF' },
+    statLabel: { fontSize: 11, color: '#FFF', fontWeight: '700', marginTop: 4, textAlign: 'center' },
 
     calendarMonthWrap: { alignItems: 'center', marginBottom: 12 },
     calendarMonthTitle: { fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
-    calendarContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
-    calendarDay: { paddingVertical: 10, width: width < 400 ? 38 : 44, borderRadius: 20, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.4)' },
+    calendarContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 4, marginBottom: 24 },
+    calendarDay: { paddingVertical: 12, flex: 1, minWidth: 0, borderRadius: 18, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.4)' },
     calendarDayActive: { shadowColor: '#A855F7', shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
     calendarDayName: { fontSize: 11, fontWeight: '700', color: '#64748B' },
-    calendarDayNum: { fontSize: 15, fontWeight: '800', color: '#1E293B', marginTop: 3 },
+    calendarDayNum: { fontSize: 16, fontWeight: '800', color: '#1E293B', marginTop: 4 },
     dotIndicator: { width: 4, height: 4, borderRadius: 2, marginTop: 4 },
 
     sentimentRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingHorizontal: 4, flexWrap: 'wrap', gap: 8 },
@@ -794,14 +808,14 @@ const s = StyleSheet.create({
     sentimentPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
     sentimentPillText: { fontSize: 13, fontWeight: '800' },
 
-    moodCard: { borderRadius: 24, padding: width < 600 ? 16 : 20, marginBottom: 20 },
+    moodCard: { borderRadius: 28, padding: 20, marginBottom: 20 },
     moodTitle: { fontSize: 16, fontWeight: '800' },
     moodSub: { fontSize: 12, opacity: 0.6, marginTop: 4, marginBottom: 12 },
     moodScroll: { flexDirection: 'row', gap: 12 },
     moodIconBox: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', elevation: 2, shadowOpacity: 0.05 },
     moodEmoji: { fontSize: 22 },
 
-    editorCard: { borderRadius: 28, padding: width < 600 ? 16 : 24, shadowOpacity: 0.05, shadowRadius: 20, elevation: 3, minHeight: 350 },
+    editorCard: { borderRadius: 32, padding: 24, shadowOpacity: 0.05, shadowRadius: 20, elevation: 3, minHeight: 400 },
     toolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
     themeSelector: { flex: 1, marginRight: 16 },
     themeCircle: { width: 22, height: 22, borderRadius: 11, marginRight: 8 },
@@ -853,8 +867,8 @@ const s = StyleSheet.create({
     mediaBtn: { padding: 8, backgroundColor: '#F8FAFC', borderRadius: 12 },
     mediaIcon: { fontSize: 20 },
 
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center' },
-    modalBox: { backgroundColor: '#FFF', borderRadius: 32, padding: 28, width: 320 },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 24 },
+    modalBox: { backgroundColor: '#FFF', borderRadius: 32, padding: 28, width: '100%', maxWidth: 340, alignSelf: 'center' },
     modalTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
     modalSubtitle: { fontSize: 14, color: '#64748B', marginBottom: 20 },
     modalInput: { backgroundColor: '#F1F5F9', borderRadius: 16, padding: 16, fontSize: 16, marginBottom: 24 },
@@ -868,7 +882,7 @@ const s = StyleSheet.create({
     langText: { fontSize: 13, fontWeight: '700', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, overflow: 'hidden' },
 
     fullModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-    fullModalBox: { backgroundColor: '#FFF', borderTopLeftRadius: 32, borderTopRightRadius: 32, height: '80%', padding: 24 },
+    fullModalBox: { backgroundColor: '#FFF', borderTopLeftRadius: 32, borderTopRightRadius: 32, height: '80%', padding: 24, width: '100%', maxWidth: 480, alignSelf: 'center' },
     fullModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
     fullModalTitle: { fontSize: 22, fontWeight: '800', color: '#1E293B' },
     fullModalClose: { fontSize: 24, color: '#64748B' },
@@ -878,7 +892,7 @@ const s = StyleSheet.create({
     journalListIcon: { fontSize: 20 },
     emptyListText: { textAlign: 'center', marginTop: 40, color: '#64748B', fontSize: 16 },
 
-    monthPickerBox: { backgroundColor: '#FFF', borderRadius: 24, padding: 24, width: 300 },
+    monthPickerBox: { backgroundColor: '#FFF', borderRadius: 24, padding: 24, width: '100%', maxWidth: 320, alignSelf: 'center' },
     monthOption: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
     monthOptionText: { fontSize: 16, fontWeight: '600', color: '#1E293B', textAlign: 'center' },
 });

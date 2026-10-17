@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     View, Text, TouchableOpacity, StyleSheet,
-    TextInput, FlatList, Image, Dimensions, ActivityIndicator, Animated, ScrollView, useWindowDimensions
+    TextInput, FlatList, Image, ActivityIndicator, Animated, ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import babyActivityService from '../services/babyActivityService';
 import { useAuth } from '../context/AuthContext';
-
-const { width } = Dimensions.get('window');
+import { ContentWell } from '../components/ScreenContainer';
 
 const COLORS = {
     primary: '#EC4899',
@@ -32,7 +31,7 @@ const SHADOW_PINK = {
 };
 
 // Skeleton card for loading state
-const SkeletonCard = ({ cardWidth = '100%' }) => {
+const SkeletonCard = () => {
     const anim = useRef(new Animated.Value(0.4)).current;
     useEffect(() => {
         Animated.loop(
@@ -46,7 +45,7 @@ const SkeletonCard = ({ cardWidth = '100%' }) => {
         <Animated.View style={{ height: h, width: w, borderRadius: r, backgroundColor: '#FECDD3', opacity: anim, marginBottom: m }} />
     );
     return (
-        <View style={[styles.exerciseCard, { width: cardWidth }]}>
+        <View style={styles.exerciseCard}>
             <Skel h={110} w="100%" r={12} m={8} />
             <View style={{ gap: 6 }}>
                 <Skel h={14} w="90%" r={6} m={0} />
@@ -61,8 +60,6 @@ export default function BabyCategoryScreen({ route, navigation }) {
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
     const { user } = useAuth();
-    const { width } = useWindowDimensions();
-    const isLargeScreen = width > 768;
 
     const getInitialAgeFilter = (deliveryDate) => {
         if (!deliveryDate) return '0–3 months';
@@ -206,14 +203,12 @@ export default function BabyCategoryScreen({ route, navigation }) {
         const videoId = getYoutubeId(item.video_url);
         const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null;
 
-        const cardWidth = isLargeScreen ? (width - 72) / 3 : (width - 40);
-
         return (
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => navigation.navigate('BabyActivityDetail', { activityId: item._id })}
             >
-                <View style={[styles.exerciseCard, { width: cardWidth }]}>
+                <View style={styles.exerciseCard}>
                     <View style={styles.thumbnailContainer}>
                         {thumbnailUrl ? (
                             <Image source={{ uri: thumbnailUrl }} style={styles.cardThumbnail} resizeMode="cover" />
@@ -256,8 +251,8 @@ export default function BabyCategoryScreen({ route, navigation }) {
     ];
 
     return (
-        <SafeAreaView style={styles.safe}>
-            <LinearGradient colors={['#FFF8FA', '#FFFDFE', '#FFF2F5']} style={styles.gradient}>
+        <LinearGradient colors={['#FFF8FA', '#FFFDFE', '#FFF2F5']} style={styles.gradient}>
+            <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
                 {/* Header */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -293,6 +288,7 @@ export default function BabyCategoryScreen({ route, navigation }) {
                 </View>
 
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+                  <ContentWell maxWidth="wide" padded={false}>
                     <View style={styles.listHeader}>
                         {/* Safety Disclaimer */}
                         <View style={styles.safetyBox}>
@@ -315,13 +311,13 @@ export default function BabyCategoryScreen({ route, navigation }) {
                     </View>
 
                     {loading ? (
-                        <View style={styles.gridContainer}>
-                            <SkeletonCard cardWidth={isLargeScreen ? (width - 72) / 3 : (width - 40)} />
-                            <SkeletonCard cardWidth={isLargeScreen ? (width - 72) / 3 : (width - 40)} />
-                            <SkeletonCard cardWidth={isLargeScreen ? (width - 72) / 3 : (width - 40)} />
+                        <View style={styles.activityGrid}>
+                            <SkeletonCard />
+                            <SkeletonCard />
+                            <SkeletonCard />
                         </View>
                     ) : activities.length > 0 ? (
-                        <View style={styles.gridContainer}>
+                        <View style={styles.activityGrid}>
                             {activities.map((item, index) => renderActivityCard({ item, index }))}
                         </View>
                     ) : (
@@ -356,15 +352,16 @@ export default function BabyCategoryScreen({ route, navigation }) {
                             </Text>
                         </LinearGradient>
                     </View>
+                  </ContentWell>
                 </ScrollView>
-            </LinearGradient>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LinearGradient>
     );
 }
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: '#FFF8FA' },
-    gradient: { flex: 1 },
+    safe: { flex: 1 },
+    gradient: { flex: 1, backgroundColor: '#FFF8FA' },
 
     // Header
     header: {
@@ -432,19 +429,21 @@ const styles = StyleSheet.create({
     // Exercise styled cards
     exerciseCard: {
         backgroundColor: 'transparent',
-        marginBottom: 16,
+        flexGrow: 1,
+        flexBasis: 160,
+        maxWidth: 260,
+        marginBottom: 10,
     },
-    gridContainer: {
+    activityGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 16,
-        paddingHorizontal: 20,
-        marginTop: 10,
+        gap: 14,
+        paddingHorizontal: 16,
     },
     thumbnailContainer: {
         width: '100%',
         aspectRatio: 16 / 9,
-        borderRadius: 12,
+        borderRadius: 20,
         overflow: 'hidden',
         position: 'relative',
         backgroundColor: '#000',
@@ -482,14 +481,14 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     videoTitle: {
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: 'bold',
         color: COLORS.text,
-        lineHeight: 16,
+        lineHeight: 18,
         marginBottom: 2,
     },
     videoStats: {
-        fontSize: 9,
+        fontSize: 11,
         color: COLORS.textMid,
     },
     menuContainer: {

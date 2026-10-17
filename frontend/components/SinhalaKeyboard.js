@@ -1,14 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     View,
     Text,
     TouchableOpacity,
     StyleSheet,
-    Dimensions,
     ScrollView,
 } from 'react-native';
-
-const { width: SCREEN_W } = Dimensions.get('window');
+import { useResponsive } from '../hooks/useResponsive';
 
 // ─── Sinhala character rows ───────────────────────────────────────────────────
 const ROWS = [
@@ -26,18 +24,36 @@ const ROWS = [
     // Consonants row 4
     ['ෂ', 'ස', 'හ', 'ළ', 'ෆ', 'ඥ', 'ඦ', 'ඬ', 'ඳ', 'ඹ'],
     // Hal kirima & zero-width joiner helpers
-    ['්', '්‍ර', 'ි', 'ී', '‍', '\u200D'],
+    ['්', '්‍ර', 'ි', 'ී', '‍', '‍'],
 ];
 
-// Each key occupies (SCREEN_W - padding) / 10 width
-const PAD = 16;
+const PAD = 16; // container padding (must match styles.container)
 const GAP = 4;
-const KEY_W = Math.floor((Math.min(SCREEN_W, 420) - PAD * 2 - GAP * 9) / 10);
-const KEY_H = 38;
+const COLS = 10;
+const MIN_KEY = 26;
+const MAX_KEY = 44;
 
 export default function SinhalaKeyboard({ onKeyPress, onClose }) {
+    const r = useResponsive();
+    // Size keys from the ACTUAL rendered container width (it lives inside modals /
+    // panels that are narrower than the window), not a module-level Dimensions read.
+    const [boxW, setBoxW] = useState(0);
+
+    const usable = boxW > 0 ? boxW - PAD * 2 - GAP * (COLS - 1) : 0;
+    const keyW = usable > 0
+        ? Math.max(MIN_KEY, Math.min(MAX_KEY, Math.floor(usable / COLS)))
+        : 30;
+    const keyH = Math.max(34, keyW);
+
+    const keyStyle = { width: keyW, height: keyH };
+    const spaceStyle = { width: keyW * 5 + GAP * 4 };
+    const backspaceStyle = { width: keyW * 4 + GAP * 3 };
+
     return (
-        <View style={styles.container}>
+        <View
+            style={[styles.container, { maxHeight: Math.min(r.height * 0.42, 340) }]}
+            onLayout={(e) => setBoxW(e.nativeEvent.layout.width)}
+        >
             {/* Header */}
             <View style={styles.header}>
                 <Text style={styles.title}>⌨️ සිංහල යතුරු පුවරුව</Text>
@@ -56,7 +72,7 @@ export default function SinhalaKeyboard({ onKeyPress, onClose }) {
                         {row.map((char, i) => (
                             <TouchableOpacity
                                 key={`${rowIdx}-${i}`}
-                                style={styles.key}
+                                style={[styles.key, keyStyle]}
                                 onPress={() => onKeyPress(char)}
                                 activeOpacity={0.6}
                             >
@@ -69,7 +85,7 @@ export default function SinhalaKeyboard({ onKeyPress, onClose }) {
                 {/* Bottom row: Space & Backspace */}
                 <View style={styles.row}>
                     <TouchableOpacity
-                        style={[styles.key, styles.spaceKey]}
+                        style={[styles.key, keyStyle, styles.spaceKey, spaceStyle]}
                         onPress={() => onKeyPress('SPACE')}
                         activeOpacity={0.6}
                     >
@@ -77,7 +93,7 @@ export default function SinhalaKeyboard({ onKeyPress, onClose }) {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.key, styles.backspaceKey]}
+                        style={[styles.key, keyStyle, styles.backspaceKey, backspaceStyle]}
                         onPress={() => onKeyPress('BACKSPACE')}
                         activeOpacity={0.6}
                     >
@@ -95,8 +111,9 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         padding: PAD,
         marginTop: 10,
-        // Fixed height so it doesn't overflow its parent ScrollView
-        maxHeight: 320,
+        width: '100%',
+        maxWidth: 520,
+        alignSelf: 'center',
     },
     header: {
         flexDirection: 'row',
@@ -128,8 +145,6 @@ const styles = StyleSheet.create({
         marginBottom: GAP,
     },
     key: {
-        width: KEY_W,
-        height: KEY_H,
         backgroundColor: '#FFFFFF',
         alignItems: 'center',
         justifyContent: 'center',
@@ -141,17 +156,14 @@ const styles = StyleSheet.create({
         shadowRadius: 2,
     },
     spaceKey: {
-        width: KEY_W * 5 + GAP * 4,
         backgroundColor: '#E0E7FF',
     },
     backspaceKey: {
-        width: KEY_W * 4 + GAP * 3,
         backgroundColor: '#FEE2E2',
     },
     keyText: {
         fontSize: 16,
         color: '#111827',
-        fontFamily: undefined, // let OS pick best Sinhala font
         includeFontPadding: false,
     },
     specialKeyText: {

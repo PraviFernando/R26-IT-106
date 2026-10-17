@@ -6,6 +6,7 @@
 export const BABY_TOPIC_CATEGORIES = {
   BABY_FEEDING: 'Baby Feeding',
   BABY_NEEDS: 'Baby Needs',
+  BABY_BATHING: 'Baby Bathing',
   BABY_DIAPERING: 'Baby Diapering',
   BABY_SLEEPING: 'Baby Sleeping',
   BABY_CRYING: 'Baby Crying',
@@ -47,6 +48,20 @@ const CATEGORY_RULES = {
     ],
     keywords: [
       'cues', 'signals', 'needs', 'behavior', 'hasirima', 'handunaganna', 'therenne', 'crying'
+    ]
+  },
+
+  'Baby Bathing': {
+    phrases: [
+      'wash my baby', 'clean my baby', 'first bath', 'newborn bath', 'don\'t know how to bath',
+      'dont know how to bath', 'how can i bath', 'how to bath', 'bath my newborn',
+      'bath my baby', 'bathing baby', 'sponge bath', 'umbilical cord', 'baby bath',
+      'bathe my baby', 'bath my newborn baby', 'bathe my newborn baby', 'wash baby', 'clean baby',
+      'නාන්න', 'නාගන්න', 'නාවන්න', 'බබාව නාවන්න', 'nawanna', 'baba nawanna'
+    ],
+    keywords: [
+      'bath', 'bathe', 'bathing', 'wash', 'clean', 'soap', 'shampoo', 'water',
+      'sponge', 'umbilical', 'නාවන්න', 'නෑම', 'nawanna'
     ]
   },
 

@@ -6,20 +6,16 @@ import {
     TouchableOpacity,
     StyleSheet,
     ActivityIndicator,
-    ScrollView,
-    KeyboardAvoidingView,
-    Platform,
     Image,
     Modal,
     FlatList,
     Animated,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import api, { setAuthToken } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { SRI_LANKA_DISTRICTS, SRI_LANKA_VILLAGES_BY_DISTRICT } from '../data/sriLankaLocationData';
+import ScreenContainer from '../components/ScreenContainer';
 
 // Lazy-load expo-image-picker so it doesn't crash if not installed
 let ImagePicker = null;
@@ -32,11 +28,11 @@ function Dropdown({ label, placeholder, value, options, onSelect, disabled }) {
 
     const toggle = () => {
         if (disabled) return;
-        Animated.timing(rotateAnim, { toValue: open ? 0 : 1, duration: 200, useNativeDriver: false }).start();
+        Animated.timing(rotateAnim, { toValue: open ? 0 : 1, duration: 200, useNativeDriver: true }).start();
         setOpen(prev => !prev);
     };
     const close = () => {
-        Animated.timing(rotateAnim, { toValue: 0, duration: 150, useNativeDriver: false }).start();
+        Animated.timing(rotateAnim, { toValue: 0, duration: 150, useNativeDriver: true }).start();
         setOpen(false);
     };
     const rotate = rotateAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '180deg'] });
@@ -88,7 +84,6 @@ function Dropdown({ label, placeholder, value, options, onSelect, disabled }) {
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function SignupScreen({ navigation }) {
     const { t, i18n } = useTranslation();
-    const { login } = useAuth();
 
     // Credentials
     const [username, setUsername] = useState('');
@@ -192,205 +187,200 @@ export default function SignupScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                >
-                    <View style={styles.innerWrapper}>
-                        {/* Lang Toggle */}
-                        <View style={styles.langRow}>
-                            <TouchableOpacity
-                                onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')}
-                                style={styles.langToggle}
-                            >
-                                <Text style={styles.langToggleTxt}>{i18n.language === 'en' ? 'සිං' : 'EN'}</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        {/* Banner */}
-                        <View style={styles.topBanner}>
-                            <Text style={styles.bannerEmoji}>🌸</Text>
-                            <Text style={styles.bannerTitle}>{t('PeriCare')}</Text>
-                            <Text style={styles.bannerSubtitle}>{t('Create a new account')}</Text>
-                        </View>
-
-                        {/* ── Profile Photo Picker ── */}
-                        <View style={styles.avatarSection}>
-                            <TouchableOpacity onPress={handlePickImage} style={styles.avatarWrapper} activeOpacity={0.85}>
-                                {profileImage ? (
-                                    <Image source={{ uri: profileImage }} style={styles.avatarImage} />
-                                ) : (
-                                    <View style={styles.avatarPlaceholder}>
-                                        <Text style={styles.avatarEmoji}>📷</Text>
-                                        <Text style={styles.avatarAddText}>Add Photo</Text>
-                                        <Text style={styles.avatarOptText}>Optional</Text>
-                                    </View>
-                                )}
-                                <View style={styles.avatarBadge}>
-                                    <Text style={{ fontSize: 13 }}>📸</Text>
-                                </View>
-                            </TouchableOpacity>
-                            {profileImage && (
-                                <TouchableOpacity onPress={() => setProfileImage(null)} style={styles.removeBtn}>
-                                    <Text style={styles.removeBtnTxt}>✕ Remove photo</Text>
-                                </TouchableOpacity>
-                            )}
-                        </View>
-
-                        {/* ── Form Card ── */}
-                        <View style={styles.card}>
-                            <Text style={styles.title}>{t('Create Account')}</Text>
-                            <Text style={styles.subtitle}>{t('Join PeriCare today')}</Text>
-
-                            {/* Section: Account */}
-                            <View style={styles.sectionRow}>
-                                <View style={[styles.sectionDot, { backgroundColor: PURPLE }]} />
-                                <Text style={styles.sectionLabel}>Account Information</Text>
-                            </View>
-
-                            {/* Username */}
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>👤 {t('Username')} <Text style={styles.req}>*</Text></Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Enter your username"
-                                    placeholderTextColor="#9CA3AF"
-                                    value={username}
-                                    onChangeText={setUsername}
-                                    autoCapitalize="none"
-                                    autoCorrect={false}
-                                />
-                            </View>
-
-                            {/* Email */}
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>📧 {t('Email')} <Text style={styles.req}>*</Text></Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Enter your email"
-                                    placeholderTextColor="#9CA3AF"
-                                    value={email}
-                                    onChangeText={setEmail}
-                                    keyboardType="email-address"
-                                    autoCapitalize="none"
-                                    autoCorrect={false}
-                                />
-                            </View>
-
-                            {/* Password */}
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>🔒 {t('Password')} <Text style={styles.req}>*</Text></Text>
-                                <View style={styles.passwordRow}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: 'transparent' }]}
-                                        placeholder="Enter your password"
-                                        placeholderTextColor="#9CA3AF"
-                                        value={password}
-                                        onChangeText={setPassword}
-                                        secureTextEntry={!showPassword}
-                                    />
-                                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
-                                        <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-
-                            {/* Confirm Password */}
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>🔒 {t('Password')} (Confirm) <Text style={styles.req}>*</Text></Text>
-                                <View style={styles.passwordRow}>
-                                    <TextInput
-                                        style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: 'transparent' }]}
-                                        placeholder="Re-enter your password"
-                                        placeholderTextColor="#9CA3AF"
-                                        value={confirmPassword}
-                                        onChangeText={setConfirmPassword}
-                                        secureTextEntry={!showConfirmPassword}
-                                    />
-                                    <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeBtn}>
-                                        <Text style={styles.eyeIcon}>{showConfirmPassword ? '🙈' : '👁️'}</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-
-                            <Text style={styles.hint}>💡 Password must be at least 6 characters</Text>
-
-                            {/* Section: Personal Details */}
-                            <View style={styles.sectionRow}>
-                                <View style={[styles.sectionDot, { backgroundColor: '#10B981' }]} />
-                                <Text style={styles.sectionLabel}>
-                                    Personal Details{'  '}
-                                    <Text style={styles.optLabel}>(Optional)</Text>
-                                </Text>
-                            </View>
-
-                            {/* Age */}
-                            <View style={styles.inputContainer}>
-                                <Text style={styles.label}>🎂 Age</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Enter your age (e.g. 28)"
-                                    placeholderTextColor="#9CA3AF"
-                                    value={age}
-                                    onChangeText={(v) => setAge(v.replace(/[^0-9]/g, ''))}
-                                    keyboardType="numeric"
-                                    maxLength={3}
-                                />
-                            </View>
-
-                            {/* District */}
-                            <Dropdown
-                                label="📍 District (Sri Lanka)"
-                                placeholder="Select your district"
-                                value={district}
-                                options={SRI_LANKA_DISTRICTS}
-                                onSelect={(d) => { setDistrict(d); setVillage(''); }}
-                            />
-
-                            {/* Village */}
-                            <Dropdown
-                                label="🏘️ Village / Town"
-                                placeholder={district ? 'Select your village or town' : 'Select a district first'}
-                                value={village}
-                                options={villages}
-                                onSelect={setVillage}
-                                disabled={!district}
-                            />
-
-                            {/* Submit */}
-                            <TouchableOpacity
-                                style={[styles.button, loading && styles.buttonDisabled]}
-                                onPress={handleSignup}
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <ActivityIndicator color="#fff" />
-                                ) : (
-                                    <>
-                                        <Text style={styles.buttonText}>{t('Create Account')}</Text>
-                                        <Text style={styles.buttonSub}>Join PeriCare today 🌸</Text>
-                                    </>
-                                )}
-                            </TouchableOpacity>
-
-                            {/* Login link */}
-                            <View style={styles.footer}>
-                                <Text style={styles.footerText}>{t('Already have an account?')} </Text>
-                                <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                                    <Text style={styles.link}>{t('Sign In')}</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        <View style={{ height: 40 }} />
+        <ScreenContainer
+            style={styles.container}
+            maxWidth={480}
+            edges={['top', 'bottom']}
+            keyboardAvoiding
+            contentContainerStyle={styles.scrollContent}
+        >
+                    {/* Lang Toggle */}
+                    <View style={styles.langRow}>
+                        <TouchableOpacity
+                            onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')}
+                            style={styles.langToggle}
+                        >
+                            <Text style={styles.langToggleTxt}>{i18n.language === 'en' ? 'සිං' : 'EN'}</Text>
+                        </TouchableOpacity>
                     </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
+
+                    {/* Banner */}
+                    <View style={styles.topBanner}>
+                        <Text style={styles.bannerEmoji}>🌸</Text>
+                        <Text style={styles.bannerTitle}>{t('PeriCare')}</Text>
+                        <Text style={styles.bannerSubtitle}>{t('Create a new account')}</Text>
+                    </View>
+
+                    {/* ── Profile Photo Picker ── */}
+                    <View style={styles.avatarSection}>
+                        <TouchableOpacity onPress={handlePickImage} style={styles.avatarWrapper} activeOpacity={0.85}>
+                            {profileImage ? (
+                                <Image source={{ uri: profileImage }} style={styles.avatarImage} resizeMode="cover" />
+                            ) : (
+                                <View style={styles.avatarPlaceholder}>
+                                    <Text style={styles.avatarEmoji}>📷</Text>
+                                    <Text style={styles.avatarAddText}>Add Photo</Text>
+                                    <Text style={styles.avatarOptText}>Optional</Text>
+                                </View>
+                            )}
+                            <View style={styles.avatarBadge}>
+                                <Text style={{ fontSize: 13 }}>📸</Text>
+                            </View>
+                        </TouchableOpacity>
+                        {profileImage && (
+                            <TouchableOpacity onPress={() => setProfileImage(null)} style={styles.removeBtn}>
+                                <Text style={styles.removeBtnTxt}>✕ Remove photo</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+
+                    {/* ── Form Card ── */}
+                    <View style={styles.card}>
+                        <Text style={styles.title}>{t('Create Account')}</Text>
+                        <Text style={styles.subtitle}>{t('Join PeriCare today')}</Text>
+
+                        {/* Section: Account */}
+                        <View style={styles.sectionRow}>
+                            <View style={[styles.sectionDot, { backgroundColor: PURPLE }]} />
+                            <Text style={styles.sectionLabel}>Account Information</Text>
+                        </View>
+
+                        {/* Username */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>👤 {t('Username')} <Text style={styles.req}>*</Text></Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter your username"
+                                placeholderTextColor="#9CA3AF"
+                                value={username}
+                                onChangeText={setUsername}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                            />
+                        </View>
+
+                        {/* Email */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>📧 {t('Email')} <Text style={styles.req}>*</Text></Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter your email"
+                                placeholderTextColor="#9CA3AF"
+                                value={email}
+                                onChangeText={setEmail}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                            />
+                        </View>
+
+                        {/* Password */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>🔒 {t('Password')} <Text style={styles.req}>*</Text></Text>
+                            <View style={styles.passwordRow}>
+                                <TextInput
+                                    style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: 'transparent' }]}
+                                    placeholder="Enter your password"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={password}
+                                    onChangeText={setPassword}
+                                    secureTextEntry={!showPassword}
+                                />
+                                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+                                    <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {/* Confirm Password */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>🔒 {t('Password')} (Confirm) <Text style={styles.req}>*</Text></Text>
+                            <View style={styles.passwordRow}>
+                                <TextInput
+                                    style={[styles.input, { flex: 1, borderWidth: 0, backgroundColor: 'transparent' }]}
+                                    placeholder="Re-enter your password"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={confirmPassword}
+                                    onChangeText={setConfirmPassword}
+                                    secureTextEntry={!showConfirmPassword}
+                                />
+                                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeBtn}>
+                                    <Text style={styles.eyeIcon}>{showConfirmPassword ? '🙈' : '👁️'}</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        <Text style={styles.hint}>💡 Password must be at least 6 characters</Text>
+
+                        {/* Section: Personal Details */}
+                        <View style={styles.sectionRow}>
+                            <View style={[styles.sectionDot, { backgroundColor: '#10B981' }]} />
+                            <Text style={styles.sectionLabel}>
+                                Personal Details{'  '}
+                                <Text style={styles.optLabel}>(Optional)</Text>
+                            </Text>
+                        </View>
+
+                        {/* Age */}
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.label}>🎂 Age</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter your age (e.g. 28)"
+                                placeholderTextColor="#9CA3AF"
+                                value={age}
+                                onChangeText={(v) => setAge(v.replace(/[^0-9]/g, ''))}
+                                keyboardType="numeric"
+                                maxLength={3}
+                            />
+                        </View>
+
+                        {/* District */}
+                        <Dropdown
+                            label="📍 District (Sri Lanka)"
+                            placeholder="Select your district"
+                            value={district}
+                            options={SRI_LANKA_DISTRICTS}
+                            onSelect={(d) => { setDistrict(d); setVillage(''); }}
+                        />
+
+                        {/* Village */}
+                        <Dropdown
+                            label="🏘️ Village / Town"
+                            placeholder={district ? 'Select your village or town' : 'Select a district first'}
+                            value={village}
+                            options={villages}
+                            onSelect={setVillage}
+                            disabled={!district}
+                        />
+
+                        {/* Submit */}
+                        <TouchableOpacity
+                            style={[styles.button, loading && styles.buttonDisabled]}
+                            onPress={handleSignup}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <>
+                                    <Text style={styles.buttonText}>{t('Create Account')}</Text>
+                                    <Text style={styles.buttonSub}>Join PeriCare today 🌸</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* Login link */}
+                        <View style={styles.footer}>
+                            <Text style={styles.footerText}>{t('Already have an account?')} </Text>
+                            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                                <Text style={styles.link}>{t('Sign In')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
             <Toast />
-        </SafeAreaView>
+        </ScreenContainer>
     );
 }
 
@@ -401,8 +391,7 @@ const PURPLE_LIGHT = '#EDE9FE';
 // ─── Main Styles ──────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#F3F4F6' },
-    scrollContent: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32, alignItems: 'center' },
-    innerWrapper: { width: '100%', maxWidth: 480, alignSelf: 'center' },
+    scrollContent: { paddingTop: 16 },
 
     langRow: { alignItems: 'flex-end', marginBottom: 8 },
     langToggle: { paddingHorizontal: 14, paddingVertical: 6, backgroundColor: PURPLE_LIGHT, borderRadius: 20 },
@@ -501,6 +490,7 @@ const dd = StyleSheet.create({
     sheet: {
         backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
         maxHeight: '65%', paddingBottom: 24,
+        width: '100%', maxWidth: 480, alignSelf: 'center',
     },
     sheetHeader: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',

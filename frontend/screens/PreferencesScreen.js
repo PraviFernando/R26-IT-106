@@ -3,19 +3,22 @@
 // ================================================================
 
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, shadows } from '../theme';
 import { ALL_ACTIVITIES, ALL_GAMES } from '../services/activitiesLibrary';
 import { useApp } from '../services/AppContext';
 import { SI } from '../services/translations';
-
-const { width } = Dimensions.get('window');
+import ScreenContainer from '../components/ScreenContainer';
+import { useResponsive } from '../hooks/useResponsive';
 
 const PreferencesScreen = ({ navigation }) => {
   const { savePreferences, userPreferredActivities, userPreferredGames } = useApp();
   const [selActs, setSelActs] = useState(userPreferredActivities);
   const [selGames, setSelGames] = useState(userPreferredGames);
+  const r = useResponsive();
+  const gameCols = r.gridColumns(150, 10, 4);
+  const gameCardW = r.tileWidth(gameCols, 10);
 
   const toggleAct = (id) => setSelActs(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
   const toggleGame = (id) => setSelGames(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
@@ -23,10 +26,11 @@ const PreferencesScreen = ({ navigation }) => {
   const handleSave = () => { savePreferences(selActs, selGames); navigation.goBack(); };
 
   return (
-    <View style={s.container}>
-      <LinearGradient colors={['#F8F4FF', '#FFF0F8']} style={s.gradient}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
-
+    <ScreenContainer
+      gradient={['#F8F4FF', '#FFF0F8']}
+      edges={['top', 'bottom']}
+      contentContainerStyle={{ paddingTop: 12 }}
+    >
           <Text style={s.title}>{SI.myPreferences}</Text>
           <Text style={s.subtitle}>{SI.prefSubtitle}</Text>
 
@@ -75,7 +79,7 @@ const PreferencesScreen = ({ navigation }) => {
               {ALL_GAMES.map((game) => {
                 const sel = selGames.includes(game.id);
                 return (
-                  <TouchableOpacity key={game.id} onPress={() => toggleGame(game.id)} style={s.gameCardWrap}>
+                  <TouchableOpacity key={game.id} onPress={() => toggleGame(game.id)} style={{ width: gameCardW }}>
                     <LinearGradient
                       colors={sel ? [game.accent, game.accent + 'BB'] : game.color}
                       style={[s.gameCard, sel && s.gameCardSel]}
@@ -99,17 +103,11 @@ const PreferencesScreen = ({ navigation }) => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={s.skipBtn}>
             <Text style={s.skipText}>{SI.skipNow}</Text>
           </TouchableOpacity>
-          <View style={{ height: 40 }} />
-        </ScrollView>
-      </LinearGradient>
-    </View>
+    </ScreenContainer>
   );
 };
 
 const s = StyleSheet.create({
-  container: { flex: 1 },
-  gradient: { flex: 1 },
-  scroll: { paddingHorizontal: spacing.md, paddingTop: 60 },
   title: { fontSize: 26, fontWeight: '900', color: colors.textPrimary, marginBottom: 8 },
   subtitle: { fontSize: 14, color: colors.textSecondary, lineHeight: 22, marginBottom: spacing.xl },
   section: { marginBottom: spacing.xl },
@@ -131,14 +129,13 @@ const s = StyleSheet.create({
   checkbox: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.lavenderMid, justifyContent: 'center', alignItems: 'center' },
   checkMark: { color: colors.white, fontSize: 14, fontWeight: '800' },
   gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  gameCardWrap: { width: (width - spacing.md * 2 - 10) / 2 },
   gameCard: { borderRadius: radius.xl, padding: spacing.md, alignItems: 'center', ...shadows.soft, borderWidth: 2, borderColor: 'transparent', position: 'relative' },
   gameCardSel: { borderColor: 'transparent' },
   gameCheck: { position: 'absolute', top: 10, right: 10, width: 22, height: 22, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.3)', justifyContent: 'center', alignItems: 'center' },
   gameCheckText: { color: colors.white, fontWeight: '900', fontSize: 13 },
   gameIcon: { fontSize: 36, marginBottom: 8 },
   gameName: { fontSize: 14, fontWeight: '800', color: colors.textPrimary, textAlign: 'center' },
-  gameDesc: { fontSize: 10, color: colors.textSecondary, textAlign: 'center', marginTop: 4 },
+  gameDesc: { fontSize: 11, color: colors.textSecondary, textAlign: 'center', marginTop: 4 },
   saveBtn: { borderRadius: radius.full, overflow: 'hidden', marginBottom: 12 },
   saveBtnInner: { paddingVertical: 16, alignItems: 'center' },
   saveBtnText: { color: colors.white, fontWeight: '800', fontSize: 16 },

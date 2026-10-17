@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     View, Text, StyleSheet, TouchableOpacity, Modal,
-    Alert, Dimensions, ActivityIndicator, Platform,
-    useWindowDimensions, Pressable, ScrollView
+    Alert, ActivityIndicator, Platform,
+    Pressable, ScrollView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
-import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import exerciseService from '../services/exerciseService';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../theme';
-
-const { width, height } = Dimensions.get('window');
+import { useResponsive } from '../hooks/useResponsive';
 
 // Generate unique session ID
 const generateSessionId = () => {
@@ -20,11 +18,11 @@ const generateSessionId = () => {
 };
 
 export default function MovementTrackingScreen({ route, navigation }) {
-    const { width: currentWidth } = useWindowDimensions();
-    const isLargeScreen = currentWidth > 768;
     const { exerciseId, exerciseName, videoUrl } = route.params;
     const { t, i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
+    const r = useResponsive();
+    const isLargeScreen = r.isTablet;
 
     const getEmbedUrl = (url) => {
         if (!url) return '';
@@ -1487,7 +1485,7 @@ const styles = StyleSheet.create({
     },
     splitScreenContainer: {
         flex: 1.5,
-        flexDirection: width > 700 ? 'row' : 'column',
+        flexDirection: 'column',
         marginHorizontal: 16,
         marginTop: 16,
         gap: 16,
@@ -1687,7 +1685,9 @@ const styles = StyleSheet.create({
         backgroundColor: colors.white,
         borderRadius: 32,
         padding: 24,
-        width: width - 32,
+        width: '92%',
+        maxWidth: 520,
+        alignSelf: 'center',
         maxHeight: '90%',
         alignItems: 'stretch',
         elevation: 6,

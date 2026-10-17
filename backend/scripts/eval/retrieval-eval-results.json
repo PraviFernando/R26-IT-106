@@ -1,0 +1,360 @@
+{
+  "results": [
+    {
+      "id": "q01",
+      "question": "what causes postpartum depression",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "maternal_mental_health",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "Researchgate_Risk Factors of Postpartum Depression.pdf",
+        "CMJ_Postnatal mental disorders.pdf",
+        "OpenUnivrsity_THE PSYCHOSOCIAL FACTORS RELATED TO POST-PARTUM.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q02",
+      "question": "what are the risk factors for postpartum depression",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "maternal_mental_health",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "Researchgate_Risk Factors of Postpartum Depression.pdf",
+        "Researchgate_Risk Factors of Postpartum Depression.pdf",
+        "pmc_srilanka.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 0.9197207891481876,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q03",
+      "question": "what is the EPDS score and what does it mean",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "maternal_mental_health",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "pmc_srilanka.pdf",
+        "pmc_srilanka.pdf",
+        "Researchgate_Risk Factors of Postpartum Depression.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 0.9197207891481876,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q04",
+      "question": "how is postpartum depression treated",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "maternal_mental_health",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "CMJ_Postnatal mental disorders.pdf",
+        "Researchgate_Maternal_mental_health_services_in_Sri_Lanka_chall.pdf",
+        "pmc_srilanka.pdf"
+      ],
+      "precisionAt3": 0.6666666666666666,
+      "recallAt3": 0.6666666666666666,
+      "mrr": 1,
+      "ndcgAt3": 0.7653606369886217,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q05",
+      "question": "what mental health services are available for mothers in Sri Lanka",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "unknown",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "CMJ_Perinatal mental health in Sri Lanka.pdf",
+        "Researchgate_Maternal_mental_health_services_in_Sri_Lanka_chall.pdf",
+        "Researchgate_Maternal_mental_health_services_in_Sri_Lanka_chall.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q06",
+      "question": "how common is postpartum depression in Sri Lanka",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "maternal_mental_health",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "CMJ_Post partum depression.pdf",
+        "pmc_srilanka.pdf",
+        "Researcgate_Effect of childbirth experiencet.pdf"
+      ],
+      "precisionAt3": 0.6666666666666666,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q07",
+      "question": "does childbirth experience affect the risk of postpartum depression",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "maternal_mental_health",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "Researcgate_Effect of childbirth experiencet.pdf",
+        "Researcgate_Effect of childbirth experiencet.pdf",
+        "Researchgate_Risk Factors of Postpartum Depression.pdf"
+      ],
+      "precisionAt3": 0.6666666666666666,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q08",
+      "question": "what is perinatal mental health",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "maternal_mental_health",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "WHO-eng.pdf",
+        "WHO-eng.pdf",
+        "CMJ_Perinatal mental health in Sri Lanka.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 0.9197207891481876,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q09",
+      "question": "how should healthcare workers integrate mental health screening into maternal care",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "unknown",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "WHO-eng.pdf",
+        "WHO-eng.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q10",
+      "question": "what postnatal care guidance does WHO recommend for mothers and newborns",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "maternal_mental_health",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "WHO_Brief-postnatal-care-for-mothers-and-newborns-highlights-from-the-WHO-2013-Guidelines.pdf",
+        "WHO_Brief-postnatal-care-for-mothers-and-newborns-highlights-from-the-WHO-2013-Guidelines.pdf",
+        "Pregnancy WHO article.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 0.9197207891481876,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q11",
+      "question": "what is postpartum psychosis",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "maternal_mental_health",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "CMJ_Postnatal mental disorders.pdf",
+        "CMJ_Postnatal mental disorders.pdf",
+        "Researchgate_Risk Factors of Postpartum Depression.pdf"
+      ],
+      "precisionAt3": 0.6666666666666666,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q12",
+      "question": "how should I care for my newborn's umbilical cord",
+      "isControl": false,
+      "expectedCategory": "newborn_care",
+      "actualCategory": "newborn_care",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "Pregnancy WHO article.pdf",
+        "Pregnancy WHO article.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q13",
+      "question": "how often should I breastfeed my newborn",
+      "isControl": false,
+      "expectedCategory": "newborn_care",
+      "actualCategory": "newborn_care",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "Pregnancy WHO article.pdf",
+        "Pregnancy WHO article.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q14",
+      "question": "what are the psychosocial factors affecting mothers after birth",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "unknown",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "Researcgate_Effect of childbirth experiencet.pdf",
+        "Researchgate_Risk Factors of Postpartum Depression.pdf",
+        "CMJ_Postnatal mental disorders.pdf"
+      ],
+      "precisionAt3": 0.6666666666666666,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q15",
+      "question": "how is depression managed according to mhGAP guidelines",
+      "isControl": false,
+      "expectedCategory": "maternal_mental_health",
+      "actualCategory": "maternal_mental_health",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "WHO_basic guide-eng.pdf",
+        "WHO_MSD_MER_15.1_eng.pdf",
+        "WHO_basic guide-eng.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q16",
+      "question": "what nutrition advice is given during pregnancy",
+      "isControl": false,
+      "expectedCategory": "unknown",
+      "actualCategory": "unknown",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "Pregnancy WHO article.pdf",
+        "Pregnancy WHO article.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q17",
+      "question": "what are signs of a high risk pregnancy that need facility delivery",
+      "isControl": false,
+      "expectedCategory": "unknown",
+      "actualCategory": "unknown",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "Pregnancy WHO article.pdf",
+        "Pregnancy WHO article.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    },
+    {
+      "id": "q18",
+      "question": "what is a good recipe for pasta",
+      "isControl": true,
+      "expectedCategory": "unknown",
+      "actualCategory": "unknown",
+      "guardrailZone": "reject",
+      "returnedSources": [],
+      "precisionAt3": null,
+      "recallAt3": null,
+      "mrr": null,
+      "ndcgAt3": null,
+      "correctlyRejected": true
+    },
+    {
+      "id": "q19",
+      "question": "how do I fix my car engine",
+      "isControl": true,
+      "expectedCategory": "unknown",
+      "actualCategory": "unknown",
+      "guardrailZone": "reject",
+      "returnedSources": [],
+      "precisionAt3": null,
+      "recallAt3": null,
+      "mrr": null,
+      "ndcgAt3": null,
+      "correctlyRejected": true
+    },
+    {
+      "id": "q20",
+      "question": "how do I bathe my newborn baby",
+      "isControl": false,
+      "expectedCategory": "newborn_care",
+      "actualCategory": "newborn_care",
+      "guardrailZone": "accept",
+      "returnedSources": [
+        "Pregnancy WHO article.pdf",
+        "Pregnancy WHO article.pdf"
+      ],
+      "precisionAt3": 1,
+      "recallAt3": 1,
+      "mrr": 1,
+      "ndcgAt3": 1,
+      "correctlyRejected": null
+    }
+  ],
+  "aggregate": {
+    "numQuestions": 20,
+    "numPositive": 18,
+    "numControl": 2,
+    "meanPrecisionAt3": 0.9074074074074073,
+    "meanRecallAt3": 0.9814814814814814,
+    "meanMRR": 1,
+    "meanNDCGAt3": 0.9691246551989651,
+    "falsePositiveRate": 0
+  }
+}
