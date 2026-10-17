@@ -50,6 +50,7 @@ import GrowthChartScreen from './screens/GrowthChartScreen';
 import EPDSScreeningScreen from './screens/EPDSScreeningScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import ChatScreen from './screens/ChatScreen';
+import MusicLibraryScreen from './screens/MusicLibraryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -121,6 +122,7 @@ function RootNavigator({ isDarkMode, brightnessLevel, onStateChange }) {
           <Stack.Screen name="BabyActivityDetail" component={BabyActivityDetailScreen} options={{ headerShown: false }} />
           <Stack.Screen name="BabyCategory" component={BabyCategoryScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Chat" component={ChatScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="MusicLibrary" component={MusicLibraryScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>
 

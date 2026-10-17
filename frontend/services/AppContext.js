@@ -45,12 +45,16 @@ export const AppProvider = ({ children }) => {
   const [detectedBabyAge, setDetectedBabyAge] = useState(null);
   const [demoDiaryIdx, setDemoDiaryIdx] = useState(0);
   const [moodHistory, setMoodHistory] = useState(INITIAL_MOOD_HISTORY);
+  // ================================================================
+  // GLOBAL PROGRESS TRACKING STATE
+  // Manages global progress state (progressDiaries, progressActivities, epdsRiskLevel)
+  // ================================================================
   const [completedActivities, setCompletedActivities] = useState([]);
-  const [progressDiaries, setProgressDiaries] = useState([]);
-  const [progressActivities, setProgressActivities] = useState([]);
-  const [epdsRiskLevel, setEpdsRiskLevel] = useState('low');
-  const [loadingProgress, setLoadingProgress] = useState(true);
-  const [errorProgress, setErrorProgress] = useState(null);
+  const [progressDiaries, setProgressDiaries] = useState([]);     // Stores historical diary logs for streaks & mood tracking
+  const [progressActivities, setProgressActivities] = useState([]);  // Stores all completed activity history for badges & streaks
+  const [epdsRiskLevel, setEpdsRiskLevel] = useState('low');      // Stores latest EPDS clinical screening risk level
+  const [loadingProgress, setLoadingProgress] = useState(true);   // Tracks progress loading state
+  const [errorProgress, setErrorProgress] = useState(null);       // Tracks progress fetch errors
 
   const [localRuleRecs, setLocalRuleRecs] = useState(null);
   const [isSkipped, setIsSkipped] = useState(false);
@@ -63,6 +67,11 @@ export const AppProvider = ({ children }) => {
     }
   }, [latestAnalysis]);
 
+  /**
+   * Defines fetchProgressData()
+   * Fetches full diary history (GET /diary), activity completion history (GET /plan/activity/history),
+   * and latest EPDS screening risk level (GET /epds/history) to populate progress metrics.
+   */
   const fetchProgressData = async () => {
     // Never hit authenticated endpoints before login — the request interceptor
     // has no token yet and the backend would just 401.
@@ -126,6 +135,10 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Defines fetchCompletedActivities()
+   * Fetches activities completed on today's date (GET /plan/activity/date/:date)
+   */
   const fetchCompletedActivities = async () => {
     if (!token) return [];
     try {

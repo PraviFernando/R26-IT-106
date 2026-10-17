@@ -81,6 +81,14 @@ const DashboardScreenCopy = ({ navigation }) => {
     ]).start();
   }, []);
 
+  const handleBack = () => {
+    if (navigation?.canGoBack && navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('Login');
+    }
+  };
+
   const handleSimulate = () => {
     setProcessing(true);
     setTimeout(() => { simulateNextDiary(); setProcessing(false); }, 600);
@@ -113,9 +121,9 @@ const DashboardScreenCopy = ({ navigation }) => {
 
   // Quick Actions with proper navigation
   const quickActions = [
-    { icon: '🎵', label: isSinhala ? 'සංගීතය' : 'Music', color: colors.lavenderLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Recommendations', params: { tab: 'music' } } } },
-    { icon: '🧘', label: isSinhala ? 'ක්‍රියාකාරකම්' : 'Activities', color: colors.roseLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Activity' } } },
-    { icon: '🎮', label: isSinhala ? 'ක්‍රීඩා' : 'Games', color: colors.mintLight, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Activity' } } },
+    { icon: '🎵', label: isSinhala ? 'සංගීතය' : 'Music', color: colors.lavenderLight, nav: 'MusicLibrary' },
+    { icon: '🧘', label: isSinhala ? 'ක්‍රියාකාරකම්' : 'Activities', color: colors.roseLight, nav: 'ActivitiesLibrary' },
+    { icon: '🎮', label: isSinhala ? 'ක්‍රීඩා' : 'Games', color: colors.mintLight, nav: 'GamesLibrary' },
     { icon: '📊', label: isSinhala ? 'ප්‍රගතිය' : 'Progress', color: colors.peach, nav: 'Main', params: { screen: 'Tabs', params: { screen: 'Progress' } } },
   ];
 
@@ -130,7 +138,7 @@ const DashboardScreenCopy = ({ navigation }) => {
 
       {/* Back + Language Toggle */}
       <View style={s.topBarRow}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+        <TouchableOpacity onPress={handleBack} style={s.backBtn}>
           <Text style={s.backText}>{isSinhala ? '← ආපසු' : '← Back'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -141,16 +149,6 @@ const DashboardScreenCopy = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Header */}
-      <Animated.View style={[s.header, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-        <View>
-          <Text style={s.greeting}>{SI.goodMorning}</Text>
-          <Text style={s.name}>{SI.hi} {user.name}</Text>
-        </View>
-        <View style={s.avatar}>
-          <Text style={s.avatarText}>{user.name[0]}</Text>
-        </View>
-      </Animated.View>
 
       {/* Preferences prompt */}
       {!preferencesSet && (
@@ -170,31 +168,6 @@ const DashboardScreenCopy = ({ navigation }) => {
           <Text style={s.systemNoteText}>{SI.systemNote}</Text>
         </View>
 
-        {/* Detected Mood Card */}
-        <LinearGradient colors={ec.gradient} style={s.moodCard}>
-          <Text style={s.moodCardLabel}>{SI.detectedMood}</Text>
-          <View style={s.moodRow}>
-            <Text style={s.moodEmojiBig}>{selectedEmoji}</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={[s.moodName, { color: ec.color }]}>{selectedFeeling}</Text>
-              <Text style={s.moodSub}>{SI.diaryProcessed}</Text>
-            </View>
-          </View>
-        </LinearGradient>
-
-        {/* Risk Level Card */}
-        <View style={[s.riskCard, { backgroundColor: riskBg, borderColor: risk === 'high' ? '#EF9A9A' : 'transparent', borderWidth: risk === 'high' ? 1.5 : 0 }]}>
-          <View style={s.riskTop}>
-            <Text style={s.riskCardLabel}>{SI.riskLevel}</Text>
-            <Text style={[s.riskText, { color: riskColor }]}>
-              {riskLabelText}
-            </Text>
-          </View>
-          <View style={s.riskBar}>
-            <View style={[s.riskBarFill, { width: `${riskPct}%`, backgroundColor: riskColor }]} />
-          </View>
-          <Text style={[s.riskDesc, { color: riskColor }]}>{riskDesc}</Text>
-        </View>
 
         {/* Support Message Card */}
         <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={s.msgCard}>
@@ -262,26 +235,6 @@ const DashboardScreenCopy = ({ navigation }) => {
         </LinearGradient>
       </TouchableOpacity>
 
-      {/* 7-Day Strip */}
-      <View style={s.section}>
-        <Text style={s.sectionTitle}>{SI.thisWeek}</Text>
-        <View style={s.weekStrip}>
-          {weekDays.map((d, i) => {
-            const e = ecMap[d.emotion] || ecMap.stressed;
-            const SI_DAYS = ['ඉරි', 'සඳු', 'අඟ', 'බදා', 'බ්‍රහ', 'සිකු', 'සෙන'];
-            const todayDayName = SI_DAYS[new Date().getDay()];
-            const isToday = d.day === todayDayName;
-            const displayEmoji = d.emoji || d.mood || e.emoji;
-            return (
-              <View key={i} style={[s.dayChip, { backgroundColor: e.bg }, isToday && s.dayChipToday]}>
-                <Text style={s.dayEmoji}>{displayEmoji}</Text>
-                <Text style={[s.dayLabel, isToday && { color: colors.lavenderDark, fontWeight: '800' }]}>{d.day}</Text>
-                <Text style={s.riskDot}>{d.risk === 'medium' ? '🟡' : '🟢'}</Text>
-              </View>
-            );
-          })}
-        </View>
-      </View>
 
       {/* Quick Actions */}
       <View style={s.section}>
@@ -291,7 +244,13 @@ const DashboardScreenCopy = ({ navigation }) => {
             <TouchableOpacity
               key={i}
               style={[s.quickCard, { width: quickCardW, backgroundColor: a.color }]}
-              onPress={() => navigation.navigate(a.nav, a.params)}
+              onPress={() => {
+                if (a.params) {
+                  navigation.navigate(a.nav, a.params);
+                } else {
+                  navigation.navigate(a.nav);
+                }
+              }}
             >
               <Text style={s.quickIcon}>{a.icon}</Text>
               <Text style={s.quickLabel}>{a.label}</Text>
@@ -306,14 +265,6 @@ const DashboardScreenCopy = ({ navigation }) => {
         <Text style={s.affirmText}>"{affirmation}"</Text>
       </LinearGradient>
 
-      {/* Demo Simulator */}
-      <View style={s.demoSection}>
-        <Text style={s.demoTitle}>{SI.simulateDiary}</Text>
-        <Text style={s.demoPreview}>{isSinhala ? 'ඊළඟ' : 'Next'}: "{nextDemoPreview?.slice(0, 60)}..."</Text>
-        <TouchableOpacity style={s.demoBtn} onPress={handleSimulate} disabled={processing}>
-          <Text style={s.demoBtnText}>{processing ? (isSinhala ? 'විශ්ලේෂණය කරමින්...' : 'Analyzing...') : SI.processNewEntry}</Text>
-        </TouchableOpacity>
-      </View>
 
     </ScreenContainer>
   );

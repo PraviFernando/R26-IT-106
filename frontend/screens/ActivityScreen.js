@@ -3034,6 +3034,14 @@ const ActivityScreen = ({ navigation, route }) => {
   };
 
   const goBack = () => {
+    if (route?.params?.returnTo === 'GamesLibrary') {
+      navigation.navigate('GamesLibrary');
+      return;
+    }
+    if (route?.params?.returnTo === 'ActivitiesLibrary') {
+      navigation.navigate('ActivitiesLibrary');
+      return;
+    }
     if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
       navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Recommendations' } });
       return;

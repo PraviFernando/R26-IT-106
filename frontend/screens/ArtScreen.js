@@ -1372,7 +1372,11 @@ const ArtScreen = ({ navigation, route }) => {
       contentContainerStyle={{ paddingTop: 8 }}
     >
           <TouchableOpacity onPress={() => {
-            if (navigation.canGoBack()) {
+            if (route?.params?.returnTo === 'GamesLibrary') {
+              navigation.navigate('GamesLibrary');
+            } else if (route?.params?.returnTo === 'ActivitiesLibrary') {
+              navigation.navigate('ActivitiesLibrary');
+            } else if (navigation.canGoBack()) {
               navigation.goBack();
             } else if (route?.params?.fromRecommendations || route?.params?.returnTo === 'Recommendations') {
               navigation.navigate('Tabs', { screen: 'Recommendations' });

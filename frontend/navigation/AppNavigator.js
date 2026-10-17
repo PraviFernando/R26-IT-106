@@ -18,6 +18,9 @@ import ActivityScreen from '../screens/ActivityScreen';
 import ProgressScreen from '../screens/ProgressScreen';
 import PreferencesScreen from '../screens/PreferencesScreen';
 import ArtScreen from '../screens/ArtScreen';
+import MusicLibraryScreen from '../screens/MusicLibraryScreen';
+import ActivitiesLibraryScreen from '../screens/ActivitiesLibraryScreen';
+import GamesLibraryScreen from '../screens/GamesLibraryScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -99,6 +102,9 @@ const AppNavigator = () => (
     <Stack.Screen name="Tabs" component={TabsNavigator} />
     <Stack.Screen name="Preferences" component={PreferencesScreen} options={{ presentation: 'modal' }} />
     <Stack.Screen name="Art" component={ArtScreen} />
+    <Stack.Screen name="MusicLibrary" component={MusicLibraryScreen} />
+    <Stack.Screen name="ActivitiesLibrary" component={ActivitiesLibraryScreen} />
+    <Stack.Screen name="GamesLibrary" component={GamesLibraryScreen} />
   </Stack.Navigator>
 );
 

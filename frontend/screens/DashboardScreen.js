@@ -439,7 +439,7 @@ function Footer({ activeTab, onTabPress, isDarkMode }) {
 export default function DashboardScreen({ navigation }) {
     const { t, i18n } = useTranslation();
     const { width } = useWindowDimensions();
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const [displayName, setDisplayName] = useState(user?.username || 'Guest User');
     const initials = displayName.slice(0, 2).toUpperCase();
 
@@ -634,6 +634,9 @@ export default function DashboardScreen({ navigation }) {
 
     const handleLogout = () => {
         setSidebarVisible(false);
+        if (logout) {
+            logout();
+        }
 
         Toast.show({
             type: 'success',
@@ -644,7 +647,7 @@ export default function DashboardScreen({ navigation }) {
 
         setTimeout(() => {
             navigation.replace('Login');
-        }, 1500);
+        }, 1000);
     };
 
     const handleNotifPress = () => {

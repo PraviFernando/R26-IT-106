@@ -1134,16 +1134,25 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
     'journaling', 'write_positive', 'new_gratitude_journal', 'new_positive_affirmations'
   ];
 
+  /**
+   * ACTIVITY RANKING FORMULA:
+   * Scores and ranks self-care activities dynamically using a multi-factor weighting formula.
+   * Formula: Total Score = (Reason Match +15) + (Baby Context Boost +20) + (Emotion Match +18) 
+   *                        + (Risk Level Safety +8 / -50) + (User Preferences +10) 
+   *                        - (History Repetition Penalty -15) - (Unrelated Penalty -12)
+   */
   const ranked = pool.map(act => {
     let score = 0;
 
-    // 1. PRIMARY INTENT / REASON MATCH
+    // STEP 1: PRIMARY INTENT / REASON MATCH (+15 Weight)
+    // Boosts activities mapped directly to the primary maternal reason/issue
     const reasonList = REASON_ACTIVITY_MAP[normReason] || REASON_ACTIVITY_MAP.overwhelmed;
     if (reasonList.includes(act.id)) {
       score += 15;
     }
 
-    // 2. BABY CONTEXT BOOST
+    // STEP 2: BABY CONTEXT BOOST (+20 Weight)
+    // Prioritizes infant observation & maternal bonding activities when baby care concerns are active
     const babyActivities = [
       'baby_mood', 'new_baby_interaction_ideas', 'baby_bonding', 'new_drink_water',
       'baby_cue_observation', 'hunger_cue_observation', 'sleep_cue_observation',
@@ -1153,13 +1162,15 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
       score += 20;
     }
 
-    // 3. EMOTION MATCH (Personalization weight)
+    // STEP 3: EMOTION MATCH (+18 Weight)
+    // Personalizes activity scoring based on current emotional state (happy, sad, anxious, stressed, crying, etc.)
     const emotionList = EMOTION_ACTIVITY_MAP[normEmotion] || EMOTION_ACTIVITY_MAP.stressed;
     if (emotionList.includes(act.id)) {
       score += 18;
     }
 
-    // 4. RISK LEVEL MATCH (Safety Enforcement)
+    // STEP 4: RISK LEVEL MATCH & CLINICAL SAFETY ENFORCEMENT
+    // Enforces safety constraints for high-risk clinical states (+8 for safe breathing/mindfulness, -50 penalty for others)
     if (normRisk === 'high') {
       if (highRiskSafeList.includes(act.id)) {
         score += 8;
@@ -1173,17 +1184,20 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
       score += 4;
     }
 
-    // 5. USER PREFERENCES
+    // STEP 5: USER PREFERENCES BOOST (+10 Weight)
+    // Rewards activities pre-selected by the mother in her onboarding preferences
     if (preferredActivities && preferredActivities.includes(act.id)) {
       score += 10;
     }
 
-    // 6. HISTORY REPETITION PENALTY
+    // STEP 6: HISTORY REPETITION PENALTY (-15 Penalty)
+    // Applies penalty to activities completed earlier today to encourage variety
     if (completedActivities && completedActivities.includes(act.id)) {
       score -= 15;
     }
 
-    // 7. UNRELATED FILTERING
+    // STEP 7: UNRELATED FILTERING (-12 Penalty)
+    // Penalizes activities irrelevant to baby context or active emotion/reason mapping
     const isMapped = reasonList.includes(act.id) || emotionList.includes(act.id);
     if (isBabyActive && !babyActivities.includes(act.id) && !act.id.includes('breathing') && !act.id.includes('meditation') && !act.id.includes('relaxing_music') && !isMapped) {
       score -= 12;
@@ -1195,7 +1209,7 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
     };
   });
 
-  // Sort by score descending, then by activity ID ascending (deterministic)
+  // FINAL SORTING & SELECTION: Sort by score descending, then by activity ID ascending (deterministic)
   ranked.sort((a, b) => (b.score - a.score) || a.id.localeCompare(b.id));
 
   let top4 = ranked.slice(0, 4);
@@ -1221,3 +1235,727 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
 
   return top4;
 };
+
+// ================================================================
+// DEDICATED ACTIVITIES CATALOG & CATEGORIES FOR ACTIVITIES LIBRARY
+// ================================================================
+
+export const ACTIVITY_CATEGORIES = [
+  { id: 'all', titleSi: 'සියලු ක්‍රියාකාරකම්', titleEn: 'All Activities', icon: '🌸', descSi: 'සම්පූර්ණ ක්‍රියාකාරකම් එකතුව ගවේෂණය කරන්න.', descEn: 'Explore all available activities for relaxation and well-being.' },
+  { id: 'breathing', titleSi: 'හුස්ම ගැනීම', titleEn: 'Breathing Exercises', icon: '🌬️', descSi: 'ස්නායු පද්ධතිය සන්සුන් කර ආතතිය අඩු කරන ශ්වසන අභ්‍යාස.', descEn: 'Targeted breathing techniques to soothe the nervous system.' },
+  { id: 'mindfulness', titleSi: 'සිහිකල්පනාව සහ භාවනා', titleEn: 'Mindfulness & Meditation', icon: '🧘', descSi: 'සිත සන්සුන් කරන භාවනා, ධනාත්මක ප්‍රකාශ සහ සිහිකල්පනාව.', descEn: 'Mindful presence, guided meditations, and positive affirmations.' },
+  { id: 'writing', titleSi: 'ලිවීම සහ දිනපොත්', titleEn: 'Writing & Reflection', icon: '✍️', descSi: 'කෘතඥතාව, හැඟීම් සහ සිතුවිලි සටහන් කිරීමේ අභ්‍යාස.', descEn: 'Gratitude prompts, emotion check-ins, and expressive journaling.' },
+  { id: 'grounding', titleSi: 'ගොඩ නැගීම', titleEn: 'Grounding & Senses', icon: '🌿', descSi: 'ඉන්ද්‍රියන් 5 උපයෝගී කරගනිමින් වර්තමානයට පැමිණීමේ අභ්‍යාස.', descEn: 'Sensory grounding techniques to anchor the mind in the present.' },
+  { id: 'self_care', titleSi: 'ව්‍යායාම සහ සත්කාර', titleEn: 'Physical Care & Movement', icon: '🤸', descSi: 'මෘදු ඇදීම්, ජලය පානය සහ දෛනික ස්වයං රැකවරණ පුරුදු.', descEn: 'Gentle postpartum movement, hydration, and daily self-care checklists.' },
+  { id: 'relaxation', titleSi: 'විවේකය සහ සන්සුන්කම', titleEn: 'Rest & Relaxation', icon: '😴', descSi: 'සුව නින්දක්, විවේකයක් සහ සන්සුන් බවක් ලබාදෙන ක්‍රියාකාරකම්.', descEn: 'Deep relaxation, sleep reflections, art coloring, and sensory calming.' },
+  { id: 'baby_care', titleSi: 'ළදරු සාත්තු සහ සංඥා', titleEn: 'Baby Care & Cues', icon: '👶', descSi: 'බබාගේ සංඥා, බඩගින්න, නින්ද සහ හැඬීම් රටා නිරීක්ෂණය.', descEn: 'Infant cue observation, hunger/sleep patterns, and quiet bonding moments.' },
+];
+
+const ACTIVITY_METADATA_EXTRAS = {
+  // Breathing
+  breathing_478: {
+    category: 'breathing',
+    labelEn: '4-7-8 Breathing',
+    descEn: 'Instantly calm anxiety and soothe the nervous system with timed cycles.',
+    typeLabelSi: 'ශ්වසන අභ්‍යාසය',
+    typeLabelEn: 'Breathing Exercise',
+    durationEn: '5 mins',
+  },
+  box_breathing: {
+    category: 'breathing',
+    labelEn: 'Box Breathing',
+    descEn: 'Equal 4-phase breathing pattern to restore balance and calm a racing mind.',
+    typeLabelSi: 'කොටු ශ්වසනය',
+    typeLabelEn: 'Box Breathing',
+    durationEn: '4 mins',
+  },
+  short_breathing: {
+    category: 'breathing',
+    labelEn: 'Short Breathing Exercise',
+    descEn: 'Quick 2-minute breathwork for rapid relief during tiring moments.',
+    typeLabelSi: 'කෙටි ශ්වසනය',
+    typeLabelEn: 'Short Breathing',
+    durationEn: '2 mins',
+  },
+  night_breathing: {
+    category: 'breathing',
+    labelEn: 'Night Relaxation Exercise',
+    descEn: 'Gentle nighttime cadence preparing body and mind for restorative sleep.',
+    typeLabelSi: 'රාත්‍රී ශ්වසනය',
+    typeLabelEn: 'Night Breathing',
+    durationEn: '5 mins',
+  },
+  deep_breathing: {
+    category: 'breathing',
+    labelEn: 'Deep Breathing',
+    descEn: 'Slow, deep belly breaths helping release pent-up emotional strain.',
+    typeLabelSi: 'ගැඹුරු ශ්වසනය',
+    typeLabelEn: 'Deep Breathing',
+    durationEn: '5 mins',
+  },
+  new_deep_breathing: {
+    category: 'breathing',
+    labelEn: 'Deep Breathing Guidance',
+    descEn: 'Step-by-step deep inhalation and exhalation technique for daily stress.',
+    typeLabelSi: 'ශ්වසන මඟපෙන්වීම',
+    typeLabelEn: 'Breathing Guidance',
+    durationEn: '5 mins',
+    color: ['#E8F5E9', '#C8E6C9'],
+    accent: '#2E7D32',
+  },
+  new_478_breathing: {
+    category: 'breathing',
+    labelEn: '4-7-8 Breathing Guidance',
+    descEn: 'Relaxing 4-second inhale, 7-second hold, and 8-second exhale cadence.',
+    typeLabelSi: 'ශ්වසන මඟපෙන්වීම',
+    typeLabelEn: 'Breathing Guidance',
+    durationEn: '5–8 mins',
+    color: ['#EDE7F6', '#D1C4E9'],
+    accent: '#7E57C2',
+  },
+  new_box_breathing: {
+    category: 'breathing',
+    labelEn: 'Box Breathing Guidance',
+    descEn: 'Focus-enhancing 4-4-4-4 rhythm soothing a busy or racing mind.',
+    typeLabelSi: 'ශ්වසන මඟපෙන්වීම',
+    typeLabelEn: 'Breathing Guidance',
+    durationEn: '5 mins',
+    color: ['#E3F2FD', '#BBDEFB'],
+    accent: '#1565C0',
+  },
+  new_breathing_balloon: {
+    category: 'breathing',
+    labelEn: 'Breathing Balloon Exercise',
+    descEn: 'Visual breathing exercise imagining a balloon expanding and shrinking.',
+    typeLabelSi: 'දෘශ්‍ය ශ්වසනය',
+    typeLabelEn: 'Visual Breathing',
+    durationEn: '5 mins',
+    color: ['#FCE4EC', '#F8BBD9'],
+    accent: '#C2185B',
+  },
+
+  // Mindfulness & Meditation
+  guided_meditation: {
+    category: 'mindfulness',
+    labelEn: 'Guided Meditation',
+    descEn: 'Calming 5-step guided mindfulness session easing emotional overwhelm.',
+    typeLabelSi: 'මඟපෙන්වන භාවනාව',
+    typeLabelEn: 'Guided Meditation',
+    durationEn: '10 mins',
+  },
+  affirmation_activity: {
+    category: 'mindfulness',
+    labelEn: 'Positive Affirmation Activity',
+    descEn: 'Uplifting inner affirmations synchronized with gentle breathing.',
+    typeLabelSi: 'ධනාත්මක ප්‍රකාශන',
+    typeLabelEn: 'Affirmations',
+    durationEn: '7 mins',
+  },
+  new_positive_affirmations: {
+    category: 'mindfulness',
+    labelEn: 'Positive Affirmations',
+    descEn: 'Empowering maternal truths reminding you that you are doing your best.',
+    typeLabelSi: 'ධනාත්මක ප්‍රකාශ',
+    typeLabelEn: 'Affirmations',
+    durationEn: '5 mins',
+    color: ['#FFF8E1', '#FFECB3'],
+    accent: '#FF8F00',
+  },
+  new_guided_meditation: {
+    category: 'mindfulness',
+    labelEn: 'Guided Mindful Session',
+    descEn: 'Mindful presence exercise relaxing racing thoughts and tense muscles.',
+    typeLabelSi: 'භාවනා මඟපෙන්වීම',
+    typeLabelEn: 'Mindful Session',
+    durationEn: '10 mins',
+    color: ['#F3E5F5', '#E1BEE7'],
+    accent: '#8E24AA',
+  },
+  new_smile_challenge: {
+    category: 'mindfulness',
+    labelEn: 'Smile Challenge',
+    descEn: 'Look in the mirror, smile, and record one moment that brought joy today.',
+    typeLabelSi: 'ධනාත්මක අභියෝගය',
+    typeLabelEn: 'Joy Challenge',
+    durationEn: '2 mins',
+    color: ['#FFF9C4', '#FFF3A0'],
+    accent: '#F57F17',
+  },
+  new_memory_card: {
+    category: 'mindfulness',
+    labelEn: 'Memory & Focus Exercise',
+    descEn: 'Gentle cognitive focus exercise matching calming pairs without pressure.',
+    typeLabelSi: 'අවධානය සහ මතකය',
+    typeLabelEn: 'Focus & Memory',
+    durationEn: '5 mins',
+    color: ['#EDE7F6', '#D1C4E9'],
+    accent: '#7E57C2',
+  },
+
+  // Writing & Reflection
+  journaling: {
+    category: 'writing',
+    labelEn: 'Reflective Journaling',
+    descEn: 'Guided prompts to freely write your feelings, concerns, and small joys.',
+    typeLabelSi: 'දිනපොත් ලිවීම',
+    typeLabelEn: 'Journaling',
+    durationEn: '10 mins',
+  },
+  write_positive: {
+    category: 'writing',
+    labelEn: 'Write 3 Positive Thoughts',
+    descEn: 'Short writing activity capturing 3 small positive moments from today.',
+    typeLabelSi: 'ධනාත්මක සටහන්',
+    typeLabelEn: 'Positive Prompts',
+    durationEn: '5 mins',
+  },
+  gratitude_writing: {
+    category: 'writing',
+    labelEn: 'Gratitude Writing',
+    descEn: 'Reflect and note down three things you are genuinely grateful for.',
+    typeLabelSi: 'කෘතඥතා ලිවීම',
+    typeLabelEn: 'Gratitude Writing',
+    durationEn: '8 mins',
+  },
+  positive_thinking_act: {
+    category: 'writing',
+    labelEn: 'Positive Thinking Prompts',
+    descEn: 'Thought-reframing prompts to gently transform self-criticism.',
+    typeLabelSi: 'ධනාත්මක චින්තනය',
+    typeLabelEn: 'Positive Thinking',
+    durationEn: '8 mins',
+  },
+  new_gratitude_journal: {
+    category: 'writing',
+    labelEn: 'Gratitude Reflection',
+    descEn: 'Structured prompts for baby, family, and personal moments to celebrate.',
+    typeLabelSi: 'කෘතඥතා සටහන',
+    typeLabelEn: 'Gratitude Journal',
+    durationEn: '5–10 mins',
+    color: ['#FFF9C4', '#FFF3A0'],
+    accent: '#F57F17',
+  },
+  new_emotion_check_in: {
+    category: 'writing',
+    labelEn: 'Emotion Check-In',
+    descEn: 'Select an emoji, name your current feeling, and write a sentence why.',
+    typeLabelSi: 'හැඟීම් පරීක්ෂාව',
+    typeLabelEn: 'Emotion Check-In',
+    durationEn: '2–3 mins',
+    color: ['#EDE7F6', '#D1C4E9'],
+    accent: '#7E57C2',
+  },
+  new_worry_box: {
+    category: 'writing',
+    labelEn: 'The Worry Box',
+    descEn: 'Write down a heavy worry, place it in the virtual box, and let it go.',
+    typeLabelSi: 'කනස්සල්ල බහාලීම',
+    typeLabelEn: 'Worry Box',
+    durationEn: '5 mins',
+    color: ['#E3F2FD', '#BBDEFB'],
+    accent: '#1565C0',
+  },
+
+  // Grounding & Senses
+  grounding_54321: {
+    category: 'grounding',
+    labelEn: '5-4-3-2-1 Grounding',
+    descEn: '5 senses grounding technique guiding sight, touch, sound, smell, and taste.',
+    typeLabelSi: 'ඉන්ද්‍රියන් ගොඩනැගීම',
+    typeLabelEn: 'Sensory Grounding',
+    durationEn: '5 mins',
+  },
+  new_five_senses_grounding: {
+    category: 'grounding',
+    labelEn: '5 Senses Grounding Guidance',
+    descEn: 'Anchor yourself in the room: 5 things seen, 4 touched, 3 heard, 2 smelled, 1 tasted.',
+    typeLabelSi: 'ඉන්ද්‍රියන් ගොඩනැගීම',
+    typeLabelEn: 'Sensory Grounding',
+    durationEn: '5 mins',
+    color: ['#E8F5E9', '#C8E6C9'],
+    accent: '#2E7D32',
+  },
+
+  // Physical Care & Movement
+  gentle_stretch: {
+    category: 'self_care',
+    labelEn: 'Gentle Stretching',
+    descEn: 'Simple postpartum-safe neck, shoulder, and back movements.',
+    typeLabelSi: 'මෘදු ඇදීම්',
+    typeLabelEn: 'Gentle Stretching',
+    durationEn: '8 mins',
+  },
+  new_drink_water: {
+    category: 'self_care',
+    labelEn: 'Hydration Reminder',
+    descEn: 'Drink a glass of water to refresh physical health, milk supply, and energy.',
+    typeLabelSi: 'ශාරීරික සත්කාරය',
+    typeLabelEn: 'Hydration Care',
+    durationEn: '1 min',
+    color: ['#E0F7FA', '#B2EBF2'],
+    accent: '#00838F',
+  },
+  new_self_care_checklist: {
+    category: 'self_care',
+    labelEn: 'Self-Care Checklist',
+    descEn: 'Daily checklist for meals, rest, medications, hydration, and connection.',
+    typeLabelSi: 'දෛනික සත්කාර',
+    typeLabelEn: 'Self-Care Checklist',
+    durationEn: '2 mins',
+    color: ['#FFF8E1', '#FFECB3'],
+    accent: '#F57F17',
+  },
+  new_gentle_stretch: {
+    category: 'self_care',
+    labelEn: 'Gentle Body Movement',
+    descEn: 'Careful shoulder rolls, arm stretches, and neck relaxation for comfort.',
+    typeLabelSi: 'මෘදු ව්‍යායාම',
+    typeLabelEn: 'Gentle Movement',
+    durationEn: '5 mins',
+    color: ['#FCE4EC', '#F8BBD9'],
+    accent: '#C2185B',
+  },
+
+  // Rest & Relaxation
+  rest_meditation: {
+    category: 'relaxation',
+    labelEn: 'Rest Meditation',
+    descEn: 'Comfortable relaxation session releasing fatigue from head to toe.',
+    typeLabelSi: 'විවේක භාවනාව',
+    typeLabelEn: 'Rest Meditation',
+    durationEn: '15 mins',
+  },
+  new_sleep_reflection: {
+    category: 'relaxation',
+    labelEn: 'Sleep Quality Reflection',
+    descEn: 'Quick questions tracking sleep hours, night wakings, and restfulness.',
+    typeLabelSi: 'නින්ද පරීක්ෂාව',
+    typeLabelEn: 'Sleep Reflection',
+    durationEn: '2 mins',
+    color: ['#E8EAF6', '#C5CAE9'],
+    accent: '#3949AB',
+  },
+  new_calm_coloring: {
+    category: 'relaxation',
+    labelEn: 'Calm Coloring Session',
+    descEn: 'Therapeutic mandala and coloring pages with interactive tap-to-fill colors.',
+    typeLabelSi: 'කලා චිකිත්සාව',
+    typeLabelEn: 'Art Therapy',
+    durationEn: '10–20 mins',
+    color: ['#EDE7F6', '#D1C4E9'],
+    accent: '#7E57C2',
+  },
+  new_bubble_pop: {
+    category: 'relaxation',
+    labelEn: 'Bubble Pop Sensory Session',
+    descEn: 'Gentle sensory pop activity designed to release stress without competition.',
+    typeLabelSi: 'සන්සුන් සංවේදන',
+    typeLabelEn: 'Sensory Calming',
+    durationEn: '3–5 mins',
+    color: ['#E3F2FD', '#BBDEFB'],
+    accent: '#1565C0',
+  },
+  new_relaxing_music: {
+    category: 'relaxation',
+    labelEn: 'Relaxing Music Guidance',
+    descEn: 'Focused listening session with calming acoustic frequencies.',
+    typeLabelSi: 'ශ්‍රව්‍ය විවේකය',
+    typeLabelEn: 'Sound Therapy',
+    durationEn: '10–20 mins',
+    color: ['#EDE7F6', '#D1C4E9'],
+    accent: '#7E57C2',
+  },
+
+  // Baby Care & Cues
+  baby_mood: {
+    category: 'baby_care',
+    labelEn: 'Baby Cues & Expressions',
+    descEn: 'Identify baby expressions, hunger signs, tiredness, and bonding signals.',
+    typeLabelSi: 'ළදරු සංඥා',
+    typeLabelEn: 'Baby Cues',
+    durationEn: '5–10 mins',
+    color: ['#FFF9C4', '#FFF3A0'],
+    accent: '#F57F17',
+  },
+  baby_cue_observation: {
+    category: 'baby_care',
+    labelEn: 'Baby Cue Observation',
+    descEn: 'Notice baby facial cues, limb movements, and body language patterns.',
+    typeLabelSi: 'සංඥා නිරීක්ෂණය',
+    typeLabelEn: 'Cue Observation',
+    durationEn: '5 mins',
+    color: ['#FFF9C4', '#FFF3A0'],
+    accent: '#F57F17',
+  },
+  hunger_cue_observation: {
+    category: 'baby_care',
+    labelEn: 'Hunger Cue Observation',
+    descEn: 'Recognize early feeding cues (rooting, lip smacking) before crying begins.',
+    typeLabelSi: 'බඩගිනි සංඥා',
+    typeLabelEn: 'Hunger Cues',
+    durationEn: '5 mins',
+    color: ['#FFF8E1', '#FFECB3'],
+    accent: '#FF8F00',
+  },
+  sleep_cue_observation: {
+    category: 'baby_care',
+    labelEn: 'Sleep Cue Observation',
+    descEn: 'Spot eye rubbing, yawning, and gaze aversion to avoid overtiredness.',
+    typeLabelSi: 'නිදිමත සංඥා',
+    typeLabelEn: 'Sleep Cues',
+    durationEn: '5 mins',
+    color: ['#E8EAF6', '#C5CAE9'],
+    accent: '#3949AB',
+  },
+  crying_pattern_observation: {
+    category: 'baby_care',
+    labelEn: 'Crying Pattern Observation',
+    descEn: 'Observe pitch, timing, and diaper/feeding contexts behind crying episodes.',
+    typeLabelSi: 'හැඬීම් රටා',
+    typeLabelEn: 'Crying Patterns',
+    durationEn: '5 mins',
+    color: ['#FCE4EC', '#F8BBD9'],
+    accent: '#C2185B',
+  },
+  baby_routine_tracking: {
+    category: 'baby_care',
+    labelEn: 'Baby Routine Tracking',
+    descEn: 'Track nursing times, sleep durations, and diaper changes for pattern awareness.',
+    typeLabelSi: 'රුටීන් සටහන්',
+    typeLabelEn: 'Routine Tracking',
+    durationEn: '5 mins',
+    color: ['#E8F5E9', '#C8E6C9'],
+    accent: '#2E7D32',
+  },
+  mother_baby_observation_time: {
+    category: 'baby_care',
+    labelEn: 'Mother-Baby Quiet Time',
+    descEn: '5 minutes of peaceful, distraction-free eye contact and loving bonding.',
+    typeLabelSi: 'බැඳීමේ කාලය',
+    typeLabelEn: 'Bonding Time',
+    durationEn: '5 mins',
+    color: ['#FCE4EC', '#F8BBD9'],
+    accent: '#E91E63',
+  },
+  new_baby_interaction_ideas: {
+    category: 'baby_care',
+    labelEn: 'Baby Interaction Ideas',
+    descEn: 'Simple communication, vocalizing, and gentle touch ideas for bonding.',
+    typeLabelSi: 'ළදරු අන්තර්ක්‍රියා',
+    typeLabelEn: 'Baby Interaction',
+    durationEn: '5–10 mins',
+    color: ['#FFF9C4', '#FFF3A0'],
+    accent: '#F57F17',
+  },
+};
+
+export const getAllActivitiesCatalog = () => {
+  const allActs = [];
+  const seen = new Set();
+
+  // Combine both arrays while preserving unique IDs
+  const combined = [...ALL_ACTIVITIES, ...NEW_ACTIVITIES];
+
+  for (const act of combined) {
+    if (!act || !act.id || seen.has(act.id)) continue;
+    seen.add(act.id);
+
+    const extra = ACTIVITY_METADATA_EXTRAS[act.id] || {};
+    const catId = extra.category || 'relaxation';
+    const catObj = ACTIVITY_CATEGORIES.find(c => c.id === catId) || ACTIVITY_CATEGORIES[0];
+
+    allActs.push({
+      ...act,
+      id: act.id,
+      label: act.label || act.id,
+      labelEn: extra.labelEn || act.labelEn || act.label || act.id,
+      desc: act.desc || act.purpose || 'සන්සුන් සුවපහසු ක්‍රියාකාරකමක්.',
+      descEn: extra.descEn || act.descEn || act.purpose || 'Calming wellness activity.',
+      duration: act.duration || 'විනාඩි 5',
+      durationEn: extra.durationEn || '5 mins',
+      icon: act.icon || '🌸',
+      category: catId,
+      categoryTitleSi: catObj.titleSi,
+      categoryTitleEn: catObj.titleEn,
+      typeLabelSi: extra.typeLabelSi || 'ක්‍රියාකාරකම',
+      typeLabelEn: extra.typeLabelEn || 'Activity',
+      color: act.color || extra.color || ['#EDE7F6', '#D1C4E9'],
+      accent: act.accent || extra.accent || '#7E57C2',
+      isNewFormat: Boolean(act.isNewFormat),
+      actionType: act.id === 'new_calm_coloring' ? 'art' : act.id === 'baby_mood' ? 'game' : 'activity',
+    });
+  }
+
+  return allActs;
+};
+
+// ================================================================
+// DEDICATED GAMES CATALOG & CATEGORIES FOR GAMES LIBRARY
+// ================================================================
+
+export const GAME_CATEGORIES = [
+  { id: 'all', titleSi: 'සියලු ක්‍රීඩා', titleEn: 'All Games', icon: '🎮', descSi: 'සම්පූර්ණ ක්‍රීඩා එකතුව ගවේෂණය කරන්න.', descEn: 'Explore all available calming and focus games.' },
+  { id: 'puzzle', titleSi: 'ප්‍රහේලිකා සහ මතකය', titleEn: 'Puzzles & Memory', icon: '🧩', descSi: 'මනස සැහැල්ලු කර අවධානය වඩවන ප්‍රහේලිකා.', descEn: 'Cognitive and pattern games to gently stimulate the mind.' },
+  { id: 'word', titleSi: 'වචන ක්‍රීඩා', titleEn: 'Word Games', icon: '🔠', descSi: 'වචන සෙවීම, ගොඩනැගීම සහ ගැළපීම.', descEn: 'Calm word search, builder, and matching games.' },
+  { id: 'calm', titleSi: 'සන්සුන් සහ කලා', titleEn: 'Calm & Art', icon: '🌸', descSi: 'ආතතිය දුරු කරන බුබුළු, චිත්‍ර සහ මනෝභාව පුවරු.', descEn: 'Sensory bubbles, mindful breathing rhythm, and art coloring.' },
+  { id: 'baby', titleSi: 'ළදරු සංඥා', titleEn: 'Baby Cues', icon: '👶', descSi: 'බබාගේ ඉරියව් සහ හැඟීම් හඳුනාගැනීමේ ක්‍රීඩාව.', descEn: 'Interactive quiz to learn common baby cues and expressions.' },
+];
+
+const GAME_METADATA_EXTRAS = {
+  word_search: {
+    category: 'word',
+    labelEn: 'Find Hidden Words',
+    descSi: 'අකුරු ජාලය තුළ සැඟවුණු සන්සුන් වචන සොයාගන්න.',
+    descEn: 'Find hidden calming words inside the letter grid.',
+    color: ['#E8F5E9', '#C8E6C9'],
+    accent: '#2E7D32',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  memory_match: {
+    category: 'puzzle',
+    labelEn: 'Memory Match (Pairs)',
+    descSi: 'සමාන ළදරු සහ මල් කාඩ්පත් යුගල ගළපන්න.',
+    descEn: 'Match identical pairs of soft baby and flower cards.',
+    color: ['#EDE7F6', '#D1C4E9'],
+    accent: '#7E57C2',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  baby_mood: {
+    category: 'baby',
+    labelEn: "Baby's Mood & Cues",
+    descSi: 'බබාගේ මුහුණේ ඉරියව් සහ හැඟීම් හඳුනාගැනීමේ ප්‍රශ්නාවලිය.',
+    descEn: 'Interactive quiz to identify baby expressions and cues.',
+    color: ['#FFF9C4', '#FFF3A0'],
+    accent: '#F57F17',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  self_care: {
+    category: 'calm',
+    labelEn: 'Self-Care Quest',
+    descSi: 'දෛනික සුවසෙත සහ මානසික ප්‍රබෝධය ගෙනෙන අන්තර්ක්‍රියාකාරී ගමන.',
+    descEn: 'Interactive daily self-care quest for wellness and health.',
+    color: ['#E8F5E9', '#A5D6A7'],
+    accent: '#2E7D32',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  bubble_pop: {
+    category: 'calm',
+    labelEn: 'Bubble Pop',
+    descSi: 'පාවෙන මල් බුබුළු ස්පර්ශ කර ආතතියෙන් මිදෙන්න.',
+    descEn: 'Pop floating floral bubbles to release tension and relax.',
+    color: ['#E3F2FD', '#BBDEFB'],
+    accent: '#1565C0',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  word_match: {
+    category: 'word',
+    labelEn: 'Word Match Pairs',
+    descSi: 'ගැළපෙන අර්ථවත් වචන යුගල තෝරන්න.',
+    descEn: 'Match meaningful paired words each turn without stress.',
+    color: ['#F3E5F5', '#E1BEE7'],
+    accent: '#7E57C2',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  word_builder: {
+    category: 'word',
+    labelEn: 'Word Builder',
+    descSi: 'අකුරු එකතු කර ධනාත්මක වචන ගොඩනඟන්න.',
+    descEn: 'Unscramble and build positive words with helpful hints.',
+    color: ['#EDE7F6', '#D1C4E9'],
+    accent: '#7E57C2',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  pattern_repeat: {
+    category: 'puzzle',
+    labelEn: 'Pattern Repeat',
+    descSi: 'පෙන්වන වර්ණ සහ ශබ්ද රටාව මතක තබාගෙන නැවත ස්පර්ශ කරන්න.',
+    descEn: 'Watch the musical color pattern and repeat the sequence.',
+    color: ['#FCE4EC', '#F8BBD9'],
+    accent: '#E91E8C',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  spot_diff: {
+    category: 'puzzle',
+    labelEn: 'Spot Difference',
+    descSi: 'සමාන රූප දෙකක් අතර ඇති සියුම් වෙනස්කම් සොයන්න.',
+    descEn: 'Find subtle visual differences between two baby scenes.',
+    color: ['#E8F5E9', '#C8E6C9'],
+    accent: '#2E7D32',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  sequence_order: {
+    category: 'puzzle',
+    labelEn: 'Sequence Order',
+    descSi: 'දෛනික ක්‍රියාකාරකම් නිවැරදි කාල අනුපිළිවෙලට සකසන්න.',
+    descEn: 'Arrange daily baby and self-care steps in proper chronological order.',
+    color: ['#F3E5F5', '#E1BEE7'],
+    accent: '#8E24AA',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  number_seq: {
+    category: 'puzzle',
+    labelEn: 'Number Sequence (1→2→3)',
+    descSi: 'අංක 1 සිට ඉහළට අනුපිළිවෙලින් ස්පර්ශ කර අවධානය යොමු කරන්න.',
+    descEn: 'Tap numbers 1→2→3 in quick sequence to sharpen cognitive focus.',
+    color: ['#E8F5E9', '#A5D6A7'],
+    accent: '#2E7D32',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  coin_maze: {
+    category: 'puzzle',
+    labelEn: 'Coin Maze',
+    descSi: 'මාලිමයේ ඇති සියලු කාසි එකතු කර අවසන් ඉලක්කයට ළඟා වන්න.',
+    descEn: 'Navigate the maze to collect all coins and reach the goal.',
+    color: ['#FFF9C4', '#FFF3E0'],
+    accent: '#F57F17',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  rotation_puzzle: {
+    category: 'puzzle',
+    labelEn: 'Rotation Puzzle',
+    descSi: 'කොටස් කරකවමින් සම්පූර්ණ රූපය නිවැරදිව සකසන්න.',
+    descEn: 'Tap to rotate tiles and align the complete picture.',
+    color: ['#EDE7F6', '#D1C4E9'],
+    accent: '#7E57C2',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  sliding_puzzle: {
+    category: 'puzzle',
+    labelEn: 'Sliding Puzzle',
+    descSi: 'කොටස් ලිස්සවමින් 1 සිට 8 දක්වා අංක අනුපිළිවෙලට සකසන්න.',
+    descEn: 'Slide tiles to arrange numbers and emojis in proper order.',
+    color: ['#E8F5E9', '#C8E6C9'],
+    accent: '#2E7D32',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  emotion_journal: {
+    category: 'calm',
+    labelEn: 'Emotion Journal',
+    descSi: 'දවසේ මනෝභාවය සටහන් කර හැඟීම් ප්‍රකාශ කිරීමේ ක්‍රීඩාව.',
+    descEn: 'Interactive mood logging with visual emoji stickers.',
+    color: ['#FCE4EC', '#F8BBD9'],
+    accent: '#E91E8C',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  mindful_tap: {
+    category: 'calm',
+    labelEn: 'Mindful Breathing Tap',
+    descSi: 'හුස්ම ගැනීමේ රිද්මයට අනුව මෘදුව තට්ටු කර සන්සුන් වන්න.',
+    descEn: 'Tap in sync with the gentle breathing flower rhythm.',
+    color: ['#E8F5E9', '#C8E6C9'],
+    accent: '#2E7D32',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  mood_board: {
+    category: 'calm',
+    labelEn: 'Mood Board Collage',
+    descSi: 'චිත්‍ර, වර්ණ සහ හැඟීම් එකතු කර ඔබේ මනෝභාව පුවරුව සාදන්න.',
+    descEn: 'Create an expressive mood board with calming elements.',
+    color: ['#EDE7F6', '#D1C4E9'],
+    accent: '#7E57C2',
+    isPlayable: true,
+    actionType: 'activity_game',
+  },
+  mandala: {
+    category: 'calm',
+    labelEn: 'Mandala Art Coloring',
+    descSi: 'මණ්ඩල රටා 10ක් තෝරා කැමති වර්ණවලින් හැඩගන්වන්න.',
+    descEn: 'Choose from 10 sacred mandalas and color with tap-to-fill.',
+    color: ['#EDE7F6', '#D1C4E9'],
+    accent: '#7E57C2',
+    isPlayable: true,
+    actionType: 'art',
+  },
+  colouring: {
+    category: 'calm',
+    labelEn: 'Colouring Pages',
+    descSi: 'අම්මා සහ බබා සතුටු කරන සුන්දර රූප 10ක් පාට කරන්න.',
+    descEn: 'Color 10 delightful mother-and-baby and nature drawings.',
+    color: ['#FCE4EC', '#F8BBD9'],
+    accent: '#E91E8C',
+    isPlayable: true,
+    actionType: 'art',
+  },
+  puzzle: {
+    category: 'puzzle',
+    labelEn: 'Simple Puzzle',
+    descSi: 'තනිකම සමනය කරන සරල ප්‍රහේලිකා අභ්‍යාසය (ක්‍රියාත්මක කර නොමැත).',
+    descEn: 'Simple puzzle defined in recommendation rules (implementation missing in ActivityScreen).',
+    color: ['#FFF9C4', '#FFF3A0'],
+    accent: '#F57F17',
+    isPlayable: false,
+    actionType: 'none',
+  },
+  affirmation_game: {
+    category: 'calm',
+    labelEn: 'Positive Affirmation Game',
+    descSi: 'ධනාත්මක සිතුවිලි සවිබල ගන්වන ක්‍රීඩාව (ක්‍රියාත්මක කර නොමැත).',
+    descEn: 'Affirmations game defined in support rule (implementation missing in ActivityScreen).',
+    color: ['#FCE4EC', '#F8BBD9'],
+    accent: '#C2185B',
+    isPlayable: false,
+    actionType: 'none',
+  },
+};
+
+export const getAllGamesCatalog = () => {
+  const allGames = [];
+  const seen = new Set();
+
+  // Primary list from ALL_GAMES and ALL_GAMES_METADATA
+  const combinedKeys = [
+    // 19 playable games from ActivityScreen.js
+    'word_search', 'memory_match', 'baby_mood', 'self_care', 'bubble_pop',
+    'word_match', 'word_builder', 'pattern_repeat', 'spot_diff', 'sequence_order',
+    'number_seq', 'coin_maze', 'rotation_puzzle', 'sliding_puzzle', 'emotion_journal',
+    'mindful_tap', 'mood_board', 'mandala', 'colouring',
+    // 2 defined in activitiesLibrary.js
+    'puzzle', 'affirmation_game'
+  ];
+
+  for (const id of combinedKeys) {
+    if (seen.has(id)) continue;
+    seen.add(id);
+
+    const fromAllGames = ALL_GAMES.find(g => g.id === id);
+    const extra = GAME_METADATA_EXTRAS[id] || {};
+    const catId = extra.category || 'puzzle';
+    const catObj = GAME_CATEGORIES.find(c => c.id === catId) || GAME_CATEGORIES[0];
+
+    allGames.push({
+      id,
+      label: fromAllGames?.label || extra.labelEn || id,
+      labelEn: fromAllGames?.labelEn || extra.labelEn || id,
+      desc: extra.descSi || 'සන්සුන් සහ සුවපහසු ක්‍රීඩාවක්.',
+      descEn: extra.descEn || 'Calming and focus game.',
+      icon: fromAllGames?.icon || '🎮',
+      category: catId,
+      categoryTitleSi: catObj.titleSi,
+      categoryTitleEn: catObj.titleEn,
+      color: fromAllGames?.color || extra.color || ['#EDE7F6', '#D1C4E9'],
+      accent: fromAllGames?.accent || extra.accent || '#7E57C2',
+      isPlayable: extra.isPlayable !== false,
+      actionType: extra.actionType || 'activity_game',
+    });
+  }
+
+  return allGames;
+};
+
+

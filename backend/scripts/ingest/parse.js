@@ -1,4 +1,7 @@
 const fs = require('fs');
+if (typeof global.DOMMatrix === 'undefined') {
+  global.DOMMatrix = class DOMMatrix {};
+}
 const { PDFParse } = require('pdf-parse');
 
 // pdf-parse v2's class-based API (not the v1 pdf(buffer) function).
