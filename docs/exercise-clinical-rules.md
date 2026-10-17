@@ -102,6 +102,18 @@ Uses the last **3** completed movement sessions (`PERSONALISE_SESSION_COUNT`). I
 
 The 90 and 70 values are **design choices** that match the score bands shown to the user on the movement summary (≥90 "Excellent", ≥70 "Good").
 
+## 4b. Camera movement scores (frontend/utils/movementScoring.js)
+
+All scores come from the user's own pose. Earlier versions compared the user with a fixed 6-second timer,
+which penalised correct movement done at the user's own pace, and reported steadiness only for Bird Dog.
+
+| Score | How it is measured |
+|---|---|
+| Accuracy | 50% range of motion (share of the exercise's target range reached, e.g. squat knee 170°→105°, bridge hip 125°→170°, Cat-Cow 25° spine range) + 50% posture. Smoothed. Each finished rep is scored the same way; 70+ counts as a correct rep. |
+| Posture | Exercise-specific alignment checks: knees over ankles (squat), knees hip-width (bridge), wrists under shoulders (Cat-Cow), straight reaching arm and leg (Bird Dog), level hips/shoulders. |
+| Steadiness | Hip tilt and side-to-side pelvis sway over the last ~3 seconds, relative to torso length, for every exercise. |
+| Pace | Seconds per rep vs a slow, controlled tempo (about 3–7 s; 4–9 s for Cat-Cow), from the 2nd rep on. Replaces "video match": the poses inside a YouTube video cannot be measured, so the app does not claim to compare against them. |
+
 ## 5. Completion and adherence
 
 | Value | Meaning | Where |
@@ -184,6 +196,21 @@ abdominal pain or muscle weakness (category ≥ 2), medium/high fatigue or low w
 diary mood, limited mobility. Each focus search uses the category's intensity wording (e.g. category 1 →
 "breathing exercises in bed"), so it can never suggest harder exercise. Up to **3 videos per focus search** are shown
 first and labelled on the card (e.g. "🎯 For back pain"); the rest come from the category search.
+
+### YouTube quota, cache and saved videos
+
+The YouTube Data API allows 10,000 units a day and one search costs 100. To keep the app working when the
+quota runs out:
+
+1. **Cache.** Each search is stored for 24 hours (`YOUTUBE_CACHE_HOURS`, collection `youtubesearchcaches`), so a
+   mother submitting the form again, or another mother with the same answers, uses no quota.
+2. **Older copy.** If YouTube refuses a request (for example HTTP 429, quota used up), the last cached copy is used,
+   up to 7 days old.
+3. **Saved videos.** If the list is still shorter than 10 (key missing, quota used up with no cache, or only some of
+   the searches worked), it is topped up from the saved list for the category (`type: youtube_fallback`).
+   The saved list has no repeated videos, and when a category has too few different videos, gentler categories
+   are used, never a harder one.
+4. A doctor-restricted user never gets videos, whatever happens with YouTube.
 
 ### Running it
 

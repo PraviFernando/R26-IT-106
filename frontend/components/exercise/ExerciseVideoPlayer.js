@@ -28,6 +28,11 @@ const ExerciseVideoPlayer = ({ url, onProgress }) => {
     useEffect(() => {
         if (Platform.OS !== 'web') return;
         let videoDuration = 0;
+        let answered = false;
+        const askForProgress = setInterval(() => {
+            if (answered) return clearInterval(askForProgress);
+            iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*');
+        }, 1000);
         const handleMessage = (event) => {
             if (!iframeRef.current || event.source !== iframeRef.current.contentWindow) return;
             if (typeof event.origin !== 'string' || !event.origin.includes('youtube')) return;
@@ -35,6 +40,7 @@ const ExerciseVideoPlayer = ({ url, onProgress }) => {
             try { data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data; } catch (e) { return; }
             const info = data && data.info;
             if (!info || !onProgressRef.current) return;
+            answered = true;
             if (info.duration) videoDuration = info.duration;
             if (info.playerState === 0) onProgressRef.current(100); // ended
             else if (typeof info.currentTime === 'number' && videoDuration > 0) {
@@ -42,7 +48,10 @@ const ExerciseVideoPlayer = ({ url, onProgress }) => {
             }
         };
         window.addEventListener('message', handleMessage);
-        return () => window.removeEventListener('message', handleMessage);
+        return () => {
+            clearInterval(askForProgress);
+            window.removeEventListener('message', handleMessage);
+        };
     }, [url]);
 
     const startListeningToIframe = () => {

@@ -64,6 +64,9 @@ const VIDEO_FOCUS = {
 
 export const videoFocusLabel = (focus, isSinhala) => (VIDEO_FOCUS[focus] ? (isSinhala ? VIDEO_FOCUS[focus].si : VIDEO_FOCUS[focus].en) : '');
 
+// "1 day" / "2 days" (Sinhala uses the same word for both)
+export const formatDays = (n, isSinhala) => `${n} ${isSinhala ? 'දින' : (n === 1 ? 'day' : 'days')}`;
+
 export const feedbackText = (code, isSinhala) => (FEEDBACK[code] ? (isSinhala ? FEEDBACK[code].si : FEEDBACK[code].en) : '');
 
 // (text, isSinhala, code?) — keeps the old call signature working

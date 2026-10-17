@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, ActivityIndicator, useWindowDimensions } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import exerciseService from '../services/exerciseService';
-import ScreenContainer from '../components/ScreenContainer';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ContentWell } from '../components/ScreenContainer';
+import ExerciseShell from '../components/exercise/ExerciseShell';
 import ExerciseWatchHistory from './ExerciseWatchHistory';
 import { toLocalDateStr, todayStr } from '../utils/exerciseUtils';
-import { getTranslatedTrend } from '../utils/exerciseMessages';
-import { C, T, cardShadow, Card, GradientCard, SectionTitle, StatTile, CircleButton, Icon } from '../components/exercise/ui';
+import { getTranslatedTrend, formatDays } from '../utils/exerciseMessages';
+import { BarChart, C, T, cardShadow, Card, GradientCard, SectionTitle, StatTile, CircleButton, Icon, useExerciseFonts } from '../components/exercise/ui';
 
 
 export default function ExerciseProgressScreen({ navigation, route }) {
     const { t, i18n } = useTranslation();
+    const fontsReady = useExerciseFonts();
     const isSinhala = i18n.language === 'si';
 
     const filters = [
@@ -28,17 +30,10 @@ export default function ExerciseProgressScreen({ navigation, route }) {
     const [selectedFilter, setSelectedFilter] = useState('weekly');
     const [showDropdown, setShowDropdown] = useState(false);
     const [activeTab, setActiveTab] = useState(route?.params?.tab === 'history' ? 'history' : 'progress');
+    useEffect(() => {
+        if (route?.params?.tab) setActiveTab(route.params.tab === 'history' ? 'history' : 'progress');
+    }, [route?.params?.tab, route?.params?.ts]);
 
-    // Chart width measured from the progress column minus the chart card padding,
-    // so charts fit the centered column at any width.
-    const [chartW, setChartW] = useState(0);
-    // Fallback until the column is measured: window width minus page and card padding, capped at the wide layout
-    const { width: windowWidth } = useWindowDimensions();
-    const chartWidth = chartW > 0 ? chartW : Math.max(0, Math.min(windowWidth, 1160) - 32 - 34);
-    const onProgressLayout = (e) => {
-        const w = e.nativeEvent.layout.width - 34 /* chart card padding + border */;
-        setChartW((prev) => (Math.abs(prev - w) > 1 ? Math.max(0, w) : prev));
-    };
 
     const getChartData = (dataArray, filter) => {
         if (!dataArray || dataArray.length === 0) return [];
@@ -62,20 +57,6 @@ export default function ExerciseProgressScreen({ navigation, route }) {
         return sampled;
     };
 
-    // Shared trend chart — renders nothing until the container has been measured
-    // (chart-kit needs a real numeric width or it renders a broken SVG).
-    const TrendChart = ({ data, chartConfig }) =>
-        chartWidth > 0 ? (
-            <LineChart
-                data={data}
-                width={chartWidth}
-                height={180}
-                fromZero
-                bezier
-                chartConfig={chartConfig}
-                style={{ marginVertical: 8, borderRadius: 16 }}
-            />
-        ) : null;
 
     useEffect(() => {
         const loadData = async () => {
@@ -103,25 +84,22 @@ export default function ExerciseProgressScreen({ navigation, route }) {
         const p = String(date).split('-');
         return p.length >= 3 ? `${p[1]}/${p[2]}` : date;
     };
-    const chartConfig = (rgb) => ({
-        backgroundColor: '#FFFFFF',
-        backgroundGradientFrom: '#FFFFFF',
-        backgroundGradientTo: '#FFFFFF',
-        decimalPlaces: 0,
-        color: (opacity = 1) => `rgba(${rgb}, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(106, 77, 119, ${opacity})`,
-        propsForDots: { r: '5', strokeWidth: '2', stroke: `rgb(${rgb})` },
-        propsForLabels: { fontFamily: 'Inter_500Medium' },
-    });
+    // Weekly view: weekday names; longer ranges: month/day
+    const barLabel = (date) => {
+        if (selectedFilter !== 'weekly') return shortDate(date);
+        if (date === toLocalDateStr(new Date())) return tr('Today', 'අද');
+        const d = new Date(date + 'T00:00:00');
+        return isNaN(d) ? shortDate(date) : d.toLocaleDateString(isSinhala ? 'si-LK' : 'en-US', { weekday: 'short' });
+    };
 
     // Line chart inside a card; shows a friendly message when there is no data yet
-    const ChartCard = ({ title, data, valueKey, rgb, emptyText }) => (
+    const ChartCard = ({ title, data, valueKey, emptyText }) => (
         <Card style={pg.chartCard}>
             <SectionTitle>{title}</SectionTitle>
             {data.length > 0 ? (
-                <TrendChart
-                    data={{ labels: data.map(d => shortDate(d.date)), datasets: [{ data: data.map(d => d[valueKey]), color: (o = 1) => `rgba(${rgb}, ${o})`, strokeWidth: 3 }] }}
-                    chartConfig={chartConfig(rgb)}
+                <BarChart
+                    accessibilityLabel={`${title}: ${data.map(d => `${barLabel(d.date)} ${Math.round(d[valueKey])}`).join(', ')}`}
+                    data={data.map(d => ({ key: d.date, label: barLabel(d.date), value: d[valueKey] }))}
                 />
             ) : (
                 <Text style={pg.empty}>{emptyText}</Text>
@@ -171,30 +149,23 @@ export default function ExerciseProgressScreen({ navigation, route }) {
     const movementTrend = progress ? getChartData(progress.movementTrendData, selectedFilter) : [];
     const accuracyTrend = progress && progress.weeklyAccuracyTrendData ? progress.weeklyAccuracyTrendData.slice(-7) : [];
 
+    // Phones need the exercise fonts loaded before text uses them (web falls back to sans-serif)
+    if (!fontsReady && Platform.OS !== 'web') return <View style={{ flex: 1, backgroundColor: C.bg }} />;
+
     return (
-        <ScreenContainer
-            gradient={[C.bg, C.bg, C.bg]}
-            edges={['top', 'bottom']}
+        <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'bottom']}>
+          <ExerciseShell
+            active={activeTab === 'history' ? 'history' : 'progress'}
+            navigation={navigation}
+            isSinhala={isSinhala}
             header={header}
-            maxWidth="wide"
-            contentContainerStyle={{ paddingTop: 4 }}
-        >
-            <View style={pg.tabs} accessibilityRole="tablist">
-                {[
-                    { key: 'progress', label: tr('Progress', 'ප්‍රගතිය') },
-                    { key: 'history', label: tr('Watch history', 'නැරඹූ ඉතිහාසය') },
-                ].map(tab => (
-                    <Pressable
-                        key={tab.key}
-                        accessibilityRole="tab"
-                        accessibilityState={{ selected: activeTab === tab.key }}
-                        style={[pg.tab, activeTab === tab.key && pg.tabOn]}
-                        onPress={() => setActiveTab(tab.key)}
-                    >
-                        <Text style={[pg.tabText, activeTab === tab.key && pg.tabTextOn]}>{tab.label}</Text>
-                    </Pressable>
-                ))}
-            </View>
+            onLocal={(key) => {
+                if (key === 'progress' || key === 'history') { setActiveTab(key); return true; }
+                return false;
+            }}
+          >
+            <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+              <ContentWell maxWidth="wide">
 
             {activeTab === 'history' ? (
                 <ExerciseWatchHistory isSinhala={isSinhala} />
@@ -204,14 +175,14 @@ export default function ExerciseProgressScreen({ navigation, route }) {
                     <Text style={pg.empty}>{tr('Loading your progress...', 'ඔබේ ප්‍රගතිය පූරණය වෙමින්...')}</Text>
                 </View>
             ) : progress ? (
-                <View style={pg.page} onLayout={onProgressLayout}>
+                <View style={pg.page}>
                     <GradientCard style={{ gap: 14 }}>
                         <View style={pg.streakRow}>
                             <View>
                                 <Text style={pg.streakLabel}>{tr('Current streak', 'වත්මන් අඛණ්ඩතාවය')}</Text>
-                                <Text style={pg.streakValue}>{progress.currentStreak} {tr('days', 'දින')}</Text>
+                                <Text style={pg.streakValue}>{formatDays(progress.currentStreak, isSinhala)}</Text>
                             </View>
-                            <Text style={pg.streakLabel}>{tr('Best', 'හොඳම')}: {progress.bestStreak ?? 0} {tr('days', 'දින')}</Text>
+                            <Text style={pg.streakLabel}>{tr('Best', 'හොඳම')}: {formatDays(progress.bestStreak ?? 0, isSinhala)}</Text>
                         </View>
                         {renderWeekStrip()}
                     </GradientCard>
@@ -257,7 +228,6 @@ export default function ExerciseProgressScreen({ navigation, route }) {
                         title={tr('Daily score', 'දෛනික ලකුණු')}
                         data={trendData}
                         valueKey="avgAccuracy"
-                        rgb="135, 60, 166"
                         emptyText={tr('Complete exercises to see your daily score.', 'දෛනික ලකුණු දැකීමට ව්‍යායාම සම්පූර්ණ කරන්න.')}
                     />
 
@@ -272,21 +242,22 @@ export default function ExerciseProgressScreen({ navigation, route }) {
                         title={tr('Form accuracy', 'නිරවද්‍යතා ප්‍රවණතාවය')}
                         data={accuracyTrend}
                         valueKey="avgAccuracy"
-                        rgb="170, 96, 200"
                         emptyText={tr('Use camera tracking to see your form accuracy.', 'නිරවද්‍යතාව දැකීමට කැමරා ලුහුබැඳීම භාවිතා කරන්න.')}
                     />
                     <ChartCard
                         title={tr('Movement score', 'චලන ලකුණු')}
                         data={movementTrend}
                         valueKey="avgScore"
-                        rgb="135, 60, 166"
                         emptyText={tr('Use camera tracking to see your movement score.', 'චලන ලකුණු දැකීමට කැමරා ලුහුබැඳීම භාවිතා කරන්න.')}
                     />
                 </View>
             ) : (
                 <Card style={pg.center}><Text style={pg.empty}>{tr('No progress data yet. Complete an exercise to start.', 'තවම ප්‍රගති දත්ත නැත. ආරම්භ කිරීමට ව්‍යායාමයක් සම්පූර්ණ කරන්න.')}</Text></Card>
             )}
-        </ScreenContainer>
+              </ContentWell>
+            </ScrollView>
+          </ExerciseShell>
+        </SafeAreaView>
     );
 }
 

@@ -12,7 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { colors } from '../theme';
 import { useResponsive } from '../hooks/useResponsive';
 import { todayStr, formatTime, getYoutubeEmbedUrl } from '../utils/exerciseUtils';
-import { C, T, Card, SectionTitle, OptionRow, PrimaryButton, SecondaryButton, CircleButton, StatTile, Icon } from '../components/exercise/ui';
+import { C, T, Card, SectionTitle, OptionRow, PrimaryButton, SecondaryButton, CircleButton, StatTile, Icon, useExerciseFonts } from '../components/exercise/ui';
+import { MOVEMENT_SCORING_JS } from '../utils/movementScoring';
 import { MOVEMENT_COMPLETE_REPS, MOVEMENT_MIN_REPS, MOVEMENT_MIN_SECONDS } from '../utils/exerciseConfig';
 
 // Generate unique session ID
@@ -29,6 +30,7 @@ const getEmbedUrl = (url) => getYoutubeEmbedUrl(url,
 export default function MovementTrackingScreen({ route, navigation }) {
     const { exerciseId, exerciseName, videoUrl, cardName } = route.params;
     const { t, i18n } = useTranslation();
+    const fontsReady = useExerciseFonts();
     const isSinhala = i18n.language === 'si';
     const r = useResponsive();
     const isLargeScreen = r.isTablet;
@@ -38,8 +40,9 @@ export default function MovementTrackingScreen({ route, navigation }) {
     const [status, setStatus] = useState('Initializing...');
     const [reps, setReps] = useState(0);
     const [liveScore, setLiveScore] = useState(0);
-    const [stability, setStability] = useState(100);
-    const [postureMatch, setPostureMatch] = useState(100);
+    const [stability, setStability] = useState(null);     // steadiness 0-100, null until measured
+    const [postureMatch, setPostureMatch] = useState(null); // alignment / posture 0-100
+    const [averageSteadiness, setAverageSteadiness] = useState(0);
     const [feedbackMessage, setFeedbackMessage] = useState('Position yourself in front of the camera.');
     const [averageAccuracy, setAverageAccuracy] = useState(0);
     const [correctReps, setCorrectReps] = useState(0);
@@ -206,6 +209,9 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     if (data.postureMatch !== undefined) {
                         setPostureMatch(data.postureMatch);
                     }
+                    if (data.averageSteadiness !== undefined) {
+                        setAverageSteadiness(data.averageSteadiness);
+                    }
                     if (data.feedback !== undefined) {
                         setFeedbackMessage(data.feedback);
                     }
@@ -275,6 +281,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
         if (msg === 'Adjust your joint angles to match the video.') return 'වීඩියෝවට අනුව ඔබේ සන්ධි කෝණ සකස් කරන්න.';
         if (msg === 'Correct your body position to match the video.') return 'වීඩියෝවට අනුව ඔබේ ශරීරයේ පිහිටීම සකස් කරන්න.';
         if (msg === 'Adjust your pace to match the video timing.') return 'වීඩියෝවේ වේගයට අනුව ඔබේ වේගය සකස් කරන්න.';
+        if (msg === 'Keep your hips steady and move slowly.') return 'ඔබේ උකුල ස්ථාවරව තබාගෙන සෙමින් චලනය වන්න.';
+        if (msg === 'Move slowly and with control, about 3 to 7 seconds per repetition.') return 'සෙමින් සහ පාලනයෙන් චලනය වන්න, එක් වාරයකට තත්පර 3 සිට 7 දක්වා.';
         return msg;
     };
 
@@ -325,6 +333,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 exerciseId: sanitizedExerciseId,
                 // Use the recommendation card's name so that card is marked completed
                 customActivityName: cardName || exerciseName,
+                videoUrl,
                 status: isCompleted ? 'completed' : 'pending',
                 durationCompleted: Math.round(timeElapsed / 60) || 1,
                 liked: true,
@@ -334,8 +343,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 adherenceScore: sessionScore,
                 accuracy: averageAccuracy,
                 performanceMetrics: {
-                    postureScore: postureMatch,
-                    stabilityScore: stability,
+                    postureScore: averageJointAccuracy,
+                    stabilityScore: averageSteadiness,
                     rangeOfMotion: averageRangeOfMotion
                 }
             });
@@ -502,6 +511,43 @@ export default function MovementTrackingScreen({ route, navigation }) {
             let lastPeak = null;
             const thresholdY = 0.035;
 
+            // Scoring functions (frontend/utils/movementScoring.js)
+            ${MOVEMENT_SCORING_JS}
+
+            // Scoring state: rolling windows (~3 s at ~25 fps) and the current rep
+            const MS_WINDOW = 75;
+            const profile = MS_PROFILES[activeDetector] || MS_PROFILES['Universal'];
+            let metricWindow = [];
+            let tiltWindow = [];
+            let swayWindow = [];
+            let repMin = Infinity;
+            let repMax = -Infinity;
+            let repAlignments = [];
+            let repScores = [];
+            let paceScores = [];
+            let alignmentHistory = [];
+            let steadinessHistory = [];
+            let smoothAccuracy = null;
+            let smoothSteadiness = null;
+            let lastAlignment = null;
+
+            // Called when a rep is completed: scores that rep from its own range and alignment
+            function finishRep() {
+                const rom = msRomScore(profile, repMin, repMax);
+                const align = repAlignments.length ? repAlignments.reduce((a, b) => a + b, 0) / repAlignments.length : (lastAlignment || 0);
+                const repScore = Math.round(rom * 0.5 + align * 0.5);
+                repScores.push(repScore);
+                // the first rep's time includes getting into position, so pace starts from the second rep
+                if (repetitionTimes.length > 1) {
+                    paceScores.push(Math.round(msPaceScore(repetitionTimes[repetitionTimes.length - 1], profile.paceSec)));
+                }
+                romsHistory.push(Math.round(rom));
+                repMin = Infinity;
+                repMax = -Infinity;
+                repAlignments = [];
+                return repScore;
+            }
+
             // Tracking Histories
             let accuraciesHistory = [];
             let romsHistory = [];
@@ -552,268 +598,6 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 }
             };
 
-            // 2. Reference Movement Model (procedural replication of exercise video movement phase targets)
-            const ReferenceMovementModel = {
-                getExpectedPose: function(detector, cycleTimeSecs) {
-                    const phasePercentage = (cycleTimeSecs % 6) / 6;
-                    let phase = "starting";
-                    let targetAngles = {};
-                    
-                    if (detector === "Modified Squats") {
-                        if (phasePercentage < 0.25) {
-                            phase = "squatting";
-                            const ratio = phasePercentage / 0.25;
-                            targetAngles.knee = 180 - ratio * 70;
-                            targetAngles.hip = 180 - ratio * 85;
-                        } else if (phasePercentage < 0.5) {
-                            phase = "lowest";
-                            targetAngles.knee = 110;
-                            targetAngles.hip = 95;
-                        } else if (phasePercentage < 0.75) {
-                            phase = "standing";
-                            const ratio = (phasePercentage - 0.5) / 0.25;
-                            targetAngles.knee = 110 + ratio * 70;
-                            targetAngles.hip = 95 + ratio * 85;
-                        } else {
-                            phase = "starting";
-                            targetAngles.knee = 180;
-                            targetAngles.hip = 180;
-                        }
-                    } else if (detector === "Glute Bridge") {
-                        if (phasePercentage < 0.25) {
-                            phase = "up";
-                            const ratio = phasePercentage / 0.25;
-                            targetAngles.hip = 120 + ratio * 55;
-                        } else if (phasePercentage < 0.5) {
-                            phase = "lowest";
-                            targetAngles.hip = 175;
-                        } else if (phasePercentage < 0.75) {
-                            phase = "lowering";
-                            const ratio = (phasePercentage - 0.5) / 0.25;
-                            targetAngles.hip = 175 - ratio * 55;
-                        } else {
-                            phase = "starting";
-                            targetAngles.hip = 120;
-                        }
-                    } else if (detector === "Cat-Cow") {
-                        if (phasePercentage < 0.5) {
-                            phase = "cow";
-                            const ratio = phasePercentage / 0.5;
-                            targetAngles.back = 150 + ratio * 20;
-                        } else {
-                            phase = "cat";
-                            const ratio = (phasePercentage - 0.5) / 0.5;
-                            targetAngles.back = 170 - ratio * 30;
-                        }
-                    } else if (detector === "Bird Dog") {
-                        if (phasePercentage < 0.25) {
-                            phase = "extended";
-                            targetAngles.extension = 0.5;
-                        } else if (phasePercentage < 0.5) {
-                            phase = "lowest";
-                            targetAngles.extension = 1.0;
-                        } else if (phasePercentage < 0.75) {
-                            phase = "returned";
-                            targetAngles.extension = 0.5;
-                        } else {
-                            phase = "starting";
-                            targetAngles.extension = 0.0;
-                        }
-                    } else {
-                        if (phasePercentage < 0.25) {
-                            phase = "down";
-                            targetAngles.amplitude = phasePercentage / 0.25;
-                        } else if (phasePercentage < 0.5) {
-                            phase = "lowest";
-                            targetAngles.amplitude = 1.0;
-                        } else if (phasePercentage < 0.75) {
-                            phase = "up";
-                            targetAngles.amplitude = 1.0 - ((phasePercentage - 0.5) / 0.25);
-                        } else {
-                            phase = "starting";
-                            targetAngles.amplitude = 0.0;
-                        }
-                    }
-                    
-                    return { phase, targetAngles };
-                }
-            };
-
-            // 3. Pose Comparer
-            const PoseComparer = {
-                compare: function(detector, normalizedUser, normalizedExpected, userAngles, userState, prevUserState) {
-                    if (!normalizedUser) return null;
-                    
-                    let jointAngleAccuracy = 100;
-                    let romAccuracy = 100;
-                    let bodyPositionAccuracy = 100;
-                    let movementDirectionAccuracy = 100;
-                    let timingSimilarity = 100;
-                    
-                    const expectedPhase = normalizedExpected.phase;
-                    const targetAngles = normalizedExpected.targetAngles;
-                    
-                    if (detector === "Modified Squats") {
-                        const userKnee = userAngles.knee || 180;
-                        const targetKnee = targetAngles.knee || 180;
-                        jointAngleAccuracy = Math.max(0, 100 - Math.abs(userKnee - targetKnee) * 1.2);
-                        
-                        if (expectedPhase === "lowest") {
-                            romAccuracy = userKnee < 135 ? Math.min(100, 100 - Math.abs(userKnee - 110) * 1.5) : 50;
-                        } else {
-                            romAccuracy = 100;
-                        }
-                    } else if (detector === "Glute Bridge") {
-                        const userHip = userAngles.hip || 120;
-                        const targetHip = targetAngles.hip || 120;
-                        jointAngleAccuracy = Math.max(0, 100 - Math.abs(userHip - targetHip) * 1.2);
-                        
-                        if (expectedPhase === "lowest") {
-                            romAccuracy = userHip > 150 ? Math.min(100, 100 - Math.abs(175 - userHip) * 1.5) : 50;
-                        } else {
-                            romAccuracy = 100;
-                        }
-                    } else if (detector === "Cat-Cow") {
-                        const userBack = userAngles.back || 160;
-                        const targetBack = targetAngles.back || 160;
-                        jointAngleAccuracy = Math.max(0, 100 - Math.abs(userBack - targetBack) * 1.5);
-                        romAccuracy = 100;
-                    } else if (detector === "Bird Dog") {
-                        const userExt = userAngles.extension || 0;
-                        const targetExt = targetAngles.extension || 0;
-                        jointAngleAccuracy = Math.max(0, 100 - Math.abs(userExt - targetExt) * 100);
-                        romAccuracy = userExt > 0.7 ? 100 : 50;
-                    } else {
-                        const userAmp = userAngles.amplitude || 0;
-                        const targetAmp = targetAngles.amplitude || 0;
-                        jointAngleAccuracy = Math.max(0, 100 - Math.abs(userAmp - targetAmp) * 100);
-                        romAccuracy = userAmp > 0.7 ? 100 : 50;
-                    }
-                    
-                    let totalDist = 0;
-                    let validPoints = 0;
-                    const keyIndices = [11, 12, 23, 24, 25, 26, 27, 28];
-                    
-                    keyIndices.forEach(idx => {
-                        const lm = normalizedUser.landmarks[idx];
-                        if (lm && lm.visibility > 0.5) {
-                            let expectedPos = { x: 0, y: 0 };
-                            if (idx === 11) expectedPos = { x: -0.3, y: -1.0 };
-                            if (idx === 12) expectedPos = { x: 0.3, y: -1.0 };
-                            if (idx === 23) expectedPos = { x: -0.2, y: 0.0 };
-                            if (idx === 24) expectedPos = { x: 0.2, y: 0.0 };
-                            
-                            if (detector === "Modified Squats" && expectedPhase === "lowest") {
-                                if (idx === 23 || idx === 24) expectedPos.y += 0.2;
-                            }
-                            if (detector === "Glute Bridge" && expectedPhase === "lowest") {
-                                if (idx === 23 || idx === 24) expectedPos.y -= 0.3;
-                            }
-                            
-                            const dist = Math.sqrt(Math.pow(lm.x - expectedPos.x, 2) + Math.pow(lm.y - expectedPos.y, 2));
-                            totalDist += dist;
-                            validPoints++;
-                        }
-                    });
-                    
-                    if (validPoints > 0) {
-                        const avgDist = totalDist / validPoints;
-                        bodyPositionAccuracy = Math.max(0, Math.min(100, 100 - avgDist * 80));
-                    } else {
-                        bodyPositionAccuracy = 80;
-                    }
-                    
-                    let expectedDirection = "none";
-                    if (expectedPhase === "down" || expectedPhase === "squatting" || expectedPhase === "up" && detector === "Glute Bridge" || expectedPhase === "extended") {
-                        expectedDirection = "active";
-                    } else if (expectedPhase === "standing" || expectedPhase === "lowering" || expectedPhase === "returned") {
-                        expectedDirection = "return";
-                    }
-                    
-                    let userDirection = "none";
-                    if (userState === "squatting" || userState === "up" || userState === "extended" || userState === "cow") {
-                        userDirection = "active";
-                    } else if (userState === "standing" || userState === "lowering" || userState === "returned" || userState === "cat") {
-                        userDirection = "return";
-                    }
-                    
-                    if (expectedDirection === "none") {
-                        movementDirectionAccuracy = 100;
-                    } else if (userDirection === expectedDirection) {
-                        movementDirectionAccuracy = 100;
-                    } else if (userDirection === "none") {
-                        movementDirectionAccuracy = 75;
-                    } else {
-                        movementDirectionAccuracy = 35;
-                    }
-                    
-                    if (userState === expectedPhase || 
-                       (expectedPhase === "lowest" && (userState === "squatting" || userState === "up")) ||
-                       (expectedPhase === "starting" && (userState === "standing" || userState === "neutral"))) {
-                        timingSimilarity = 100;
-                    } else if (userState === "neutral" || userState === "none") {
-                        timingSimilarity = 70;
-                    } else {
-                        timingSimilarity = 40;
-                    }
-                    
-                    return {
-                        jointAngleAccuracy: Math.round(jointAngleAccuracy),
-                        romAccuracy: Math.round(romAccuracy),
-                        bodyPositionAccuracy: Math.round(bodyPositionAccuracy),
-                        movementDirectionAccuracy: Math.round(movementDirectionAccuracy),
-                        timingSimilarity: Math.round(timingSimilarity)
-                    };
-                }
-            };
-
-            // 4. Scoring Configuration (Configurable weights)
-            const ScoringConfig = {
-                weights: {
-                    jointAngle: 0.30,
-                    rom: 0.25,
-                    bodyPosition: 0.20,
-                    movementDirection: 0.15,
-                    timing: 0.10
-                },
-                calculateFinalScore: function(m) {
-                    return Math.round(
-                        m.jointAngleAccuracy * this.weights.jointAngle +
-                        m.romAccuracy * this.weights.rom +
-                        m.bodyPositionAccuracy * this.weights.bodyPosition +
-                        m.movementDirectionAccuracy * this.weights.movementDirection +
-                        m.timingSimilarity * this.weights.timing
-                    );
-                }
-            };
-
-            // 5. Feedback Engine
-            const FeedbackEngine = {
-                generateFeedback: function(m, visibilityWarning, detector) {
-                    if (visibilityWarning) return visibilityWarning;
-                    
-                    const list = [
-                        { name: 'rom', score: m.romAccuracy },
-                        { name: 'direction', score: m.movementDirectionAccuracy },
-                        { name: 'angle', score: m.jointAngleAccuracy },
-                        { name: 'position', score: m.bodyPositionAccuracy },
-                        { name: 'timing', score: m.timingSimilarity }
-                    ].sort((a, b) => a.score - b.score);
-                    
-                    const lowest = list[0];
-                    if (lowest.score >= 80) return "Great! Your movement matches the exercise.";
-                    
-                    if (lowest.name === 'rom') return "Try moving through a larger range of motion.";
-                    if (lowest.name === 'direction') return "Follow the movement shown in the video.";
-                    if (lowest.name === 'angle') {
-                        if (detector === "Modified Squats") return "Try keeping your knees aligned with your feet.";
-                        return "Adjust your joint angles to match the video.";
-                    }
-                    if (lowest.name === 'position') return "Correct your body position to match the video.";
-                    return "Adjust your pace to match the video timing.";
-                }
-            };
-
             function processExercise(landmarks) {
                 const nose = landmarks[0];
                 const lShoulder = landmarks[11];
@@ -845,7 +629,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             repetitionTimes.push(now - lastRepTimestamp);
                             lastRepTimestamp = now;
                             
-                            const repAccuracy = lastLiveAccuracy;
+                            const repAccuracy = finishRep();
                             if (repAccuracy >= 70) correctReps++;
                             else incorrectReps++;
                             reps = correctReps + incorrectReps;
@@ -869,7 +653,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             repetitionTimes.push(now - lastRepTimestamp);
                             lastRepTimestamp = now;
                             
-                            const repAccuracy = lastLiveAccuracy;
+                            const repAccuracy = finishRep();
                             if (repAccuracy >= 70) correctReps++;
                             else incorrectReps++;
                             reps = correctReps + incorrectReps;
@@ -890,7 +674,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             state = "neutral";
                         }
                     }
-                    userAngles = { extension: ext1 || ext2 ? 1.0 : 0.0 };
+                    userAngles = { extension: msBirdDogExtension(landmarks, normalizedUser.scale) };
 
                 } else if (activeDetector === "Glute Bridge") {
                     const angleL = calculateAngle(lShoulder, lHip, lKnee);
@@ -907,7 +691,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             repetitionTimes.push(now - lastRepTimestamp);
                             lastRepTimestamp = now;
                             
-                            const repAccuracy = lastLiveAccuracy;
+                            const repAccuracy = finishRep();
                             if (repAccuracy >= 70) correctReps++;
                             else incorrectReps++;
                             reps = correctReps + incorrectReps;
@@ -933,7 +717,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             repetitionTimes.push(now - lastRepTimestamp);
                             lastRepTimestamp = now;
                             
-                            const repAccuracy = lastLiveAccuracy;
+                            const repAccuracy = finishRep();
                             if (repAccuracy >= 70) correctReps++;
                             else incorrectReps++;
                             reps = correctReps + incorrectReps;
@@ -973,7 +757,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                                     repetitionTimes.push(now - lastRepTimestamp);
                                     lastRepTimestamp = now;
                                     
-                                    const repAccuracy = lastLiveAccuracy;
+                                    const repAccuracy = finishRep();
                                     if (repAccuracy >= 70) correctReps++;
                                     else incorrectReps++;
                                     reps = correctReps + incorrectReps;
@@ -989,42 +773,83 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     userAngles = { amplitude };
                 }
 
-                // Reference Guide Comparison
-                const cycleTimeSecs = (Date.now() - startTime) / 1000;
-                const expectedPose = ReferenceMovementModel.getExpectedPose(activeDetector, cycleTimeSecs);
-                const metrics = PoseComparer.compare(activeDetector, normalizedUser, expectedPose, userAngles, state, null);
-                
-                if (metrics) {
-                    const accuracyScore = ScoringConfig.calculateFinalScore(metrics);
-                    lastLiveAccuracy = accuracyScore;
+                const torso = normalizedUser.scale;
 
-                    accuraciesHistory.push(accuracyScore);
-                    romsHistory.push(metrics.romAccuracy);
-                    jointsHistory.push(metrics.jointAngleAccuracy);
-
-                    const avgAccuracy = Math.round(accuraciesHistory.reduce((s, x) => s + x, 0) / accuraciesHistory.length) || 0;
-                    const avgRom = Math.round(romsHistory.reduce((s, x) => s + x, 0) / romsHistory.length) || 0;
-                    const avgJoint = Math.round(jointsHistory.reduce((s, x) => s + x, 0) / jointsHistory.length) || 0;
-
-                    let stabilityVal = 100;
-                    if (activeDetector === "Bird Dog" && stabilityVariance.length > 0) {
-                        const avgT = stabilityVariance.reduce((s, x) => s + x, 0) / stabilityVariance.length;
-                        stabilityVal = Math.round(Math.max(50, 100 - avgT * 300));
-                    }
-
-                    sendMessage({
-                        type: 'LIVE_SCORE',
-                        score: accuracyScore,
-                        stability: stabilityVal,
-                        postureMatch: metrics.timingSimilarity,
-                        feedback: FeedbackEngine.generateFeedback(metrics, false, activeDetector),
-                        averageAccuracy: avgAccuracy,
-                        correctRepetitions: correctReps,
-                        incorrectRepetitions: incorrectReps,
-                        averageRangeOfMotion: avgRom,
-                        averageJointAccuracy: avgJoint
-                    });
+                // Value of the exercise's main measure this frame
+                let metricValue = userAngles[profile.metric];
+                if (profile.metric === 'amplitude') metricValue = (userAngles.amplitude || 0) / torso;
+                if (isFinite(metricValue)) {
+                    metricWindow.push(metricValue);
+                    if (metricWindow.length > MS_WINDOW) metricWindow.shift();
+                    repMin = Math.min(repMin, metricValue);
+                    repMax = Math.max(repMax, metricValue);
                 }
+
+                // Steadiness: hip tilt and side-to-side sway of the pelvis, relative to torso length
+                tiltWindow.push((lHip.y - rHip.y) / torso);
+                swayWindow.push(midHip.x / torso);
+                if (tiltWindow.length > MS_WINDOW) tiltWindow.shift();
+                if (swayWindow.length > MS_WINDOW) swayWindow.shift();
+
+                const alignment = msAlignment(activeDetector, landmarks, torso);
+                if (alignment !== null) {
+                    lastAlignment = alignment;
+                    repAlignments.push(alignment);
+                    alignmentHistory.push(alignment);
+                }
+
+                // Live range of motion over the last few seconds (amplitude is already a range)
+                const romLive = profile.metric === 'amplitude'
+                    ? msRomScore(profile, 0, metricValue)
+                    : msRomScore(profile, Math.min.apply(null, metricWindow), Math.max.apply(null, metricWindow));
+                const accuracyNow = romLive * 0.5 + (lastAlignment === null ? romLive : lastAlignment) * 0.5;
+                smoothAccuracy = msSmooth(smoothAccuracy, accuracyNow, 0.2);
+                const accuracyScore = Math.round(smoothAccuracy);
+                lastLiveAccuracy = accuracyScore;
+
+                const steadyNow = msSteadiness(tiltWindow, swayWindow);
+                if (steadyNow !== null) {
+                    smoothSteadiness = msSmooth(smoothSteadiness, steadyNow, 0.15);
+                    steadinessHistory.push(smoothSteadiness);
+                }
+                const stabilityVal = smoothSteadiness === null ? null : Math.round(smoothSteadiness);
+
+                accuraciesHistory.push(accuracyScore);
+                jointsHistory.push(alignment === null ? accuracyScore : alignment);
+
+                const mean = (arr) => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+                const avgAccuracy = repScores.length ? mean(repScores) : mean(accuraciesHistory);
+                const pace = paceScores.length ? mean(paceScores.slice(-3)) : null;
+
+                // Feedback on the weakest part
+                let feedback = "Great! Your movement matches the exercise.";
+                const parts = [
+                    { key: 'rom', v: romLive },
+                    { key: 'align', v: lastAlignment === null ? 100 : lastAlignment },
+                    { key: 'steady', v: stabilityVal === null ? 100 : stabilityVal },
+                ].sort((a, b) => a.v - b.v);
+                if (parts[0].v < 70) {
+                    if (parts[0].key === 'rom') feedback = "Try moving through a larger range of motion.";
+                    else if (parts[0].key === 'align') feedback = activeDetector === "Modified Squats"
+                        ? "Try keeping your knees aligned with your feet."
+                        : "Correct your body position to match the video.";
+                    else feedback = "Keep your hips steady and move slowly.";
+                }
+
+                sendMessage({
+                    type: 'LIVE_SCORE',
+                    score: accuracyScore,
+                    stability: stabilityVal,
+                    postureMatch: lastAlignment === null ? null : Math.round(mean(alignmentHistory.slice(-MS_WINDOW))),
+                    pace: pace,
+                    feedback: feedback,
+                    averageAccuracy: avgAccuracy,
+                    correctRepetitions: correctReps,
+                    incorrectRepetitions: incorrectReps,
+                    averageRangeOfMotion: mean(romsHistory),
+                    averageJointAccuracy: mean(alignmentHistory),
+                    averageSteadiness: mean(steadinessHistory)
+                });
             }
 
             function drawConnectors(ctx, landmarks, connections, style) {
@@ -1110,8 +935,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
                         sendMessage({
                             type: 'LIVE_SCORE',
                             score: 0,
-                            stability: 0,
-                            postureMatch: 0,
+                            stability: null,
+                            postureMatch: null,
                             feedback: 'Please move fully into the camera view.'
                         });
                     } else {
@@ -1124,15 +949,29 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     sendMessage({
                         type: 'LIVE_SCORE',
                         score: 0,
-                        stability: 0,
-                        postureMatch: 0,
+                        stability: null,
+                        postureMatch: null,
                         feedback: 'Please move fully into the camera view.'
                     });
                 }
             }
 
             // Setup camera feed
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } })
+            // The camera can still be held for a moment by the previous screen, so retry, then try simpler settings
+            const cameraTries = [
+                { facingMode: 'user', width: 640, height: 480 },
+                { facingMode: 'user' },
+                true
+            ];
+            function openCamera(attempt) {
+                return navigator.mediaDevices.getUserMedia({ video: cameraTries[Math.min(attempt, cameraTries.length - 1)] })
+                    .catch(err => {
+                        const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError' || err.name === 'NotFoundError');
+                        if (denied || attempt >= 5) throw err;
+                        return new Promise(resolve => setTimeout(resolve, 800)).then(() => openCamera(attempt + 1));
+                    });
+            }
+            openCamera(0)
                 .then(stream => {
                     videoElement.srcObject = stream;
                     videoElement.addEventListener('loadedmetadata', () => {
@@ -1165,7 +1004,9 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     sendMessage({ type: 'READY' });
                 })
                 .catch(err => {
-                    loadingElement.innerText = "Camera error: " + err.message;
+                    loadingElement.innerText = (err && (err.name === 'NotReadableError' || err.name === 'AbortError'))
+                        ? "The camera is being used by another app or browser tab. Close it, then go back and try again."
+                        : "Camera error: " + err.message;
                     sendMessage({ type: 'ERROR', error: err.message });
                 });
 
@@ -1188,8 +1029,12 @@ export default function MovementTrackingScreen({ route, navigation }) {
     `;
 
     const tr = (en, si) => (isSinhala ? si : en);
+    const pct = (v) => (v === null || v === undefined ? '–' : `${v}%`);
     const statusColor = getStatusColor(status);
     const surveyReady = painRating && difficultyRating && feelingRating;
+
+    // Phones need the exercise fonts loaded before text uses them (web falls back to sans-serif)
+    if (!fontsReady && Platform.OS !== 'web') return <View style={{ flex: 1, backgroundColor: C.bg }} />;
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: C.bg }]}>
@@ -1299,8 +1144,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
 
                 <View style={ms.stats}>
                     <StatTile value={`${liveScore}%`} label={tr('Accuracy', 'නිරවද්‍යතාවය')} style={ms.stat} />
-                    <StatTile value={`${postureMatch}%`} label={tr('Video match', 'වීඩියෝ ගැළපීම')} style={ms.stat} />
-                    <StatTile value={`${stability}%`} label={tr('Steadiness', 'ස්ථායීතාවය')} style={ms.stat} />
+                    <StatTile value={pct(postureMatch)} label={tr('Posture', 'ඉරියව්ව')} style={ms.stat} />
+                    <StatTile value={pct(stability)} label={tr('Steadiness', 'ස්ථායීතාවය')} style={ms.stat} />
                     <StatTile value={`${correctReps} / ${reps}`} label={tr('Correct reps', 'නිවැරදි වට')} style={ms.stat} />
                 </View>
 

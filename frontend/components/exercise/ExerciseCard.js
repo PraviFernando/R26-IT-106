@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, Alert, Modal, Image, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, Pressable, Modal, Image, Platform, StyleSheet, useWindowDimensions } from 'react-native';
 import { Camera } from 'expo-camera';
 import { Video, ResizeMode } from 'expo-av';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +11,8 @@ import { getTranslatedFeedback, feedbackText, videoFocusLabel } from '../../util
 import { LOW_ADHERENCE_PERCENT } from '../../utils/exerciseConfig';
 
 // Exercise Recommendation Card Component
-const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, navigation }) => {
+// variant: 'full' (thumbnail card) or 'compact' (small row used for the "Up next" list on phones)
+const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, navigation, variant = 'full' }) => {
     const { width: currentWidth } = useWindowDimensions();
     const isLargeScreen = currentWidth > 768;
     const { t, i18n } = useTranslation();
@@ -40,25 +41,52 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
         return nameStr;
     };
 
+    // Why the camera could not be used: 'denied' (blocked/refused) or 'unavailable' (no camera or insecure page)
+    const [cameraProblem, setCameraProblem] = useState(null);
+
     const handleStartTracking = async () => {
-        setVideoModal(false);
-        const { status } = await Camera.requestCameraPermissionsAsync();
-        if (status === 'granted') {
-            navigation.navigate('MovementTracking', {
-                exerciseId: exercise.exerciseId || 'EX_MOCK',
-                exerciseName: getTrackingExerciseName(title),
-                // The card's own name, so the saved record completes this card
-                cardName: exercise.customName || exercise.name,
-                videoUrl: videoUrl
-            });
-        } else {
-            Alert.alert(
-                isSinhala ? "කැමරා අවසරය අවශ්‍යයි" : "Camera Permission Required",
-                isSinhala
-                    ? "ව්‍යායාම අතරතුර ශරීරයේ චලනයන් හඳුනා ගැනීමට කැමරාව භාවිතා කරනු ලැබේ."
-                    : "The camera is used only to detect body movement during exercise."
-            );
+        setCameraProblem(null);
+        // A browser only offers the camera on a secure page (localhost or https) and when one exists
+        if (Platform.OS === 'web' && !(typeof navigator !== 'undefined' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
+            setCameraProblem('unavailable');
+            return;
         }
+        if (Platform.OS === 'web') {
+            // Only read the permission state. The camera itself is opened once, by the tracking screen:
+            // opening it here too could leave it held when the tracker asks for it.
+            // (expo-camera reports every failure as "denied", so it is not used on the web.)
+            try {
+                const perm = navigator.permissions && await navigator.permissions.query({ name: 'camera' });
+                if (perm && perm.state === 'denied') {
+                    setCameraProblem('denied');
+                    return;
+                }
+            } catch (e) { /* browsers without this query: the tracking screen asks for the camera */ }
+        } else {
+            let status;
+            try {
+                ({ status } = await Camera.requestCameraPermissionsAsync());
+            } catch (e) {
+                setCameraProblem('unavailable');
+                return;
+            }
+            if (status !== 'granted') {
+                // The popup stays open and shows how to allow the camera.
+                setCameraProblem('denied');
+                return;
+            }
+        }
+        pauseStopwatch(); // do not leave the stopwatch running while on the tracking screen
+        setVideoModal(false);
+        // iOS ignores a navigation that starts while a Modal is still closing
+        if (Platform.OS === 'ios') await new Promise(resolve => setTimeout(resolve, 350));
+        navigation.navigate('MovementTracking', {
+            exerciseId: exercise.exerciseId || 'EX_MOCK',
+            exerciseName: getTrackingExerciseName(title),
+            // The card's own name, so the saved record completes this card
+            cardName: exercise.customName || exercise.name,
+            videoUrl: videoUrl
+        });
     };
 
     // Stopwatch states
@@ -186,6 +214,7 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
             setSelectedVideo(videoList[0]);
             setStopwatchTime(0);
             setIsStopwatchRunning(false);
+            setCameraProblem(null);
             setVideoModal(true);
         }
     };
@@ -195,8 +224,35 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
     const actualMinutesNow = Math.round(stopwatchTime / 60);
     const surveyReady = painRating && difficultyRating && feelingRating;
 
+    const compactRow = (
+        <Pressable
+            onPress={handleCardPress}
+            disabled={videoList.length === 0}
+            accessibilityRole="button"
+            accessibilityLabel={`${tr('Start exercise', 'ව්‍යායාමය අරඹන්න')}: ${title}`}
+            style={({ hovered }) => [cs.row, hovered && cs.cardHover]}
+        >
+            <View style={cs.rowThumb}>
+                {thumbnailUrl
+                    ? <Image source={{ uri: thumbnailUrl }} style={cs.thumbImg} resizeMode="cover" />
+                    : <View style={cs.thumbEmpty}><Icon name="play" size={22} color={C.primaryDark} /></View>}
+                {watchPercentage > 0 && !isCompleted && (
+                    <View style={cs.track}><View style={[cs.fill, { width: `${Math.min(100, watchPercentage)}%` }]} /></View>
+                )}
+            </View>
+            <View style={cs.rowBody}>
+                <Text style={cs.rowTitle} numberOfLines={2}>{title}</Text>
+                <Text style={cs.channel} numberOfLines={1}>
+                    {durationLabel}{exercise.focus ? ` · ${videoFocusLabel(exercise.focus, isSinhala)}` : ''}
+                </Text>
+            </View>
+            <View style={cs.rowPlay}><Icon name="play" size={16} color="#FFFFFF" /></View>
+        </Pressable>
+    );
+
     return (
         <>
+            {variant === 'compact' ? compactRow : (
             <Pressable
                 onPress={handleCardPress}
                 disabled={videoList.length === 0}
@@ -229,6 +285,7 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
                     )}
                 </View>
             </Pressable>
+            )}
 
             {/* Video + stopwatch */}
             <Modal visible={videoModal} transparent animationType="slide" onRequestClose={handleCloseVideoModal}>
@@ -316,6 +373,17 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
                                         {isSupportedForTracking(title) && (
                                             <SecondaryButton icon="camera" title={tr('Check my form with the camera', 'කැමරාවෙන් මගේ ඉරියව්ව පරීක්ෂා කරන්න')} onPress={handleStartTracking} />
                                         )}
+                                        {cameraProblem === 'denied' && (
+                                            <Notice tone="warn" icon="camera" text={Platform.OS === 'web'
+                                                ? tr('The camera is blocked for this page. Click the camera or lock icon in your browser\'s address bar, choose Allow, then press the button again. The camera is only used to detect body movement.',
+                                                    'මෙම පිටුව සඳහා කැමරාව අවහිර කර ඇත. බ්‍රවුසරයේ ලිපින තීරුවේ කැමරා හෝ අගුලු නිරූපකය ක්ලික් කර Allow තෝරා, නැවත බොත්තම ඔබන්න. කැමරාව භාවිතා කරන්නේ ශරීර චලනය හඳුනා ගැනීමට පමණි.')
+                                                : tr('Camera access is needed. Allow the camera for this app in your phone\'s Settings, then try again. It is only used to detect body movement.',
+                                                    'කැමරා ප්‍රවේශය අවශ්‍යයි. ඔබේ දුරකථනයේ Settings තුළ මෙම යෙදුමට කැමරාව ඉඩ දී නැවත උත්සාහ කරන්න. එය භාවිතා කරන්නේ ශරීර චලනය හඳුනා ගැනීමට පමණි.')} />
+                                        )}
+                                        {cameraProblem === 'unavailable' && (
+                                            <Notice tone="warn" icon="camera" text={tr('The camera is not available. Check that a camera is connected, and that this page is opened on localhost or a secure (https) address.',
+                                                'කැමරාව ලබාගත නොහැක. කැමරාවක් සම්බන්ධ කර ඇත්දැයි සහ මෙම පිටුව localhost හෝ ආරක්ෂිත (https) ලිපිනයකින් විවෘත කර ඇත්දැයි පරීක්ෂා කරන්න.')} />
+                                        )}
                                         <Notice tone="warn" text={tr('Stop if anything hurts or you feel dizzy. Rest is part of recovery.', 'වේදනාවක් හෝ කරකැවිල්ලක් දැනේ නම් නවතින්න. විවේකයද සුවයේ කොටසකි.')} />
                                     </View>
                                 </View>
@@ -396,6 +464,11 @@ const cs = StyleSheet.create({
     card: { backgroundColor: '#FFFFFF', borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: C.border, ...cardShadow },
     cardHover: { transform: [{ translateY: -2 }] },
     cardDone: { opacity: 0.85 },
+    row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: C.border, ...cardShadow },
+    rowThumb: { width: 96, height: 60, borderRadius: 14, overflow: 'hidden', backgroundColor: C.control },
+    rowBody: { flex: 1, gap: 3 },
+    rowTitle: { ...T.semi, fontSize: 14, lineHeight: 19, color: C.text },
+    rowPlay: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.primaryDark, alignItems: 'center', justifyContent: 'center' },
     thumb: { height: 170, backgroundColor: C.control, justifyContent: 'center', alignItems: 'center' },
     thumbImg: { width: '100%', height: '100%' },
     thumbEmpty: { flex: 1, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', backgroundColor: C.tint },

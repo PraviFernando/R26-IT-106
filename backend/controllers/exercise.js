@@ -5,6 +5,7 @@ const Diary = require('../models/Diary');
 const Feedback = require('../models/Feedback');
 const ExerciseMovementSession = require('../models/ExerciseMovementSession');
 const ExerciseWatchHistory = require('../models/ExerciseWatchHistory');
+const YoutubeSearchCache = require('../models/YoutubeSearchCache');
 const EPDSScreening = require('../models/EPDSScreening');
 const MLPredictionService = require('../services/mlPredictionService');
 const axios = require('axios');
@@ -103,6 +104,71 @@ const parseISO8601Duration = (durationStr) => {
     result += `${hours > 0 ? String(minutes).padStart(2, '0') : minutes}:`;
     result += String(seconds).padStart(2, '0');
     return result;
+};
+
+// One YouTube search with its video durations, served from the cache when it is fresh.
+// If YouTube fails (for example the daily quota is used up) an older cached copy is used;
+// with no cached copy it returns [] and the caller tops up with saved videos.
+const fetchQueryVideos = async (q, maxResults, apiKey) => {
+    const key = `${q}|${maxResults}`;
+    let cached = null;
+    try { cached = await YoutubeSearchCache.findOne({ key }).lean(); } catch (e) { /* cache unavailable: go to YouTube */ }
+    const fresh = cached && (Date.now() - new Date(cached.fetchedAt).getTime()) < CFG.YOUTUBE_CACHE_HOURS * 3600 * 1000;
+    if (fresh && cached.videos && cached.videos.length) return cached.videos;
+
+    try {
+        const search = await axios.get('https://www.googleapis.com/youtube/v3/search', {
+            params: { part: 'snippet', maxResults, q, type: 'video', key: apiKey }
+        });
+        const items = ((search.data && search.data.items) || []).filter(item => item.id && item.id.videoId);
+        const durations = {};
+        if (items.length) {
+            const details = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
+                params: { part: 'contentDetails', id: items.map(item => item.id.videoId).join(','), key: apiKey }
+            });
+            ((details.data && details.data.items) || []).forEach(d => {
+                durations[d.id] = parseISO8601Duration(d.contentDetails.duration);
+            });
+        }
+        const videos = items.map(item => ({
+            videoId: item.id.videoId,
+            title: item.snippet.title,
+            channelTitle: item.snippet.channelTitle,
+            duration: durations[item.id.videoId] || CFG.DEFAULT_VIDEO_DURATION
+        }));
+        if (videos.length) {
+            try {
+                await YoutubeSearchCache.updateOne({ key }, { $set: { key, query: q, maxResults, videos, fetchedAt: new Date() } }, { upsert: true });
+            } catch (e) { /* a failed cache write must not fail the request */ }
+        }
+        return videos;
+    } catch (err) {
+        console.error(`YouTube search failed for "${q}":`, err.message, cached ? '(using older saved results)' : '');
+        return cached && cached.videos ? cached.videos : [];
+    }
+};
+
+// Saved videos for a category without duplicates, skipping URLs already in the list. When the
+// category has too few different videos, gentler categories are used (never a harder one).
+const getFallbackVideos = (category, usedUrls, limit) => {
+    const out = [];
+    const seen = new Set(usedUrls);
+    for (let c = Number(category) || 3; c >= 1 && out.length < limit; c--) {
+        for (const vid of (FALLBACK_VIDEOS[c] || [])) {
+            if (out.length >= limit) break;
+            if (seen.has(vid.videoUrl)) continue;
+            seen.add(vid.videoUrl);
+            out.push({
+                customName: vid.name,
+                videoUrl: vid.videoUrl,
+                type: 'youtube_fallback',
+                duration: vid.duration || CFG.DEFAULT_VIDEO_DURATION,
+                channelTitle: "Pregnancy & Postpartum TV",
+                category: Number(category) || 3
+            });
+        }
+    }
+    return out;
 };
 
 // Clinical Safety evaluation function
@@ -331,86 +397,58 @@ const submitHealthData = async (req, res, next) => {
 
         if (youtubeApiKey && !isBlocked) {
             try {
-                const searches = await Promise.all(videoQueries.map(({ q, focus }) =>
-                    axios.get('https://www.googleapis.com/youtube/v3/search', {
-                        params: {
-                            part: 'snippet',
-                            maxResults: focus ? CFG.FOCUS_YOUTUBE_RESULTS : CFG.MAX_YOUTUBE_RESULTS,
-                            q,
-                            type: 'video',
-                            key: youtubeApiKey
-                        }
-                    }).then(r => ({ focus, items: (r.data && r.data.items) || [] }))
-                      .catch(err => {
-                          console.error(`YouTube search failed for "${q}":`, err.message);
-                          return { focus, items: [] };
-                      })
+                // Searches come from the cache when fresh, so repeated form submits cost no YouTube quota
+                const results = await Promise.all(videoQueries.map(({ q, focus }) =>
+                    fetchQueryVideos(q, focus ? CFG.FOCUS_YOUTUBE_RESULTS : CFG.MAX_YOUTUBE_RESULTS, youtubeApiKey)
+                        .then(videos => ({ focus, videos }))
                 ));
 
-                const allIds = [...new Set(searches.flatMap(sr => sr.items.map(item => item.id.videoId)).filter(Boolean))];
-                if (allIds.length > 0) {
-                    // Query /videos API to retrieve contentDetails (which includes duration); max 50 ids per call
-                    const detailsResponse = await axios.get('https://www.googleapis.com/youtube/v3/videos', {
-                        params: { part: 'contentDetails', id: allIds.slice(0, 50).join(','), key: youtubeApiKey }
-                    });
+                const toVideo = (v, focus) => ({
+                    customName: decodeHtml(v.title),
+                    videoUrl: `https://www.youtube.com/embed/${v.videoId}`,
+                    type: 'youtube_video',
+                    duration: v.duration || CFG.DEFAULT_VIDEO_DURATION,
+                    channelTitle: decodeHtml(v.channelTitle),
+                    category: exerciseCategory,
+                    focus: focus || undefined
+                });
+                // Exclude YouTube Shorts (videos <= 60 seconds)
+                const usable = (v) => parseDurationStr(v.duration) > CFG.MIN_VIDEO_SECONDS;
 
-                    // Map video ID to its parsed human-readable duration
-                    const durationMap = {};
-                    if (detailsResponse.data && detailsResponse.data.items) {
-                        detailsResponse.data.items.forEach(item => {
-                            durationMap[item.id] = parseISO8601Duration(item.contentDetails.duration);
-                        });
+                // Focus videos first (a few per focus search), then fill up with the category search
+                const seen = new Set();
+                const take = (video) => {
+                    if (seen.has(video.videoUrl) || !usable(video)) return false;
+                    seen.add(video.videoUrl);
+                    recommendedExercises.push(video);
+                    return true;
+                };
+                for (const sr of results.filter(x => x.focus)) {
+                    let added = 0;
+                    for (const v of sr.videos) {
+                        if (added >= CFG.FOCUS_VIDEOS_PER_QUERY) break;
+                        if (take(toVideo(v, sr.focus))) added++;
                     }
-
-                    const toVideo = (item, focus) => ({
-                        customName: decodeHtml(item.snippet.title),
-                        videoUrl: `https://www.youtube.com/embed/${item.id.videoId}`,
-                        type: 'youtube_video',
-                        duration: durationMap[item.id.videoId] || CFG.DEFAULT_VIDEO_DURATION,
-                        channelTitle: decodeHtml(item.snippet.channelTitle),
-                        category: exerciseCategory,
-                        focus: focus || undefined
-                    });
-                    // Exclude YouTube Shorts (videos <= 60 seconds)
-                    const usable = (v) => parseDurationStr(v.duration) > CFG.MIN_VIDEO_SECONDS;
-
-                    // Focus videos first (a few per focus search), then fill up with the category search
-                    const seen = new Set();
-                    const take = (video) => {
-                        if (seen.has(video.videoUrl) || !usable(video)) return false;
-                        seen.add(video.videoUrl);
-                        recommendedExercises.push(video);
-                        return true;
-                    };
-                    for (const sr of searches.filter(x => x.focus)) {
-                        let added = 0;
-                        for (const item of sr.items) {
-                            if (added >= CFG.FOCUS_VIDEOS_PER_QUERY) break;
-                            if (take(toVideo(item, sr.focus))) added++;
-                        }
-                    }
-                    for (const item of (searches.find(x => !x.focus) || { items: [] }).items) {
-                        if (recommendedExercises.length >= CFG.RECOMMENDATION_POOL_SIZE) break;
-                        take(toVideo(item, null));
-                    }
-                    recommendedExercises = recommendedExercises.slice(0, CFG.RECOMMENDATION_POOL_SIZE);
                 }
+                for (const v of (results.find(x => !x.focus) || { videos: [] }).videos) {
+                    if (recommendedExercises.length >= CFG.RECOMMENDATION_POOL_SIZE) break;
+                    take(toVideo(v, null));
+                }
+                recommendedExercises = recommendedExercises.slice(0, CFG.RECOMMENDATION_POOL_SIZE);
             } catch (ytErr) {
-                console.error('YouTube Data API search failed, loading static list:', ytErr.message);
+                console.error('YouTube recommendation failed, using saved videos:', ytErr.message);
                 recommendedExercises = [];
             }
         }
 
-        // If API search yielded no videos, fetch our pre-compiled fallback videos
-        if (recommendedExercises.length === 0 && !isBlocked) {
-            recommendedExercises = (FALLBACK_VIDEOS[exerciseCategory] || []).map(vid => ({
-                customName: vid.name,
-                videoUrl: vid.videoUrl,
-                type: 'youtube_fallback',
-                duration: vid.duration || CFG.DEFAULT_VIDEO_DURATION,
-                channelTitle: "Pregnancy & Postpartum TV",
-                category: exerciseCategory
-            }));
+        // Top up with saved videos when YouTube gave none or too few: key missing, quota used up,
+        // or only some of the searches worked
+        if (!isBlocked && recommendedExercises.length < CFG.RECOMMENDATION_POOL_SIZE) {
+            recommendedExercises = recommendedExercises.concat(getFallbackVideos(
+                exerciseCategory,
+                recommendedExercises.map(v => v.videoUrl),
+                CFG.RECOMMENDATION_POOL_SIZE - recommendedExercises.length
+            ));
         }
 
         // Sort and apply personalization adjustment based on movement score
@@ -540,24 +578,12 @@ const getRecommendations = async (req, res, next) => {
             const sampleRec = healthData.recommendedExercises[0];
             const exerciseCategory = (sampleRec && sampleRec.category) ? sampleRec.category : 3;
 
-            const currentUrls = new Set(healthData.recommendedExercises.map(r => r.videoUrl));
-            const categoryFallbacks = FALLBACK_VIDEOS[exerciseCategory] || [];
-
-            for (const vid of categoryFallbacks) {
-                if (healthData.recommendedExercises.length >= CFG.RECOMMENDATION_POOL_SIZE) break;
-                if (!currentUrls.has(vid.videoUrl)) {
-                    healthData.recommendedExercises.push({
-                        customName: vid.name,
-                        videoUrl: vid.videoUrl,
-                        type: 'youtube_fallback',
-                        duration: vid.duration || CFG.DEFAULT_VIDEO_DURATION,
-                        channelTitle: "Pregnancy & Postpartum TV",
-                        completed: false,
-                        watchPercentage: 0
-                    });
-                    currentUrls.add(vid.videoUrl);
-                }
-            }
+            const extra = getFallbackVideos(
+                exerciseCategory,
+                healthData.recommendedExercises.map(r => r.videoUrl),
+                CFG.RECOMMENDATION_POOL_SIZE - healthData.recommendedExercises.length
+            );
+            extra.forEach(vid => healthData.recommendedExercises.push({ ...vid, completed: false, watchPercentage: 0 }));
             healthData.markModified('recommendedExercises');
             await healthData.save();
         }
@@ -582,7 +608,7 @@ const saveExerciseRecord = async (req, res, next) => {
     try {
         const userId = req.user.id;
         const {
-            date, exerciseId, customActivityName, status, accuracy,
+            date, exerciseId, customActivityName, status, accuracy, videoUrl,
             durationCompleted, userFeedback, liked,
             actualDuration, recommendedDuration, videoDuration,
             pain, difficulty, feelingAfter, adherenceScore, performanceMetrics
@@ -656,6 +682,18 @@ const saveExerciseRecord = async (req, res, next) => {
             },
             { upsert: true, returnDocument: 'after' }
         );
+
+        // Keep today's recommendation list in sync, so the card shows in the Completed tab after a
+        // reload (stopwatch, video watched to the end, or camera movement tracking)
+        if (finalStatus === 'completed') {
+            const matchers = [{ 'rec.customName': customActivityName }];
+            if (videoUrl) matchers.push({ 'rec.videoUrl': videoUrl });
+            await PostpartumHealthData.updateOne(
+                { userId, date },
+                { $set: { 'recommendedExercises.$[rec].completed': true, 'recommendedExercises.$[rec].watchPercentage': 100 } },
+                { arrayFilters: [{ $or: matchers }] }
+            );
+        }
 
         res.json({ success: true, record });
     } catch (err) {

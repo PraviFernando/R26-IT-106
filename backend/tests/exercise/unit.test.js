@@ -111,3 +111,38 @@ test('video searches depend on the form, not only the category', () => {
     assert.deepEqual(many.map(q => q.focus), [null, 'c_section', 'pelvic_pain']);
     assert.match(buildVideoQueries(1, { pelvicPain: true })[1].q, /breathing/, 'focus searches keep the category intensity');
 });
+
+test('menu navigation reuses open screens instead of stacking copies', async () => {
+    const nav = await loadFrontend('exerciseNavigation.js');
+    const calls = [];
+    const navigation = { navigate: (...args) => calls.push(args) };
+
+    nav.goToSection(navigation, 'form');
+    nav.goToSection(navigation, 'today');
+    nav.goToSection(navigation, 'progress');
+    nav.goToSection(navigation, 'history');
+
+    assert.deepEqual(calls.map(c => c[0]), ['Exercise', 'Exercise', 'ExerciseProgress', 'ExerciseProgress']);
+    assert.deepEqual(calls.map(c => c[1].section || c[1].tab), ['form', 'today', 'progress', 'history']);
+    for (const c of calls) assert.deepEqual(c[2], { pop: true }, 'must go back to the open screen, not push another');
+    for (const c of calls) assert.equal(typeof c[1].ts, 'number', 'ts makes the same request work twice in a row');
+});
+
+test('menu navigation switches in place when the current screen can do it', async () => {
+    const nav = await loadFrontend('exerciseNavigation.js');
+    let navigated = 0, local = [];
+    const navigation = { navigate: () => { navigated++; } };
+    nav.goToSection(navigation, 'form', (key) => { local.push(key); return true; });
+    assert.equal(navigated, 0);
+    assert.deepEqual(local, ['form']);
+    nav.goToSection(navigation, 'progress', () => false);
+    assert.equal(navigated, 1, 'falls back to navigating when it cannot switch in place');
+});
+
+test('streak wording: 1 day, 2 days, 0 days, Sinhala', async () => {
+    const m = await loadFrontend('exerciseMessages.js');
+    assert.equal(m.formatDays(0, false), '0 days');
+    assert.equal(m.formatDays(1, false), '1 day');
+    assert.equal(m.formatDays(2, false), '2 days');
+    assert.equal(m.formatDays(1, true), '1 දින');
+});

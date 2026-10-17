@@ -4,22 +4,38 @@ import React from 'react';
 import { View, Text, Pressable, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import { useFonts } from 'expo-font';
+import { Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { colors } from '../../theme';
 
-// Text styles. On the phone the exact Poppins/Inter files loaded by useFonts in App.js are used;
-// on web those font files are not registered, so use a sans-serif stack with the matching weight.
+// Fonts: Poppins (headings) + Inter (body), loaded by the exercise screens themselves under
+// names only these screens use (ExPoppins700, ...). Other screens are not affected.
+export const useExerciseFonts = () => {
+    const [loaded] = useFonts({
+        ExPoppins700: Poppins_700Bold,
+        ExPoppins600: Poppins_600SemiBold,
+        ExInter400: Inter_400Regular,
+        ExInter500: Inter_500Medium,
+        ExInter600: Inter_600SemiBold,
+        ExInter700: Inter_700Bold,
+    });
+    return loaded;
+};
+
 const SANS = "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-const font = (nativeFamily, webFamily, weight) => Platform.select({
-    web: { fontFamily: `'${webFamily}', ${SANS}`, fontWeight: weight },
-    default: { fontFamily: nativeFamily },
+// On web a fallback stack + weight keeps text sans-serif until the font file has loaded
+const font = (family, weight) => Platform.select({
+    web: { fontFamily: family + ', ' + SANS, fontWeight: weight },
+    default: { fontFamily: family },
 });
 export const T = {
-    heading: font('Poppins_700Bold', 'Poppins', '700'),
-    headingSemi: font('Poppins_600SemiBold', 'Poppins', '600'),
-    body: font('Inter_400Regular', 'Inter', '400'),
-    medium: font('Inter_500Medium', 'Inter', '500'),
-    semi: font('Inter_600SemiBold', 'Inter', '600'),
-    bold: font('Inter_700Bold', 'Inter', '700'),
+    heading: font('ExPoppins700', '700'),
+    headingSemi: font('ExPoppins600', '600'),
+    body: font('ExInter400', '400'),
+    medium: font('ExInter500', '500'),
+    semi: font('ExInter600', '600'),
+    bold: font('ExInter700', '700'),
 };
 
 export const C = {
@@ -170,7 +186,34 @@ export const Notice = ({ text, tone = 'warn', icon = 'info' }) => {
     );
 };
 
+// Simple bar chart (0–100 scores). The latest bar is highlighted; empty days show a thin stub.
+export const BarChart = ({ data, height = 180, accessibilityLabel }) => (
+    <View accessible accessibilityRole="image" accessibilityLabel={accessibilityLabel} style={[s.chart, { height }]}>
+        {data.map((d, i) => {
+            const last = i === data.length - 1;
+            const pct = Math.max(0, Math.min(100, Number(d.value) || 0));
+            return (
+                <View key={d.key || i} style={s.barCol}>
+                    <Text style={[s.barValue, last && { color: C.primaryDark }]}>{pct ? Math.round(pct) : ''}</Text>
+                    <View style={s.barTrack}>
+                        <View style={[s.bar, { height: pct ? `${pct}%` : 3 }, last ? s.barLast : null]} />
+                    </View>
+                    <Text style={[s.barLabel, last && s.barLabelLast]} numberOfLines={1}>{d.label}</Text>
+                </View>
+            );
+        })}
+    </View>
+);
+
 const s = StyleSheet.create({
+    chart: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, paddingTop: 6 },
+    barCol: { flex: 1, height: '100%', alignItems: 'center', gap: 4 },
+    barValue: { ...T.semi, fontSize: 11, color: C.textSub, minHeight: 14 },
+    barTrack: { flex: 1, width: '100%', maxWidth: 44, justifyContent: 'flex-end' },
+    bar: { width: '100%', backgroundColor: C.control, borderTopLeftRadius: 10, borderTopRightRadius: 10, borderBottomLeftRadius: 4, borderBottomRightRadius: 4 },
+    barLast: { backgroundColor: C.primaryDark },
+    barLabel: { ...T.semi, fontSize: 11, color: C.textSub },
+    barLabelLast: { ...T.bold, color: C.primaryDark },
     card: { backgroundColor: C.card, borderRadius: 22, padding: 16, borderWidth: 1, borderColor: C.border, ...cardShadow },
     gradientCard: { borderRadius: 24, padding: 18, shadowColor: C.primaryDark, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 18, elevation: 5 },
     sectionTitle: { ...T.headingSemi, fontSize: 15, color: C.text },

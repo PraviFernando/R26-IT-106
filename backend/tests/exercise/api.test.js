@@ -111,6 +111,9 @@ test('exercise API', { skip, timeout: 180000 }, async (t) => {
             assert.equal(r.status, 200);
             assert.equal(r.data.record.adherenceScore, 65);
             assert.equal(r.data.record.feedbackCode, 'excellent');
+            const afterDone = await call('GET', `/exercise/recommendations/${local(0)}`, null, lowRisk);
+            const doneCard = afterDone.data.recommendations.find(x => x.customName === v.customName);
+            assert.equal(doneCard.completed, true, 'a completed record moves the card to the Completed tab');
             r = await call('POST', '/exercise/record', { date: local(0), customActivityName: 'over', status: 'completed', actualDuration: 30, recommendedDuration: 10, pain: 'Yes' }, lowRisk);
             assert.equal(r.data.record.adherenceScore, 100);
             assert.equal(r.data.record.feedbackCode, 'pain_rest');

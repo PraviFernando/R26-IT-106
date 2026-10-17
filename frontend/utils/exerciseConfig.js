@@ -3,6 +3,7 @@
 export const WATCH_COMPLETE_PERCENT = 80;       // watching this much of a video completes it
 export const LOW_ADHERENCE_PERCENT = 50;        // stopwatch time below this % of recommended = "stopped early"
 export const TODO_VISIBLE_COUNT = 5;            // cards shown in the To Do tab at once
+export const DAILY_GOAL = 3;                    // daily goal shown on the Today banner ("1 of 3")
 
 // Movement tracking
 export const MOVEMENT_COMPLETE_REPS = 5;        // this many reps completes a session...

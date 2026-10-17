@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, ScrollView, Pressable, Modal, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, Text, ScrollView, Pressable, Modal, StyleSheet, Platform, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ContentWell } from '../components/ScreenContainer';
 import Toast from 'react-native-toast-message';
@@ -11,18 +11,20 @@ import api from '../services/api';
 import styles from '../components/exercise/exerciseStyles';
 import HealthDataForm from '../components/exercise/HealthDataForm';
 import ExerciseCard from '../components/exercise/ExerciseCard';
-import { C, T, Card, GradientCard, CircleButton, PrimaryButton, SecondaryButton, Notice, Icon } from '../components/exercise/ui';
-import { videoFocusLabel } from '../utils/exerciseMessages';
+import ExerciseShell from '../components/exercise/ExerciseShell';
+import { C, T, Card, GradientCard, CircleButton, PrimaryButton, SecondaryButton, Notice, Icon, useExerciseFonts } from '../components/exercise/ui';
+import { videoFocusLabel, formatDays } from '../utils/exerciseMessages';
 import { todayStr, durationToMinutes, getYoutubeId, matchesExercise } from '../utils/exerciseUtils';
 import {
-    WATCH_COMPLETE_PERCENT, TODO_VISIBLE_COUNT, WATCH_SAVE_INTERVAL_MS, WATCH_NEW_SESSION_MS
+    WATCH_COMPLETE_PERCENT, TODO_VISIBLE_COUNT, DAILY_GOAL, WATCH_SAVE_INTERVAL_MS, WATCH_NEW_SESSION_MS
 } from '../utils/exerciseConfig';
 
 let promptShownDate = null;
 
 // Main Exercise Screen
-export default function ExerciseScreen({ navigation }) {
+export default function ExerciseScreen({ navigation, route }) {
     const { t, i18n } = useTranslation();
+    const fontsReady = useExerciseFonts();
     const { width: windowWidth } = useWindowDimensions();
     const isWideScreen = windowWidth > 900;
     const isSinhala = i18n.language === 'si';
@@ -41,6 +43,11 @@ export default function ExerciseScreen({ navigation }) {
     const [loading, setLoading] = useState(false);
     const [progress, setProgress] = useState(null);
     const [showForm, setShowForm] = useState(true);
+    // True while the user has asked for the health form (menu or "update" button). The background
+    // reload of today's list must not close a form that was opened on purpose.
+    const formRequestedRef = useRef(false);
+    const openForm = () => { formRequestedRef.current = true; setShowForm(true); };
+    const closeForm = () => { formRequestedRef.current = false; setShowForm(false); };
     const [activeTab, setActiveTab] = useState('todo');
     const [latestUser, setLatestUser] = useState(null);
 
@@ -63,6 +70,13 @@ export default function ExerciseScreen({ navigation }) {
         });
         return unsubscribe;
     }, [navigation]);
+
+    // Exercise menu: open the health form or the exercise list when asked through the route
+    useEffect(() => {
+        const section = route?.params?.section;
+        if (section === 'form') openForm();
+        else if (section === 'today' && hasData) closeForm();
+    }, [route?.params?.section, route?.params?.ts]);
 
     // Latest recommendations for callbacks that may have been created in an earlier render
     const recommendationsRef = useRef(recommendations);
@@ -137,7 +151,7 @@ export default function ExerciseScreen({ navigation }) {
                 setSafetyMessageSi(data.safetyMessageSi || '');
                 setDetectedMood(data.detectedMood || null);
                 setPredictionSource(data.predictionSource || null);
-                setShowForm(false);
+                if (!formRequestedRef.current) setShowForm(false);
             }
         } catch (err) {
             console.error('Failed to load recommendations:', err);
@@ -165,7 +179,7 @@ export default function ExerciseScreen({ navigation }) {
                 autoCompletedRef.current.clear();
                 setActiveTab('todo');
                 setHasData(true);
-                setShowForm(false);
+                closeForm();
 
                 // Scroll to top of the exercise page after submitting health form
                 setTimeout(() => {
@@ -201,6 +215,7 @@ export default function ExerciseScreen({ navigation }) {
                 date: todayStr(),
                 exerciseId: exercise.exerciseId || null,
                 customActivityName: exercise.customName || exercise.name,
+                videoUrl: exercise.videoUrl,
                 status: 'completed',
                 // Video durations can be "mm:ss"; convert to minutes so the backend can store a number
                 durationCompleted: durationToMinutes(exercise.duration) || 15,
@@ -349,8 +364,9 @@ export default function ExerciseScreen({ navigation }) {
             : tr('Chosen from today\'s health form. Short and safe.', 'අද සෞඛ්‍ය පෝරමය අනුව තෝරා ඇත. කෙටි සහ ආරක්ෂිතයි.'));
     const todayLabel = new Date().toLocaleDateString(isSinhala ? 'si-LK' : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
     const cardWidthStyle = { width: isWideScreen ? '31.5%' : '100%', minWidth: isWideScreen ? 260 : undefined };
+    const dailyGoal = Math.min(DAILY_GOAL, recommendations.length || DAILY_GOAL);
 
-    const renderCard = (rec, idx) => (
+    const renderCard = (rec, idx, variant = 'full') => (
         <View key={rec.exerciseId || rec.videoUrl || rec.customName || idx} style={cardWidthStyle}>
             <ExerciseCard
                 exercise={rec}
@@ -358,12 +374,26 @@ export default function ExerciseScreen({ navigation }) {
                 isCompleted={rec.completed}
                 onProgressUpdate={handleProgressUpdate}
                 navigation={navigation}
+                variant={variant}
             />
         </View>
     );
 
+    // Phones need the exercise fonts loaded before text uses them (web falls back to sans-serif)
+    if (!fontsReady && Platform.OS !== 'web') return <View style={{ flex: 1, backgroundColor: C.bg }} />;
+
     return (
         <SafeAreaView style={[styles.safe, { backgroundColor: C.bg }]}>
+          <ExerciseShell
+            active={showForm || !hasData ? 'form' : 'today'}
+            navigation={navigation}
+            isSinhala={isSinhala}
+            onLocal={(key) => {
+                if (key === 'form') { openForm(); return true; }
+                if (key === 'today') { if (hasData) closeForm(); return true; }
+                return false;
+            }}
+            header={
             <View style={ui.header}>
                 <CircleButton icon="back" onPress={() => navigation.goBack()} label={tr('Back', 'ආපසු')} />
                 <View style={{ flex: 1 }}>
@@ -379,7 +409,8 @@ export default function ExerciseScreen({ navigation }) {
                     <Text style={ui.langText}>{i18n.language === 'en' ? 'සිංහල' : 'English'}</Text>
                 </Pressable>
             </View>
-
+            }
+          >
             <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
               <ContentWell maxWidth="wide">
                 <View style={ui.page}>
@@ -392,7 +423,7 @@ export default function ExerciseScreen({ navigation }) {
                                 initialData={initialHealthData}
                             />
                             {hasData && (
-                                <SecondaryButton title={tr('Back to my exercises', 'මගේ ව්‍යායාම වෙත ආපසු')} onPress={() => setShowForm(false)} />
+                                <SecondaryButton title={tr('Back to my exercises', 'මගේ ව්‍යායාම වෙත ආපසු')} onPress={closeForm} />
                             )}
                         </>
                     )}
@@ -407,23 +438,16 @@ export default function ExerciseScreen({ navigation }) {
                                 </View>
                                 <View style={ui.bannerStats}>
                                     <View style={ui.bannerStat}>
-                                        <Text style={ui.bannerStatValue}>{progress?.currentStreak ?? 0} {tr('days', 'දින')}</Text>
+                                        <Text style={ui.bannerStatValue}>{formatDays(progress?.currentStreak ?? 0, isSinhala)}</Text>
                                         <Text style={ui.bannerStatLabel}>{tr('Streak', 'අඛණ්ඩව')}</Text>
                                     </View>
                                     <View style={ui.bannerStat}>
-                                        <Text style={ui.bannerStatValue}>{doneRecs.length}</Text>
+                                        <Text style={ui.bannerStatValue}>{tr(`${Math.min(doneRecs.length, dailyGoal)} of ${dailyGoal}`, `${dailyGoal} න් ${Math.min(doneRecs.length, dailyGoal)}`)}</Text>
                                         <Text style={ui.bannerStatLabel}>{tr('Done today', 'අද අවසන්')}</Text>
                                     </View>
                                 </View>
                             </GradientCard>
 
-                            {predictionSource === 'rule_fallback' && (
-                                <Notice
-                                    tone="warn"
-                                    text={tr('The AI recommendation service is unavailable right now, so these exercises were chosen using basic safety rules.',
-                                        'AI නිර්දේශ සේවාව දැනට ලබාගත නොහැක. මූලික ආරක්ෂිත නීති මත පදනම්ව ව්‍යායාම තෝරා ඇත.')}
-                                />
-                            )}
 
                             {recommendations.length > 0 ? (
                                 <>
@@ -445,7 +469,23 @@ export default function ExerciseScreen({ navigation }) {
                                     </View>
 
                                     {visibleRecs.length > 0 ? (
-                                        <View style={ui.grid}>{visibleRecs.map(renderCard)}</View>
+                                        isWideScreen ? (
+                                            <View style={ui.grid}>{visibleRecs.map(renderCard)}</View>
+                                        ) : activeTab === 'todo' ? (
+                                            // Phone: one clear next step, the rest as a short "Up next" list
+                                            <View style={{ gap: 12 }}>
+                                                <Text style={ui.listTitle}>{tr('Start with this', 'මෙයින් අරඹන්න')}</Text>
+                                                {renderCard(visibleRecs[0], 0)}
+                                                {visibleRecs.length > 1 && (
+                                                    <>
+                                                        <Text style={ui.listTitle}>{tr('Up next', 'ඊළඟට')}</Text>
+                                                        {visibleRecs.slice(1).map((rec, idx) => renderCard(rec, idx + 1, 'compact'))}
+                                                    </>
+                                                )}
+                                            </View>
+                                        ) : (
+                                            <View style={{ gap: 10 }}>{visibleRecs.map((rec, idx) => renderCard(rec, idx, 'compact'))}</View>
+                                        )
                                     ) : (
                                         <Card style={ui.empty}>
                                             <Text style={ui.emptyTitle}>
@@ -478,13 +518,6 @@ export default function ExerciseScreen({ navigation }) {
                         </View>
                     )}
 
-                    {!showForm && hasData && (
-                        <View style={ui.links}>
-                            <SecondaryButton style={ui.linkBtn} icon="form" title={tr('Update health form', 'සෞඛ්‍ය පෝරමය යාවත්කාලීන කරන්න')} onPress={() => setShowForm(true)} />
-                            <SecondaryButton style={ui.linkBtn} icon="chart" title={tr('My progress', 'මගේ ප්‍රගතිය')} onPress={() => navigation.navigate('ExerciseProgress')} />
-                            <SecondaryButton style={ui.linkBtn} icon="clock" title={tr('Watch history', 'නැරඹූ ඉතිහාසය')} onPress={() => navigation.navigate('ExerciseProgress', { tab: 'history' })} />
-                        </View>
-                    )}
 
                     {!showForm && hasData && safetyStatus !== 'blocked' && (
                         <Notice tone="warn" text={tr('Stop if anything hurts, you feel dizzy, or bleeding increases. Always follow your doctor\'s or midwife\'s advice.', 'වේදනාවක්, කරකැවිල්ලක් හෝ ලේ ගැලීම වැඩි වුවහොත් නවතින්න. සැමවිටම ඔබේ වෛද්‍යවරයාගේ හෝ වින්නඹු මාතාවගේ උපදෙස් අනුගමනය කරන්න.')} />
@@ -493,6 +526,7 @@ export default function ExerciseScreen({ navigation }) {
                 <View style={{ height: 40 }} />
               </ContentWell>
             </ScrollView>
+          </ExerciseShell>
 
             {/* Health Condition Change Prompt Modal */}
             <Modal visible={showHealthPromptModal} transparent animationType="fade" onRequestClose={() => setShowHealthPromptModal(false)}>
@@ -507,7 +541,7 @@ export default function ExerciseScreen({ navigation }) {
                             style={{ alignSelf: 'stretch' }}
                             title={tr('Yes, update the form', 'ඔව්, පෝරමය යාවත්කාලීන කරන්න')}
                             onPress={() => {
-                                setShowForm(true);
+                                openForm();
                                 setShowHealthPromptModal(false);
                                 setTimeout(() => {
                                     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
@@ -537,7 +571,7 @@ export default function ExerciseScreen({ navigation }) {
                                     };
                                     await handleSubmitHealthData(payload);
                                 } else {
-                                    setShowForm(false);
+                                    closeForm();
                                     setTimeout(() => {
                                         scrollViewRef.current?.scrollTo({ y: 0, animated: true });
                                     }, 100);
@@ -575,6 +609,7 @@ const ui = StyleSheet.create({
     tabText: { ...T.semi, fontSize: 14, color: C.textSub },
     tabTextOn: { ...T.bold, color: '#FFFFFF' },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
+    listTitle: { ...T.heading, fontSize: 17, color: C.text, marginTop: 2 },
     empty: { alignItems: 'center', gap: 6, paddingVertical: 28 },
     emptyTitle: { ...T.heading, fontSize: 18, color: C.text, textAlign: 'center' },
     emptyText: { ...T.medium, fontSize: 14, color: C.textSub, textAlign: 'center', lineHeight: 20, maxWidth: 460 },

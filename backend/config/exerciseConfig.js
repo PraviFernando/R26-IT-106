@@ -22,6 +22,7 @@ module.exports = {
     MAX_YOUTUBE_RESULTS: 25,          // results requested for the category search
     FOCUS_YOUTUBE_RESULTS: 10,        // results requested per focus search (pain area, C-section, energy, mood)
     FOCUS_VIDEOS_PER_QUERY: 3,        // videos kept from each focus search; the rest come from the category search
+    YOUTUBE_CACHE_HOURS: 24,          // reuse a YouTube search for this long (saves API quota)
     MIN_VIDEO_SECONDS: 60,            // shorter videos (YouTube Shorts) are excluded
     DEFAULT_VIDEO_DURATION: '10:00',
 
