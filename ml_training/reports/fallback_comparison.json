@@ -1,0 +1,6 @@
+{
+  "description": "Backend rule-based fallback on the same held-out test rows. The fallback implements the same rules used to label the data, so it should agree (near) 100%; the model is checked against it.",
+  "rows": 1001,
+  "risk_accuracy": 1,
+  "category_accuracy": 1
+}

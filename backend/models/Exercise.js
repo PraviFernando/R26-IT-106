@@ -1,3 +1,5 @@
+// DATABASE MODEL - an exercise catalogue entry (steps, joints, contraindications).
+// The current recommendation flow takes its videos from YouTube searches instead, so this is only referenced by ExerciseRecord.
 const mongoose = require('mongoose');
 
 const exerciseSchema = new mongoose.Schema({

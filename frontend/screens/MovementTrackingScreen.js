@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    View, Text, StyleSheet, TouchableOpacity, Modal,
+    View, Text, StyleSheet, Modal,
     Alert, ActivityIndicator, Platform,
     Pressable, ScrollView
 } from 'react-native';
@@ -11,47 +11,51 @@ import exerciseService from '../services/exerciseService';
 import { useTranslation } from 'react-i18next';
 import { colors } from '../theme';
 import { useResponsive } from '../hooks/useResponsive';
+import { todayStr, formatTime, getYoutubeEmbedUrl } from '../utils/exerciseUtils';
+import { C, T, Card, SectionTitle, OptionRow, PrimaryButton, SecondaryButton, CircleButton, StatTile, Icon, useExerciseFonts } from '../components/exercise/ui';
+import { MOVEMENT_SCORING_JS } from '../utils/movementScoring';
+import { MOVEMENT_COMPLETE_REPS, MOVEMENT_MIN_REPS, MOVEMENT_MIN_SECONDS } from '../utils/exerciseConfig';
 
 // Generate unique session ID
+// =====================================================================================
+// MOVEMENT TRACKING SCREEN (camera form checking). How it works:
+//  1. The camera page is an HTML string (localHtmlString below) shown in an iframe on web / WebView on phones.
+//  2. Inside it, MediaPipe Pose finds 33 body points (landmarks) on every camera frame.
+//  3. processExercise() counts reps with a small state machine for each exercise
+//     (Cat-Cow, Bird Dog, Glute Bridge, Modified Squats, or a universal up-down detector).
+//  4. Scores come from utils/movementScoring.js: range of motion, posture (body position x form checks), steadiness.
+//  5. The page sends messages to this screen (REP_COUNT, scores, status); this screen shows the live tiles.
+//  6. On Finish, the mother answers pain / difficulty / feeling and submitWorkoutSession() saves everything:
+//     POST /exercise/movement-session and POST /exercise/record (so the card moves to Completed).
+// The camera is opened ONLY here (the button on the card just checks the permission state).
+// =====================================================================================
+
 const generateSessionId = () => {
     return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
 };
 
+// Demo video: autoplay muted with the JS API enabled so play/pause commands work
+const getEmbedUrl = (url) => getYoutubeEmbedUrl(url,
+    url && url.includes('youtube.com/embed/')
+        ? 'enablejsapi=1&autoplay=1&mute=1'
+        : 'playsinline=1&controls=1&rel=0&modestbranding=1&enablejsapi=1&autoplay=1&mute=1');
+
 export default function MovementTrackingScreen({ route, navigation }) {
-    const { exerciseId, exerciseName, videoUrl } = route.params;
+    const { exerciseId, exerciseName, videoUrl, cardName } = route.params;
     const { t, i18n } = useTranslation();
+    const fontsReady = useExerciseFonts();
     const isSinhala = i18n.language === 'si';
     const r = useResponsive();
     const isLargeScreen = r.isTablet;
 
-    const getEmbedUrl = (url) => {
-        if (!url) return '';
-        let videoId = '';
-        if (url.includes('youtube.com/embed/')) {
-            const separator = url.includes('?') ? '&' : '?';
-            return `${url}${separator}enablejsapi=1&autoplay=1&mute=1`;
-        }
-        if (url.includes('youtu.be/')) {
-            videoId = url.split('youtu.be/')[1]?.split('?')[0];
-        } else if (url.includes('youtube.com/watch')) {
-            const parts = url.split('?');
-            if (parts.length > 1) {
-                const urlParams = new URLSearchParams(parts[1]);
-                videoId = urlParams.get('v');
-            }
-        }
-        if (videoId) {
-            return `https://www.youtube.com/embed/${videoId}?playsinline=1&controls=1&rel=0&modestbranding=1&enablejsapi=1&autoplay=1&mute=1`;
-        }
-        return url;
-    };
 
     const [loading, setLoading] = useState(true);
     const [status, setStatus] = useState('Initializing...');
     const [reps, setReps] = useState(0);
     const [liveScore, setLiveScore] = useState(0);
-    const [stability, setStability] = useState(100);
-    const [postureMatch, setPostureMatch] = useState(100);
+    const [stability, setStability] = useState(null);     // steadiness 0-100, null until measured
+    const [postureMatch, setPostureMatch] = useState(null); // alignment / posture 0-100
+    const [averageSteadiness, setAverageSteadiness] = useState(0);
     const [feedbackMessage, setFeedbackMessage] = useState('Position yourself in front of the camera.');
     const [averageAccuracy, setAverageAccuracy] = useState(0);
     const [correctReps, setCorrectReps] = useState(0);
@@ -78,6 +82,12 @@ export default function MovementTrackingScreen({ route, navigation }) {
 
     const webViewRef = useRef(null);
     const videoRef = useRef(null);
+    // Web: the pose-tracking iframe (not the YouTube demo iframe) receives PAUSE/RESUME
+    const cameraIframeRef = useRef(null);
+    const isPausedRef = useRef(false);
+    const timerStartedRef = useRef(false);
+    // Running average of the live score, so the saved score reflects the whole session
+    const scoreSamplesRef = useRef({ sum: 0, count: 0 });
 
     const playDemoVideo = () => {
         if (Platform.OS === 'web') {
@@ -113,9 +123,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     };
 
-    // Start Timer
+    // Timer starts when the camera and pose model are ready (READY message), not while loading
     useEffect(() => {
-        startTimer();
         return () => stopTimer();
     }, []);
 
@@ -131,6 +140,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     }, []);
 
+    // the session clock (counts seconds) and plays the demo video; stopTimer stops both
     const startTimer = () => {
         if (!timerRef.current) {
             timerRef.current = setInterval(() => {
@@ -148,14 +158,17 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     };
 
+    // pause / resume. Stops or restarts the clock, counts pauses, and tells the camera page to PAUSE or RESUME
     const togglePause = () => {
         if (isPaused) {
             // Resume
+            isPausedRef.current = false;
             setIsPaused(false);
             startTimer();
             sendMessageToWebView({ type: 'RESUME' });
         } else {
             // Pause
+            isPausedRef.current = true;
             setIsPaused(true);
             stopTimer();
             setPauseCount(prev => prev + 1);
@@ -163,7 +176,9 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     };
 
+    // Finish pressed -> stop the clock, pause the camera page and open the summary questions
     const handleFinish = () => {
+        isPausedRef.current = true;
         stopTimer();
         sendMessageToWebView({ type: 'PAUSE' });
         setShowSummaryModal(true);
@@ -171,7 +186,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
 
     const sendMessageToWebView = (msg) => {
         if (Platform.OS === 'web') {
-            const iframe = document.querySelector('iframe');
+            const iframe = cameraIframeRef.current;
             if (iframe && iframe.contentWindow) {
                 iframe.contentWindow.postMessage(JSON.stringify(msg), '*');
             }
@@ -180,6 +195,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     };
 
+    // receives every message from the camera page: READY, REP_COUNT, live scores, visibility warning, ERROR.
     const handleWebViewMessage = (event) => {
         try {
             const data = JSON.parse(event.nativeEvent.data);
@@ -187,6 +203,10 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 case 'READY':
                     setLoading(false);
                     setStatus('Body Detected');
+                    if (!timerStartedRef.current && !isPausedRef.current) {
+                        timerStartedRef.current = true;
+                        startTimer();
+                    }
                     break;
                 case 'STATUS':
                     setStatus(data.status);
@@ -196,11 +216,18 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     break;
                 case 'LIVE_SCORE':
                     setLiveScore(data.score);
+                    if (!isPausedRef.current && typeof data.score === 'number' && data.score > 0) {
+                        scoreSamplesRef.current.sum += data.score;
+                        scoreSamplesRef.current.count += 1;
+                    }
                     if (data.stability !== undefined) {
                         setStability(data.stability);
                     }
                     if (data.postureMatch !== undefined) {
                         setPostureMatch(data.postureMatch);
+                    }
+                    if (data.averageSteadiness !== undefined) {
+                        setAverageSteadiness(data.averageSteadiness);
                     }
                     if (data.feedback !== undefined) {
                         setFeedbackMessage(data.feedback);
@@ -237,11 +264,6 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     };
 
-    const formatTime = (totalSeconds) => {
-        const minutes = Math.floor(totalSeconds / 60);
-        const seconds = totalSeconds % 60;
-        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    };
 
     // Calculate score feedback message
     const getScoreFeedback = (score) => {
@@ -276,6 +298,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
         if (msg === 'Adjust your joint angles to match the video.') return 'වීඩියෝවට අනුව ඔබේ සන්ධි කෝණ සකස් කරන්න.';
         if (msg === 'Correct your body position to match the video.') return 'වීඩියෝවට අනුව ඔබේ ශරීරයේ පිහිටීම සකස් කරන්න.';
         if (msg === 'Adjust your pace to match the video timing.') return 'වීඩියෝවේ වේගයට අනුව ඔබේ වේගය සකස් කරන්න.';
+        if (msg === 'Keep your hips steady and move slowly.') return 'ඔබේ උකුල ස්ථාවරව තබාගෙන සෙමින් චලනය වන්න.';
+        if (msg === 'Move slowly and with control, about 3 to 7 seconds per repetition.') return 'සෙමින් සහ පාලනයෙන් චලනය වන්න, එක් වාරයකට තත්පර 3 සිට 7 දක්වා.';
         return msg;
     };
 
@@ -291,20 +315,27 @@ export default function MovementTrackingScreen({ route, navigation }) {
         return st;
     };
 
+    // saves the session. A session counts as completed with 5 reps, or at least 1 rep over 60 seconds
+    // (thresholds in utils/exerciseConfig.js). Then the exercise card is completed too, and we go back.
     const submitWorkoutSession = async () => {
         setSaving(true);
         try {
             const sanitizedExerciseId = (exerciseId && exerciseId !== 'EX_MOCK' && exerciseId.match(/^[0-9a-fA-F]{24}$/)) ? exerciseId : undefined;
+            const samples = scoreSamplesRef.current;
+            const sessionScore = samples.count > 0 ? Math.round(samples.sum / samples.count) : liveScore;
+            // Needs real movement: enough reps, or a few reps over a minimum tracking time
+            const isCompleted = reps >= MOVEMENT_COMPLETE_REPS || (reps >= MOVEMENT_MIN_REPS && timeElapsed >= MOVEMENT_MIN_SECONDS);
+            const localDate = todayStr();
 
             await exerciseService.saveMovementSession({
                 sessionId,
                 exerciseId: sanitizedExerciseId,
                 exerciseName,
-                movementScore: liveScore,
+                movementScore: sessionScore,
                 repetitions: reps,
                 activeDuration: timeElapsed,
                 pauseCount,
-                completed: reps >= 5 || timeElapsed >= 60, // simple threshold for completion
+                completed: isCompleted,
                 pain: painRating === 'Yes',
                 difficulty: difficultyRating,
                 postWorkoutFeeling: feelingRating,
@@ -317,20 +348,22 @@ export default function MovementTrackingScreen({ route, navigation }) {
 
             // Auto-complete the exercise card in ExerciseScreen as well
             await exerciseService.saveExerciseRecord({
-                date: new Date().toISOString().split('T')[0],
+                date: localDate,
                 exerciseId: sanitizedExerciseId,
-                customActivityName: exerciseName,
-                status: 'completed',
+                // Use the recommendation card's name so that card is marked completed
+                customActivityName: cardName || exerciseName,
+                videoUrl,
+                status: isCompleted ? 'completed' : 'pending',
                 durationCompleted: Math.round(timeElapsed / 60) || 1,
                 liked: true,
                 pain: painRating,
                 difficulty: difficultyRating,
                 feelingAfter: feelingRating,
-                adherenceScore: liveScore,
+                adherenceScore: sessionScore,
                 accuracy: averageAccuracy,
                 performanceMetrics: {
-                    postureScore: postureMatch,
-                    stabilityScore: stability,
+                    postureScore: averageJointAccuracy,
+                    stabilityScore: averageSteadiness,
                     rangeOfMotion: averageRangeOfMotion
                 }
             });
@@ -430,6 +463,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
             let useUnpkg = false;
             let pose;
 
+            // loads the MediaPipe Pose model (jsdelivr first, unpkg as a backup)
             function initPose() {
                 try {
                     pose = new Pose({
@@ -475,6 +509,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 return angle;
             }
 
+            // picks the detector from the exercise name (Cat-Cow, Bird Dog, Glute Bridge, Modified Squats, else Universal)
             // Exercise State Machine Variables
             const exerciseName = "${exerciseName}";
             const lowerName = exerciseName.toLowerCase();
@@ -497,6 +532,44 @@ export default function MovementTrackingScreen({ route, navigation }) {
             let lastPeak = null;
             const thresholdY = 0.035;
 
+            // Scoring functions (frontend/utils/movementScoring.js)
+            ${MOVEMENT_SCORING_JS}
+
+            // Scoring state: rolling windows (~3 s at ~25 fps) and the current rep
+            const MS_WINDOW = 75;
+            const profile = MS_PROFILES[activeDetector] || MS_PROFILES['Universal'];
+            let metricWindow = [];
+            let tiltWindow = [];
+            let swayWindow = [];
+            let repMin = Infinity;
+            let repMax = -Infinity;
+            let repAlignments = [];
+            let repScores = [];
+            let paceScores = [];
+            let alignmentHistory = [];
+            let steadinessHistory = [];
+            let smoothAccuracy = null;
+            let smoothSteadiness = null;
+            let lastAlignment = null;
+
+            // rep score = 50% range of motion + 50% alignment. A rep with score >= 70 counts as a correct rep.
+            // Called when a rep is completed: scores that rep from its own range and alignment
+            function finishRep() {
+                const rom = msRomScore(profile, repMin, repMax);
+                const align = repAlignments.length ? repAlignments.reduce((a, b) => a + b, 0) / repAlignments.length : (lastAlignment || 0);
+                const repScore = Math.round(rom * 0.5 + align * 0.5);
+                repScores.push(repScore);
+                // the first rep's time includes getting into position, so pace starts from the second rep
+                if (repetitionTimes.length > 1) {
+                    paceScores.push(Math.round(msPaceScore(repetitionTimes[repetitionTimes.length - 1], profile.paceSec)));
+                }
+                romsHistory.push(Math.round(rom));
+                repMin = Infinity;
+                repMax = -Infinity;
+                repAlignments = [];
+                return repScore;
+            }
+
             // Tracking Histories
             let accuraciesHistory = [];
             let romsHistory = [];
@@ -512,6 +585,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
             let repetitionTimes = [];
             let lastRepTimestamp = Date.now();
 
+            // makes the body points independent of camera distance (centred on the hips, scaled by the torso length)
             // 1. Pose Normalizer
             const PoseNormalizer = {
                 normalize: function(landmarks) {
@@ -547,268 +621,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 }
             };
 
-            // 2. Reference Movement Model (procedural replication of exercise video movement phase targets)
-            const ReferenceMovementModel = {
-                getExpectedPose: function(detector, cycleTimeSecs) {
-                    const phasePercentage = (cycleTimeSecs % 6) / 6;
-                    let phase = "starting";
-                    let targetAngles = {};
-                    
-                    if (detector === "Modified Squats") {
-                        if (phasePercentage < 0.25) {
-                            phase = "squatting";
-                            const ratio = phasePercentage / 0.25;
-                            targetAngles.knee = 180 - ratio * 70;
-                            targetAngles.hip = 180 - ratio * 85;
-                        } else if (phasePercentage < 0.5) {
-                            phase = "lowest";
-                            targetAngles.knee = 110;
-                            targetAngles.hip = 95;
-                        } else if (phasePercentage < 0.75) {
-                            phase = "standing";
-                            const ratio = (phasePercentage - 0.5) / 0.25;
-                            targetAngles.knee = 110 + ratio * 70;
-                            targetAngles.hip = 95 + ratio * 85;
-                        } else {
-                            phase = "starting";
-                            targetAngles.knee = 180;
-                            targetAngles.hip = 180;
-                        }
-                    } else if (detector === "Glute Bridge") {
-                        if (phasePercentage < 0.25) {
-                            phase = "up";
-                            const ratio = phasePercentage / 0.25;
-                            targetAngles.hip = 120 + ratio * 55;
-                        } else if (phasePercentage < 0.5) {
-                            phase = "lowest";
-                            targetAngles.hip = 175;
-                        } else if (phasePercentage < 0.75) {
-                            phase = "lowering";
-                            const ratio = (phasePercentage - 0.5) / 0.25;
-                            targetAngles.hip = 175 - ratio * 55;
-                        } else {
-                            phase = "starting";
-                            targetAngles.hip = 120;
-                        }
-                    } else if (detector === "Cat-Cow") {
-                        if (phasePercentage < 0.5) {
-                            phase = "cow";
-                            const ratio = phasePercentage / 0.5;
-                            targetAngles.back = 150 + ratio * 20;
-                        } else {
-                            phase = "cat";
-                            const ratio = (phasePercentage - 0.5) / 0.5;
-                            targetAngles.back = 170 - ratio * 30;
-                        }
-                    } else if (detector === "Bird Dog") {
-                        if (phasePercentage < 0.25) {
-                            phase = "extended";
-                            targetAngles.extension = 0.5;
-                        } else if (phasePercentage < 0.5) {
-                            phase = "lowest";
-                            targetAngles.extension = 1.0;
-                        } else if (phasePercentage < 0.75) {
-                            phase = "returned";
-                            targetAngles.extension = 0.5;
-                        } else {
-                            phase = "starting";
-                            targetAngles.extension = 0.0;
-                        }
-                    } else {
-                        if (phasePercentage < 0.25) {
-                            phase = "down";
-                            targetAngles.amplitude = phasePercentage / 0.25;
-                        } else if (phasePercentage < 0.5) {
-                            phase = "lowest";
-                            targetAngles.amplitude = 1.0;
-                        } else if (phasePercentage < 0.75) {
-                            phase = "up";
-                            targetAngles.amplitude = 1.0 - ((phasePercentage - 0.5) / 0.25);
-                        } else {
-                            phase = "starting";
-                            targetAngles.amplitude = 0.0;
-                        }
-                    }
-                    
-                    return { phase, targetAngles };
-                }
-            };
-
-            // 3. Pose Comparer
-            const PoseComparer = {
-                compare: function(detector, normalizedUser, normalizedExpected, userAngles, userState, prevUserState) {
-                    if (!normalizedUser) return null;
-                    
-                    let jointAngleAccuracy = 100;
-                    let romAccuracy = 100;
-                    let bodyPositionAccuracy = 100;
-                    let movementDirectionAccuracy = 100;
-                    let timingSimilarity = 100;
-                    
-                    const expectedPhase = normalizedExpected.phase;
-                    const targetAngles = normalizedExpected.targetAngles;
-                    
-                    if (detector === "Modified Squats") {
-                        const userKnee = userAngles.knee || 180;
-                        const targetKnee = targetAngles.knee || 180;
-                        jointAngleAccuracy = Math.max(0, 100 - Math.abs(userKnee - targetKnee) * 1.2);
-                        
-                        if (expectedPhase === "lowest") {
-                            romAccuracy = userKnee < 135 ? Math.min(100, 100 - Math.abs(userKnee - 110) * 1.5) : 50;
-                        } else {
-                            romAccuracy = 100;
-                        }
-                    } else if (detector === "Glute Bridge") {
-                        const userHip = userAngles.hip || 120;
-                        const targetHip = targetAngles.hip || 120;
-                        jointAngleAccuracy = Math.max(0, 100 - Math.abs(userHip - targetHip) * 1.2);
-                        
-                        if (expectedPhase === "lowest") {
-                            romAccuracy = userHip > 150 ? Math.min(100, 100 - Math.abs(175 - userHip) * 1.5) : 50;
-                        } else {
-                            romAccuracy = 100;
-                        }
-                    } else if (detector === "Cat-Cow") {
-                        const userBack = userAngles.back || 160;
-                        const targetBack = targetAngles.back || 160;
-                        jointAngleAccuracy = Math.max(0, 100 - Math.abs(userBack - targetBack) * 1.5);
-                        romAccuracy = 100;
-                    } else if (detector === "Bird Dog") {
-                        const userExt = userAngles.extension || 0;
-                        const targetExt = targetAngles.extension || 0;
-                        jointAngleAccuracy = Math.max(0, 100 - Math.abs(userExt - targetExt) * 100);
-                        romAccuracy = userExt > 0.7 ? 100 : 50;
-                    } else {
-                        const userAmp = userAngles.amplitude || 0;
-                        const targetAmp = targetAngles.amplitude || 0;
-                        jointAngleAccuracy = Math.max(0, 100 - Math.abs(userAmp - targetAmp) * 100);
-                        romAccuracy = userAmp > 0.7 ? 100 : 50;
-                    }
-                    
-                    let totalDist = 0;
-                    let validPoints = 0;
-                    const keyIndices = [11, 12, 23, 24, 25, 26, 27, 28];
-                    
-                    keyIndices.forEach(idx => {
-                        const lm = normalizedUser.landmarks[idx];
-                        if (lm && lm.visibility > 0.5) {
-                            let expectedPos = { x: 0, y: 0 };
-                            if (idx === 11) expectedPos = { x: -0.3, y: -1.0 };
-                            if (idx === 12) expectedPos = { x: 0.3, y: -1.0 };
-                            if (idx === 23) expectedPos = { x: -0.2, y: 0.0 };
-                            if (idx === 24) expectedPos = { x: 0.2, y: 0.0 };
-                            
-                            if (detector === "Modified Squats" && expectedPhase === "lowest") {
-                                if (idx === 23 || idx === 24) expectedPos.y += 0.2;
-                            }
-                            if (detector === "Glute Bridge" && expectedPhase === "lowest") {
-                                if (idx === 23 || idx === 24) expectedPos.y -= 0.3;
-                            }
-                            
-                            const dist = Math.sqrt(Math.pow(lm.x - expectedPos.x, 2) + Math.pow(lm.y - expectedPos.y, 2));
-                            totalDist += dist;
-                            validPoints++;
-                        }
-                    });
-                    
-                    if (validPoints > 0) {
-                        const avgDist = totalDist / validPoints;
-                        bodyPositionAccuracy = Math.max(0, Math.min(100, 100 - avgDist * 80));
-                    } else {
-                        bodyPositionAccuracy = 80;
-                    }
-                    
-                    let expectedDirection = "none";
-                    if (expectedPhase === "down" || expectedPhase === "squatting" || expectedPhase === "up" && detector === "Glute Bridge" || expectedPhase === "extended") {
-                        expectedDirection = "active";
-                    } else if (expectedPhase === "standing" || expectedPhase === "lowering" || expectedPhase === "returned") {
-                        expectedDirection = "return";
-                    }
-                    
-                    let userDirection = "none";
-                    if (userState === "squatting" || userState === "up" || userState === "extended" || userState === "cow") {
-                        userDirection = "active";
-                    } else if (userState === "standing" || userState === "lowering" || userState === "returned" || userState === "cat") {
-                        userDirection = "return";
-                    }
-                    
-                    if (expectedDirection === "none") {
-                        movementDirectionAccuracy = 100;
-                    } else if (userDirection === expectedDirection) {
-                        movementDirectionAccuracy = 100;
-                    } else if (userDirection === "none") {
-                        movementDirectionAccuracy = 75;
-                    } else {
-                        movementDirectionAccuracy = 35;
-                    }
-                    
-                    if (userState === expectedPhase || 
-                       (expectedPhase === "lowest" && (userState === "squatting" || userState === "up")) ||
-                       (expectedPhase === "starting" && (userState === "standing" || userState === "neutral"))) {
-                        timingSimilarity = 100;
-                    } else if (userState === "neutral" || userState === "none") {
-                        timingSimilarity = 70;
-                    } else {
-                        timingSimilarity = 40;
-                    }
-                    
-                    return {
-                        jointAngleAccuracy: Math.round(jointAngleAccuracy),
-                        romAccuracy: Math.round(romAccuracy),
-                        bodyPositionAccuracy: Math.round(bodyPositionAccuracy),
-                        movementDirectionAccuracy: Math.round(movementDirectionAccuracy),
-                        timingSimilarity: Math.round(timingSimilarity)
-                    };
-                }
-            };
-
-            // 4. Scoring Configuration (Configurable weights)
-            const ScoringConfig = {
-                weights: {
-                    jointAngle: 0.30,
-                    rom: 0.25,
-                    bodyPosition: 0.20,
-                    movementDirection: 0.15,
-                    timing: 0.10
-                },
-                calculateFinalScore: function(m) {
-                    return Math.round(
-                        m.jointAngleAccuracy * this.weights.jointAngle +
-                        m.romAccuracy * this.weights.rom +
-                        m.bodyPositionAccuracy * this.weights.bodyPosition +
-                        m.movementDirectionAccuracy * this.weights.movementDirection +
-                        m.timingSimilarity * this.weights.timing
-                    );
-                }
-            };
-
-            // 5. Feedback Engine
-            const FeedbackEngine = {
-                generateFeedback: function(m, visibilityWarning, detector) {
-                    if (visibilityWarning) return visibilityWarning;
-                    
-                    const list = [
-                        { name: 'rom', score: m.romAccuracy },
-                        { name: 'direction', score: m.movementDirectionAccuracy },
-                        { name: 'angle', score: m.jointAngleAccuracy },
-                        { name: 'position', score: m.bodyPositionAccuracy },
-                        { name: 'timing', score: m.timingSimilarity }
-                    ].sort((a, b) => a.score - b.score);
-                    
-                    const lowest = list[0];
-                    if (lowest.score >= 80) return "Great! Your movement matches the exercise.";
-                    
-                    if (lowest.name === 'rom') return "Try moving through a larger range of motion.";
-                    if (lowest.name === 'direction') return "Follow the movement shown in the video.";
-                    if (lowest.name === 'angle') {
-                        if (detector === "Modified Squats") return "Try keeping your knees aligned with your feet.";
-                        return "Adjust your joint angles to match the video.";
-                    }
-                    if (lowest.name === 'position') return "Correct your body position to match the video.";
-                    return "Adjust your pace to match the video timing.";
-                }
-            };
-
+            // runs on every frame. Rep counting per exercise: Cat-Cow = back angle goes below 145 then above 165;
+            // others use knee / hip angles or the reach of arm and leg; the universal one counts up-down peaks.
             function processExercise(landmarks) {
                 const nose = landmarks[0];
                 const lShoulder = landmarks[11];
@@ -840,7 +654,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             repetitionTimes.push(now - lastRepTimestamp);
                             lastRepTimestamp = now;
                             
-                            const repAccuracy = lastLiveAccuracy;
+                            const repAccuracy = finishRep();
                             if (repAccuracy >= 70) correctReps++;
                             else incorrectReps++;
                             reps = correctReps + incorrectReps;
@@ -864,7 +678,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             repetitionTimes.push(now - lastRepTimestamp);
                             lastRepTimestamp = now;
                             
-                            const repAccuracy = lastLiveAccuracy;
+                            const repAccuracy = finishRep();
                             if (repAccuracy >= 70) correctReps++;
                             else incorrectReps++;
                             reps = correctReps + incorrectReps;
@@ -885,7 +699,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             state = "neutral";
                         }
                     }
-                    userAngles = { extension: ext1 || ext2 ? 1.0 : 0.0 };
+                    userAngles = { extension: msBirdDogExtension(landmarks, normalizedUser.scale) };
 
                 } else if (activeDetector === "Glute Bridge") {
                     const angleL = calculateAngle(lShoulder, lHip, lKnee);
@@ -902,7 +716,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             repetitionTimes.push(now - lastRepTimestamp);
                             lastRepTimestamp = now;
                             
-                            const repAccuracy = lastLiveAccuracy;
+                            const repAccuracy = finishRep();
                             if (repAccuracy >= 70) correctReps++;
                             else incorrectReps++;
                             reps = correctReps + incorrectReps;
@@ -928,7 +742,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                             repetitionTimes.push(now - lastRepTimestamp);
                             lastRepTimestamp = now;
                             
-                            const repAccuracy = lastLiveAccuracy;
+                            const repAccuracy = finishRep();
                             if (repAccuracy >= 70) correctReps++;
                             else incorrectReps++;
                             reps = correctReps + incorrectReps;
@@ -968,7 +782,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                                     repetitionTimes.push(now - lastRepTimestamp);
                                     lastRepTimestamp = now;
                                     
-                                    const repAccuracy = lastLiveAccuracy;
+                                    const repAccuracy = finishRep();
                                     if (repAccuracy >= 70) correctReps++;
                                     else incorrectReps++;
                                     reps = correctReps + incorrectReps;
@@ -984,42 +798,83 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     userAngles = { amplitude };
                 }
 
-                // Reference Guide Comparison
-                const cycleTimeSecs = (Date.now() - startTime) / 1000;
-                const expectedPose = ReferenceMovementModel.getExpectedPose(activeDetector, cycleTimeSecs);
-                const metrics = PoseComparer.compare(activeDetector, normalizedUser, expectedPose, userAngles, state, null);
-                
-                if (metrics) {
-                    const accuracyScore = ScoringConfig.calculateFinalScore(metrics);
-                    lastLiveAccuracy = accuracyScore;
+                const torso = normalizedUser.scale;
 
-                    accuraciesHistory.push(accuracyScore);
-                    romsHistory.push(metrics.romAccuracy);
-                    jointsHistory.push(metrics.jointAngleAccuracy);
-
-                    const avgAccuracy = Math.round(accuraciesHistory.reduce((s, x) => s + x, 0) / accuraciesHistory.length) || 0;
-                    const avgRom = Math.round(romsHistory.reduce((s, x) => s + x, 0) / romsHistory.length) || 0;
-                    const avgJoint = Math.round(jointsHistory.reduce((s, x) => s + x, 0) / jointsHistory.length) || 0;
-
-                    let stabilityVal = 100;
-                    if (activeDetector === "Bird Dog" && stabilityVariance.length > 0) {
-                        const avgT = stabilityVariance.reduce((s, x) => s + x, 0) / stabilityVariance.length;
-                        stabilityVal = Math.round(Math.max(50, 100 - avgT * 300));
-                    }
-
-                    sendMessage({
-                        type: 'LIVE_SCORE',
-                        score: accuracyScore,
-                        stability: stabilityVal,
-                        postureMatch: metrics.timingSimilarity,
-                        feedback: FeedbackEngine.generateFeedback(metrics, false, activeDetector),
-                        averageAccuracy: avgAccuracy,
-                        correctRepetitions: correctReps,
-                        incorrectRepetitions: incorrectReps,
-                        averageRangeOfMotion: avgRom,
-                        averageJointAccuracy: avgJoint
-                    });
+                // Value of the exercise's main measure this frame
+                let metricValue = userAngles[profile.metric];
+                if (profile.metric === 'amplitude') metricValue = (userAngles.amplitude || 0) / torso;
+                if (isFinite(metricValue)) {
+                    metricWindow.push(metricValue);
+                    if (metricWindow.length > MS_WINDOW) metricWindow.shift();
+                    repMin = Math.min(repMin, metricValue);
+                    repMax = Math.max(repMax, metricValue);
                 }
+
+                // Steadiness: hip tilt and side-to-side sway of the pelvis, relative to torso length
+                tiltWindow.push((lHip.y - rHip.y) / torso);
+                swayWindow.push(midHip.x / torso);
+                if (tiltWindow.length > MS_WINDOW) tiltWindow.shift();
+                if (swayWindow.length > MS_WINDOW) swayWindow.shift();
+
+                const alignment = msAlignment(activeDetector, landmarks, torso);
+                if (alignment !== null) {
+                    lastAlignment = alignment;
+                    repAlignments.push(alignment);
+                    alignmentHistory.push(alignment);
+                }
+
+                // Live range of motion over the last few seconds (amplitude is already a range)
+                const romLive = profile.metric === 'amplitude'
+                    ? msRomScore(profile, 0, metricValue)
+                    : msRomScore(profile, Math.min.apply(null, metricWindow), Math.max.apply(null, metricWindow));
+                const accuracyNow = romLive * 0.5 + (lastAlignment === null ? romLive : lastAlignment) * 0.5;
+                smoothAccuracy = msSmooth(smoothAccuracy, accuracyNow, 0.2);
+                const accuracyScore = Math.round(smoothAccuracy);
+                lastLiveAccuracy = accuracyScore;
+
+                const steadyNow = msSteadiness(tiltWindow, swayWindow);
+                if (steadyNow !== null) {
+                    smoothSteadiness = msSmooth(smoothSteadiness, steadyNow, 0.15);
+                    steadinessHistory.push(smoothSteadiness);
+                }
+                const stabilityVal = smoothSteadiness === null ? null : Math.round(smoothSteadiness);
+
+                accuraciesHistory.push(accuracyScore);
+                jointsHistory.push(alignment === null ? accuracyScore : alignment);
+
+                const mean = (arr) => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+                const avgAccuracy = repScores.length ? mean(repScores) : mean(accuraciesHistory);
+                const pace = paceScores.length ? mean(paceScores.slice(-3)) : null;
+
+                // Feedback on the weakest part
+                let feedback = "Great! Your movement matches the exercise.";
+                const parts = [
+                    { key: 'rom', v: romLive },
+                    { key: 'align', v: lastAlignment === null ? 100 : lastAlignment },
+                    { key: 'steady', v: stabilityVal === null ? 100 : stabilityVal },
+                ].sort((a, b) => a.v - b.v);
+                if (parts[0].v < 70) {
+                    if (parts[0].key === 'rom') feedback = "Try moving through a larger range of motion.";
+                    else if (parts[0].key === 'align') feedback = activeDetector === "Modified Squats"
+                        ? "Try keeping your knees aligned with your feet."
+                        : "Correct your body position to match the video.";
+                    else feedback = "Keep your hips steady and move slowly.";
+                }
+
+                sendMessage({
+                    type: 'LIVE_SCORE',
+                    score: accuracyScore,
+                    stability: stabilityVal,
+                    postureMatch: lastAlignment === null ? null : Math.round(mean(alignmentHistory.slice(-MS_WINDOW))),
+                    pace: pace,
+                    feedback: feedback,
+                    averageAccuracy: avgAccuracy,
+                    correctRepetitions: correctReps,
+                    incorrectRepetitions: incorrectReps,
+                    averageRangeOfMotion: mean(romsHistory),
+                    averageJointAccuracy: mean(alignmentHistory),
+                    averageSteadiness: mean(steadinessHistory)
+                });
             }
 
             function drawConnectors(ctx, landmarks, connections, style) {
@@ -1069,6 +924,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 requestAnimationFrame(drawFrame);
             }
 
+            // called by MediaPipe for each frame. Checks that the body points needed for this exercise are visible (visibility 0.25);
+            // if not, it asks the mother to move into view and scores 0. Otherwise it runs processExercise (rep counting and live scores).
             function onResults(results) {
                 if (window.paused) return;
 
@@ -1105,8 +962,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
                         sendMessage({
                             type: 'LIVE_SCORE',
                             score: 0,
-                            stability: 0,
-                            postureMatch: 0,
+                            stability: null,
+                            postureMatch: null,
                             feedback: 'Please move fully into the camera view.'
                         });
                     } else {
@@ -1119,15 +976,30 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     sendMessage({
                         type: 'LIVE_SCORE',
                         score: 0,
-                        stability: 0,
-                        postureMatch: 0,
+                        stability: null,
+                        postureMatch: null,
                         feedback: 'Please move fully into the camera view.'
                     });
                 }
             }
 
+            // this is the only place that opens the camera (see openCamera below)
             // Setup camera feed
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } })
+            // The camera can still be held for a moment by the previous screen, so retry, then try simpler settings
+            const cameraTries = [
+                { facingMode: 'user', width: 640, height: 480 },
+                { facingMode: 'user' },
+                true
+            ];
+            function openCamera(attempt) {
+                return navigator.mediaDevices.getUserMedia({ video: cameraTries[Math.min(attempt, cameraTries.length - 1)] })
+                    .catch(err => {
+                        const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError' || err.name === 'NotFoundError');
+                        if (denied || attempt >= 5) throw err;
+                        return new Promise(resolve => setTimeout(resolve, 800)).then(() => openCamera(attempt + 1));
+                    });
+            }
+            openCamera(0)
                 .then(stream => {
                     videoElement.srcObject = stream;
                     videoElement.addEventListener('loadedmetadata', () => {
@@ -1160,7 +1032,9 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     sendMessage({ type: 'READY' });
                 })
                 .catch(err => {
-                    loadingElement.innerText = "Camera error: " + err.message;
+                    loadingElement.innerText = (err && (err.name === 'NotReadableError' || err.name === 'AbortError'))
+                        ? "The camera is being used by another app or browser tab. Close it, then go back and try again."
+                        : "Camera error: " + err.message;
                     sendMessage({ type: 'ERROR', error: err.message });
                 });
 
@@ -1182,266 +1056,186 @@ export default function MovementTrackingScreen({ route, navigation }) {
     </html>
     `;
 
+    const tr = (en, si) => (isSinhala ? si : en);
+    const pct = (v) => (v === null || v === undefined ? '–' : `${v}%`);
+    const statusColor = getStatusColor(status);
+    const surveyReady = painRating && difficultyRating && feelingRating;
+
+    // Phones need the exercise fonts loaded before text uses them (web falls back to sans-serif)
+    if (!fontsReady && Platform.OS !== 'web') return <View style={{ flex: 1, backgroundColor: C.bg }} />;
+
     return (
-        <SafeAreaView style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                    <Text style={styles.backIcon}>←</Text>
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>{exerciseName}</Text>
-                <TouchableOpacity
-                    onPress={() =>
-                        i18n.changeLanguage(
-                            i18n.language === 'en' ? 'si' : 'en'
-                        )
-                    }
-                    style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
-                >
-                    <Text
-                        style={{
-                            fontWeight: '700',
-                            fontSize: 13,
-                            color: '#7C3AED',
-                            backgroundColor: '#EDE9FE',
-                            paddingHorizontal: 10,
-                            paddingVertical: 4,
-                            borderRadius: 12,
-                        }}
-                    >
-                        {i18n.language === 'en' ? 'සිං' : 'EN'}
-                    </Text>
-                </TouchableOpacity>
-            </View>
-
-            {/* Split Screen Container */}
-            <View style={[styles.splitScreenContainer, { flexDirection: isLargeScreen ? 'row' : 'column' }]}>
-                {/* Side 1: Exercise Demo Video */}
-                <View style={styles.videoHalf} pointerEvents={Platform.OS === 'web' ? 'none' : 'auto'}>
-                    {videoUrl ? (
-                        Platform.OS === 'web' ? (
-                            <iframe
-                                src={getEmbedUrl(videoUrl)}
-                                style={{ width: '100%', height: '100%', border: 'none', borderRadius: 28, pointerEvents: 'auto' }}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            />
-                        ) : (
-                            <WebView
-                                ref={videoRef}
-                                originWhitelist={['*']}
-                                source={{ uri: getEmbedUrl(videoUrl) }}
-                                style={styles.exerciseWebView}
-                                javaScriptEnabled={true}
-                                domStorageEnabled={true}
-                                allowsInlineMediaPlayback={true}
-                                mediaPlaybackRequiresUserAction={false}
-                            />
-                        )
-                    ) : (
-                        <View style={styles.noVideoContainer}>
-                            <Text style={styles.noVideoText}>No demo video available</Text>
-                        </View>
-                    )}
-                </View>
-
-                {/* Side 2: Camera Feed / WebView */}
-                <View style={styles.cameraHalf}>
-                    {loading && (
-                        <View style={styles.loadingContainer}>
-                            <ActivityIndicator size="large" color="#7C3AED" />
-                            <Text style={styles.loadingText}>Loading AI movement models...</Text>
-                        </View>
-                    )}
-
-                    {Platform.OS === 'web' ? (
-                        <iframe
-                            srcDoc={localHtmlString}
-                            style={{ width: '100%', height: '100%', border: 'none', borderRadius: 28 }}
-                            allow="camera; microphone"
-                        />
-                    ) : (
-                        <WebView
-                            ref={webViewRef}
-                            originWhitelist={['*']}
-                            source={{ html: localHtmlString }}
-                            style={styles.webView}
-                            onMessage={handleWebViewMessage}
-                            javaScriptEnabled={true}
-                            domStorageEnabled={true}
-                            mediaPlaybackRequiresUserAction={false}
-                            allowsInlineMediaPlayback={true}
-                        />
-                    )}
-
-                    {/* Low visibility indicator */}
-                    {visibilityWarning !== '' && (
-                        <View style={styles.warningBanner}>
-                            <Text style={styles.warningText}>⚠️ {visibilityWarning}</Text>
-                        </View>
-                    )}
-                </View>
-            </View>
-
-            {/* Real-time Feedback Banner */}
-            <View style={styles.feedbackBanner}>
-                <Text style={styles.feedbackText}>{getTranslatedFeedback(feedbackMessage)}</Text>
-            </View>
-
-            {/* Dashboard Statistics */}
-            <View style={styles.statsCard}>
-                <View style={styles.statRow}>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>{isSinhala ? 'කාලය' : 'Timer'}</Text>
-                        <Text style={styles.statValue}>{formatTime(timeElapsed)}</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>{isSinhala ? 'නිරවද්‍යතාවය' : 'Accuracy'}</Text>
-                        <Text style={[styles.statValue, { color: colors.primary }]}>{liveScore}%</Text>
-                    </View>
-                    <View style={styles.statBox}>
-                        <Text style={styles.statLabel}>{isSinhala ? 'වීඩියෝ ගැළපීම' : 'Video Match'}</Text>
-                        <Text style={[styles.statValue, { color: colors.secondary }]}>{postureMatch}%</Text>
+        <SafeAreaView style={[styles.container, { backgroundColor: C.bg }]}>
+            <View style={ms.header}>
+                <CircleButton icon="back" onPress={() => navigation.goBack()} label={tr('Back', 'ආපසු')} />
+                <View style={{ flex: 1 }}>
+                    <Text style={ms.title} numberOfLines={1}>{exerciseName}</Text>
+                    <View style={ms.statusRow}>
+                        <View style={[ms.dot, { backgroundColor: statusColor }]} />
+                        <Text style={ms.statusText} numberOfLines={1}>{getTranslatedStatus(status)}</Text>
                     </View>
                 </View>
-                <View style={styles.statusRow}>
-                    <View style={[styles.statusDot, { backgroundColor: getStatusColor(status) }]} />
-                    <Text style={styles.statusText}>{isSinhala ? 'තත්ත්වය: ' : 'Status: '}{getTranslatedStatus(status)}</Text>
-                </View>
-            </View>
-
-            {/* Controls */}
-            <View style={styles.controlsRow}>
-                <Pressable 
-                    style={({ hovered }) => [
-                        styles.controlBtn, 
-                        isPaused 
-                            ? { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0', borderWidth: 1.5 } 
-                            : { backgroundColor: colors.bgTint, borderColor: colors.accent, borderWidth: 1.5 },
-                        hovered && styles.controlBtnHover
-                    ]} 
-                    onPress={togglePause}
+                <Text style={ms.timer} accessibilityLabel={tr('Time', 'කාලය')}>{formatTime(timeElapsed)}</Text>
+                <Pressable
+                    onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')}
+                    accessibilityRole="button"
+                    accessibilityLabel={tr('Switch language', 'භාෂාව මාරු කරන්න')}
+                    style={ms.lang}
                 >
-                    <Text style={[styles.controlBtnText, isPaused ? { color: '#059669' } : { color: colors.primary }]}>
-                        {isPaused 
-                            ? (isSinhala ? '▶️ නැවත අරඹන්න' : '▶ Resume') 
-                            : (isSinhala ? '⏸️ විරාමය' : '⏸ Pause')}
-                    </Text>
-                </Pressable>
-                <Pressable 
-                    style={({ hovered }) => [
-                        styles.controlBtn, 
-                        styles.finishBtn,
-                        hovered && styles.controlBtnHover
-                    ]} 
-                    onPress={handleFinish}
-                >
-                    <Text style={[styles.controlBtnText, styles.finishBtnText]}>{isSinhala ? '⏹️ අවසන් කරන්න' : '⏹️ Finish'}</Text>
+                    <Text style={ms.langText}>{i18n.language === 'en' ? 'සිං' : 'EN'}</Text>
                 </Pressable>
             </View>
+
+            <ScrollView contentContainerStyle={ms.scroll} showsVerticalScrollIndicator={false}>
+                <View style={[ms.split, isLargeScreen && ms.splitWide]}>
+                    {/* Demo video */}
+                    <View style={[ms.pane, isLargeScreen && { flex: 1 }]}>
+                        <Text style={ms.paneLabel}>{tr('Demo video', 'ආදර්ශ වීඩියෝව')}</Text>
+                        <View style={[ms.video, { height: isLargeScreen ? 340 : 200 }]} pointerEvents={Platform.OS === 'web' ? 'none' : 'auto'}>
+                            {videoUrl ? (
+                                Platform.OS === 'web' ? (
+                                    <iframe
+                                        src={getEmbedUrl(videoUrl)}
+                                        style={{ width: '100%', height: '100%', border: 'none', borderRadius: 22, pointerEvents: 'auto' }}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                    />
+                                ) : (
+                                    <WebView
+                                        ref={videoRef}
+                                        originWhitelist={['*']}
+                                        source={{ uri: getEmbedUrl(videoUrl) }}
+                                        style={styles.exerciseWebView}
+                                        javaScriptEnabled={true}
+                                        domStorageEnabled={true}
+                                        allowsInlineMediaPlayback={true}
+                                        mediaPlaybackRequiresUserAction={false}
+                                    />
+                                )
+                            ) : (
+                                <View style={ms.center}><Text style={ms.mutedOnDark}>{tr('No demo video available', 'ආදර්ශ වීඩියෝවක් නැත')}</Text></View>
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Camera */}
+                    <View style={[ms.pane, isLargeScreen && { flex: 1 }]}>
+                        <Text style={ms.paneLabel}>{tr('Your camera', 'ඔබේ කැමරාව')}</Text>
+                        <View style={[ms.camera, { height: isLargeScreen ? 340 : 300 }]}>
+                            {loading && (
+                                <View style={ms.loading}>
+                                    <ActivityIndicator size="large" color={C.secondary} />
+                                    <Text style={ms.mutedOnDark}>{tr('Loading AI movement models...', 'AI චලන ආකෘති පූරණය වෙමින්...')}</Text>
+                                </View>
+                            )}
+                            {Platform.OS === 'web' ? (
+                                <iframe
+                                    ref={cameraIframeRef}
+                                    srcDoc={localHtmlString}
+                                    style={{ width: '100%', height: '100%', border: 'none', borderRadius: 22 }}
+                                    allow="camera; microphone"
+                                />
+                            ) : (
+                                <WebView
+                                    ref={webViewRef}
+                                    originWhitelist={['*']}
+                                    source={{ html: localHtmlString }}
+                                    style={styles.webView}
+                                    onMessage={handleWebViewMessage}
+                                    javaScriptEnabled={true}
+                                    domStorageEnabled={true}
+                                    mediaPlaybackRequiresUserAction={false}
+                                    allowsInlineMediaPlayback={true}
+                                />
+                            )}
+                            <View style={[ms.overlayChip, { left: 12 }]} pointerEvents="none">
+                                <Text style={ms.chipLabel}>{tr('REPS', 'වට')}</Text>
+                                <Text style={ms.chipValue}>{reps}</Text>
+                            </View>
+                            <View style={[ms.overlayChip, { right: 12, alignItems: 'flex-end' }]} pointerEvents="none">
+                                <Text style={ms.chipLabel}>{tr('FORM', 'නිරවද්‍යතාව')}</Text>
+                                <Text style={[ms.chipValue, { color: C.primaryDark }]}>{liveScore}%</Text>
+                            </View>
+                            {visibilityWarning !== '' && (
+                                <View style={ms.warning} pointerEvents="none">
+                                    <Text style={ms.warningText}>{getTranslatedFeedback(visibilityWarning)}</Text>
+                                </View>
+                            )}
+                        </View>
+                    </View>
+                </View>
+
+                <View style={ms.feedback}>
+                    <Icon name="chat" size={22} color={C.primaryDark} />
+                    <Text style={ms.feedbackText}>{getTranslatedFeedback(feedbackMessage)}</Text>
+                </View>
+
+                <View style={ms.stats}>
+                    <StatTile value={`${liveScore}%`} label={tr('Accuracy', 'නිරවද්‍යතාවය')} style={ms.stat} />
+                    <StatTile value={pct(postureMatch)} label={tr('Posture', 'ඉරියව්ව')} style={ms.stat} />
+                    <StatTile value={pct(stability)} label={tr('Steadiness', 'ස්ථායීතාවය')} style={ms.stat} />
+                    <StatTile value={`${correctReps} / ${reps}`} label={tr('Correct reps', 'නිවැරදි වට')} style={ms.stat} />
+                </View>
+
+                <View style={ms.controls}>
+                    <SecondaryButton
+                        style={{ flex: 1 }}
+                        icon={isPaused ? 'play' : 'pause'}
+                        title={isPaused ? tr('Resume', 'නැවත අරඹන්න') : tr('Pause', 'විරාමය')}
+                        onPress={togglePause}
+                    />
+                    <PrimaryButton style={{ flex: 1 }} icon="check" title={tr('Finish', 'අවසන් කරන්න')} onPress={handleFinish} />
+                </View>
+
+                <Text style={ms.privacy}>{tr('The camera is used only to detect body movement during exercise.', 'ව්‍යායාම අතරතුර ශරීර චලනය හඳුනා ගැනීමට පමණක් කැමරාව භාවිතා කෙරේ.')}</Text>
+            </ScrollView>
 
             <Modal visible={showSummaryModal} transparent animationType="slide">
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
-                            <Text style={styles.summaryTitle}>{isSinhala ? 'ව්‍යායාම සාරාංශය' : 'Exercise Summary'}</Text>
-
-                            {/* Stats Cards */}
-                            <View style={styles.summaryStatsRow}>
-                                <View style={styles.summaryStatBox}>
-                                    <Text style={styles.summaryStatVal}>{liveScore}%</Text>
-                                    <Text style={styles.summaryStatLbl}>{isSinhala ? 'ලකුණු' : 'Score'}</Text>
-                                </View>
-                                <View style={styles.summaryStatBox}>
-                                    <Text style={styles.summaryStatVal}>{reps}</Text>
-                                    <Text style={styles.summaryStatLbl}>{isSinhala ? 'වට' : 'Reps'}</Text>
-                                </View>
-                                <View style={styles.summaryStatBox}>
-                                    <Text style={styles.summaryStatVal}>{formatTime(timeElapsed)}</Text>
-                                    <Text style={styles.summaryStatLbl}>{isSinhala ? 'කාලය' : 'Duration'}</Text>
-                                </View>
-                                {(exerciseName === 'Bird Dog' || exerciseName.toLowerCase().includes('bird')) && (
-                                    <View style={styles.summaryStatBox}>
-                                        <Text style={styles.summaryStatVal}>{stability}%</Text>
-                                        <Text style={styles.summaryStatLbl}>{isSinhala ? 'ස්ථායීතාවය' : 'Stability'}</Text>
-                                    </View>
-                                )}
+                <View style={ms.overlay}>
+                    <View style={ms.sheet}>
+                        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={ms.sheetContent}>
+                            <View style={ms.doneHead}>
+                                <View style={ms.doneIcon}><Icon name="check" size={34} color={C.primaryDark} /></View>
+                                <Text style={ms.doneTitle}>{tr('Exercise summary', 'ව්‍යායාම සාරාංශය')}</Text>
+                                <Text style={ms.doneText}>{getScoreFeedback(liveScore)}</Text>
                             </View>
 
-                            {/* Score Feedback adaptation */}
-                            <View style={styles.feedbackMsgBox}>
-                                <Text style={styles.feedbackMsgTitle}>{isSinhala ? 'කාර්ය සාධන මට්ටම' : 'Performance Rating'}</Text>
-                                <Text style={styles.feedbackMsgText}>"{getScoreFeedback(liveScore)}"</Text>
+                            <View style={ms.stats}>
+                                <StatTile value={`${liveScore}%`} label={tr('Score', 'ලකුණු')} style={ms.stat} />
+                                <StatTile value={String(reps)} label={tr('Reps', 'වට')} style={ms.stat} />
+                                <StatTile value={formatTime(timeElapsed)} label={tr('Duration', 'කාලය')} style={ms.stat} />
                             </View>
 
-                            {/* Survey Questions */}
-                            <View style={styles.surveyContainer}>
-                                <Text style={styles.surveyHeader}>{isSinhala ? 'ව්‍යායාමයෙන් පසු ප්‍රතිපෝෂණය' : 'Post-Workout Feedback'}</Text>
+                            <Card style={ms.q}>
+                                <SectionTitle>{tr('Did anything hurt?', 'කිසියම් වේදනාවක් දැනුණාද?')}</SectionTitle>
+                                <OptionRow value={painRating} onChange={setPainRating} options={[
+                                    { value: 'No', label: tr('No', 'නැත') },
+                                    { value: 'Yes', label: tr('Yes', 'ඔව්') },
+                                ]} />
+                            </Card>
+                            <Card style={ms.q}>
+                                <SectionTitle>{tr('How hard was it?', 'කෙතරම් අපහසු වීද?')}</SectionTitle>
+                                <OptionRow value={difficultyRating} onChange={setDifficultyRating} options={[
+                                    { value: 'Easy', label: tr('Easy', 'පහසුයි') },
+                                    { value: 'Moderate', label: tr('Okay', 'මධ්‍යම') },
+                                    { value: 'Hard', label: tr('Hard', 'අපහසුයි') },
+                                ]} />
+                            </Card>
+                            <Card style={ms.q}>
+                                <SectionTitle>{tr('How do you feel now?', 'දැන් ඔබට දැනෙන්නේ කෙසේද?')}</SectionTitle>
+                                <OptionRow value={feelingRating} onChange={setFeelingRating} options={[
+                                    { value: 'Better', label: tr('Better', 'සුවදායකයි') },
+                                    { value: 'Same', label: tr('Same', 'වෙනසක් නැත') },
+                                    { value: 'Tired', label: tr('Tired', 'තෙහෙට්ටුයි') },
+                                ]} />
+                            </Card>
 
-                                {/* Q1: Pain */}
-                                <Text style={styles.surveyQuestion}>{isSinhala ? '1. ව්‍යායාම අතරතුර ඔබට වේදනාකාරී බවක් දැනුණාද?' : '1. Did you feel pain during exercise?'}</Text>
-                                <View style={styles.surveyAnswersRow}>
-                                    {['Yes', 'No'].map(ans => (
-                                        <TouchableOpacity
-                                            key={ans}
-                                            style={[styles.surveyAnsBtn, painRating === ans && styles.surveyAnsBtnActive]}
-                                            onPress={() => setPainRating(ans)}
-                                        >
-                                            <Text style={[styles.surveyAnsText, painRating === ans && styles.surveyAnsTextActive]}>
-                                                {isSinhala ? (ans === 'Yes' ? 'ඔව්' : 'නැත') : ans}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-
-                                {/* Q2: Difficulty */}
-                                <Text style={styles.surveyQuestion}>{isSinhala ? '2. ව්‍යායාමය කෙතරම් අපහසු වීද?' : '2. How difficult was the exercise?'}</Text>
-                                <View style={styles.surveyAnswersRow}>
-                                    {['Easy', 'Moderate', 'Hard'].map(ans => (
-                                        <TouchableOpacity
-                                            key={ans}
-                                            style={[styles.surveyAnsBtn, difficultyRating === ans && styles.surveyAnsBtnActive]}
-                                            onPress={() => setDifficultyRating(ans)}
-                                        >
-                                            <Text style={[styles.surveyAnsText, difficultyRating === ans && styles.surveyAnsTextActive]}>
-                                                {isSinhala ? (ans === 'Easy' ? 'පහසුයි' : ans === 'Moderate' ? 'මධ්‍යම' : 'අපහසුයි') : ans}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-
-                                {/* Q3: Feeling */}
-                                <Text style={styles.surveyQuestion}>{isSinhala ? '3. ව්‍යායාමයෙන් පසු ඔබට දැනෙන්නේ කෙසේද?' : '3. How do you feel after exercise?'}</Text>
-                                <View style={styles.surveyAnswersRow}>
-                                    {['Better', 'Same', 'Tired'].map(ans => (
-                                        <TouchableOpacity
-                                            key={ans}
-                                            style={[styles.surveyAnsBtn, feelingRating === ans && styles.surveyAnsBtnActive]}
-                                            onPress={() => setFeelingRating(ans)}
-                                        >
-                                            <Text style={[styles.surveyAnsText, feelingRating === ans && styles.surveyAnsTextActive]}>
-                                                {isSinhala ? (ans === 'Better' ? 'සුවදායකයි' : ans === 'Same' ? 'වෙනසක් නැත' : 'තෙහෙට්ටුයි') : ans}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    ))}
-                                </View>
-                            </View>
-
-                            {/* Submit Button */}
-                            <TouchableOpacity
-                                style={[
-                                    styles.submitBtn,
-                                    (!painRating || !difficultyRating || !feelingRating) && { opacity: 0.5 }
-                                ]}
-                                disabled={!painRating || !difficultyRating || !feelingRating || saving}
+                            <PrimaryButton
+                                title={tr('Save workout session', 'ව්‍යායාම සැසිය සුරකින්න')}
                                 onPress={submitWorkoutSession}
-                            >
-                                {saving ? (
-                                    <ActivityIndicator color="#FFF" />
-                                ) : (
-                                    <Text style={styles.submitBtnText}>{isSinhala ? 'ව්‍යායාම සැසිය සුරකින්න' : 'Save Workout Session'}</Text>
-                                )}
-                            </TouchableOpacity>
+                                loading={saving}
+                                disabled={!surveyReady}
+                            />
                         </ScrollView>
                     </View>
                 </View>
@@ -1449,6 +1243,47 @@ export default function MovementTrackingScreen({ route, navigation }) {
         </SafeAreaView>
     );
 }
+
+// Layout for the redesigned movement tracking screen (PeriCare exercise mockups)
+const ms = StyleSheet.create({
+    header: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 12 },
+    title: { ...T.heading, fontSize: 18, color: C.text },
+    statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    dot: { width: 8, height: 8, borderRadius: 4 },
+    statusText: { ...T.semi, fontSize: 12, color: C.textSub },
+    timer: { ...T.heading, fontSize: 18, color: C.text, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, overflow: 'hidden', fontVariant: ['tabular-nums'] },
+    lang: { minHeight: 44, minWidth: 44, paddingHorizontal: 10, borderRadius: 22, backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: C.control, alignItems: 'center', justifyContent: 'center' },
+    langText: { ...T.bold, fontSize: 13, color: C.primaryDark },
+    scroll: { paddingHorizontal: 16, paddingBottom: 32, gap: 14, maxWidth: 1280, width: '100%', alignSelf: 'center' },
+    split: { gap: 14 },
+    splitWide: { flexDirection: 'row' },
+    pane: { gap: 8 },
+    paneLabel: { ...T.bold, fontSize: 13, color: C.textSub },
+    video: { borderRadius: 22, overflow: 'hidden', backgroundColor: C.video },
+    camera: { borderRadius: 22, overflow: 'hidden', backgroundColor: '#3A2547' },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    mutedOnDark: { ...T.semi, fontSize: 13, color: C.control, textAlign: 'center' },
+    loading: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', gap: 10, zIndex: 2, backgroundColor: 'rgba(44,26,53,0.6)' },
+    overlayChip: { position: 'absolute', top: 12, backgroundColor: 'rgba(250,242,250,0.95)', borderRadius: 16, paddingHorizontal: 14, paddingVertical: 6, zIndex: 3 },
+    chipLabel: { ...T.bold, fontSize: 11, color: C.textSub },
+    chipValue: { ...T.heading, fontSize: 24, color: C.text },
+    warning: { position: 'absolute', left: 12, right: 12, bottom: 12, backgroundColor: C.warnBg, borderRadius: 14, padding: 10, zIndex: 3 },
+    warningText: { ...T.semi, fontSize: 13, color: C.text, textAlign: 'center' },
+    feedback: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.tint, borderRadius: 20, padding: 14 },
+    feedbackText: { flex: 1, ...T.semi, fontSize: 15, lineHeight: 21, color: C.primaryDark },
+    stats: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    stat: { flexBasis: 140, flexGrow: 1 },
+    controls: { flexDirection: 'row', gap: 12 },
+    privacy: { ...T.medium, fontSize: 12, color: C.textSub, textAlign: 'center' },
+    overlay: { flex: 1, backgroundColor: 'rgba(44,26,53,0.45)', justifyContent: 'flex-end', alignItems: 'center' },
+    sheet: { width: '100%', maxWidth: 560, maxHeight: '96%', backgroundColor: C.bg, borderTopLeftRadius: 28, borderTopRightRadius: 28 },
+    sheetContent: { padding: 20, gap: 14 },
+    doneHead: { alignItems: 'center', gap: 8 },
+    doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: C.tint, alignItems: 'center', justifyContent: 'center' },
+    doneTitle: { ...T.heading, fontSize: 22, color: C.text },
+    doneText: { ...T.medium, fontSize: 14, color: C.textSub, textAlign: 'center' },
+    q: { gap: 12 },
+});
 
 const styles = StyleSheet.create({
     container: {

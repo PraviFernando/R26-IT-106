@@ -1,3 +1,7 @@
+// DATABASE MODEL - one record per exercise per day (stopwatch / video / camera completion).
+// Holds status, durations, adherence score (actual time / recommended time x 100), pain, difficulty,
+// feeling after, and the feedback message (feedbackCode lets the app translate it to Sinhala).
+// Written by saveExerciseRecord in controllers/exercise.js; read by getProgress.
 const mongoose = require('mongoose');
 
 const exerciseRecordSchema = new mongoose.Schema({
@@ -24,7 +28,8 @@ const exerciseRecordSchema = new mongoose.Schema({
     pain: { type: String }, // "Yes" / "No"
     difficulty: { type: String }, // "Easy" / "Moderate" / "Hard"
     feelingAfter: { type: String }, // "Better" / "Same" / "Tired"
-    intelligentFeedback: { type: String }
+    intelligentFeedback: { type: String },
+    feedbackCode: { type: String } // pain_rest | fatigue_lower | excellent (translated in the app)
 }, { timestamps: true });
 
 module.exports = mongoose.model('ExerciseRecord', exerciseRecordSchema);
