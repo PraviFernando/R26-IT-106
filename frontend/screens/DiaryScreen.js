@@ -23,6 +23,7 @@ import { useTranslation } from 'react-i18next';
 import { useApp } from '../services/AppContext';
 import { EMOTION_OPTIONS } from '../constants/emotions';
 import { useResponsive } from '../hooks/useResponsive';
+import { DASHBOARD_PALETTE as DP, SERIF, DASHBOARD_SHADOWS as DS, typography } from '../theme/dashboardTokens';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const toDateString = (d) => {
@@ -76,11 +77,11 @@ const getGreeting = () => {
 };
 
 const THEMES = {
-    'default': { bg1: '#F4F0FB', bg2: '#FDFCFE', card: '#FFFFFF', text: '#334155', accent: '#a18cd1' },
-    'pastel-pink': { bg1: '#FDF2F8', bg2: '#FFF0F5', card: '#FFFFFF', text: '#831843', accent: '#fbc2eb' },
-    'ocean-blue': { bg1: '#F0F9FF', bg2: '#E0F2FE', card: '#FFFFFF', text: '#0C4A6E', accent: '#84fab0' },
-    'mint-green': { bg1: '#ECFDF5', bg2: '#D1FAE5', card: '#FFFFFF', text: '#064E3B', accent: '#a1c4fd' },
-    'warm-sunset': { bg1: '#FFF7ED', bg2: '#FFEDD5', card: '#FFFFFF', text: '#7C2D12', accent: '#ffecd2' }
+    'default': { bg1: '#FBF8F6', bg2: '#FDFBFA', card: '#FFFFFF', text: '#2C1A35', accent: '#873CA6' },
+    'pastel-pink': { bg1: '#FFF7FA', bg2: '#FDFBFA', card: '#FFFFFF', text: '#2C1A35', accent: '#AA60C8' },
+    'ocean-blue': { bg1: '#F8FBFC', bg2: '#FDFBFA', card: '#FFFFFF', text: '#2C1A35', accent: '#873CA6' },
+    'mint-green': { bg1: '#F5FAF6', bg2: '#FDFBFA', card: '#FFFFFF', text: '#2C1A35', accent: '#3F6B4E' },
+    'warm-sunset': { bg1: '#FFF9F5', bg2: '#FDFBFA', card: '#FFFFFF', text: '#2C1A35', accent: '#B7791F' }
 };
 
 const today = toDateString(new Date());
@@ -494,20 +495,20 @@ export default function DiaryScreen({ navigation }) {
                     </View>
 
                     <View style={s.statsCardsRow}>
-                        <TouchableOpacity style={{ flex: 1 }} onPress={() => setAllJournalsModalVisible(true)}>
-                            <LinearGradient colors={['#FF9A9E', '#FECFEF']} style={s.statCard}>
-                                <Text style={s.statNumber}>{stats.totalJournals}</Text>
-                                <Text style={s.statLabel}>{t('Total Journals')}</Text>
-                            </LinearGradient>
+                        <TouchableOpacity style={{ flex: 1 }} onPress={() => setAllJournalsModalVisible(true)} activeOpacity={0.85}>
+                            <View style={[s.statCard, { backgroundColor: DP.lav, borderColor: DP.line }]}>
+                                <Text style={[s.statNumber, { color: DP.primaryDark }]}>{stats.totalJournals}</Text>
+                                <Text style={[s.statLabel, { color: DP.primaryDark }]}>{t('Total Journals')}</Text>
+                            </View>
                         </TouchableOpacity>
-                        <LinearGradient colors={['#fbc2eb', '#a6c1ee']} style={s.statCard}>
-                            <Text style={s.statNumber}>{stats.totalWords}</Text>
-                            <Text style={s.statLabel}>{t('Total Words')}</Text>
-                        </LinearGradient>
-                        <LinearGradient colors={['#84fab0', '#8fd3f4']} style={s.statCard}>
-                            <Text style={[s.statNumber, { fontSize: 18, marginTop: 4 }]}>{currentTime}</Text>
-                            <Text style={s.statLabel}>{t('Current Time')}</Text>
-                        </LinearGradient>
+                        <View style={[s.statCard, { backgroundColor: DP.blush, borderColor: DP.blushLine }]}>
+                            <Text style={[s.statNumber, { color: DP.blushText }]}>{stats.totalWords}</Text>
+                            <Text style={[s.statLabel, { color: DP.blushText }]}>{t('Total Words')}</Text>
+                        </View>
+                        <View style={[s.statCard, { backgroundColor: DP.sage, borderColor: DP.sageLine }]}>
+                            <Text style={[s.statNumber, { color: DP.sageText, fontSize: 18, marginTop: 4 }]}>{currentTime}</Text>
+                            <Text style={[s.statLabel, { color: DP.sageText }]}>{t('Current Time')}</Text>
+                        </View>
                     </View>
 
                     {/* ── Calendar Strip ── */}
@@ -778,121 +779,118 @@ export default function DiaryScreen({ navigation }) {
 
 const s = StyleSheet.create({
     safe: { flex: 1 },
-    header: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    backBtn: { padding: 8, width: 44, alignItems: 'center', justifyContent: 'center' },
-    backIcon: { fontSize: 32, fontWeight: '900' },
+    header: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: DP.card, borderWidth: 1, borderColor: DP.line, alignItems: 'center', justifyContent: 'center', ...DS.soft },
+    backIcon: { fontSize: 20, fontWeight: '700', color: DP.text },
     headerCenter: { flex: 1, alignItems: 'center' },
-    headerTitle: { fontSize: 20, fontWeight: '800', fontFamily: Platform.OS === 'ios' ? 'San Francisco' : 'sans-serif' },
+    headerTitle: { fontSize: 22, fontWeight: '700', fontFamily: SERIF, color: DP.text },
 
-    insightSection: { marginTop: 10, marginBottom: 16 },
-    insightTitle: { fontSize: 22, fontWeight: '800' },
-    insightSub: { fontSize: 13, opacity: 0.6, marginTop: 4, fontWeight: '500' },
+    insightSection: { marginTop: 10, marginBottom: 14 },
+    insightTitle: { fontSize: 20, fontWeight: '700', fontFamily: SERIF, color: DP.text },
+    insightSub: { fontSize: 13, color: DP.muted, marginTop: 3, fontWeight: '500' },
 
-    statsCardsRow: { flexDirection: 'row', gap: 10, marginBottom: 24 },
-    statCard: { flex: 1, paddingVertical: 18, paddingHorizontal: 12, borderRadius: 24, alignItems: 'center', elevation: 3, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, shadowOffset: { height: 5, width: 0 } },
-    statNumber: { fontSize: 24, fontWeight: '900', color: '#FFF' },
-    statLabel: { fontSize: 11, color: '#FFF', fontWeight: '700', marginTop: 4, textAlign: 'center' },
+    statsCardsRow: { flexDirection: 'row', gap: 10, marginBottom: 20 },
+    statCard: { flex: 1, paddingVertical: 14, paddingHorizontal: 10, borderRadius: 18, alignItems: 'center', borderWidth: 1, ...DS.soft },
+    statNumber: { fontSize: 22, fontWeight: '800' },
+    statLabel: { fontSize: 11, fontWeight: '600', marginTop: 3, textAlign: 'center' },
 
-    calendarMonthWrap: { alignItems: 'center', marginBottom: 12 },
-    calendarMonthTitle: { fontSize: 18, fontWeight: '800', letterSpacing: 0.5 },
-    calendarContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 4, marginBottom: 24 },
-    calendarDay: { paddingVertical: 12, flex: 1, minWidth: 0, borderRadius: 18, alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.4)' },
-    calendarDayActive: { shadowColor: '#A855F7', shadowOpacity: 0.3, shadowRadius: 10, elevation: 5 },
-    calendarDayName: { fontSize: 11, fontWeight: '700', color: '#64748B' },
-    calendarDayNum: { fontSize: 16, fontWeight: '800', color: '#1E293B', marginTop: 4 },
+    calendarMonthWrap: { alignItems: 'center', marginBottom: 10 },
+    calendarMonthTitle: { fontSize: 15, fontWeight: '700', color: DP.text, fontFamily: typography.subTopicFont },
+    calendarContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 4, marginBottom: 20 },
+    calendarDay: { paddingVertical: 10, flex: 1, minWidth: 0, borderRadius: 16, alignItems: 'center', backgroundColor: DP.card, borderWidth: 1, borderColor: DP.line },
+    calendarDayActive: { backgroundColor: DP.primaryDark, borderColor: DP.primaryDark, ...DS.soft },
+    calendarDayName: { fontSize: 11, fontWeight: '600', color: DP.muted },
+    calendarDayNum: { fontSize: 15, fontWeight: '700', color: DP.text, marginTop: 3 },
     dotIndicator: { width: 4, height: 4, borderRadius: 2, marginTop: 4 },
 
-    sentimentRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingHorizontal: 4, flexWrap: 'wrap', gap: 8 },
-    sentimentDate: { fontSize: 13, fontWeight: '600', opacity: 0.6 },
-    sentimentTitle: { fontSize: 18, fontWeight: '800', marginTop: 2 },
-    sentimentPill: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 },
-    sentimentPillText: { fontSize: 13, fontWeight: '800' },
+    sentimentRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingHorizontal: 4, flexWrap: 'wrap', gap: 8 },
+    sentimentDate: { fontSize: 12, fontWeight: '500', color: DP.muted },
+    sentimentTitle: { fontSize: 16, fontWeight: '700', fontFamily: typography.subTopicFont, color: DP.text, marginTop: 2 },
+    sentimentPill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, borderWidth: 1, borderColor: DP.line },
+    sentimentPillText: { fontSize: 12, fontWeight: '700' },
 
-    moodCard: { borderRadius: 28, padding: 20, marginBottom: 20 },
-    moodTitle: { fontSize: 16, fontWeight: '800' },
-    moodSub: { fontSize: 12, opacity: 0.6, marginTop: 4, marginBottom: 12 },
-    moodScroll: { flexDirection: 'row', gap: 12 },
-    moodIconBox: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#FFF', alignItems: 'center', justifyContent: 'center', elevation: 2, shadowOpacity: 0.05 },
-    moodEmoji: { fontSize: 22 },
+    moodCard: { borderRadius: 22, padding: 16, marginBottom: 16, backgroundColor: DP.card, borderWidth: 1, borderColor: DP.line, ...DS.card },
+    moodTitle: { fontSize: 15, fontWeight: '700', fontFamily: typography.subTopicFont, color: DP.text },
+    moodSub: { fontSize: 12, color: DP.muted, marginTop: 3, marginBottom: 12 },
+    moodScroll: { flexDirection: 'row', gap: 10 },
+    moodIconBox: { width: 42, height: 42, borderRadius: 21, backgroundColor: DP.side, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: DP.line },
+    moodEmoji: { fontSize: 20 },
 
-    editorCard: { borderRadius: 32, padding: 24, shadowOpacity: 0.05, shadowRadius: 20, elevation: 3, minHeight: 400 },
-    toolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
-    themeSelector: { flex: 1, marginRight: 16 },
-    themeCircle: { width: 22, height: 22, borderRadius: 11, marginRight: 8 },
+    editorCard: { borderRadius: 22, padding: 18, minHeight: 380, backgroundColor: DP.card, borderWidth: 1, borderColor: DP.line, ...DS.card },
+    toolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 },
+    themeSelector: { flex: 1, marginRight: 12 },
+    themeCircle: { width: 20, height: 20, borderRadius: 10, marginRight: 8 },
     toolbarRight: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-    iconBox: { width: 36, height: 36, backgroundColor: '#F1F5F9', borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    iconText: { fontSize: 14, fontWeight: '800', color: '#475569' },
+    iconBox: { width: 34, height: 34, backgroundColor: DP.side, borderRadius: 12, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: DP.line },
+    iconText: { fontSize: 13, fontWeight: '700', color: DP.nav },
 
     lockedContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 40 },
-    lockEmoji: { fontSize: 40, marginBottom: 16 },
-    lockedText: { fontSize: 16, color: '#64748B', marginBottom: 24, fontWeight: '600' },
-    unlockBtn: { paddingHorizontal: 24, paddingVertical: 14, borderRadius: 20 },
-    unlockBtnText: { color: '#FFF', fontWeight: 'bold', fontSize: 15 },
+    lockEmoji: { fontSize: 36, marginBottom: 14 },
+    lockedText: { fontSize: 15, color: DP.muted, marginBottom: 20, fontWeight: '500' },
+    unlockBtn: { paddingHorizontal: 22, paddingVertical: 10, borderRadius: 999, backgroundColor: DP.primaryDark },
+    unlockBtnText: { color: '#FFF', fontWeight: '700', fontSize: 14 },
 
-    mediaList: { flexDirection: 'row', marginBottom: 16, maxHeight: 90 },
-    mediaItemWrapper: { marginRight: 12, position: 'relative' },
-    mediaImagePreview: { width: 80, height: 80, borderRadius: 16 },
-    mediaItemFallback: { width: 80, height: 80, borderRadius: 16, alignItems: 'center', justifyContent: 'center', padding: 8 },
-    mediaItemIcon: { fontSize: 24, marginBottom: 4 },
-    mediaFallbackText: { fontSize: 10, color: '#64748B', textAlign: 'center' },
-    mediaRemove: { position: 'absolute', top: -6, right: -6, backgroundColor: '#EF4444', width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFF', zIndex: 5 },
-    mediaRemoveText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
+    mediaList: { flexDirection: 'row', marginBottom: 14, maxHeight: 80 },
+    mediaItemWrapper: { marginRight: 10, position: 'relative' },
+    mediaImagePreview: { width: 72, height: 72, borderRadius: 14 },
+    mediaItemFallback: { width: 72, height: 72, borderRadius: 14, alignItems: 'center', justifyContent: 'center', padding: 6, borderWidth: 1, borderColor: DP.line },
+    mediaItemIcon: { fontSize: 22, marginBottom: 2 },
+    mediaFallbackText: { fontSize: 10, color: DP.muted, textAlign: 'center' },
+    mediaRemove: { position: 'absolute', top: -5, right: -5, backgroundColor: DP.blushText, width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFF', zIndex: 5 },
+    mediaRemoveText: { color: '#FFF', fontSize: 9, fontWeight: 'bold' },
 
-    textArea: { flex: 1, fontSize: 16, lineHeight: 26, minHeight: 200 },
+    textArea: { flex: 1, fontSize: 15, lineHeight: 24, minHeight: 180, color: DP.text, fontFamily: typography.bodyFont },
     recBtn: {
-        paddingVertical: 14,
+        paddingVertical: 12,
         paddingHorizontal: 20,
-        borderRadius: 20,
+        borderRadius: 999,
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 16,
+        marginTop: 14,
         marginBottom: 8,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        shadowOffset: { width: 0, height: 2 }
+        backgroundColor: DP.primaryDark,
+        ...DS.soft,
     },
     recBtnText: {
         color: '#FFF',
-        fontWeight: '800',
-        fontSize: 15,
-        letterSpacing: 0.5
+        fontWeight: '700',
+        fontSize: 14,
+        fontFamily: typography.mediumFont,
     },
-    listeningBar: { backgroundColor: '#F8FAFC', padding: 12, borderRadius: 16, borderWidth: 1, marginBottom: 16 },
-    listeningText: { fontSize: 14, fontWeight: '600', fontStyle: 'italic' },
+    listeningBar: { backgroundColor: DP.note, padding: 10, borderRadius: 14, borderWidth: 1, borderColor: DP.noteLine, marginBottom: 12 },
+    listeningText: { fontSize: 13, fontWeight: '600', color: DP.primaryDark, fontStyle: 'italic' },
 
-    bottomActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.05)' },
-    mediaActionBar: { flexDirection: 'row', gap: 10 },
-    mediaBtn: { padding: 8, backgroundColor: '#F8FAFC', borderRadius: 12 },
-    mediaIcon: { fontSize: 20 },
+    bottomActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 14, borderTopWidth: 1, borderTopColor: DP.line2 },
+    mediaActionBar: { flexDirection: 'row', gap: 8 },
+    mediaBtn: { padding: 8, backgroundColor: DP.side, borderRadius: 12, borderWidth: 1, borderColor: DP.line },
+    mediaIcon: { fontSize: 18 },
 
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center', padding: 24 },
-    modalBox: { backgroundColor: '#FFF', borderRadius: 32, padding: 28, width: '100%', maxWidth: 340, alignSelf: 'center' },
-    modalTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
-    modalSubtitle: { fontSize: 14, color: '#64748B', marginBottom: 20 },
-    modalInput: { backgroundColor: '#F1F5F9', borderRadius: 16, padding: 16, fontSize: 16, marginBottom: 24 },
-    modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
-    modalCancel: { paddingHorizontal: 16, paddingVertical: 12 },
-    modalCancelText: { color: '#64748B', fontWeight: '700', fontSize: 15 },
-    modalConfirm: { paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 },
-    modalConfirmText: { color: '#FFF', fontWeight: '800', fontSize: 15 },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(44, 26, 53, 0.45)', alignItems: 'center', justifyContent: 'center', padding: 20 },
+    modalBox: { backgroundColor: DP.card, borderRadius: 24, padding: 24, width: '100%', maxWidth: 340, alignSelf: 'center', borderWidth: 1, borderColor: DP.line, ...DS.card },
+    modalTitle: { fontSize: 18, fontWeight: '700', fontFamily: SERIF, color: DP.text, marginBottom: 6 },
+    modalSubtitle: { fontSize: 13, color: DP.muted, marginBottom: 16 },
+    modalInput: { backgroundColor: DP.side, borderRadius: 14, padding: 12, fontSize: 15, marginBottom: 20, borderWidth: 1, borderColor: DP.line, color: DP.text },
+    modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
+    modalCancel: { paddingHorizontal: 14, paddingVertical: 10 },
+    modalCancelText: { color: DP.muted, fontWeight: '600', fontSize: 14 },
+    modalConfirm: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 999, backgroundColor: DP.primaryDark },
+    modalConfirmText: { color: '#FFF', fontWeight: '700', fontSize: 14 },
 
-    langBtn: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12 },
-    langText: { fontSize: 13, fontWeight: '700', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8, overflow: 'hidden' },
+    langBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999, backgroundColor: DP.card, borderWidth: 1, borderColor: DP.line, ...DS.soft },
+    langText: { fontSize: 13, fontWeight: '700', color: DP.primaryDark },
 
-    fullModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-    fullModalBox: { backgroundColor: '#FFF', borderTopLeftRadius: 32, borderTopRightRadius: 32, height: '80%', padding: 24, width: '100%', maxWidth: 480, alignSelf: 'center' },
-    fullModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    fullModalTitle: { fontSize: 22, fontWeight: '800', color: '#1E293B' },
-    fullModalClose: { fontSize: 24, color: '#64748B' },
-    journalListItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-    journalListDate: { fontSize: 16, fontWeight: '700', color: '#1E293B' },
-    journalListDay: { fontSize: 12, color: '#64748B', marginTop: 2 },
-    journalListIcon: { fontSize: 20 },
-    emptyListText: { textAlign: 'center', marginTop: 40, color: '#64748B', fontSize: 16 },
+    fullModalOverlay: { flex: 1, backgroundColor: 'rgba(44, 26, 53, 0.45)', justifyContent: 'flex-end' },
+    fullModalBox: { backgroundColor: DP.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, height: '80%', padding: 20, width: '100%', maxWidth: 500, alignSelf: 'center' },
+    fullModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    fullModalTitle: { fontSize: 20, fontWeight: '700', fontFamily: SERIF, color: DP.text },
+    fullModalClose: { fontSize: 20, color: DP.muted, padding: 4 },
+    journalListItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: DP.line2 },
+    journalListDate: { fontSize: 15, fontWeight: '600', color: DP.text },
+    journalListDay: { fontSize: 12, color: DP.muted, marginTop: 2 },
+    journalListIcon: { fontSize: 18 },
+    emptyListText: { textAlign: 'center', marginTop: 40, color: DP.muted, fontSize: 15 },
 
-    monthPickerBox: { backgroundColor: '#FFF', borderRadius: 24, padding: 24, width: '100%', maxWidth: 320, alignSelf: 'center' },
-    monthOption: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
-    monthOptionText: { fontSize: 16, fontWeight: '600', color: '#1E293B', textAlign: 'center' },
+    monthPickerBox: { backgroundColor: DP.card, borderRadius: 24, padding: 20, width: '100%', maxWidth: 320, alignSelf: 'center', borderWidth: 1, borderColor: DP.line, ...DS.card },
+    monthOption: { paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: DP.line2 },
+    monthOptionText: { fontSize: 15, fontWeight: '600', color: DP.text, textAlign: 'center' },
 });

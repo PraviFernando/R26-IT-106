@@ -16,6 +16,7 @@ import {
   StyleSheet, Platform, Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { DASHBOARD_PALETTE as DP, SERIF, DASHBOARD_SHADOWS as DS, typography } from '../theme/dashboardTokens';
 import ScreenContainer from '../components/ScreenContainer';
 
 const CANVAS_MAX = 560;
@@ -1346,7 +1347,7 @@ const ArtScreen = ({ navigation, route }) => {
   if (selected) {
     return (
       <ScreenContainer
-        gradient={['#F8F4FF', '#FFF0F8']}
+        style={{ backgroundColor: DP.bg }}
         edges={['top', 'bottom']}
         maxWidth="wide"
         bounces={false}
@@ -1366,7 +1367,7 @@ const ArtScreen = ({ navigation, route }) => {
   // ── Gallery view ──
   return (
     <ScreenContainer
-      gradient={['#F8F4FF', '#FFF0F8']}
+      style={{ backgroundColor: DP.bg }}
       edges={['top', 'bottom']}
       maxWidth="wide"
       contentContainerStyle={{ paddingTop: 8 }}
@@ -1429,78 +1430,201 @@ const ArtScreen = ({ navigation, route }) => {
 //  STYLES
 // ================================================================
 const s = StyleSheet.create({
-  backBtn: { marginBottom: 12, alignSelf: 'flex-start' },
-  backTxt: { color: '#7E57C2', fontWeight: '700', fontSize: 16 },
-  pageTitle: { fontSize: 22, fontWeight: '900', color: '#3D2A5E', marginBottom: 4 },
-  pageSub: { fontSize: 13, color: '#7B6A99', marginBottom: 12 },
-  howTo: { backgroundColor: '#EDE7F6', borderRadius: 14, padding: 12, marginBottom: 14 },
-  howToTxt: { fontSize: 12, color: '#5C3D9A', lineHeight: 19 },
+  backBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: DP.border,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
+  },
+  backTxt: {
+    color: DP.primaryDark,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  pageTitle: {
+    fontFamily: SERIF,
+    fontSize: 24,
+    fontWeight: '700',
+    color: DP.textDark,
+    marginBottom: 4,
+    letterSpacing: 0.2,
+  },
+  pageSub: {
+    fontSize: 13,
+    color: DP.textMuted,
+    marginBottom: 12,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
+  },
+  howTo: {
+    backgroundColor: DP.lav,
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: DP.border,
+  },
+  howToTxt: {
+    fontSize: 12,
+    color: DP.primaryDark,
+    lineHeight: 18,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
+  },
   tabRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   tab: {
-    flex: 1, paddingVertical: 12, borderRadius: 999, backgroundColor: 'white', alignItems: 'center',
-    shadowColor: '#9C7CC0', shadowOffset: { width: 0, height: 3 }, shadowOpacity: 0.1, elevation: 3
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 999,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: DP.border,
+    ...DS.card,
   },
-  tabOn: { backgroundColor: '#7E57C2' },
-  tabTxt: { fontSize: 13, fontWeight: '700', color: '#7B6A99' },
-  tabTxtOn: { color: 'white' },
+  tabOn: {
+    backgroundColor: DP.primaryDark,
+    borderColor: DP.primaryDark,
+  },
+  tabTxt: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: DP.textDark,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+  },
+  tabTxtOn: { color: '#FFFFFF', fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'center' },
 });
 
 const gc = StyleSheet.create({
   card: {
-    flexGrow: 1, flexBasis: 150, maxWidth: 220, borderRadius: 20, padding: 12, alignItems: 'center',
-    shadowColor: '#7E57C2', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, elevation: 3
+    flexGrow: 1,
+    flexBasis: 150,
+    maxWidth: 220,
+    borderRadius: 20,
+    padding: 12,
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: DP.border,
+    ...DS.card,
   },
   emojiBox: {
-    width: 118, height: 118, backgroundColor: 'white', borderRadius: 12,
-    justifyContent: 'center', alignItems: 'center', marginBottom: 8
+    width: 118,
+    height: 118,
+    backgroundColor: DP.lav,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   emoji: { fontSize: 52 },
-  name: { fontSize: 12, fontWeight: '800', color: '#3D2A5E', textAlign: 'center', marginBottom: 2 },
-  sub: { fontSize: 10, color: '#B0A4CC', textAlign: 'center', marginBottom: 10 },
-  startBtn: { backgroundColor: '#7E57C2', borderRadius: 999, paddingVertical: 7, paddingHorizontal: 18 },
-  startTxt: { fontSize: 12, fontWeight: '800', color: 'white' },
+  name: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: DP.textDark,
+    textAlign: 'center',
+    marginBottom: 2,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+  },
+  sub: {
+    fontSize: 11,
+    color: DP.textMuted,
+    textAlign: 'center',
+    marginBottom: 10,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
+  },
+  startBtn: {
+    backgroundColor: DP.primaryDark,
+    borderRadius: 999,
+    paddingVertical: 7,
+    paddingHorizontal: 18,
+  },
+  startTxt: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+  },
 });
 
 const cv = StyleSheet.create({
   container: { width: '100%', alignItems: 'center' },
   progRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6, width: '100%' },
-  progBg: { flex: 1, height: 7, backgroundColor: '#EDE7F6', borderRadius: 4, overflow: 'hidden' },
-  progFill: { height: 7, backgroundColor: '#7E57C2', borderRadius: 4 },
-  progPct: { fontSize: 12, color: '#7E57C2', fontWeight: '700', width: 38, textAlign: 'right' },
+  progBg: { flex: 1, height: 7, backgroundColor: DP.lav, borderRadius: 4, overflow: 'hidden' },
+  progFill: { height: 7, backgroundColor: DP.primaryDark, borderRadius: 4 },
+  progPct: { fontSize: 12, color: DP.primaryDark, fontWeight: '700', width: 38, textAlign: 'right' },
   tip: {
-    fontSize: 11, color: '#9E88CC', fontStyle: 'italic', textAlign: 'center',
-    marginBottom: 8, width: '100%', lineHeight: 16
+    fontSize: 11,
+    color: DP.textMuted,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    marginBottom: 8,
+    width: '100%',
+    lineHeight: 16,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   canvasWrap: {
-    borderRadius: 12, overflow: 'hidden', backgroundColor: 'white', marginBottom: 14,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+    marginBottom: 14,
     alignSelf: 'center',
-    shadowColor: '#7E57C2', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.16, elevation: 6
+    borderWidth: 1,
+    borderColor: DP.border,
+    ...DS.card,
   },
   nativeMsg: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  nativeTxt: { color: '#7B6A99', fontSize: 13, textAlign: 'center', lineHeight: 22 },
+  nativeTxt: { color: DP.textMuted, fontSize: 13, textAlign: 'center', lineHeight: 22 },
   // Palette
   palSection: { width: '100%', marginBottom: 10 },
-  palTitle: { fontSize: 13, fontWeight: '700', color: '#7B6A99', marginBottom: 6 },
+  palTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: DP.textDark,
+    marginBottom: 6,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+  },
   palRow: { flexDirection: 'row', gap: 3, marginBottom: 3 },
   swatch: {
     flex: 1, aspectRatio: 1, borderRadius: 4, minWidth: 32, minHeight: 32,
-    justifyContent: 'center', alignItems: 'center'
+    justifyContent: 'center', alignItems: 'center',
   },
   swatchTick: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(0,0,0,0.35)' },
   // Toolbar
   toolbar: { flexDirection: 'row', gap: 8, width: '100%', marginBottom: 10 },
   toolBtn: {
-    flex: 1, backgroundColor: '#F0ECF8', borderRadius: 999,
-    paddingVertical: 10, alignItems: 'center'
+    flex: 1,
+    backgroundColor: DP.lav,
+    borderRadius: 999,
+    paddingVertical: 10,
+    alignItems: 'center',
   },
-  toolTxt: { fontSize: 12, color: '#7E57C2', fontWeight: '700' },
-  printBtn: { flex: 1, borderRadius: 999, overflow: 'hidden' },
-  printBtnIn: { paddingVertical: 10, alignItems: 'center' },
-  printTxt: { color: 'white', fontWeight: '800', fontSize: 13 },
+  toolTxt: { fontSize: 12, color: DP.primaryDark, fontWeight: '700' },
+  printBtn: {
+    flex: 1,
+    borderRadius: 999,
+    overflow: 'hidden',
+    backgroundColor: DP.primaryDark,
+  },
+  printBtnIn: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    backgroundColor: DP.primaryDark,
+  },
+  printTxt: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
   // Done card
-  doneCard: { borderRadius: 16, padding: 14, alignItems: 'center', width: '100%' },
-  doneTxt: { fontSize: 15, fontWeight: '800', color: '#3D2A5E' },
+  doneCard: {
+    borderRadius: 16,
+    padding: 14,
+    alignItems: 'center',
+    width: '100%',
+    backgroundColor: DP.lav,
+  },
+  doneTxt: { fontSize: 15, fontWeight: '700', color: DP.primaryDark },
 });
 
 export default ArtScreen;

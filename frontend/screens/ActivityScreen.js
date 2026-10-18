@@ -4,6 +4,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Anima
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, typography, spacing, radius, shadows } from '../theme';
+import { DASHBOARD_PALETTE as DP, SERIF, DASHBOARD_SHADOWS as DS } from '../theme/dashboardTokens';
 import { ALL_ACTIVITIES, NEW_ACTIVITIES } from '../services/activitiesLibrary';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
@@ -3116,7 +3117,7 @@ const ActivityScreen = ({ navigation, route }) => {
 
   if (view === 'activity' && selAct)
     return (
-      <ScreenContainer gradient={['#F8F4FF', '#F0FAFF']} edges={['top']} tabBar contentContainerStyle={{ paddingTop: 12 }}>
+      <ScreenContainer style={{ backgroundColor: DP.bg }} edges={['top']} tabBar contentContainerStyle={{ paddingTop: 12, paddingBottom: 40 }}>
             <TouchableOpacity onPress={handleActivityBack} style={s.backBtn}>
               <Text style={s.backText}>← ආපසු</Text>
             </TouchableOpacity>
@@ -3124,22 +3125,22 @@ const ActivityScreen = ({ navigation, route }) => {
             <Text style={s.actSub}>{selAct.desc}</Text>
             {renderAct(selAct)}
             {done && (
-              <LinearGradient colors={['#EDE7F6', '#FCE4EC']} style={s.banner}>
+              <View style={s.banner}>
                 <Text style={s.bannerT}>🌸 සම්පූර්ණ! 💜</Text>
-              </LinearGradient>
+              </View>
             )}
       </ScreenContainer>
     );
 
   if (view === 'game' && selGame)
     return (
-      <ScreenContainer gradient={['#F8F4FF', '#F0FAFF']} edges={['top']} tabBar contentContainerStyle={{ paddingTop: 12 }}>
+      <ScreenContainer style={{ backgroundColor: DP.bg }} edges={['top']} tabBar contentContainerStyle={{ paddingTop: 12, paddingBottom: 40 }}>
             {renderGame(selGame.id)}
       </ScreenContainer>
     );
 
   return (
-    <ScreenContainer gradient={['#FAF2FA', '#FFDFEF']} edges={['top']} tabBar contentContainerStyle={{ paddingTop: 12 }}>
+    <ScreenContainer style={{ backgroundColor: DP.bg }} edges={['top']} tabBar contentContainerStyle={{ paddingTop: 12, paddingBottom: 40 }}>
           {/* Top Header Row with Back Button */}
           <View style={s.topBarRow}>
             <TouchableOpacity
@@ -3166,15 +3167,19 @@ const ActivityScreen = ({ navigation, route }) => {
 
           <Text style={s.pageTitle}>{isSinhala ? 'ක්‍රියාකාරකම් සහ ක්‍රීඩා' : 'Activities & Games'}</Text>
           <Text style={s.pageSub}>{isSinhala ? 'ඔබේ යහපැවැත්ම 💜' : 'Your Wellbeing 💜'}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Art')} style={s.artBanner}>
-            <Text style={s.artBannerIcon}>🎨</Text>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Art')} style={s.artBanner} activeOpacity={0.85}>
+            <View style={s.artBannerIconBox}>
+              <Text style={s.artBannerIcon}>🎨</Text>
+            </View>
             <View style={s.artBannerInfo}>
               <Text style={s.artBannerTitle}>කලා සහ රූප</Text>
               <Text style={s.artBannerSub}>10 මණ්ඩල + 10 රූප</Text>
             </View>
             <Text style={s.artBannerArrow}>→</Text>
           </TouchableOpacity>
-          <Text style={[s.sectionLabel, { color: '#E91E8C' }]}>💜 සුව ලබාදෙන ක්‍රීඩා</Text>
+
+          <Text style={s.sectionLabel}>💜 සුව ලබාදෙන ක්‍රීඩා</Text>
           <View style={s.gamesGrid}>
             {ALL_GAMES_LIST.filter((g) => MATURE_IDS.includes(g.id)).map((game) => (
               <TouchableOpacity
@@ -3184,52 +3189,62 @@ const ActivityScreen = ({ navigation, route }) => {
                   setSelGame(game);
                   setView('game');
                 }}
+                activeOpacity={0.8}
               >
-                <LinearGradient colors={game.color} style={s.gameCard}>
-                  <Text style={s.gameIcon}>{game.icon}</Text>
-                  <Text style={s.gameLabel}>{game.label}</Text>
-                  <Text style={[s.gameSub, { color: game.accent }]}>{game.labelEn}</Text>
-                </LinearGradient>
+                <View style={s.gameCard}>
+                  <View style={s.gameIconBox}>
+                    <Text style={s.gameIcon}>{game.icon}</Text>
+                  </View>
+                  <Text style={s.gameLabel} numberOfLines={1}>{game.label}</Text>
+                  <Text style={s.gameSub} numberOfLines={1}>{game.labelEn}</Text>
+                </View>
               </TouchableOpacity>
             ))}
           </View>
-          <View style={{ height: 24 }} />
+          <View style={{ height: 16 }} />
+
           {/* General Practical Activities */}
-          <Text style={[s.sectionLabel, { color: '#8E24AA' }]}>🌸 සාමාන්‍ය සුවපහසු ක්‍රියාකාරකම්</Text>
+          <Text style={s.sectionLabel}>🌸 සාමාන්‍ය සුවපහසු ක්‍රියාකාරකම්</Text>
           <View style={s.gamesGrid}>
             {/* 1. 📝 Reflective Journaling */}
             <TouchableOpacity
-              style={s.gameWrap}
+              style={[s.gameWrap, { width: gameCardW }]}
               onPress={() => {
                 setSelGame({ id: 'emotion_journal', label: 'හැඟීම් දිනපොත', labelEn: 'Reflective Journaling', icon: '📝' });
                 setView('game');
               }}
+              activeOpacity={0.8}
             >
-              <LinearGradient colors={['#FCE4EC', '#F8BBD9']} style={s.gameCard}>
-                <Text style={s.gameIcon}>📝</Text>
-                <Text style={s.gameLabel}>{isSinhala ? 'දිනපොත් සටහන' : 'Reflective Writing'}</Text>
-                <Text style={[s.gameSub, { color: '#C2185B' }]}>{isSinhala ? 'සිතුවිලි සටහන් කරන්න' : 'Reflective Journaling'}</Text>
-              </LinearGradient>
+              <View style={s.gameCard}>
+                <View style={s.gameIconBox}>
+                  <Text style={s.gameIcon}>📝</Text>
+                </View>
+                <Text style={s.gameLabel} numberOfLines={1}>{isSinhala ? 'දිනපොත් සටහන' : 'Reflective Writing'}</Text>
+                <Text style={s.gameSub} numberOfLines={1}>{isSinhala ? 'සිතුවිලි සටහන් කරන්න' : 'Reflective Journaling'}</Text>
+              </View>
             </TouchableOpacity>
 
             {/* 2. 🧘 Meditation / Mindfulness */}
             <TouchableOpacity
-              style={s.gameWrap}
+              style={[s.gameWrap, { width: gameCardW }]}
               onPress={() => {
                 setSelGame({ id: 'mindful_tap', label: 'සිහිකල්පනාව', labelEn: 'Meditation & Mindfulness', icon: '🧘' });
                 setView('game');
               }}
+              activeOpacity={0.8}
             >
-              <LinearGradient colors={['#E8EAF6', '#C5CAE9']} style={s.gameCard}>
-                <Text style={s.gameIcon}>🧘</Text>
-                <Text style={s.gameLabel}>{isSinhala ? 'සිහිකල්පනාව' : 'Mindfulness'}</Text>
-                <Text style={[s.gameSub, { color: '#3949AB' }]}>{isSinhala ? 'සිත සන්සුන් කිරීම' : 'Meditation & Calming'}</Text>
-              </LinearGradient>
+              <View style={s.gameCard}>
+                <View style={s.gameIconBox}>
+                  <Text style={s.gameIcon}>🧘</Text>
+                </View>
+                <Text style={s.gameLabel} numberOfLines={1}>{isSinhala ? 'සිහිකල්පනාව' : 'Mindfulness'}</Text>
+                <Text style={s.gameSub} numberOfLines={1}>{isSinhala ? 'සිත සන්සුන් කිරීම' : 'Meditation & Calming'}</Text>
+              </View>
             </TouchableOpacity>
 
             {/* 3. 🌬️ Deep Breathing / Relaxation */}
             <TouchableOpacity
-              style={s.gameWrap}
+              style={[s.gameWrap, { width: gameCardW }]}
               onPress={() => {
                 setSelAct({
                   id: 'breathing_478', icon: '🌬️', label: '4-7-8 හුස්ම ගැනීම', labelEn: '4-7-8 Breathing', desc: 'කාංසාව ක්ෂණිකව සන්සිඳවීම',
@@ -3243,33 +3258,39 @@ const ActivityScreen = ({ navigation, route }) => {
                 });
                 setView('activity');
               }}
+              activeOpacity={0.8}
             >
-              <LinearGradient colors={['#EDE7F6', '#D1C4E9']} style={s.gameCard}>
-                <Text style={s.gameIcon}>🌬️</Text>
-                <Text style={s.gameLabel}>{isSinhala ? '4-7-8 හුස්ම ගැනීම' : 'Deep Breathing'}</Text>
-                <Text style={[s.gameSub, { color: '#7E57C2' }]}>{isSinhala ? 'ශ්වසන සුවය' : 'Breathing Relaxation'}</Text>
-              </LinearGradient>
+              <View style={s.gameCard}>
+                <View style={s.gameIconBox}>
+                  <Text style={s.gameIcon}>🌬️</Text>
+                </View>
+                <Text style={s.gameLabel} numberOfLines={1}>{isSinhala ? '4-7-8 හුස්ම ගැනීම' : 'Deep Breathing'}</Text>
+                <Text style={s.gameSub} numberOfLines={1}>{isSinhala ? 'ශ්වසන සුවය' : 'Breathing Relaxation'}</Text>
+              </View>
             </TouchableOpacity>
 
             {/* 4. 🌿 Calming Self-Care */}
             <TouchableOpacity
-              style={s.gameWrap}
+              style={[s.gameWrap, { width: gameCardW }]}
               onPress={() => {
                 setSelGame({ id: 'self_care', label: 'ස්වයං රැකවරණය', labelEn: 'Daily Self-Care', icon: '🌿' });
                 setView('game');
               }}
+              activeOpacity={0.8}
             >
-              <LinearGradient colors={['#E8F5E9', '#A5D6A7']} style={s.gameCard}>
-                <Text style={s.gameIcon}>🌿</Text>
-                <Text style={s.gameLabel}>{isSinhala ? 'ස්වයං රැකවරණය' : 'Self-Care'}</Text>
-                <Text style={[s.gameSub, { color: '#2E7D32' }]}>{isSinhala ? 'සුවසෙත ලබාගන්න' : 'Daily Calming Care'}</Text>
-              </LinearGradient>
+              <View style={s.gameCard}>
+                <View style={s.gameIconBox}>
+                  <Text style={s.gameIcon}>🌿</Text>
+                </View>
+                <Text style={s.gameLabel} numberOfLines={1}>{isSinhala ? 'ස්වයං රැකවරණය' : 'Self-Care'}</Text>
+                <Text style={s.gameSub} numberOfLines={1}>{isSinhala ? 'සුවසෙත ලබාගන්න' : 'Daily Calming Care'}</Text>
+              </View>
             </TouchableOpacity>
           </View>
 
           {/* All Other Mind Relaxing Games */}
-          <View style={{ height: 30 }} />
-          <Text style={[s.sectionLabel, { color: '#2E7D32' }]}>🧩 මනස සැහැල්ලු කිරීමේ ක්‍රීඩා</Text>
+          <View style={{ height: 20 }} />
+          <Text style={s.sectionLabel}>🧩 මනස සැහැල්ලු කිරීමේ ක්‍රීඩා</Text>
           <View style={s.gamesGrid}>
             {ALL_GAMES_LIST.filter((g) => !MATURE_IDS.includes(g.id) && g.id !== 'mandala' && g.id !== 'colouring' && g.id !== 'emotion_journal' && g.id !== 'mindful_tap' && g.id !== 'self_care').map(
               (game) => (
@@ -3280,12 +3301,15 @@ const ActivityScreen = ({ navigation, route }) => {
                     setSelGame(game);
                     setView('game');
                   }}
+                  activeOpacity={0.8}
                 >
-                  <LinearGradient colors={game.color} style={s.gameCard}>
-                    <Text style={s.gameIcon}>{game.icon}</Text>
-                    <Text style={s.gameLabel}>{game.label}</Text>
-                    <Text style={[s.gameSub, { color: game.accent }]}>{game.labelEn}</Text>
-                  </LinearGradient>
+                  <View style={s.gameCard}>
+                    <View style={s.gameIconBox}>
+                      <Text style={s.gameIcon}>{game.icon}</Text>
+                    </View>
+                    <Text style={s.gameLabel} numberOfLines={1}>{game.label}</Text>
+                    <Text style={s.gameSub} numberOfLines={1}>{game.labelEn}</Text>
+                  </View>
                 </TouchableOpacity>
               )
             )}
@@ -3319,37 +3343,151 @@ const s = StyleSheet.create({
   gradient: { flex: 1 },
   scroll: { padding: spacing.md, paddingTop: 50 },
   topBarRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  langToggleBtn: { backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.full, borderWidth: 1, borderColor: '#EABDE6' },
-  langToggleText: { fontSize: 13, fontWeight: '700', color: '#AA60C8' },
-  pageTitle: { fontSize: 26, fontWeight: '900', color: colors.textPrimary, marginBottom: 4 },
-  pageSub: { fontSize: 15, color: colors.textSecondary, marginBottom: spacing.lg },
+  langToggleBtn: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: DP.border,
+    ...DS.card,
+  },
+  langToggleText: {
+    fontSize: 13,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+    fontWeight: '700',
+    color: DP.primaryDark,
+  },
+  pageTitle: {
+    fontFamily: SERIF,
+    fontSize: 24,
+    fontWeight: '700',
+    color: DP.textDark,
+    marginBottom: 4,
+    letterSpacing: 0.2,
+  },
+  pageSub: {
+    fontSize: 13,
+    color: DP.textMuted,
+    marginBottom: spacing.lg,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
+  },
   artBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF9C4',
+    backgroundColor: '#FFFFFF',
     padding: spacing.md,
-    borderRadius: radius.xl,
+    borderRadius: 20,
     marginBottom: spacing.lg,
-    ...shadows.soft,
+    borderWidth: 1,
+    borderColor: DP.border,
+    ...DS.card,
   },
-  artBannerIcon: { fontSize: 32, marginRight: 12 },
+  artBannerIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: DP.lav,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  artBannerIcon: { fontSize: 24 },
   artBannerInfo: { flex: 1 },
-  artBannerTitle: { fontSize: 17, fontWeight: '800', color: '#F57F17' },
-  artBannerSub: { fontSize: 13, color: '#F9A825' },
-  artBannerArrow: { fontSize: 20, color: '#F57F17' },
-  sectionLabel: { fontSize: 18, fontWeight: '900', marginBottom: 12, marginTop: 10 },
+  artBannerTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: DP.textDark,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+  },
+  artBannerSub: {
+    fontSize: 12,
+    color: DP.textMuted,
+    marginTop: 2,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
+  },
+  artBannerArrow: { fontSize: 18, color: DP.primaryDark, fontWeight: '700' },
+  sectionLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: DP.textDark,
+    marginBottom: 10,
+    marginTop: 8,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+  },
   gamesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  gameWrap: { marginBottom: 14 },
-  gameCard: { padding: 16, borderRadius: radius.lg, alignItems: 'center', ...shadows.soft },
-  gameIcon: { fontSize: 36, marginBottom: 8 },
-  gameLabel: { fontSize: 14, fontWeight: '800', textAlign: 'center', color: colors.textPrimary },
-  gameSub: { fontSize: 10, fontWeight: '700', textAlign: 'center', marginTop: 4 },
-  backBtn: { marginBottom: 16, alignSelf: 'flex-start' },
-  backText: { color: '#7E57C2', fontWeight: '800', fontSize: 16 },
-  actTitle: { fontSize: 24, fontWeight: '900', color: colors.textPrimary, marginBottom: 6 },
-  actSub: { fontSize: 15, color: colors.textSecondary, marginBottom: 20 },
-  banner: { padding: 16, borderRadius: radius.lg, alignItems: 'center', marginTop: 20 },
-  bannerT: { fontSize: 16, fontWeight: '800', color: '#7E57C2' },
+  gameWrap: { marginBottom: 12 },
+  gameCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 13,
+    borderWidth: 1,
+    borderColor: DP.border,
+    alignItems: 'center',
+    ...DS.card,
+  },
+  gameIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: DP.lav,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  gameIcon: { fontSize: 24 },
+  gameLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: DP.textDark,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+  },
+  gameSub: {
+    fontSize: 11,
+    color: DP.textMuted,
+    textAlign: 'center',
+    marginTop: 2,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
+  },
+  backBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: DP.border,
+    alignSelf: 'flex-start',
+    marginBottom: 16,
+  },
+  backText: {
+    color: DP.primaryDark,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  actTitle: {
+    fontFamily: SERIF,
+    fontSize: 24,
+    fontWeight: '700',
+    color: DP.textDark,
+    marginBottom: 6,
+    letterSpacing: 0.2,
+  },
+  actSub: {
+    fontSize: 13,
+    color: DP.textMuted,
+    marginBottom: 18,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
+  },
+  banner: {
+    backgroundColor: DP.lav,
+    padding: 14,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginTop: 18,
+  },
+  bannerT: { fontSize: 15, fontWeight: '700', color: DP.primaryDark },
 });
 
 const bx = StyleSheet.create({

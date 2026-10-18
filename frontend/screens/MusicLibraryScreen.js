@@ -17,6 +17,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, shadows, typography } from '../theme';
+import { DASHBOARD_PALETTE as DP, SERIF, DASHBOARD_SHADOWS as DS } from '../theme/dashboardTokens';
 import { useResponsive } from '../hooks/useResponsive';
 import ScreenContainer from '../components/ScreenContainer';
 import {
@@ -107,7 +108,7 @@ const MusicLibraryScreen = ({ navigation }) => {
 
   return (
     <ScreenContainer
-      gradient={['#F8F4FF', '#FFF0F8', '#F5FBFF']}
+      style={{ backgroundColor: DP.bg }}
       edges={['top']}
       contentContainerStyle={{ paddingTop: 8, paddingBottom: activeTrack ? 110 : 40 }}
     >
@@ -187,12 +188,7 @@ const MusicLibraryScreen = ({ navigation }) => {
                 style={[s.categoryChip, isSelected && s.categoryChipSelected]}
               >
                 {isSelected ? (
-                  <LinearGradient
-                    colors={['#8E24AA', '#D81B60']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={s.categoryChipGradient}
-                  >
+                  <View style={s.categoryChipGradient}>
                     <Text style={s.categoryIcon}>{cat.icon}</Text>
                     <Text style={s.categoryTitleSelected}>
                       {isSinhala ? cat.titleSi : cat.titleEn}
@@ -200,7 +196,7 @@ const MusicLibraryScreen = ({ navigation }) => {
                     <View style={s.countBadgeSelected}>
                       <Text style={s.countTextSelected}>{count}</Text>
                     </View>
-                  </LinearGradient>
+                  </View>
                 ) : (
                   <View style={s.categoryChipInner}>
                     <Text style={s.categoryIcon}>{cat.icon}</Text>
@@ -220,12 +216,7 @@ const MusicLibraryScreen = ({ navigation }) => {
 
       {/* Active Category Description Banner */}
       <View style={s.categoryBanner}>
-        <LinearGradient
-          colors={['#EDE7F6', '#FFF0F8']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={s.categoryBannerInner}
-        >
+        <View style={s.categoryBannerInner}>
           <Text style={s.bannerIcon}>{currentCategoryInfo.icon}</Text>
           <View style={s.bannerTextCol}>
             <Text style={s.bannerTitle}>
@@ -238,7 +229,7 @@ const MusicLibraryScreen = ({ navigation }) => {
                 : currentCategoryInfo.descriptionEn || 'Carefully curated music to soothe and uplift.'}
             </Text>
           </View>
-        </LinearGradient>
+        </View>
       </View>
 
       {/* Track List Section */}
@@ -322,14 +313,11 @@ const MusicLibraryScreen = ({ navigation }) => {
 
                 {/* Right Play Control */}
                 <View style={s.playBtnCol}>
-                  <LinearGradient
-                    colors={isThisPlaying ? ['#8E24AA', '#D81B60'] : ['#F3E5F5', '#EDE7F6']}
-                    style={s.playBtn}
-                  >
-                    <Text style={[s.playIcon, isThisPlaying && { color: '#FFFFFF' }]}>
+                  <View style={[s.playBtn, isThisPlaying ? s.playBtnActive : s.playBtnInactive]}>
+                    <Text style={[s.playIcon, isThisPlaying ? { color: '#FFFFFF' } : { color: DP.primaryDark }]}>
                       {isThisPlaying ? '⏸' : '▶'}
                     </Text>
-                  </LinearGradient>
+                  </View>
                 </View>
               </TouchableOpacity>
             );
@@ -340,12 +328,7 @@ const MusicLibraryScreen = ({ navigation }) => {
       {/* Floating Bottom Mini-Player Bar (When track is active) */}
       {activeTrack && (
         <View style={s.miniPlayerContainer}>
-          <LinearGradient
-            colors={['#2C1A35', '#4A148C']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={s.miniPlayerInner}
-          >
+          <View style={s.miniPlayerInner}>
             <View style={s.miniPlayerLeft}>
               <Text style={s.miniPlayerEmoji}>{activeTrack.emoji || '🎵'}</Text>
               <View style={s.miniPlayerInfo}>
@@ -390,7 +373,7 @@ const MusicLibraryScreen = ({ navigation }) => {
                 <Text style={s.miniPlayerCloseText}>✕</Text>
               </TouchableOpacity>
             </View>
-          </LinearGradient>
+          </View>
         </View>
       )}
     </ScreenContainer>
@@ -402,67 +385,72 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: 14,
   },
   backBtn: {
-    paddingVertical: 4,
-    paddingHorizontal: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: DP.card,
+    borderWidth: 1,
+    borderColor: DP.line,
+    ...DS.soft,
   },
   backText: {
-    color: colors.lavenderDark,
-    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+    color: DP.primaryDark,
+    fontFamily: typography ? typography.mediumFont : 'sans-serif',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 13,
   },
   langToggleBtn: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: DP.card,
     paddingHorizontal: 14,
     paddingVertical: 6,
-    borderRadius: radius.full,
+    borderRadius: 999,
     borderWidth: 1,
-    borderColor: colors.lavenderMid,
-    ...shadows.soft,
+    borderColor: DP.line,
+    ...DS.soft,
   },
   langToggleText: {
     fontSize: 13,
-    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
+    fontFamily: typography ? typography.mediumFont : 'sans-serif',
     fontWeight: '700',
-    color: colors.lavenderDark,
+    color: DP.primaryDark,
   },
   headerSection: {
-    marginBottom: spacing.md,
+    marginBottom: 16,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   pageTitle: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: colors.textPrimary,
-    fontFamily: typography ? typography.headerFont : 'sans-serif',
+    fontSize: 24,
+    fontWeight: '700',
+    color: DP.text,
+    fontFamily: SERIF,
   },
   headerIcon: {
-    fontSize: 26,
+    fontSize: 22,
     marginLeft: 8,
   },
   pageSubtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
+    fontSize: 13,
+    color: DP.muted,
     marginTop: 4,
-    fontWeight: '500',
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.lg,
-    paddingHorizontal: 14,
-    paddingVertical: Platform.OS === 'ios' ? 12 : 6,
-    marginBottom: spacing.md,
+    backgroundColor: DP.card,
+    borderRadius: 999,
+    paddingHorizontal: 16,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-    ...shadows.soft,
+    borderColor: DP.line,
+    ...DS.soft,
   },
   searchIcon: {
     fontSize: 16,
@@ -471,7 +459,7 @@ const s = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: colors.textPrimary,
+    color: DP.text,
     fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   clearBtn: {
@@ -479,69 +467,73 @@ const s = StyleSheet.create({
   },
   clearBtnText: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: DP.muted,
     fontWeight: '700',
   },
   categoriesSection: {
-    marginBottom: spacing.md,
+    marginBottom: 14,
   },
   categoryScrollContent: {
     paddingVertical: 4,
     gap: 8,
   },
   categoryChip: {
-    borderRadius: radius.full,
+    borderRadius: 999,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: DP.card,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-    ...shadows.soft,
+    borderColor: DP.line,
+    ...DS.soft,
   },
   categoryChipSelected: {
-    borderColor: '#8E24AA',
+    backgroundColor: DP.primaryDark,
+    borderColor: DP.primaryDark,
   },
   categoryChipInner: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
   },
   categoryChipGradient: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: DP.primaryDark,
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
   },
   categoryIcon: {
-    fontSize: 16,
+    fontSize: 14,
     marginRight: 6,
   },
   categoryTitle: {
     fontSize: 13,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: DP.nav,
+    fontFamily: typography ? typography.mediumFont : 'sans-serif',
   },
   categoryTitleSelected: {
     fontSize: 13,
     fontWeight: '700',
     color: '#FFFFFF',
+    fontFamily: typography ? typography.mediumFont : 'sans-serif',
   },
   countBadge: {
-    backgroundColor: colors.bgTint,
-    borderRadius: radius.full,
-    paddingHorizontal: 6,
+    backgroundColor: DP.lav,
+    borderRadius: 999,
+    paddingHorizontal: 7,
     paddingVertical: 2,
     marginLeft: 6,
   },
   countText: {
     fontSize: 11,
     fontWeight: '700',
-    color: colors.primaryDark,
+    color: DP.primaryDark,
   },
   countBadgeSelected: {
     backgroundColor: 'rgba(255,255,255,0.25)',
-    borderRadius: radius.full,
-    paddingHorizontal: 6,
+    borderRadius: 999,
+    paddingHorizontal: 7,
     paddingVertical: 2,
     marginLeft: 6,
   },
@@ -551,63 +543,67 @@ const s = StyleSheet.create({
     color: '#FFFFFF',
   },
   categoryBanner: {
-    borderRadius: radius.lg,
+    borderRadius: 20,
     overflow: 'hidden',
-    marginBottom: spacing.md,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: DP.noteLine,
+    backgroundColor: DP.note,
+    ...DS.soft,
   },
   categoryBannerInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: spacing.md,
+    padding: 16,
+    backgroundColor: DP.note,
   },
   bannerIcon: {
-    fontSize: 32,
+    fontSize: 28,
     marginRight: 12,
   },
   bannerTextCol: {
     flex: 1,
   },
   bannerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '700',
+    color: DP.text,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
   bannerTrackCount: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.primaryDark,
+    color: DP.primaryDark,
   },
   bannerDesc: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: DP.muted,
     marginTop: 2,
-    lineHeight: 16,
+    lineHeight: 17,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   tracksSection: {
-    gap: 12,
+    gap: 10,
   },
   trackCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
-    padding: spacing.md,
+    backgroundColor: DP.card,
+    borderRadius: 20,
+    padding: 14,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
-    ...shadows.soft,
+    borderColor: DP.line,
+    ...DS.card,
   },
   trackCardActive: {
-    borderColor: '#8E24AA',
-    borderWidth: 1.5,
-    backgroundColor: '#FAF5FF',
+    borderColor: DP.primaryDark,
+    backgroundColor: DP.lav,
   },
   trackEmojiContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.lavenderLight,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: DP.lav,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -627,21 +623,23 @@ const s = StyleSheet.create({
   },
   trackTitle: {
     fontSize: 15,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    fontFamily: typography ? typography.topicFont : 'sans-serif',
+    fontWeight: '700',
+    color: DP.text,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
   trackSubTitle: {
     fontSize: 12,
-    color: colors.textMuted,
+    color: DP.muted,
     marginTop: 1,
-    fontWeight: '600',
+    fontWeight: '500',
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   trackDesc: {
     fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 4,
+    color: DP.muted,
+    marginTop: 3,
     lineHeight: 16,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   metaRow: {
     flexDirection: 'row',
@@ -651,82 +649,94 @@ const s = StyleSheet.create({
     marginTop: 8,
   },
   categoryBadge: {
-    backgroundColor: '#F3E5F5',
+    backgroundColor: DP.lav,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: radius.sm,
+    borderRadius: 6,
   },
   categoryBadgeText: {
     fontSize: 11,
-    color: '#7B1FA2',
+    color: DP.primaryDark,
     fontWeight: '700',
   },
   durationBadge: {
-    backgroundColor: '#ECEFF1',
+    backgroundColor: DP.sage,
     paddingHorizontal: 6,
     paddingVertical: 3,
-    borderRadius: radius.sm,
+    borderRadius: 6,
   },
   durationText: {
     fontSize: 11,
-    color: '#546E7A',
+    color: DP.sageText,
     fontWeight: '600',
   },
   sourceBadge: {
-    backgroundColor: '#FFEBEE',
+    backgroundColor: DP.blush,
     paddingHorizontal: 6,
     paddingVertical: 3,
-    borderRadius: radius.sm,
+    borderRadius: 6,
   },
   sourceText: {
     fontSize: 10,
-    color: '#C62828',
+    color: DP.blushText,
     fontWeight: '700',
   },
   playBtnCol: {
     marginLeft: 8,
   },
   playBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
     justifyContent: 'center',
     alignItems: 'center',
-    ...shadows.soft,
+    ...DS.soft,
+  },
+  playBtnActive: {
+    backgroundColor: DP.primaryDark,
+  },
+  playBtnInactive: {
+    backgroundColor: DP.lav,
   },
   playIcon: {
-    fontSize: 16,
-    color: '#8E24AA',
+    fontSize: 14,
     marginLeft: 2,
   },
   emptyContainer: {
     alignItems: 'center',
     paddingVertical: 40,
     paddingHorizontal: 20,
+    backgroundColor: DP.card,
+    borderRadius: 22,
+    borderWidth: 1,
+    borderColor: DP.line,
+    ...DS.card,
   },
   emptyEmoji: {
-    fontSize: 48,
-    marginBottom: 12,
+    fontSize: 44,
+    marginBottom: 10,
   },
   emptyTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '700',
+    color: DP.text,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
   emptySub: {
     fontSize: 13,
-    color: colors.textMuted,
+    color: DP.muted,
     textAlign: 'center',
     marginTop: 4,
     lineHeight: 18,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   resetBtn: {
     marginTop: 16,
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16,
+    backgroundColor: DP.primaryDark,
+    paddingHorizontal: 18,
     paddingVertical: 10,
-    borderRadius: radius.full,
-    ...shadows.soft,
+    borderRadius: 999,
+    ...DS.soft,
   },
   resetBtnText: {
     color: '#FFFFFF',
@@ -744,9 +754,10 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 10,
-    paddingHorizontal: 14,
-    borderRadius: radius.xl,
-    ...shadows.strong,
+    paddingHorizontal: 16,
+    borderRadius: 24,
+    backgroundColor: DP.primaryDark,
+    ...DS.card,
   },
   miniPlayerLeft: {
     flexDirection: 'row',
@@ -755,7 +766,7 @@ const s = StyleSheet.create({
     marginRight: 10,
   },
   miniPlayerEmoji: {
-    fontSize: 24,
+    fontSize: 22,
     marginRight: 10,
   },
   miniPlayerInfo: {
@@ -764,12 +775,13 @@ const s = StyleSheet.create({
   miniPlayerTitle: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: '700',
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
   miniPlayerStatus: {
-    color: '#D69ADE',
+    color: DP.accent,
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '500',
     marginTop: 1,
   },
   miniPlayerControls: {
@@ -781,13 +793,13 @@ const s = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#8E24AA',
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   miniPlayerBtnText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     marginLeft: 1,
   },
@@ -801,7 +813,7 @@ const s = StyleSheet.create({
   },
   miniPlayerLaunchText: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
   },
   miniPlayerCloseBtn: {
@@ -811,7 +823,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   miniPlayerCloseText: {
-    color: 'rgba(255,255,255,0.6)',
+    color: 'rgba(255,255,255,0.7)',
     fontSize: 14,
     fontWeight: '800',
   },

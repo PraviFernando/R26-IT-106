@@ -13,6 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { colors, typography, spacing, radius, shadows } from '../theme';
+import { DASHBOARD_PALETTE as DP, SERIF, DASHBOARD_SHADOWS as DS } from '../theme/dashboardTokens';
 import { useApp } from '../services/AppContext';
 import { ALL_ACTIVITIES, NEW_ACTIVITIES, ALL_GAMES, getEnhancedRecommendationRule, isBabyRelatedContent, isBabyRelatedReason, getRecommendedGames, getRankedActivities, normalizeReasonKey, normalizeEmotionKey, normalizeRiskLevel } from '../services/activitiesLibrary';
 import { getPersonalizedRecommendations, getRecommendations } from '../services/emotionEngine';
@@ -80,9 +81,9 @@ const HELP_NEEDED_OPTIONS = [
 ];
 
 const RISK_CFG = {
-  low: { label: '🟢 අඩු අවදානම', bg: '#E8F5E9', col: '#388E3C' },
-  medium: { label: '🟡 මධ්‍යම අවදානම', bg: '#FFFDE7', col: '#F57F17' },
-  high: { label: '🔴 ඉහළ අවදානම', bg: '#FFEBEE', col: '#D32F2F' },
+  low: { label: '🟢 අඩු අවදානම', bg: DP.sage, col: DP.sageText },
+  medium: { label: '🟡 මධ්‍යම අවදානම', bg: DP.warmYellow, col: DP.warmYellowText },
+  high: { label: '🔴 ඉහළ අවදානම', bg: DP.blush, col: DP.blushText },
 };
 
 const openYouTube = async (itemOrUrl, title, titleEn) => {
@@ -806,7 +807,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
   return (
     <View style={s.container}>
-      <LinearGradient colors={['#FAF2FA', '#FFDFEF']} style={s.gradient}>
+      <View style={s.gradient}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
 
           {/* Top Header Row with Back Button and Language Toggle Button */}
@@ -824,7 +825,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           </View>
 
-          <Text style={s.title}>{isSinhala ? 'නිර්දේශිත සහන & දැනුම එකතුව' : 'Recommended Relief & Knowledge Collection 💜'}</Text>
+          <Text style={s.title}>{isSinhala ? 'නිර්දේශිත සහන & දැනුම එකතුව' : 'Recommended Relief & Knowledge Collection'}</Text>
 
           {/* Search Bar */}
           <View style={s.searchWrap}>
@@ -902,23 +903,23 @@ const RecommendationsScreen = ({ navigation, route }) => {
             <>
               {/* Badges Row */}
               <View style={s.badgesRow}>
-                <LinearGradient colors={ec.badge} style={s.badge}>
-                  <Text style={[s.badgeText, { color: ec.col }]}>{ec.emoji} {isSinhala ? ec.label : (ec.labelEn || ec.label)}</Text>
-                </LinearGradient>
+                <View style={[s.badge, { backgroundColor: DP.lav, borderColor: DP.line }]}>
+                  <Text style={[s.badgeText, { color: DP.primaryDark }]}>{ec.emoji} {isSinhala ? ec.label : (ec.labelEn || ec.label)}</Text>
+                </View>
                 {!isSkipped && activeReason && (() => {
                   const reasonObj = REASON_OPTIONS.find(r => r.key === activeReason);
                   const reasonLabel = isSinhala
                     ? (reasonObj?.label ? reasonObj.label.split('(')[0].trim() : activeReason.replace(/_/g, ' '))
                     : (reasonObj?.label ? reasonObj.label.split('(')[0].trim() : activeReason.replace(/_/g, ' '));
                   return reasonLabel ? (
-                    <View style={[s.badge, { backgroundColor: '#FFF3E0' }]}>
-                      <Text style={[s.badgeText, { color: '#E65100' }]}>📌 {reasonLabel}</Text>
+                    <View style={[s.badge, { backgroundColor: DP.note, borderColor: DP.noteLine }]}>
+                      <Text style={[s.badgeText, { color: DP.text }]}>📌 {reasonLabel}</Text>
                     </View>
                   ) : null;
                 })()}
                 {isSkipped && (
-                  <View style={[s.badge, { backgroundColor: '#E0F2FE' }]}>
-                    <Text style={[s.badgeText, { color: '#0369A1' }]}>{isSinhala ? '🌐 සියලු අන්තර්ගතයන්' : '🌐 All Content'}</Text>
+                  <View style={[s.badge, { backgroundColor: DP.sage, borderColor: DP.sageLine }]}>
+                    <Text style={[s.badgeText, { color: DP.sageText }]}>{isSinhala ? '🌐 සියලු අන්තර්ගතයන්' : '🌐 All Content'}</Text>
                   </View>
                 )}
               </View>
@@ -976,14 +977,18 @@ const RecommendationsScreen = ({ navigation, route }) => {
                             }
                           }}
                           style={s.actCard}
+                          activeOpacity={0.85}
                         >
-                          <LinearGradient colors={act.color || ['#EDE7F6', '#D1C4E9']} style={s.actGrad}>
-                            <Text style={s.actIcon}>{act.icon || '🌸'}</Text>
+                          <View style={s.actGrad}>
+                            <View style={s.actIconBox}>
+                              <Text style={s.actIcon}>{act.icon || '🌸'}</Text>
+                            </View>
                             <View style={s.actInfo}>
-                              <Text style={[s.actTitle, { color: act.accent || '#7E57C2' }]}>{actTitle}</Text>
+                              <Text style={s.actTitle}>{actTitle}</Text>
                               <Text style={s.actDesc}>{actDesc}</Text>
                             </View>
-                          </LinearGradient>
+                            <Text style={s.cardArrow}>→</Text>
+                          </View>
                         </TouchableOpacity>
                       );
                     })}
@@ -1002,14 +1007,17 @@ const RecommendationsScreen = ({ navigation, route }) => {
                         <TouchableOpacity
                           key={gId || idx}
                           onPress={() => navigation.navigate(gId === 'mandala' || gId === 'colouring' ? 'Art' : 'Activity', { gameId: gId, fromRecommendations: true, returnTo: 'Recommendations' })}
+                          style={s.primaryGameCard}
+                          activeOpacity={0.85}
                         >
-                          <LinearGradient colors={game.color || ['#EDE7F6', '#D1C4E9']} style={s.primaryGameCard}>
+                          <View style={s.gameIconBox}>
                             <Text style={s.primaryGameIcon}>{game.icon || '🎮'}</Text>
-                            <View style={s.primaryGameInfo}>
-                              <Text style={[s.primaryGameName, { color: game.accent || '#7E57C2' }]}>{gTitle}</Text>
-                              <Text style={s.primaryGameSub}>{gSub}</Text>
-                            </View>
-                          </LinearGradient>
+                          </View>
+                          <View style={s.primaryGameInfo}>
+                            <Text style={s.primaryGameName}>{gTitle}</Text>
+                            <Text style={s.primaryGameSub}>{gSub}</Text>
+                          </View>
+                          <Text style={s.cardArrow}>→</Text>
                         </TouchableOpacity>
                       );
                     })}
@@ -1021,13 +1029,16 @@ const RecommendationsScreen = ({ navigation, route }) => {
                   <View>
                     <Text style={s.tabIntro}>{isSinhala ? 'සන්සුන් සංගීතය 🎵 (උපරිම 4)' : 'Calming Music 🎵 (Max 4)'}</Text>
                     {finalMusic.map((track, idx) => (
-                      <TouchableOpacity key={track.id || idx} style={s.mediaCard} onPress={() => openYouTube(track)}>
-                        <View style={[s.mediaIcon, { backgroundColor: colors.lavenderLight }]}>
+                      <TouchableOpacity key={track.id || idx} style={s.mediaCard} onPress={() => openYouTube(track)} activeOpacity={0.85}>
+                        <View style={s.mediaIcon}>
                           <Text style={s.mediaEmoji}>{track.emoji || '🎵'}</Text>
                         </View>
                         <View style={s.mediaInfo}>
                           <Text style={s.mediaTitle}>{isSinhala ? track.title : (track.titleEn || track.title)}</Text>
                           <Text style={s.mediaSub}>{isSinhala ? 'සන්සුන් සංගීතය' : 'Calming Music'}</Text>
+                        </View>
+                        <View style={s.playBtnSmall}>
+                          <Text style={s.playBtnIcon}>▶</Text>
                         </View>
                       </TouchableOpacity>
                     ))}
@@ -1208,7 +1219,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
           <View style={{ height: 110 }} />
         </ScrollView>
-      </LinearGradient>
+      </View>
 
       {/* QUICK EMOTIONAL ASSESSMENT MODAL */}
       <Modal visible={showAssessment} animationType="slide" transparent>
@@ -1312,78 +1323,83 @@ const RecommendationsScreen = ({ navigation, route }) => {
 };
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAF2FA' },
-  gradient: { flex: 1 },
-  scroll: { paddingHorizontal: spacing.md, paddingTop: 50, paddingBottom: 40 },
+  container: { flex: 1, backgroundColor: DP.bg },
+  gradient: { flex: 1, backgroundColor: DP.bg },
+  scroll: { paddingHorizontal: 16, paddingTop: 50, paddingBottom: 40 },
   topBarRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  backBtn: { alignSelf: 'flex-start' },
-  backText: { color: '#AA60C8', fontFamily: typography.subTopicFont, fontWeight: '700', fontSize: 15 },
-  langToggleBtn: { backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.full, borderWidth: 1, borderColor: '#EABDE6', ...shadows.soft },
-  langToggleText: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#AA60C8' },
-  title: { fontSize: 22, fontFamily: typography.headerFont, fontWeight: '700', color: '#2C1A35', marginBottom: 14 },
-  searchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: radius.full, paddingHorizontal: 16, paddingVertical: 10, marginBottom: 16, borderWidth: 1, borderColor: '#EABDE6', ...shadows.soft },
+  backBtn: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: 999, backgroundColor: DP.card, borderWidth: 1, borderColor: DP.line, ...DS.soft },
+  backText: { color: DP.primaryDark, fontFamily: typography.mediumFont, fontWeight: '700', fontSize: 13 },
+  langToggleBtn: { backgroundColor: DP.card, paddingHorizontal: 14, paddingVertical: 6, borderRadius: 999, borderWidth: 1, borderColor: DP.line, ...DS.soft },
+  langToggleText: { fontSize: 13, fontFamily: typography.mediumFont, fontWeight: '700', color: DP.primaryDark },
+  title: { fontSize: 24, fontFamily: SERIF, fontWeight: '700', color: DP.text, marginBottom: 16 },
+  searchWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: DP.card, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10, marginBottom: 16, borderWidth: 1, borderColor: DP.line, ...DS.soft },
   searchIcon: { fontSize: 16, marginRight: 10 },
-  searchInput: { flex: 1, fontSize: 13, fontFamily: typography.bodyFont, color: '#2C1A35' },
-  clearSearch: { fontSize: 14, color: '#9E7FA9', paddingHorizontal: 6 },
+  searchInput: { flex: 1, fontSize: 14, fontFamily: typography.bodyFont, color: DP.text },
+  clearSearch: { fontSize: 14, color: DP.muted, paddingHorizontal: 6 },
   searchResultsCont: { marginBottom: 20 },
-  searchTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#AA60C8', marginBottom: 10 },
-  typeTag: { alignSelf: 'flex-start', backgroundColor: '#FFDFEF', paddingVertical: 3, paddingHorizontal: 8, borderRadius: 6, marginBottom: 4 },
-  typeTagText: { fontSize: 10, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#AA60C8' },
-  emergencyBanner: { flexDirection: 'row', backgroundColor: '#FFEBEE', borderWidth: 1.5, borderColor: '#D32F2F', borderRadius: radius.lg, padding: 14, marginBottom: 16, gap: 10 },
-  emergencyIcon: { fontSize: 24 },
-  emergencyTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#D32F2F', marginBottom: 2 },
-  emergencyText: { fontSize: 11, fontFamily: typography.bodyFont, color: '#B71C1C', lineHeight: 17 },
-  crisisKnowledgeCard: { backgroundColor: '#FFF5F5', borderWidth: 1.5, borderColor: '#FFCDD2', borderRadius: radius.lg, padding: 14, marginBottom: 16 },
-  crisisKnowledgeTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#D32F2F', marginBottom: 10 },
-  crisisKnowledgeBox: { backgroundColor: '#FFFFFF', borderRadius: 8, padding: 10, marginBottom: 8, borderWidth: 1, borderColor: '#FFEBEE' },
-  crisisKnowledgeItemTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#C62828', marginBottom: 3 },
-  crisisKnowledgeItemDesc: { fontSize: 11, fontFamily: typography.bodyFont, color: '#5D4037', lineHeight: 17 },
-  detectedTopicsBanner: { backgroundColor: '#FFDFEF', borderWidth: 1.5, borderColor: '#EABDE6', borderRadius: radius.lg, padding: 14, marginBottom: 16 },
-  detectedTopicsTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#AA60C8', marginBottom: 6 },
+  searchTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.primaryDark, marginBottom: 10 },
+  typeTag: { alignSelf: 'flex-start', backgroundColor: DP.lav, paddingVertical: 3, paddingHorizontal: 8, borderRadius: 6, marginBottom: 4 },
+  typeTagText: { fontSize: 10, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.primaryDark },
+  emergencyBanner: { flexDirection: 'row', backgroundColor: DP.blush, borderWidth: 1, borderColor: DP.blushLine, borderRadius: 18, padding: 14, marginBottom: 16, gap: 10 },
+  emergencyIcon: { fontSize: 22 },
+  emergencyTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.blushText, marginBottom: 2 },
+  emergencyText: { fontSize: 12, fontFamily: typography.bodyFont, color: DP.blushText, lineHeight: 18 },
+  crisisKnowledgeCard: { backgroundColor: DP.note, borderWidth: 1, borderColor: DP.noteLine, borderRadius: 18, padding: 14, marginBottom: 16 },
+  crisisKnowledgeTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.blushText, marginBottom: 10 },
+  crisisKnowledgeBox: { backgroundColor: DP.card, borderRadius: 12, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: DP.line },
+  crisisKnowledgeItemTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.text, marginBottom: 3 },
+  crisisKnowledgeItemDesc: { fontSize: 12, fontFamily: typography.bodyFont, color: DP.muted, lineHeight: 17 },
+  detectedTopicsBanner: { backgroundColor: DP.lav, borderWidth: 1, borderColor: DP.line, borderRadius: 18, padding: 14, marginBottom: 16 },
+  detectedTopicsTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.primaryDark, marginBottom: 8 },
   topicBadgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  topicBadgeItem: { backgroundColor: '#AA60C8', borderRadius: radius.full, paddingVertical: 4, paddingHorizontal: 12 },
-  topicBadgeText: { fontSize: 11, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#FFFFFF' },
-  badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: spacing.md },
-  badge: { borderRadius: radius.full, paddingVertical: 6, paddingHorizontal: 14, borderWidth: 1, borderColor: '#EABDE6' },
-  badgeText: { fontSize: 12, fontFamily: typography.subTopicFont, fontWeight: '600' },
-  tabsScroll: { marginBottom: spacing.md },
-  tabsCont: { gap: 10, paddingRight: spacing.md },
-  tab: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10, paddingHorizontal: 16, borderRadius: radius.full, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EABDE6', ...shadows.soft },
-  tabActive: { backgroundColor: '#AA60C8', borderColor: '#AA60C8' },
+  topicBadgeItem: { backgroundColor: DP.primaryDark, borderRadius: 999, paddingVertical: 4, paddingHorizontal: 12 },
+  topicBadgeText: { fontSize: 11, fontFamily: typography.mediumFont, fontWeight: '700', color: '#FFFFFF' },
+  badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  badge: { borderRadius: 999, paddingVertical: 6, paddingHorizontal: 14, borderWidth: 1, borderColor: DP.line, ...DS.soft },
+  badgeText: { fontSize: 12, fontFamily: typography.mediumFont, fontWeight: '600' },
+  tabsScroll: { marginBottom: 16 },
+  tabsCont: { gap: 8, paddingRight: 16 },
+  tab: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 999, backgroundColor: DP.card, borderWidth: 1, borderColor: DP.line, ...DS.soft },
+  tabActive: { backgroundColor: DP.primaryDark, borderColor: DP.primaryDark },
   tabIcon: { fontSize: 14 },
-  tabLabel: { fontSize: 12, fontFamily: typography.subTopicFont, fontWeight: '600', color: '#6A4D77' },
+  tabLabel: { fontSize: 13, fontFamily: typography.mediumFont, fontWeight: '600', color: DP.nav },
   tabLabelActive: { color: '#FFFFFF', fontWeight: '700' },
-  tabContent: { marginBottom: spacing.md },
-  tabIntro: { fontSize: 13, fontFamily: typography.bodyFont, color: '#9E7FA9', marginBottom: spacing.md, fontStyle: 'italic' },
-  mediaCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: radius.lg, padding: spacing.md, marginBottom: 12, borderWidth: 1, borderColor: '#F5D3EE', ...shadows.soft },
-  mediaIcon: { width: 48, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  mediaEmoji: { fontSize: 24 },
+  tabContent: { marginBottom: 16 },
+  tabIntro: { fontSize: 13, fontFamily: typography.bodyFont, color: DP.muted, marginBottom: 12 },
+  mediaCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: DP.card, borderRadius: 20, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: DP.line, ...DS.card },
+  mediaIcon: { width: 44, height: 44, borderRadius: 14, backgroundColor: DP.lav, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  mediaEmoji: { fontSize: 22 },
   mediaInfo: { flex: 1 },
-  mediaTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#2C1A35' },
-  mediaSub: { fontSize: 11, fontFamily: typography.bodyFont, color: '#6A4D77', marginTop: 3 },
-  sourceTag: { fontSize: 10, fontFamily: typography.subTopicFont, color: '#AA60C8', fontWeight: '700', marginTop: 4 },
-  actCard: { borderRadius: radius.lg, marginBottom: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#F5D3EE', ...shadows.soft },
-  actGrad: { flexDirection: 'row', alignItems: 'center', padding: spacing.md },
-  actIcon: { fontSize: 28, marginRight: 12 },
+  mediaTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.text },
+  mediaSub: { fontSize: 12, fontFamily: typography.bodyFont, color: DP.muted, marginTop: 2 },
+  sourceTag: { fontSize: 10, fontFamily: typography.subTopicFont, color: DP.primaryDark, fontWeight: '700', marginTop: 3 },
+  actCard: { borderRadius: 20, marginBottom: 10, overflow: 'hidden', borderWidth: 1, borderColor: DP.line, backgroundColor: DP.card, ...DS.card },
+  actGrad: { flexDirection: 'row', alignItems: 'center', padding: 14, backgroundColor: DP.card },
+  actIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: DP.lav, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  actIcon: { fontSize: 24 },
   actInfo: { flex: 1 },
-  actTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700' },
-  actDesc: { fontSize: 12, fontFamily: typography.bodyFont, color: '#6A4D77', marginTop: 2 },
-  primaryGameCard: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.xl, padding: spacing.md, marginBottom: 12, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EABDE6', ...shadows.card },
-  primaryGameIcon: { fontSize: 32, marginRight: 12 },
+  actTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.text },
+  actDesc: { fontSize: 12, fontFamily: typography.bodyFont, color: DP.muted, marginTop: 2, lineHeight: 17 },
+  primaryGameCard: { flexDirection: 'row', alignItems: 'center', borderRadius: 20, padding: 14, marginBottom: 10, backgroundColor: DP.card, borderWidth: 1, borderColor: DP.line, ...DS.card },
+  gameIconBox: { width: 44, height: 44, borderRadius: 14, backgroundColor: DP.lav, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  primaryGameIcon: { fontSize: 24 },
   primaryGameInfo: { flex: 1 },
-  primaryGameName: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#2C1A35' },
-  primaryGameSub: { fontSize: 11, fontFamily: typography.bodyFont, color: '#6A4D77', marginTop: 2 },
+  primaryGameName: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.text },
+  primaryGameSub: { fontSize: 12, fontFamily: typography.bodyFont, color: DP.muted, marginTop: 2 },
+  cardArrow: { fontSize: 16, color: DP.primaryDark, fontWeight: '700', marginLeft: 8 },
+  playBtnSmall: { width: 32, height: 32, borderRadius: 16, backgroundColor: DP.lav, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
+  playBtnIcon: { fontSize: 12, color: DP.primaryDark, marginLeft: 2 },
   videoThumb: {
     width: 80,
     height: 60,
-    borderRadius: 10,
+    borderRadius: 12,
     marginRight: 12,
   },
   playOverlay: {
     position: 'absolute',
     top: 18,
     left: 28,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    backgroundColor: 'rgba(44, 26, 53, 0.7)',
     borderRadius: 12,
     width: 24,
     height: 24,
@@ -1393,27 +1409,27 @@ const s = StyleSheet.create({
   videoDesc: {
     fontSize: 11,
     fontFamily: typography.bodyFont,
-    color: '#6A4D77',
-    marginTop: 4,
+    color: DP.muted,
+    marginTop: 3,
   },
   retryBtn: {
     marginTop: 10,
-    backgroundColor: '#AA60C8',
+    backgroundColor: DP.primaryDark,
     paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: radius.full,
+    paddingHorizontal: 18,
+    borderRadius: 999,
   },
   retryBtnText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontFamily: typography.subTopicFont,
+    fontFamily: typography.mediumFont,
     fontWeight: '700',
   },
   videoReasonChip: {
     alignSelf: 'flex-start',
-    backgroundColor: '#FFDFEF',
+    backgroundColor: DP.lav,
     borderWidth: 1,
-    borderColor: '#EABDE6',
+    borderColor: DP.line,
     borderRadius: 6,
     paddingVertical: 2,
     paddingHorizontal: 8,
@@ -1423,92 +1439,92 @@ const s = StyleSheet.create({
     fontSize: 10,
     fontFamily: typography.subTopicFont,
     fontWeight: '700',
-    color: '#AA60C8',
+    color: DP.primaryDark,
   },
   reasonNoticeCont: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    backgroundColor: '#FFF5FA',
-    borderWidth: 1.5,
-    borderColor: '#EABDE6',
-    borderRadius: 14,
-    padding: 12,
+    backgroundColor: DP.note,
+    borderWidth: 1,
+    borderColor: DP.noteLine,
+    borderRadius: 18,
+    padding: 14,
     marginBottom: 14,
     gap: 10,
   },
-  reasonNoticeIcon: { fontSize: 20 },
+  reasonNoticeIcon: { fontSize: 22 },
   reasonNoticeTitle: {
-    fontSize: 13,
-    fontFamily: typography.topicFont,
+    fontSize: 14,
+    fontFamily: typography.subTopicFont,
     fontWeight: '700',
-    color: '#AA60C8',
+    color: DP.text,
     marginBottom: 2,
   },
   reasonNoticeText: {
-    fontSize: 11,
+    fontSize: 12,
     fontFamily: typography.bodyFont,
-    color: '#6A4D77',
-    lineHeight: 17,
+    color: DP.muted,
+    lineHeight: 18,
   },
-  videoTabsScroll: { marginBottom: spacing.md },
-  videoSubTab: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: radius.full, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#EABDE6', marginRight: 6 },
-  videoSubTabActive: { backgroundColor: '#D69ADE', borderColor: '#D69ADE' },
-  videoSubTabLabel: { fontSize: 11, fontFamily: typography.subTopicFont, fontWeight: '600', color: '#6A4D77' },
-  videoSubTabLabelActive: { color: '#FFFFFF', fontWeight: '700' },
-  emptyBox: { backgroundColor: '#FFFFFF', borderRadius: radius.xl, padding: spacing.xl, alignItems: 'center', borderWidth: 1, borderColor: '#F5D3EE', ...shadows.soft },
+  videoTabsScroll: { marginBottom: 16 },
+  videoSubTab: { paddingVertical: 6, paddingHorizontal: 14, borderRadius: 999, backgroundColor: DP.card, borderWidth: 1, borderColor: DP.line, marginRight: 6 },
+  videoSubTabActive: { backgroundColor: DP.lav, borderColor: DP.primaryDark },
+  videoSubTabLabel: { fontSize: 11, fontFamily: typography.mediumFont, fontWeight: '600', color: DP.muted },
+  videoSubTabLabelActive: { color: DP.primaryDark, fontWeight: '700' },
+  emptyBox: { backgroundColor: DP.card, borderRadius: 22, padding: 24, alignItems: 'center', borderWidth: 1, borderColor: DP.line, ...DS.card },
   emptyEmoji: { fontSize: 36, marginBottom: 10 },
-  emptyText: { fontSize: 14, fontFamily: typography.bodyFont, color: '#6A4D77', textAlign: 'center', lineHeight: 22 },
-  feedbackCard: { backgroundColor: '#FFFFFF', borderRadius: radius.xl, padding: spacing.md, marginTop: 14, alignItems: 'center', borderWidth: 1, borderColor: '#EABDE6', ...shadows.soft },
-  feedbackTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#2C1A35', marginBottom: 10 },
+  emptyText: { fontSize: 14, fontFamily: typography.bodyFont, color: DP.muted, textAlign: 'center', lineHeight: 22 },
+  feedbackCard: { backgroundColor: DP.card, borderRadius: 22, padding: 16, marginTop: 14, alignItems: 'center', borderWidth: 1, borderColor: DP.line, ...DS.card },
+  feedbackTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.text, marginBottom: 10 },
   feedbackBtnRow: { flexDirection: 'row', gap: 12 },
-  feedbackBtn: { backgroundColor: '#FFDFEF', paddingVertical: 8, paddingHorizontal: 16, borderRadius: radius.full, borderWidth: 1, borderColor: '#EABDE6' },
-  feedbackBtnNo: { backgroundColor: '#FFF0F7', borderColor: '#EABDE6' },
-  feedbackBtnText: { color: '#AA60C8', fontFamily: typography.subTopicFont, fontWeight: '700', fontSize: 12 },
-  feedbackBtnTextNo: { color: '#873CA6', fontFamily: typography.subTopicFont, fontWeight: '700', fontSize: 12 },
-  feedbackSavedText: { color: '#AA60C8', fontFamily: typography.subTopicFont, fontWeight: '700', fontSize: 12 },
+  feedbackBtn: { backgroundColor: DP.lav, paddingVertical: 8, paddingHorizontal: 18, borderRadius: 999, borderWidth: 1, borderColor: DP.line },
+  feedbackBtnNo: { backgroundColor: DP.note, borderColor: DP.noteLine },
+  feedbackBtnText: { color: DP.primaryDark, fontFamily: typography.mediumFont, fontWeight: '700', fontSize: 12 },
+  feedbackBtnTextNo: { color: DP.blushText, fontFamily: typography.mediumFont, fontWeight: '700', fontSize: 12 },
+  feedbackSavedText: { color: DP.primaryDark, fontFamily: typography.mediumFont, fontWeight: '700', fontSize: 12 },
   // Modal Styles
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(44, 26, 53, 0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalCard: { backgroundColor: '#FFFFFF', borderRadius: radius.xl, padding: 22, width: '100%', maxWidth: 400, borderWidth: 1, borderColor: '#EABDE6', ...shadows.card },
-  modalTitle: { fontSize: 18, fontFamily: typography.topicFont, fontWeight: '700', color: '#AA60C8', marginBottom: 4 },
-  modalSub: { fontSize: 12, fontFamily: typography.bodyFont, color: '#6A4D77', marginBottom: 16 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(44, 26, 53, 0.45)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalCard: { backgroundColor: DP.card, borderRadius: 24, padding: 22, width: '100%', maxWidth: 420, borderWidth: 1, borderColor: DP.line, ...DS.card },
+  modalTitle: { fontSize: 19, fontFamily: SERIF, fontWeight: '700', color: DP.text, marginBottom: 4 },
+  modalSub: { fontSize: 13, fontFamily: typography.bodyFont, color: DP.muted, marginBottom: 16 },
   emojiGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16, justifyContent: 'center' },
-  emojiCard: { width: '29%', backgroundColor: '#FAF2FA', borderRadius: radius.lg, padding: 8, alignItems: 'center', borderWidth: 1, borderColor: '#EABDE6' },
-  emojiCardSel: { backgroundColor: '#FFDFEF', borderColor: '#AA60C8', borderWidth: 2 },
+  emojiCard: { width: '29%', backgroundColor: DP.side, borderRadius: 16, padding: 10, alignItems: 'center', borderWidth: 1, borderColor: DP.line },
+  emojiCardSel: { backgroundColor: DP.lav, borderColor: DP.primaryDark, borderWidth: 1.5 },
   emojiCardText: { fontSize: 26 },
-  emojiCardLabel: { fontSize: 10, fontFamily: typography.subTopicFont, fontWeight: '700', marginTop: 4, color: '#2C1A35' },
-  reasonOption: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: radius.lg, backgroundColor: '#FAF2FA', marginBottom: 6, borderWidth: 1, borderColor: '#F5D3EE' },
-  reasonOptionSel: { backgroundColor: '#AA60C8', borderColor: '#AA60C8' },
-  reasonText: { fontSize: 13, fontFamily: typography.bodyFont, color: '#2C1A35', fontWeight: '600' },
+  emojiCardLabel: { fontSize: 11, fontFamily: typography.mediumFont, fontWeight: '700', marginTop: 4, color: DP.text },
+  reasonOption: { paddingVertical: 11, paddingHorizontal: 14, borderRadius: 14, backgroundColor: DP.side, marginBottom: 6, borderWidth: 1, borderColor: DP.line },
+  reasonOptionSel: { backgroundColor: DP.primaryDark, borderColor: DP.primaryDark },
+  reasonText: { fontSize: 13, fontFamily: typography.bodyFont, color: DP.text, fontWeight: '500' },
   reasonTextSel: { color: '#FFFFFF', fontWeight: '700' },
-  helpOption: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: radius.md, marginBottom: 6, backgroundColor: '#FAF2FA', borderWidth: 1, borderColor: '#F5D3EE' },
-  helpOptionSel: { backgroundColor: '#FFDFEF', borderColor: '#EABDE6' },
-  checkboxText: { fontSize: 16, marginRight: 8, color: '#AA60C8' },
-  helpOptionLabel: { fontSize: 12, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#2C1A35' },
+  helpOption: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, marginBottom: 6, backgroundColor: DP.side, borderWidth: 1, borderColor: DP.line },
+  helpOptionSel: { backgroundColor: DP.lav, borderColor: DP.primaryDark },
+  checkboxText: { fontSize: 16, marginRight: 8, color: DP.primaryDark },
+  helpOptionLabel: { fontSize: 12, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.text },
   modalActionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 },
-  modalNextBtn: { backgroundColor: '#AA60C8', paddingVertical: 10, paddingHorizontal: 18, borderRadius: radius.full, alignSelf: 'flex-end' },
-  modalNextBtnText: { color: '#FFFFFF', fontFamily: typography.subTopicFont, fontWeight: '700', fontSize: 13 },
+  modalNextBtn: { backgroundColor: DP.primaryDark, paddingVertical: 10, paddingHorizontal: 20, borderRadius: 999 },
+  modalNextBtnText: { color: '#FFFFFF', fontFamily: typography.mediumFont, fontWeight: '700', fontSize: 13 },
   modalBackBtn: { paddingVertical: 10, paddingHorizontal: 10 },
-  modalBackBtnText: { color: '#9E7FA9', fontFamily: typography.subTopicFont, fontWeight: '600', fontSize: 13 },
+  modalBackBtnText: { color: DP.muted, fontFamily: typography.mediumFont, fontWeight: '600', fontSize: 13 },
   skipBtn: { paddingVertical: 10, paddingHorizontal: 10 },
-  skipBtnText: { color: '#AA60C8', fontFamily: typography.subTopicFont, fontWeight: '700', fontSize: 12 },
+  skipBtnText: { color: DP.primaryDark, fontFamily: typography.mediumFont, fontWeight: '700', fontSize: 12 },
   stepIndicatorRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  stepIndicatorText: { fontSize: 11, fontFamily: typography.subTopicFont, fontWeight: '700', color: '#AA60C8', backgroundColor: '#FFDFEF', paddingVertical: 4, paddingHorizontal: 12, borderRadius: radius.full },
-  closeModalText: { fontSize: 16, color: '#9E7FA9', paddingHorizontal: 6, fontWeight: '800' },
-  supportiveNotice: { fontSize: 12, fontFamily: typography.bodyFont, color: '#AA60C8', fontWeight: '600', backgroundColor: '#FFDFEF', padding: 12, borderRadius: radius.md, marginBottom: 14, textAlign: 'center', borderWidth: 1, borderColor: '#EABDE6' },
+  stepIndicatorText: { fontSize: 11, fontFamily: typography.mediumFont, fontWeight: '700', color: DP.primaryDark, backgroundColor: DP.lav, paddingVertical: 4, paddingHorizontal: 12, borderRadius: 999 },
+  closeModalText: { fontSize: 16, color: DP.muted, paddingHorizontal: 6, fontWeight: '800' },
+  supportiveNotice: { fontSize: 13, fontFamily: typography.bodyFont, color: DP.primaryDark, fontWeight: '600', backgroundColor: DP.lav, padding: 12, borderRadius: 16, marginBottom: 14, textAlign: 'center', borderWidth: 1, borderColor: DP.line },
   featuredVideoCont: {
-    backgroundColor: '#FFF5FA',
-    borderRadius: radius.xl,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1.5,
-    borderColor: '#EABDE6',
-    ...shadows.soft,
+    backgroundColor: DP.note,
+    borderRadius: 22,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: DP.noteLine,
+    ...DS.soft,
   },
   featuredVideoHeader: {
     fontSize: 11,
-    fontFamily: typography.topicFont,
+    fontFamily: typography.subTopicFont,
     fontWeight: '700',
-    color: '#AA60C8',
+    color: DP.primaryDark,
     marginBottom: 8,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -1520,7 +1536,7 @@ const s = StyleSheet.create({
   featuredVideoThumb: {
     width: 90,
     height: 68,
-    borderRadius: 10,
+    borderRadius: 12,
     marginRight: 12,
   },
   featuredVideoInfo: {
@@ -1530,26 +1546,26 @@ const s = StyleSheet.create({
     fontSize: 13,
     fontFamily: typography.subTopicFont,
     fontWeight: '700',
-    color: '#2C1A35',
+    color: DP.text,
     lineHeight: 18,
   },
   featuredVideoDesc: {
     fontSize: 11,
     fontFamily: typography.bodyFont,
-    color: '#6A4D77',
+    color: DP.muted,
     marginTop: 3,
     lineHeight: 15,
   },
   warningCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    backgroundColor: DP.card,
+    borderRadius: 24,
     padding: 24,
     width: '100%',
-    maxWidth: 350,
+    maxWidth: 360,
     alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#EABDE6',
-    ...shadows.card,
+    borderWidth: 1,
+    borderColor: DP.line,
+    ...DS.card,
   },
   warningIcon: {
     fontSize: 36,
@@ -1557,31 +1573,31 @@ const s = StyleSheet.create({
   },
   warningTitle: {
     fontSize: 18,
-    fontFamily: typography.topicFont,
+    fontFamily: SERIF,
     fontWeight: '700',
-    color: '#AA60C8',
+    color: DP.text,
     marginBottom: 8,
     textAlign: 'center',
   },
   warningText: {
     fontSize: 13,
     fontFamily: typography.bodyFont,
-    color: '#6A4D77',
+    color: DP.muted,
     textAlign: 'center',
     marginBottom: 20,
     lineHeight: 20,
   },
   warningBtn: {
-    backgroundColor: '#AA60C8',
+    backgroundColor: DP.primaryDark,
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: radius.full,
+    borderRadius: 999,
     width: '100%',
     alignItems: 'center',
   },
   warningBtnText: {
     color: '#FFFFFF',
-    fontFamily: typography.subTopicFont,
+    fontFamily: typography.mediumFont,
     fontWeight: '700',
     fontSize: 14,
   },

@@ -18,6 +18,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, radius, shadows, typography } from '../theme';
+import { DASHBOARD_PALETTE as DP, SERIF, DASHBOARD_SHADOWS as DS } from '../theme/dashboardTokens';
 import { useResponsive } from '../hooks/useResponsive';
 import ScreenContainer from '../components/ScreenContainer';
 import {
@@ -116,7 +117,7 @@ const GamesLibraryScreen = ({ navigation }) => {
 
   return (
     <ScreenContainer
-      gradient={['#F8F4FF', '#FFF0F8', '#F5FBFF']}
+      style={{ backgroundColor: DP.bg }}
       edges={['top']}
       contentContainerStyle={{ paddingTop: 8, paddingBottom: 40 }}
     >
@@ -190,7 +191,7 @@ const GamesLibraryScreen = ({ navigation }) => {
               ? 'නමින්, කාණ්ඩයෙන් හෝ විස්තරයෙන් ක්‍රීඩා සොයන්න...'
               : 'Search games by name, category, or type...'
           }
-          placeholderTextColor={colors.textMuted}
+          placeholderTextColor={DP.textMuted}
           value={searchQuery}
           onChangeText={setSearchQuery}
           clearButtonMode="while-editing"
@@ -219,32 +220,15 @@ const GamesLibraryScreen = ({ navigation }) => {
                 activeOpacity={0.8}
                 style={[s.categoryChip, isSelected && s.categoryChipSelected]}
               >
-                {isSelected ? (
-                  <LinearGradient
-                    colors={['#8E24AA', '#D81B60']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={s.categoryChipGradient}
-                  >
-                    <Text style={s.categoryIcon}>{cat.icon}</Text>
-                    <Text style={s.categoryTitleSelected}>
-                      {isSinhala ? cat.titleSi : cat.titleEn}
-                    </Text>
-                    <View style={s.countBadgeSelected}>
-                      <Text style={s.countTextSelected}>{count}</Text>
-                    </View>
-                  </LinearGradient>
-                ) : (
-                  <View style={s.categoryChipInner}>
-                    <Text style={s.categoryIcon}>{cat.icon}</Text>
-                    <Text style={s.categoryTitle}>
-                      {isSinhala ? cat.titleSi : cat.titleEn}
-                    </Text>
-                    <View style={s.countBadge}>
-                      <Text style={s.countText}>{count}</Text>
-                    </View>
+                <View style={s.categoryChipInner}>
+                  <Text style={s.categoryIcon}>{cat.icon}</Text>
+                  <Text style={[s.categoryTitle, isSelected && s.categoryTitleSelected]}>
+                    {isSinhala ? cat.titleSi : cat.titleEn}
+                  </Text>
+                  <View style={[s.countBadge, isSelected && s.countBadgeSelected]}>
+                    <Text style={[s.countText, isSelected && s.countTextSelected]}>{count}</Text>
                   </View>
-                )}
+                </View>
               </TouchableOpacity>
             );
           })}
@@ -253,13 +237,10 @@ const GamesLibraryScreen = ({ navigation }) => {
 
       {/* Active Category Description Banner */}
       <View style={s.categoryBanner}>
-        <LinearGradient
-          colors={['#EDE7F6', '#FFF0F8']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={s.categoryBannerInner}
-        >
-          <Text style={s.bannerIcon}>{currentCategoryInfo.icon}</Text>
+        <View style={s.categoryBannerInner}>
+          <View style={s.bannerEmojiBox}>
+            <Text style={s.bannerIcon}>{currentCategoryInfo.icon}</Text>
+          </View>
           <View style={s.bannerTextCol}>
             <Text style={s.bannerTitle}>
               {isSinhala ? currentCategoryInfo.titleSi : currentCategoryInfo.titleEn}
@@ -272,7 +253,7 @@ const GamesLibraryScreen = ({ navigation }) => {
               {isSinhala ? currentCategoryInfo.descSi : currentCategoryInfo.descEn}
             </Text>
           </View>
-        </LinearGradient>
+        </View>
       </View>
 
       {/* Games List Section */}
@@ -319,33 +300,30 @@ const GamesLibraryScreen = ({ navigation }) => {
                 onPress={() => handleLaunchGame(game)}
                 activeOpacity={game.isPlayable ? 0.88 : 0.95}
               >
-                {/* Left Icon Box with gradient background */}
-                <LinearGradient
-                  colors={game.color || ['#EDE7F6', '#D1C4E9']}
-                  style={s.gameIconBox}
-                >
+                {/* Left Icon Box with soft lavender background */}
+                <View style={s.gameIconBox}>
                   <Text style={s.gameIconText}>{game.icon || '🎮'}</Text>
-                </LinearGradient>
+                </View>
 
                 {/* Middle Content */}
                 <View style={s.gameInfo}>
                   {/* Top Badges Row */}
                   <View style={s.metaRowTop}>
-                    <View style={[s.badgePill, { backgroundColor: '#F3E5F5' }]}>
-                      <Text style={[s.badgePillText, { color: '#8E24AA' }]}>
+                    <View style={[s.badgePill, { backgroundColor: DP.lav }]}>
+                      <Text style={[s.badgePillText, { color: DP.primaryDark }]}>
                         {categoryName}
                       </Text>
                     </View>
 
                     {game.isPlayable ? (
-                      <View style={[s.badgePill, { backgroundColor: '#E8F5E9' }]}>
-                        <Text style={[s.badgePillText, { color: '#2E7D32' }]}>
+                      <View style={[s.badgePill, { backgroundColor: DP.sage }]}>
+                        <Text style={[s.badgePillText, { color: DP.sageDark }]}>
                           {isSinhala ? '🎮 සූදානම්' : '🎮 Playable'}
                         </Text>
                       </View>
                     ) : (
-                      <View style={[s.badgePill, { backgroundColor: '#FFF3E0' }]}>
-                        <Text style={[s.badgePillText, { color: '#E65100' }]}>
+                      <View style={[s.badgePill, { backgroundColor: DP.blush }]}>
+                        <Text style={[s.badgePillText, { color: DP.primaryDark }]}>
                           {isSinhala ? '⚠️ නොපවතී' : '⚠️ Missing'}
                         </Text>
                       </View>
@@ -371,7 +349,7 @@ const GamesLibraryScreen = ({ navigation }) => {
 
                   {/* Bottom Row: Action button */}
                   <View style={s.cardBottomRow}>
-                    <Text style={[s.cardStatusText, { color: game.isPlayable ? '#2E7D32' : '#9E9E9E' }]}>
+                    <Text style={[s.cardStatusText, { color: game.isPlayable ? DP.sageDark : DP.textMuted }]}>
                       {game.isPlayable
                         ? (isSinhala ? 'ක්ෂණිකව ක්‍රීඩා කළ හැක' : 'Ready to play now')
                         : (isSinhala ? 'ක්‍රියාත්මක කර නොමැත' : 'Implementation missing')}
@@ -379,19 +357,14 @@ const GamesLibraryScreen = ({ navigation }) => {
 
                     <View style={s.actionButton}>
                       {game.isPlayable ? (
-                        <LinearGradient
-                          colors={['#8E24AA', '#D81B60']}
-                          start={{ x: 0, y: 0 }}
-                          end={{ x: 1, y: 0 }}
-                          style={s.actionButtonInner}
-                        >
+                        <View style={[s.actionButtonInner, { backgroundColor: DP.primaryDark }]}>
                           <Text style={s.actionButtonText}>
                             {isSinhala ? 'ක්‍රීඩා කරන්න →' : 'Play →'}
                           </Text>
-                        </LinearGradient>
+                        </View>
                       ) : (
-                        <View style={[s.actionButtonInner, { backgroundColor: '#E0E0E0' }]}>
-                          <Text style={[s.actionButtonText, { color: '#757575' }]}>
+                        <View style={[s.actionButtonInner, { backgroundColor: '#EDE4EE' }]}>
+                          <Text style={[s.actionButtonText, { color: DP.textMuted }]}>
                             {isSinhala ? 'නොපවතී' : 'Unavailable'}
                           </Text>
                         </View>
@@ -416,30 +389,34 @@ const s = StyleSheet.create({
     marginBottom: spacing.md,
   },
   backBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 2,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: DP.border,
     alignSelf: 'flex-start',
   },
   backText: {
-    color: colors.lavenderDark,
+    color: DP.primaryDark,
     fontFamily: typography ? typography.subTopicFont : 'sans-serif',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 14,
   },
   langToggleBtn: {
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: radius.full,
+    paddingVertical: 7,
+    borderRadius: 999,
     borderWidth: 1,
-    borderColor: colors.lavenderMid,
-    ...shadows.soft,
+    borderColor: DP.border,
+    ...DS.card,
   },
   langToggleText: {
     fontSize: 13,
     fontFamily: typography ? typography.subTopicFont : 'sans-serif',
     fontWeight: '700',
-    color: colors.lavenderDark,
+    color: DP.primaryDark,
   },
 
   headerSection: {
@@ -450,75 +427,81 @@ const s = StyleSheet.create({
     alignItems: 'center',
   },
   pageTitle: {
-    fontSize: 26,
-    fontWeight: '900',
-    color: colors.textPrimary,
+    fontSize: 24,
+    fontWeight: '700',
+    fontFamily: SERIF,
+    color: DP.textDark,
+    letterSpacing: 0.2,
   },
   headerIcon: {
-    fontSize: 24,
+    fontSize: 22,
     marginLeft: 8,
   },
   pageSubtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 21,
+    fontSize: 13,
+    color: DP.textMuted,
+    lineHeight: 18,
     marginTop: 4,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
 
   statsStrip: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    borderRadius: 20,
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: '#E8D5F5',
+    borderColor: DP.border,
     alignItems: 'center',
     justifyContent: 'space-around',
-    ...shadows.soft,
+    ...DS.card,
   },
   statItem: {
     alignItems: 'center',
   },
   statNumber: {
     fontSize: 20,
-    fontWeight: '900',
-    color: '#8E24AA',
+    fontWeight: '700',
+    color: DP.primaryDark,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
   statLabel: {
     fontSize: 11,
-    fontWeight: '700',
-    color: colors.textSecondary,
+    fontWeight: '600',
+    color: DP.textMuted,
     marginTop: 2,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   statDivider: {
     width: 1,
-    height: 28,
-    backgroundColor: '#E8D5F5',
+    height: 26,
+    backgroundColor: DP.border,
   },
 
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
+    borderRadius: 999,
     paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingVertical: 8,
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: '#E8D5F5',
-    ...shadows.soft,
+    borderColor: DP.border,
+    ...DS.card,
   },
   searchIcon: {
-    fontSize: 17,
+    fontSize: 15,
     marginRight: 8,
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
-    color: colors.textPrimary,
+    color: DP.textDark,
     paddingVertical: 2,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   clearBtn: {
     paddingHorizontal: 6,
@@ -526,7 +509,7 @@ const s = StyleSheet.create({
   },
   clearBtnText: {
     fontSize: 14,
-    color: colors.textMuted,
+    color: DP.textMuted,
     fontWeight: '700',
   },
 
@@ -538,131 +521,141 @@ const s = StyleSheet.create({
     gap: 8,
   },
   categoryChip: {
-    borderRadius: radius.full,
+    borderRadius: 999,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#E6D3F5',
+    borderColor: DP.border,
     overflow: 'hidden',
-    ...shadows.soft,
+    ...DS.card,
   },
   categoryChipSelected: {
-    borderColor: 'transparent',
+    borderColor: DP.primaryDark,
+    backgroundColor: DP.primaryDark,
   },
   categoryChipInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  categoryChipGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 13,
+    paddingVertical: 7,
   },
   categoryIcon: {
-    fontSize: 15,
+    fontSize: 14,
     marginRight: 6,
   },
   categoryTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: colors.textPrimary,
+    fontSize: 12,
+    fontWeight: '600',
+    color: DP.textDark,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
   categoryTitleSelected: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 12,
+    fontWeight: '700',
     color: '#FFFFFF',
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
   countBadge: {
-    backgroundColor: '#F3E5F5',
+    backgroundColor: DP.lav,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: radius.full,
+    borderRadius: 999,
     marginLeft: 6,
   },
   countText: {
     fontSize: 11,
-    fontWeight: '800',
-    color: '#7E57C2',
+    fontWeight: '700',
+    color: DP.primaryDark,
   },
   countBadgeSelected: {
     backgroundColor: 'rgba(255,255,255,0.25)',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: radius.full,
+    borderRadius: 999,
     marginLeft: 6,
   },
   countTextSelected: {
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '700',
     color: '#FFFFFF',
   },
 
   categoryBanner: {
-    borderRadius: radius.xl,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
     overflow: 'hidden',
     marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: '#E8D5F5',
-    ...shadows.soft,
+    borderColor: DP.border,
+    ...DS.card,
   },
   categoryBannerInner: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.md,
   },
-  bannerIcon: {
-    fontSize: 32,
+  bannerEmojiBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: DP.lav,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 12,
+  },
+  bannerIcon: {
+    fontSize: 24,
   },
   bannerTextCol: {
     flex: 1,
   },
   bannerTitle: {
     fontSize: 15,
-    fontWeight: '800',
-    color: '#6A1B9A',
+    fontWeight: '700',
+    color: DP.textDark,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
   bannerGameCount: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
-    color: '#8E24AA',
+    color: DP.primaryDark,
+    marginTop: 2,
   },
   bannerDesc: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: DP.textMuted,
     marginTop: 2,
-    lineHeight: 17,
+    lineHeight: 16,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
 
   gamesSection: {
-    gap: 12,
+    gap: 10,
   },
   gameCard: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
-    padding: 12,
+    borderRadius: 20,
+    padding: 13,
     borderWidth: 1,
-    borderColor: '#F0E0F8',
-    ...shadows.card,
+    borderColor: DP.border,
+    ...DS.card,
   },
   gameCardDisabled: {
-    opacity: 0.78,
-    borderColor: '#E0E0E0',
+    opacity: 0.72,
+    borderColor: '#EFE4EE',
   },
   gameIconBox: {
-    width: 60,
-    height: 60,
-    borderRadius: radius.lg,
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: DP.lav,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     alignSelf: 'flex-start',
   },
   gameIconText: {
-    fontSize: 30,
+    fontSize: 24,
   },
   gameInfo: {
     flex: 1,
@@ -676,29 +669,32 @@ const s = StyleSheet.create({
   badgePill: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: radius.full,
+    borderRadius: 999,
   },
   badgePillText: {
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   gameTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '700',
+    color: DP.textDark,
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
   gameSubtitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.textMuted,
+    color: DP.textMuted,
     marginBottom: 2,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   gameDesc: {
     fontSize: 12,
-    color: colors.textSecondary,
-    lineHeight: 18,
+    color: DP.textMuted,
+    lineHeight: 17,
     marginTop: 2,
     marginBottom: 8,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   cardBottomRow: {
     flexDirection: 'row',
@@ -708,65 +704,68 @@ const s = StyleSheet.create({
   },
   cardStatusText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '600',
     flex: 1,
   },
   actionButton: {
-    borderRadius: radius.full,
+    borderRadius: 999,
     overflow: 'hidden',
-    ...shadows.soft,
   },
   actionButtonInner: {
     paddingHorizontal: 14,
     paddingVertical: 6,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 999,
   },
   actionButtonText: {
     color: '#FFFFFF',
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: '700',
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
 
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: radius.xl,
-    padding: 30,
+    borderRadius: 20,
+    padding: 26,
     borderWidth: 1,
-    borderColor: '#E8D5F5',
+    borderColor: DP.border,
     marginVertical: 10,
-    ...shadows.soft,
+    ...DS.card,
   },
   emptyEmoji: {
-    fontSize: 48,
-    marginBottom: 10,
+    fontSize: 40,
+    marginBottom: 8,
   },
   emptyTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: colors.textPrimary,
+    fontSize: 15,
+    fontWeight: '700',
+    color: DP.textDark,
     marginBottom: 4,
     textAlign: 'center',
+    fontFamily: typography ? typography.subTopicFont : 'sans-serif',
   },
   emptySub: {
-    fontSize: 13,
-    color: colors.textSecondary,
+    fontSize: 12,
+    color: DP.textMuted,
     textAlign: 'center',
-    lineHeight: 19,
-    marginBottom: 16,
+    lineHeight: 17,
+    marginBottom: 14,
+    fontFamily: typography ? typography.bodyFont : 'sans-serif',
   },
   resetBtn: {
-    backgroundColor: '#EDE7F6',
+    backgroundColor: DP.lav,
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: radius.full,
+    paddingVertical: 8,
+    borderRadius: 999,
   },
   resetBtnText: {
-    color: '#7E57C2',
-    fontSize: 13,
-    fontWeight: '800',
+    color: DP.primaryDark,
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
 
