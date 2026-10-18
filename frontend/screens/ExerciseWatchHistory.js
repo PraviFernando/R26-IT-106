@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
     View, Text, TouchableOpacity, StyleSheet, ActivityIndicator,
-    Image, TextInput, Alert, Modal, Platform
+    Image, TextInput, Alert, Modal, Platform, useWindowDimensions
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import exerciseService from '../services/exerciseService';
@@ -60,6 +60,7 @@ const getEmbedUrl = (item, startPct) => {
 };
 
 export default function ExerciseWatchHistory({ isSinhala }) {
+    const { width } = useWindowDimensions();
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(false);
@@ -233,13 +234,14 @@ export default function ExerciseWatchHistory({ isSinhala }) {
 
     return (
         <View style={styles.container}>
+            <Text style={[styles.pageTitle, { fontSize: width > 900 ? 34 : 24, lineHeight: width > 900 ? 40 : 30 }]}>{isSinhala ? 'නැරඹූ ඉතිහාසය' : 'Watch history'}</Text>
             <View style={styles.toolbar}>
                 <TextInput
                     style={styles.search}
                     value={search}
                     onChangeText={setSearch}
-                    placeholder={isSinhala ? '🔍 ඉතිහාසය සොයන්න' : '🔍 Search watch history'}
-                    placeholderTextColor="#94A3B8"
+                    placeholder={isSinhala ? 'ඉතිහාසය සොයන්න' : 'Search your watched videos'}
+                    placeholderTextColor={C.textSub}
                 />
                 {items.length > 0 && (
                     <TouchableOpacity onPress={clearAll} style={styles.clearBtn}>
@@ -249,7 +251,7 @@ export default function ExerciseWatchHistory({ isSinhala }) {
             </View>
 
             {loading ? (
-                <ActivityIndicator size="large" color="#4F46E5" style={{ marginTop: 40 }} />
+                <ActivityIndicator size="large" color={C.primary} style={{ marginTop: 40 }} />
             ) : items.length === 0 ? (
                 <View style={styles.empty}>
                     <View style={styles.emptyIcon}><Icon name="clock" size={30} color={C.primaryDark} /></View>
@@ -277,7 +279,7 @@ export default function ExerciseWatchHistory({ isSinhala }) {
                     {hasMore && (
                         <TouchableOpacity style={styles.moreBtn} onPress={() => load(page + 1)} disabled={loadingMore}>
                             {loadingMore
-                                ? <ActivityIndicator color="#4F46E5" />
+                                ? <ActivityIndicator color={C.primary} />
                                 : <Text style={styles.moreText}>{isSinhala ? 'තවත් පෙන්වන්න' : 'Load more'}</Text>}
                         </TouchableOpacity>
                     )}
@@ -325,48 +327,49 @@ export default function ExerciseWatchHistory({ isSinhala }) {
 
 const styles = StyleSheet.create({
     container: { marginTop: 4 },
-    toolbar: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' },
+    pageTitle: { ...T.heading, color: C.text, marginBottom: 14 },
+    toolbar: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20, flexWrap: 'wrap' },
     search: {
-        flex: 1, minWidth: 220, minHeight: 46, backgroundColor: '#FFFFFF', borderRadius: 23, borderWidth: 1.5, borderColor: C.control,
-        paddingHorizontal: 16, fontSize: 14, ...T.medium, color: C.text
+        flex: 1, minWidth: 220, maxWidth: 560, minHeight: 50, backgroundColor: '#FFFFFF', borderRadius: 999, borderWidth: 1, borderColor: C.control,
+        paddingHorizontal: 20, fontSize: 15, ...T.body, color: C.text
     },
-    clearBtn: { minHeight: 46, paddingHorizontal: 16, borderRadius: 23, backgroundColor: C.dangerBg, justifyContent: 'center' },
-    clearText: { color: C.danger, ...T.bold, fontSize: 13 },
-    groupLabel: { fontSize: 15, ...T.headingSemi, color: C.textSub, marginBottom: 10, marginTop: 6 },
+    clearBtn: { minHeight: 46, paddingHorizontal: 20, borderRadius: 999, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.secondary, justifyContent: 'center' },
+    clearText: { color: C.primaryDark, ...T.semi, fontSize: 14 },
+    groupLabel: { fontSize: 13, ...T.semi, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12, marginTop: 8 },
     card: {
-        flexDirection: 'row', gap: 12, marginBottom: 12, padding: 10, borderRadius: 20, alignItems: 'center',
-        backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border, ...cardShadow
+        flexDirection: 'row', gap: 14, marginBottom: 12, padding: 12, borderRadius: 20, alignItems: 'center',
+        backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border
     },
-    thumbWrap: { width: 132, aspectRatio: 16 / 9, borderRadius: 14, overflow: 'hidden', backgroundColor: C.control },
+    thumbWrap: { width: 140, aspectRatio: 16 / 9, borderRadius: 14, overflow: 'hidden', backgroundColor: C.lilac },
     thumb: { width: '100%', height: '100%' },
-    thumbPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: C.tint },
+    thumbPlaceholder: { alignItems: 'center', justifyContent: 'center', backgroundColor: C.lilac },
     durationBadge: {
         position: 'absolute', right: 6, bottom: 9, backgroundColor: 'rgba(44,26,53,0.8)',
         paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6
     },
     durationText: { color: '#FFFFFF', fontSize: 10, ...T.bold },
     progressTrack: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 5, backgroundColor: 'rgba(255,255,255,0.6)' },
-    progressFill: { height: '100%', backgroundColor: C.primaryDark },
+    progressFill: { height: '100%', backgroundColor: C.primary },
     info: { flex: 1, justifyContent: 'center', gap: 3 },
-    title: { fontSize: 14, ...T.semi, color: C.text },
+    title: { fontSize: 15, lineHeight: 21, ...T.semi, color: C.text },
     meta: { fontSize: 12, ...T.medium, color: C.textSub },
     badgeRow: { flexDirection: 'row', marginTop: 4 },
-    badge: { backgroundColor: C.tint, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10 },
+    badge: { backgroundColor: C.lilac, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 },
     badgeDone: { backgroundColor: C.successBg },
     badgeText: { fontSize: 11, ...T.bold, color: C.primaryDark },
     removeBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', alignSelf: 'center' },
     removeIcon: { fontSize: 14, color: C.textSub },
     empty: { alignItems: 'center', paddingVertical: 40, gap: 6 },
-    emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.tint, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+    emptyIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.lilac, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
     emptyEmoji: { fontSize: 44, marginBottom: 10 },
-    emptyTitle: { fontSize: 17, ...T.heading, color: C.text },
+    emptyTitle: { fontSize: 16, ...T.headingSemi, color: C.text },
     emptySub: { fontSize: 13, ...T.medium, color: C.textSub, textAlign: 'center' },
-    moreBtn: { alignItems: 'center', justifyContent: 'center', minHeight: 48, borderRadius: 24, borderWidth: 1.5, borderColor: C.primary, backgroundColor: '#FFFFFF', marginTop: 4 },
+    moreBtn: { alignItems: 'center', justifyContent: 'center', minHeight: 48, borderRadius: 999, borderWidth: 1, borderColor: C.secondary, backgroundColor: '#FFFFFF', marginTop: 4 },
     moreText: { color: C.primaryDark, ...T.bold },
     modalBackdrop: { flex: 1, backgroundColor: 'rgba(44,26,53,0.6)', justifyContent: 'center', padding: 16 },
     modalCard: { backgroundColor: C.bg, borderRadius: 24, overflow: 'hidden', width: '100%', maxWidth: 860, alignSelf: 'center' },
     modalHeader: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 10 },
-    modalTitle: { flex: 1, fontSize: 16, ...T.heading, color: C.text },
-    modalClose: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: C.control },
+    modalTitle: { flex: 1, fontSize: 16, lineHeight: 22, ...T.headingSemi, color: C.text },
+    modalClose: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.control },
     player: { width: '100%', aspectRatio: 16 / 9, backgroundColor: C.video }
 });

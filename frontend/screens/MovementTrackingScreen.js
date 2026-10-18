@@ -1195,7 +1195,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                     <View style={ms.sheet}>
                         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={ms.sheetContent}>
                             <View style={ms.doneHead}>
-                                <View style={ms.doneIcon}><Icon name="check" size={34} color={C.primaryDark} /></View>
+                                <View style={ms.doneIcon}><Icon name="check" size={34} color={C.success} /></View>
                                 <Text style={ms.doneTitle}>{tr('Exercise summary', 'ව්‍යායාම සාරාංශය')}</Text>
                                 <Text style={ms.doneText}>{getScoreFeedback(liveScore)}</Text>
                             </View>
@@ -1247,29 +1247,29 @@ export default function MovementTrackingScreen({ route, navigation }) {
 // Layout for the redesigned movement tracking screen (PeriCare exercise mockups)
 const ms = StyleSheet.create({
     header: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 12 },
-    title: { ...T.heading, fontSize: 18, color: C.text },
+    title: { ...T.heading, fontSize: 24, lineHeight: 30, color: C.text },
     statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     dot: { width: 8, height: 8, borderRadius: 4 },
     statusText: { ...T.semi, fontSize: 12, color: C.textSub },
-    timer: { ...T.heading, fontSize: 18, color: C.text, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14, overflow: 'hidden', fontVariant: ['tabular-nums'] },
-    lang: { minHeight: 44, minWidth: 44, paddingHorizontal: 10, borderRadius: 22, backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: C.control, alignItems: 'center', justifyContent: 'center' },
+    timer: { ...T.semi, fontSize: 18, color: C.primaryDark, backgroundColor: C.lilac, paddingHorizontal: 16, paddingVertical: 9, borderRadius: 999, overflow: 'hidden', fontVariant: ['tabular-nums'] },
+    lang: { minHeight: 40, minWidth: 44, paddingHorizontal: 14, borderRadius: 999, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center' },
     langText: { ...T.bold, fontSize: 13, color: C.primaryDark },
     scroll: { paddingHorizontal: 16, paddingBottom: 32, gap: 14, maxWidth: 1280, width: '100%', alignSelf: 'center' },
     split: { gap: 14 },
     splitWide: { flexDirection: 'row' },
     pane: { gap: 8 },
-    paneLabel: { ...T.bold, fontSize: 13, color: C.textSub },
+    paneLabel: { ...T.semi, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 1 },
     video: { borderRadius: 22, overflow: 'hidden', backgroundColor: C.video },
-    camera: { borderRadius: 22, overflow: 'hidden', backgroundColor: '#3A2547' },
+    camera: { borderRadius: 22, overflow: 'hidden', backgroundColor: '#2A1F30' },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     mutedOnDark: { ...T.semi, fontSize: 13, color: C.control, textAlign: 'center' },
     loading: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', gap: 10, zIndex: 2, backgroundColor: 'rgba(44,26,53,0.6)' },
-    overlayChip: { position: 'absolute', top: 12, backgroundColor: 'rgba(250,242,250,0.95)', borderRadius: 16, paddingHorizontal: 14, paddingVertical: 6, zIndex: 3 },
+    overlayChip: { position: 'absolute', top: 12, backgroundColor: 'rgba(255,255,255,0.94)', borderRadius: 16, paddingHorizontal: 14, paddingVertical: 6, zIndex: 3 },
     chipLabel: { ...T.bold, fontSize: 11, color: C.textSub },
     chipValue: { ...T.heading, fontSize: 24, color: C.text },
     warning: { position: 'absolute', left: 12, right: 12, bottom: 12, backgroundColor: C.warnBg, borderRadius: 14, padding: 10, zIndex: 3 },
     warningText: { ...T.semi, fontSize: 13, color: C.text, textAlign: 'center' },
-    feedback: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.tint, borderRadius: 20, padding: 14 },
+    feedback: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: C.lilac, borderRadius: 20, padding: 16 },
     feedbackText: { flex: 1, ...T.semi, fontSize: 15, lineHeight: 21, color: C.primaryDark },
     stats: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     stat: { flexBasis: 140, flexGrow: 1 },
@@ -1279,8 +1279,8 @@ const ms = StyleSheet.create({
     sheet: { width: '100%', maxWidth: 560, maxHeight: '96%', backgroundColor: C.bg, borderTopLeftRadius: 28, borderTopRightRadius: 28 },
     sheetContent: { padding: 20, gap: 14 },
     doneHead: { alignItems: 'center', gap: 8 },
-    doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: C.tint, alignItems: 'center', justifyContent: 'center' },
-    doneTitle: { ...T.heading, fontSize: 22, color: C.text },
+    doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: C.successBg, alignItems: 'center', justifyContent: 'center' },
+    doneTitle: { ...T.heading, fontSize: 24, color: C.text },
     doneText: { ...T.medium, fontSize: 14, color: C.textSub, textAlign: 'center' },
     q: { gap: 12 },
 });

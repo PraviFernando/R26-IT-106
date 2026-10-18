@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView, Platform } from 'react-native';
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView, Platform, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import exerciseService from '../services/exerciseService';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,7 +8,7 @@ import ExerciseShell from '../components/exercise/ExerciseShell';
 import ExerciseWatchHistory from './ExerciseWatchHistory';
 import { toLocalDateStr, todayStr } from '../utils/exerciseUtils';
 import { getTranslatedTrend, formatDays } from '../utils/exerciseMessages';
-import { BarChart, C, T, cardShadow, Card, GradientCard, SectionTitle, StatTile, CircleButton, Icon, useExerciseFonts } from '../components/exercise/ui';
+import { BarChart, C, T, cardShadow, Card, SoftCard, SectionTitle, StatTile, Icon, useExerciseFonts } from '../components/exercise/ui';
 
 
 // =====================================================================================
@@ -22,6 +22,7 @@ export default function ExerciseProgressScreen({ navigation, route }) {
     const { t, i18n } = useTranslation();
     const fontsReady = useExerciseFonts();
     const isSinhala = i18n.language === 'si';
+    const isWide = useWindowDimensions().width > 900;
 
     const filters = [
         { key: 'weekly', label: isSinhala ? 'සතිපතා' : 'Weekly' },
@@ -139,20 +140,6 @@ export default function ExerciseProgressScreen({ navigation, route }) {
         return <View style={pg.week}>{days}</View>;
     };
 
-    const header = (
-        <View style={pg.header}>
-            <CircleButton icon="back" onPress={() => navigation.goBack()} label={tr('Back', 'ආපසු')} />
-            <Text style={pg.headerTitle} numberOfLines={1}>{tr('Your progress', 'ඔබේ ප්‍රගතිය')}</Text>
-            <Pressable
-                onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')}
-                accessibilityRole="button"
-                accessibilityLabel={tr('Switch language', 'භාෂාව මාරු කරන්න')}
-                style={pg.lang}
-            >
-                <Text style={pg.langText}>{i18n.language === 'en' ? 'සිං' : 'EN'}</Text>
-            </Pressable>
-        </View>
-    );
 
     const trendData = progress ? getChartData(progress.progressData, selectedFilter) : [];
     const movementTrend = progress ? getChartData(progress.movementTrendData, selectedFilter) : [];
@@ -167,14 +154,13 @@ export default function ExerciseProgressScreen({ navigation, route }) {
             active={activeTab === 'history' ? 'history' : 'progress'}
             navigation={navigation}
             isSinhala={isSinhala}
-            header={header}
             onLocal={(key) => {
                 if (key === 'progress' || key === 'history') { setActiveTab(key); return true; }
                 return false;
             }}
           >
             <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-              <ContentWell maxWidth="wide">
+              <ContentWell maxWidth={1180}>
 
             {/* tab switch. history -> watch history list, otherwise the progress page below */}
             {activeTab === 'history' ? (
@@ -186,16 +172,17 @@ export default function ExerciseProgressScreen({ navigation, route }) {
                 </View>
             ) : progress ? (
                 <View style={pg.page}>
-                    <GradientCard style={{ gap: 14 }}>
+                    <Text style={[pg.pageTitle, { fontSize: isWide ? 34 : 24, lineHeight: isWide ? 40 : 30 }]}>{tr('Your progress', 'ඔබේ ප්‍රගතිය')}</Text>
+                    <SoftCard style={{ gap: 14 }}>
                         <View style={pg.streakRow}>
                             <View>
                                 <Text style={pg.streakLabel}>{tr('Current streak', 'වත්මන් අඛණ්ඩතාවය')}</Text>
                                 <Text style={pg.streakValue}>{formatDays(progress.currentStreak, isSinhala)}</Text>
                             </View>
-                            <Text style={pg.streakLabel}>{tr('Best', 'හොඳම')}: {formatDays(progress.bestStreak ?? 0, isSinhala)}</Text>
+                            <Text style={pg.streakBest}>{tr('Best', 'හොඳම')}: {formatDays(progress.bestStreak ?? 0, isSinhala)}</Text>
                         </View>
                         {renderWeekStrip()}
-                    </GradientCard>
+                    </SoftCard>
 
                     <View style={pg.stats}>
                         <StatTile value={`${progress.weeklyCompletionRate ?? 0}%`} label={tr('This week', 'මෙම සතිය')} style={pg.stat} />
@@ -274,11 +261,8 @@ export default function ExerciseProgressScreen({ navigation, route }) {
 
 // Layout for the redesigned progress screen (PeriCare exercise mockups)
 const pg = StyleSheet.create({
-    header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
-    headerTitle: { flex: 1, ...T.heading, fontSize: 22, color: C.text },
-    lang: { minHeight: 44, minWidth: 44, paddingHorizontal: 12, borderRadius: 22, backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: C.control, alignItems: 'center', justifyContent: 'center' },
-    langText: { ...T.bold, fontSize: 13, color: C.primaryDark },
-    tabs: { flexDirection: 'row', backgroundColor: C.border, borderRadius: 22, padding: 4, gap: 4, marginBottom: 14 },
+    pageTitle: { ...T.heading, color: C.text, marginBottom: 2 },
+    tabs: { flexDirection: 'row', backgroundColor: C.lilac, borderRadius: 22, padding: 4, gap: 4, marginBottom: 14 },
     tab: { flex: 1, minHeight: 42, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
     tabOn: { backgroundColor: '#FFFFFF' },
     tabText: { ...T.semi, fontSize: 14, color: C.textSub },
@@ -287,27 +271,28 @@ const pg = StyleSheet.create({
     center: { alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 40 },
     empty: { ...T.medium, fontSize: 14, color: C.textSub, textAlign: 'center', paddingVertical: 24 },
     streakRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-    streakLabel: { ...T.semi, fontSize: 13, color: C.tint },
-    streakValue: { ...T.heading, fontSize: 30, color: '#FFFFFF' },
+    streakLabel: { ...T.semi, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 1 },
+    streakValue: { ...T.heading, fontSize: 34, lineHeight: 40, color: C.text },
+    streakBest: { ...T.medium, fontSize: 14, color: C.textSub },
     week: { flexDirection: 'row', justifyContent: 'space-between' },
     day: { alignItems: 'center', gap: 6 },
-    dayName: { ...T.semi, fontSize: 12, color: C.tint },
-    dayToday: { ...T.bold, color: '#FFFFFF' },
-    dayCircle: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
-    dayDone: { backgroundColor: '#FFFFFF' },
-    dayPending: { borderWidth: 2, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.7)', backgroundColor: 'transparent' },
-    dayNum: { ...T.bold, fontSize: 13, color: '#FFFFFF' },
+    dayName: { ...T.medium, fontSize: 12, color: C.textSub },
+    dayToday: { ...T.semi, color: C.primaryDark },
+    dayCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.secondary, alignItems: 'center', justifyContent: 'center' },
+    dayDone: { backgroundColor: C.primary, borderColor: C.primary },
+    dayPending: { borderStyle: 'dashed', backgroundColor: 'transparent' },
+    dayNum: { ...T.semi, fontSize: 13, color: C.textSub },
     stats: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     stat: { flexBasis: 150, flexGrow: 1 },
-    trend: { backgroundColor: C.soft, borderRadius: 22, padding: 16, gap: 6 },
-    trendKicker: { ...T.bold, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 0.8 },
-    trendText: { ...T.medium, fontSize: 15, lineHeight: 22, color: C.text },
+    trend: { backgroundColor: C.tint, borderRadius: 20, paddingVertical: 20, paddingHorizontal: 24, gap: 6 },
+    trendKicker: { ...T.semi, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 1 },
+    trendText: { ...T.heading, fontSize: 20, lineHeight: 28, color: C.text },
     filterRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', zIndex: 100 },
-    filterBtn: { minHeight: 40, paddingHorizontal: 14, borderRadius: 20, borderWidth: 1.5, borderColor: C.control, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', gap: 8 },
+    filterBtn: { minHeight: 40, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1, borderColor: C.control, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', gap: 8 },
     filterText: { ...T.semi, fontSize: 13, color: C.text },
     dropdown: { position: 'absolute', right: 0, top: 46, minWidth: 180, backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: C.border, paddingVertical: 6, ...cardShadow },
     dropItem: { minHeight: 40, paddingHorizontal: 14, justifyContent: 'center' },
-    dropItemOn: { backgroundColor: C.tint },
+    dropItemOn: { backgroundColor: C.lilac },
     chartCard: { gap: 10, alignItems: 'stretch' },
 });
 

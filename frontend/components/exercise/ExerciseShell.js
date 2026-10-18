@@ -1,13 +1,15 @@
-// Layout + menu for the exercise screens only (PeriCare exercise mockups):
-// wide web screens get a left sidebar, phones get a section bar under the header.
+// Layout + menu for the exercise screens only, in the same style as the dashboard:
+// burger + logo + PeriCare + language pill + avatar on top, and the four exercise sections as pill tabs.
 // It only links between the exercise screens; the app's own navigation is untouched.
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
-import { C, T, Icon } from './ui';
+import { View, Text, Pressable, ScrollView, StyleSheet, useWindowDimensions } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../context/AuthContext';
+import { C, T } from './ui';
 import { goToSection } from '../../utils/exerciseNavigation';
 
-// page frame of the exercise part - a side menu on wide screens (Exercise today, Health form, Progress,
-// Watch history) and a top menu on phones. Menu clicks go through utils/exerciseNavigation.js.
+// page frame of the exercise part - header and four section tabs (Exercise today, Health form, Progress,
+// Watch history). Menu clicks go through utils/exerciseNavigation.js.
 export const SIDEBAR_BREAKPOINT = 1024;
 
 export const EXERCISE_SECTIONS = [
@@ -17,58 +19,57 @@ export const EXERCISE_SECTIONS = [
     { key: 'history', icon: 'clock', en: 'Watch history', si: 'නැරඹූ ඉතිහාසය', short: 'History', shortSi: 'ඉතිහාසය' },
 ];
 
-
-const ExerciseShell = ({ active, navigation, isSinhala, onLocal, header, children }) => {
+const ExerciseShell = ({ active, navigation, isSinhala, onLocal, children }) => {
+    const { i18n } = useTranslation();
     const { width } = useWindowDimensions();
-    const wide = width >= SIDEBAR_BREAKPOINT;
+    const sidePad = width >= 744 ? 24 : 16; // same side spacing as the page content
+    const { user } = useAuth();
     const go = (key) => goToSection(navigation, key, onLocal);
+    const initials = String(user?.username || user?.name || user?.email || 'PC').slice(0, 2).toUpperCase();
 
-    if (wide) {
-        return (
-            <View style={s.row}>
-                <View style={s.sidebar} accessibilityRole="navigation">
+    return (
+        <View style={{ flex: 1, backgroundColor: C.bg }}>
+            <View style={[s.headerWrap, { paddingHorizontal: sidePad }]}>
+                <View style={s.header}>
+                    {/* Burger: back to the dashboard, where the app menu lives */}
+                    <Pressable
+                        onPress={() => navigation.navigate('Dashboard')}
+                        accessibilityRole="button"
+                        accessibilityLabel={isSinhala ? 'මෙනුව විවෘත කරන්න' : 'Open menu'}
+                        style={({ hovered }) => [s.burger, hovered && { backgroundColor: C.lilac }]}
+                    >
+                        {[0, 1, 2].map(i => <View key={i} style={s.menuLine} />)}
+                    </Pressable>
+                    <View style={s.logo}><Text style={s.logoEmoji}>🌸</Text></View>
                     <Text style={s.brand}>PeriCare</Text>
-                    <Text style={s.brandSub}>{isSinhala ? 'ප්‍රසූතියෙන් පසු ව්‍යායාම' : 'Postpartum exercise'}</Text>
+                    <View style={{ flex: 1 }} />
+                    <Pressable
+                        onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')}
+                        accessibilityRole="button"
+                        accessibilityLabel={isSinhala ? 'භාෂාව මාරු කරන්න' : 'Switch language'}
+                        style={({ hovered }) => [s.lang, hovered && { backgroundColor: C.lilac }]}
+                    >
+                        <Text style={s.langText}>{i18n.language === 'en' ? 'සිං' : 'EN'}</Text>
+                    </Pressable>
+                    <View style={s.avatar}><Text style={s.avatarText}>{initials}</Text></View>
+                </View>
+
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.tabs} accessibilityRole="tablist">
                     {EXERCISE_SECTIONS.map(item => {
                         const on = active === item.key;
                         return (
                             <Pressable
                                 key={item.key}
                                 onPress={() => go(item.key)}
-                                accessibilityRole="link"
+                                accessibilityRole="tab"
                                 accessibilityState={{ selected: on }}
-                                style={({ hovered }) => [s.side, on && s.sideOn, hovered && !on && s.sideHover]}
+                                style={({ hovered }) => [s.tab, on && s.tabOn, hovered && !on && { backgroundColor: C.lilac }]}
                             >
-                                <Icon name={item.icon} size={20} color={on ? C.primaryDark : C.textSub} />
-                                <Text style={[s.sideText, on && s.sideTextOn]}>{isSinhala ? item.si : item.en}</Text>
+                                <Text style={[s.tabText, on && s.tabTextOn]} numberOfLines={1}>{isSinhala ? item.si : item.en}</Text>
                             </Pressable>
                         );
                     })}
-                </View>
-                <View style={s.main}>{header}{children}</View>
-            </View>
-        );
-    }
-
-    return (
-        <View style={{ flex: 1 }}>
-            {header}
-            <View style={s.bar} accessibilityRole="tablist">
-                {EXERCISE_SECTIONS.map(item => {
-                    const on = active === item.key;
-                    return (
-                        <Pressable
-                            key={item.key}
-                            onPress={() => go(item.key)}
-                            accessibilityRole="tab"
-                            accessibilityState={{ selected: on }}
-                            style={[s.barItem, on && s.barItemOn]}
-                        >
-                            <Icon name={item.icon} size={18} color={on ? C.primaryDark : C.textSub} />
-                            <Text style={[s.barText, on && s.barTextOn]} numberOfLines={1}>{isSinhala ? item.shortSi : item.short}</Text>
-                        </Pressable>
-                    );
-                })}
+                </ScrollView>
             </View>
             <View style={{ flex: 1 }}>{children}</View>
         </View>
@@ -76,21 +77,22 @@ const ExerciseShell = ({ active, navigation, isSinhala, onLocal, header, childre
 };
 
 const s = StyleSheet.create({
-    row: { flex: 1, flexDirection: 'row' },
-    sidebar: { width: 260, paddingHorizontal: 18, paddingVertical: 24, gap: 6, backgroundColor: '#FFFFFF', borderRightWidth: 1, borderRightColor: C.border },
-    brand: { ...T.heading, fontSize: 22, color: C.primaryDark, paddingHorizontal: 12 },
-    brandSub: { ...T.medium, fontSize: 13, color: C.textSub, paddingHorizontal: 12, marginBottom: 18 },
-    side: { minHeight: 48, borderRadius: 14, flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14 },
-    sideOn: { backgroundColor: C.tint },
-    sideHover: { backgroundColor: C.soft },
-    sideText: { ...T.semi, fontSize: 15, color: C.textSub },
-    sideTextOn: { ...T.bold, color: C.primaryDark },
-    main: { flex: 1, minWidth: 0 },
-    bar: { flexDirection: 'row', gap: 6, paddingHorizontal: 12, paddingVertical: 8, backgroundColor: C.bg },
-    barItem: { flex: 1, minHeight: 52, borderRadius: 16, alignItems: 'center', justifyContent: 'center', gap: 2, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border },
-    barItemOn: { backgroundColor: C.tint, borderColor: C.primary },
-    barText: { ...T.semi, fontSize: 11, color: C.textSub },
-    barTextOn: { ...T.bold, color: C.primaryDark },
+    headerWrap: { width: '100%', maxWidth: 1180, alignSelf: 'center', paddingHorizontal: 16, paddingTop: 12, gap: 12 },
+    header: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    burger: { width: 42, height: 42, borderRadius: 12, borderWidth: 1, borderColor: C.border, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+    menuLine: { width: 18, height: 2, borderRadius: 2, marginVertical: 2, backgroundColor: '#2C1A35' },
+    logo: { width: 32, height: 32, borderRadius: 16, backgroundColor: C.lilac, alignItems: 'center', justifyContent: 'center' },
+    logoEmoji: { fontSize: 17 },
+    brand: { ...T.heading, fontSize: 20, color: C.text },
+    lang: { height: 36, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1, borderColor: C.border, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+    langText: { ...T.medium, fontSize: 13, color: C.text },
+    avatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: C.lilac, alignItems: 'center', justifyContent: 'center' },
+    avatarText: { ...T.semi, fontSize: 13, color: C.primaryDark },
+    tabs: { gap: 8, paddingBottom: 4, paddingRight: 8 },
+    tab: { minHeight: 44, paddingHorizontal: 20, borderRadius: 999, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'transparent' },
+    tabOn: { backgroundColor: C.lilac, borderColor: C.secondary },
+    tabText: { ...T.semi, fontSize: 14, color: C.textSub },
+    tabTextOn: { color: C.primaryDark },
 });
 
 export default ExerciseShell;
