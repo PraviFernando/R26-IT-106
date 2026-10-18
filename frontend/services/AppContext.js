@@ -1,7 +1,7 @@
 // ================================================================
 // APP CONTEXT — AppContext.js  (Bloom Complete)
 // ================================================================
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { analyzeDiary, getRecommendations } from './emotionEngine.js';
 import { detectBabyTopic } from './babyCareService.js';
 import api, { setAuthToken } from './api.js';
@@ -67,12 +67,35 @@ export const AppProvider = ({ children }) => {
     }
   }, [latestAnalysis]);
 
+  // Synchronize recommendations when clinical EPDS risk level updates
+  // Safely re-evaluates recommendations from cached latestAnalysis without re-running diary classification
+  useEffect(() => {
+    if (latestAnalysis) {
+      const normRisk = normalizeRiskLevel(epdsRiskLevel || 'low');
+      if (latestAnalysis.riskLevel !== normRisk) {
+        const updatedAnalysis = {
+          ...latestAnalysis,
+          riskLevel: normRisk,
+        };
+        const updatedRecs = getRecommendations(
+          updatedAnalysis,
+          userPreferredActivities,
+          userPreferredGames,
+          updatedAnalysis.diaryText || '',
+          completedActivities
+        );
+        setLatestAnalysis(updatedAnalysis);
+        setLatestRecommendations(updatedRecs);
+      }
+    }
+  }, [epdsRiskLevel, userPreferredActivities, userPreferredGames, completedActivities]);
+
   /**
    * Defines fetchProgressData()
    * Fetches full diary history (GET /diary), activity completion history (GET /plan/activity/history),
    * and latest EPDS screening risk level (GET /epds/history) to populate progress metrics.
    */
-  const fetchProgressData = async () => {
+  const fetchProgressData = useCallback(async () => {
     // Never hit authenticated endpoints before login — the request interceptor
     // has no token yet and the backend would just 401.
     if (!token) {
@@ -83,19 +106,12 @@ export const AppProvider = ({ children }) => {
       setLoadingProgress(true);
       setErrorProgress(null);
 
-      console.log('[DEBUG Progress] Starting fetchProgressData...');
-      console.log('[DEBUG Progress] Axios baseURL:', api.defaults.baseURL);
-
       // 1. Fetch Diary History
-      console.log('[DEBUG Progress] Requesting GET /diary ...');
       const diaryRes = await api.get('/diary');
-      console.log('[DEBUG Progress] GET /diary SUCCESS:', diaryRes.status, 'entries count:', diaryRes.data?.entries?.length);
       const diaries = diaryRes.data?.entries || [];
 
       // 2. Fetch Activity Completion History (All Time)
-      console.log('[DEBUG Progress] Requesting GET /plan/activity/history ...');
       const activityRes = await api.get('/plan/activity/history');
-      console.log('[DEBUG Progress] GET /plan/activity/history SUCCESS:', activityRes.status, 'activities count:', activityRes.data?.length);
       const activities = activityRes.data || [];
 
       setProgressDiaries(diaries);
@@ -103,43 +119,35 @@ export const AppProvider = ({ children }) => {
 
       // 3. Fetch EPDS screening history for actual risk level
       try {
-        console.log('[DEBUG Progress] Requesting GET /epds/history ...');
         const epdsRes = await api.get('/epds/history');
-        console.log('[DEBUG Progress] GET /epds/history SUCCESS:', epdsRes.status, 'records count:', epdsRes.data?.length);
         if (epdsRes.data && epdsRes.data.length > 0) {
           const latestRisk = epdsRes.data[0].riskLevel || 'low';
           setEpdsRiskLevel(latestRisk.toLowerCase());
-          console.log('[DEBUG Progress] epdsRiskLevel resolved in state to:', latestRisk);
         } else {
           setEpdsRiskLevel('low');
         }
       } catch (epdsErr) {
-        console.log('Error fetching EPDS history for recommendations:', epdsErr.message);
+        if (epdsErr.response?.status !== 404 && typeof __DEV__ !== 'undefined' && __DEV__) {
+          console.warn('Notice fetching EPDS history for recommendations:', epdsErr.message);
+        }
         setEpdsRiskLevel('low');
       }
 
       setLoadingProgress(false);
     } catch (err) {
-      console.error('[DEBUG Progress ERROR] Failed in fetchProgressData:');
-      if (err.response) {
-        console.error('  - Status:', err.response.status);
-        console.error('  - URL:', err.config?.url);
-        console.error('  - Headers:', JSON.stringify(err.config?.headers));
-        console.error('  - Response Data:', JSON.stringify(err.response.data));
-      } else {
-        console.error('  - Error Message:', err.message);
-        console.error('  - Config:', JSON.stringify(err.config));
+      if (err.response?.status !== 404 && typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.warn('Notice in fetchProgressData:', err.response?.status || err.message);
       }
       setErrorProgress('ප්‍රගති දත්ත ලබාගැනීමට අපොහොසත් විය. නැවත උත්සාහ කරන්න.');
       setLoadingProgress(false);
     }
-  };
+  }, [token]);
 
   /**
    * Defines fetchCompletedActivities()
    * Fetches activities completed on today's date (GET /plan/activity/date/:date)
    */
-  const fetchCompletedActivities = async () => {
+  const fetchCompletedActivities = useCallback(async () => {
     if (!token) return [];
     try {
       const d = new Date();
@@ -156,10 +164,12 @@ export const AppProvider = ({ children }) => {
         return completed;
       }
     } catch (err) {
-      console.log('Error fetching completed activities for ranking:', err.message);
+      if (err.response?.status !== 404 && typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.warn('Notice fetching completed activities for ranking:', err.message);
+      }
     }
     return [];
-  };
+  }, [token]);
 
   useEffect(() => {
     if (!token) {
@@ -222,7 +232,16 @@ export const AppProvider = ({ children }) => {
       analysis.primaryReason = normalizeReasonKey(analysis.primaryReason);
       analysis.detectedEmotion = normalizeEmotionKey(analysis.detectedEmotion);
       analysis.selectedEmoji = selectedEmoji ? normalizeEmotionKey(selectedEmoji) : analysis.detectedEmotion;
-      analysis.riskLevel = normalizeRiskLevel(epdsRiskLevel || analysis.riskLevel);
+      const diaryRisk = normalizeRiskLevel(analysis.riskLevel);
+      const epdsRisk = epdsRiskLevel ? normalizeRiskLevel(epdsRiskLevel) : null;
+      let effectiveRisk = 'low';
+      if (epdsRisk) {
+        // Authoritative EPDS risk takes precedence; extreme emergency crisis keywords can safely escalate to high
+        effectiveRisk = (diaryRisk === 'high' && epdsRisk !== 'high') ? 'high' : epdsRisk;
+      } else {
+        effectiveRisk = diaryRisk || 'low';
+      }
+      analysis.riskLevel = effectiveRisk;
 
       const defaultEmotionEmojis = {
         happy: '😊',

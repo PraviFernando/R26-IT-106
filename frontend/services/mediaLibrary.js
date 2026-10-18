@@ -390,6 +390,59 @@ export const SUPPORTED_MUSIC_REASONS = [
 
 import { normalizeReasonKey, normalizeEmotionKey, normalizeRiskLevel } from './activitiesLibrary.js';
 
+const RISK_MUSIC_TIERS = {
+  loneliness: {
+    high: ['lo1', 'lo3', 'lo4'],
+    medium: ['lo2', 'lo5', 'lo6'],
+    low: ['lo7', 'lo8', 'lo9', 'lo10']
+  },
+  fatigue: {
+    high: ['fa1', 'fa4', 'fa8'],
+    medium: ['fa3', 'fa6', 'fa7'],
+    low: ['fa2', 'fa5', 'fa9', 'fa10']
+  },
+  anxiety: {
+    high: ['an1', 'an2', 'an4'],
+    medium: ['an3', 'an5', 'an6'],
+    low: ['an7', 'an8', 'an9', 'an10']
+  },
+  bonding_issues: {
+    high: ['bo1', 'bo2', 'bo3'],
+    medium: ['bo4', 'bo6', 'bo7'],
+    low: ['bo5', 'bo8', 'bo9', 'bo10']
+  },
+  lack_of_support: {
+    high: ['ls1', 'ls5', 'ls7'],
+    medium: ['ls3', 'ls4', 'ls6'],
+    low: ['ls2', 'ls8', 'ls9', 'ls10']
+  },
+  sleep_problems: {
+    high: ['sl4', 'sl7', 'sl9'],
+    medium: ['sl2', 'sl3', 'sl5'],
+    low: ['sl1', 'sl6', 'sl8', 'sl10']
+  },
+  loss_of_confidence: {
+    high: ['lc3', 'lc7', 'lc8'],
+    medium: ['lc2', 'lc5', 'lc6'],
+    low: ['lc1', 'lc4', 'lc9', 'lc10']
+  },
+  overwhelmed: {
+    high: ['ow1', 'ow2', 'ow3', 'ow5'],
+    medium: ['ow4', 'ow6', 'ow8'],
+    low: ['ow7', 'ow9', 'ow10']
+  },
+  physical_discomfort: {
+    high: ['pd1', 'pd2', 'pd10'],
+    medium: ['pd4', 'pd5', 'pd6'],
+    low: ['pd7', 'pd8', 'pd9']
+  },
+  negative_thoughts: {
+    high: ['nt1', 'nt2', 'nt3'],
+    medium: ['nt4', 'nt7', 'nt8'],
+    low: ['nt5', 'nt6', 'nt9', 'nt10']
+  }
+};
+
 /**
  * Resolves music from MUSIC_LIBRARY strictly using the detected final reason and selected emoji.
  * Reason determines pool, Risk determines safety, Emoji personalizes ranking.
@@ -439,26 +492,63 @@ export const getMusicForReason = (finalReason = '', emotion = '', selectedEmoji 
   };
 
   const targetMusicList = emojiMusicMap[normEmotion] || emojiMusicMap.calm;
+  const normRisk = normalizeRiskLevel(riskLevel);
+  const tiers = RISK_MUSIC_TIERS[selectedCategory] || RISK_MUSIC_TIERS.overwhelmed;
 
   const scoredMusic = fullLibrary.map((track, idx) => {
+    let riskScore = 0;
     let emojiScore = 0;
-    if (targetMusicList.includes(track.id)) {
-      emojiScore += 25;
+
+    if (normRisk === 'high') {
+      if (tiers.high.includes(track.id)) {
+        riskScore = 26;
+      } else if (tiers.medium.includes(track.id)) {
+        riskScore = 6;
+      } else {
+        riskScore = 0;
+      }
+    } else if (normRisk === 'medium') {
+      if (tiers.medium.includes(track.id)) {
+        riskScore = 26;
+      } else if (tiers.high.includes(track.id)) {
+        riskScore = 6;
+      } else {
+        riskScore = 2;
+      }
+    } else {
+      // Low risk
+      if (tiers.low.includes(track.id)) {
+        riskScore = 26;
+      } else if (tiers.medium.includes(track.id)) {
+        riskScore = 6;
+      } else {
+        riskScore = 2;
+      }
     }
-    return { track, emojiScore, idx };
+
+    if (targetMusicList.includes(track.id)) {
+      emojiScore += 10;
+    }
+
+    const finalScore = riskScore + emojiScore;
+    return { track, finalScore, idx };
   });
 
-  scoredMusic.sort((a, b) => (b.emojiScore - a.emojiScore) || (a.idx - b.idx));
+  scoredMusic.sort((a, b) => (b.finalScore - a.finalScore) || (a.idx - b.idx));
 
   const cappedMusic = scoredMusic.map(sm => sm.track).slice(0, 4);
 
-  // DEVELOPMENT DEBUG LOGGING
-  console.log('[MusicRecommendation]');
-  console.log(`Diary Reason: ${finalReason}`);
-  console.log(`Emotion: ${emotion}`);
-  console.log(`Selected Emoji: ${selectedEmoji}`);
-  console.log(`Selected Music Category: ${selectedCategory}`);
-  console.log(`Selected Music IDs: ${cappedMusic.map(m => m.id).join(', ')}`);
+  // Optional development-only diagnostic logging (disabled by default)
+  const DEBUG_MUSIC_RECOMMENDATION = false;
+  if (DEBUG_MUSIC_RECOMMENDATION && typeof __DEV__ !== 'undefined' && __DEV__) {
+    console.log('[MusicRecommendation]', {
+      reason: finalReason,
+      emotion,
+      emoji: selectedEmoji,
+      category: selectedCategory,
+      musicIds: cappedMusic.map(m => m.id),
+    });
+  }
 
   return {
     category: selectedCategory,
@@ -525,16 +615,38 @@ export const getVideosForReason = (finalReason = '', emotion = '', selectedEmoji
     let emojiScore = 0;
 
     if (normRisk === 'high') {
-      const highRiskKeywords = ['postpartum', 'guided', 'calm', 'support', 'meditation', 'breathing', 'safe', 'grounding', 'healing', 'circle', 'never', 'alone'];
-      if (highRiskKeywords.some(k => vText.includes(k))) {
-        riskScore = 8;
+      const highRiskKeywords = ['postpartum', 'guided', 'calm', 'support', 'meditation', 'breathing', 'safe', 'grounding', 'healing', 'circle', 'never', 'alone', "don't have to do it alone", 'you are not alone'];
+      if (['vlo7', 'vlo10', 'vfa1', 'vfa10', 'van1', 'van2', 'van6', 'van7', 'vbo3', 'vbo5', 'vls6', 'vls7', 'vsl5', 'vsl9', 'vow1', 'vow2', 'vpd1', 'vpd9', 'vnt1', 'vnt2'].includes(video.id)) {
+        riskScore = 16;
+      } else if (highRiskKeywords.some(k => vText.includes(k))) {
+        riskScore = 10;
+      } else {
+        riskScore = 0;
       }
     } else if (normRisk === 'medium') {
-      riskScore = 6;
+      // Medium risk prioritizes emotional stabilization, guided mindfulness, manageable breathing, tension relief
+      const medRiskKeywords = ['mindfulness', 'balance', 'calming breathing', 'tension relief', 'stabilization', 'grounding breath', 'soothing'];
+      if (['vow3', 'vow7', 'vlo2', 'vlo3', 'vlo6', 'vfa2', 'vfa4', 'vfa6', 'van3', 'van4', 'van10', 'vbo4', 'vbo6', 'vbo7', 'vls2', 'vls4', 'vls7', 'vsl3', 'vsl6', 'vsl7', 'vpd3', 'vnt3', 'vnt7'].includes(video.id)) {
+        riskScore = 16;
+      } else if (medRiskKeywords.some(k => vText.includes(k))) {
+        riskScore = 10;
+      } else {
+        riskScore = 2;
+      }
+    } else {
+      // Low risk prioritizes practical recovery tips, stories, community, baby care basics, nutrition, routine
+      const lowRiskKeywords = ['stories', 'village', 'talk', 'letters', 'tips', 'nutrition', 'recovery moves', 'attachment', 'interaction', 'routine', 'basics'];
+      if (['vow4', 'vow5', 'vow6', 'vow8', 'vlo4', 'vlo5', 'vlo8', 'vlo9', 'vfa3', 'vfa5', 'vfa7', 'van5', 'van8', 'van9', 'vbo1', 'vbo8', 'vls3', 'vls8', 'vsl2', 'vsl4', 'vpd5', 'vnt5', 'vnt8'].includes(video.id)) {
+        riskScore = 16;
+      } else if (lowRiskKeywords.some(k => vText.includes(k))) {
+        riskScore = 10;
+      } else {
+        riskScore = 2;
+      }
     }
 
     if (targetIdList.includes(video.id)) {
-      emojiScore += 25;
+      emojiScore += 24;
     }
 
     const finalScore = reasonScore + riskScore + emojiScore;

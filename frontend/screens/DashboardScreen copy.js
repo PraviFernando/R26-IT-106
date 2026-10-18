@@ -14,6 +14,7 @@ import { useApp } from '../services/AppContext';
 import { SI } from '../services/translations';
 import ScreenContainer from '../components/ScreenContainer';
 import { useResponsive } from '../hooks/useResponsive';
+import { useAuth } from '../context/AuthContext';
 
 const emojiFeelingsSI = {
   '😊': 'සතුටුයි',
@@ -65,6 +66,7 @@ const affirmationsEN = [
 
 const DashboardScreenCopy = ({ navigation }) => {
   const { user, latestAnalysis, moodHistory, preferencesSet, simulateNextDiary, nextDemoPreview } = useApp();
+  const { token, restoring } = useAuth();
   const { i18n } = useTranslation();
   const isSinhala = i18n?.language === 'si';
   const [processing, setProcessing] = useState(false);
@@ -73,6 +75,13 @@ const DashboardScreenCopy = ({ navigation }) => {
   const quickCardW = r.tileWidth(quickCols, 10);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(24)).current;
+
+  // Route guard: if unauthenticated, redirect immediately to Login
+  useEffect(() => {
+    if (!restoring && !token) {
+      navigation.replace('Login');
+    }
+  }, [token, restoring, navigation]);
 
   useEffect(() => {
     Animated.parallel([
@@ -113,8 +122,8 @@ const DashboardScreenCopy = ({ navigation }) => {
   const riskDesc = risk === 'high'
     ? (isSinhala ? 'අධික අවදානම් මට්ටමක් හඳුනාගෙන ඇත. කරුණාකර වහාම සහාය පතන්න. 💖' : 'A high risk level has been detected. Please reach out for support right away. 💖')
     : (risk === 'medium'
-      ? (isSinhala ? 'ඔබට දැන් ඉතිරි ආධාරක ශ්‍රේෂ්ඨ 💛' : 'A little extra support could help you right now. 💛')
-      : (isSinhala ? 'ඔබ ශ්‍රේෂ්ඨව ගෙවනවා. දිගටම! 💚' : 'You are doing great. Keep going! 💚'));
+      ? (isSinhala ? 'ඔබට දැන් අමතර සහායක් ලබාගැනීම ප්‍රයෝජනවත් විය හැකියි 💛' : 'A little extra support could help you right now. 💛')
+      : (isSinhala ? 'ඔබ ඉතා හොඳින් කාලය ගත කරනවා. දිගටම ඉදිරියට යන්න! 💚' : 'You are doing great. Keep going! 💚'));
   const riskLabelText = risk === 'high'
     ? (isSinhala ? (SI.highRisk || '🔴 අධික අවදානම') : 'High')
     : (risk === 'medium' ? (isSinhala ? 'මධ්‍යම' : 'Medium') : (isSinhala ? 'අඩු' : 'Low'));

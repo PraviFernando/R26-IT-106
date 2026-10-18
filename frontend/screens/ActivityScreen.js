@@ -1,6 +1,6 @@
 // ActivityScreen.js — Bloom Postpartum App (Full Sinhala)
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Animated, Modal, Image } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Animated, Modal, Image, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, typography, spacing, radius, shadows } from '../theme';
@@ -3712,7 +3712,15 @@ const pat = StyleSheet.create({
     padding: 10,
   },
   padIcon: { fontSize: 44, marginBottom: 4 },
-  padName: { color: 'white', fontWeight: '900', fontSize: 13, textShadowColor: 'rgba(0,0,0,0.15)', textShadowRadius: 3 },
+  padName: {
+    color: 'white',
+    fontWeight: '900',
+    fontSize: 13,
+    ...Platform.select({
+      web: { textShadow: '0px 1px 3px rgba(0,0,0,0.15)' },
+      default: { textShadowColor: 'rgba(0,0,0,0.15)', textShadowRadius: 3 },
+    }),
+  },
   centerAction: { marginTop: 4, width: '100%', alignItems: 'center' },
   startBtn: { borderRadius: 99, width: '70%', maxWidth: 280, ...shadows.soft },
   startBtnIn: { paddingVertical: 14, paddingHorizontal: 28, borderRadius: 99, alignItems: 'center' },

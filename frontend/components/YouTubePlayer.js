@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, StyleSheet, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { Video, ResizeMode } from 'expo-av';
 
 const YouTubePlayer = ({ url, style, isSinhala }) => {
     const [loading, setLoading] = useState(true);

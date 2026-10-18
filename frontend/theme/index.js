@@ -92,9 +92,18 @@ export const typography = {
 export const spacing = { xs: 4, sm: 8, md: 16, lg: 24, xl: 32, xxl: 48 };
 export const radius  = { sm: 8, md: 16, lg: 24, xl: 32, full: 9999 };
 export const shadows = {
-  soft: { shadowColor: '#AA60C8', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.10, shadowRadius: 12, elevation: 3 },
-  card: { shadowColor: '#873CA6', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 18, elevation: 5 },
-  strong: { shadowColor: '#2C1A35', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.16, shadowRadius: 24, elevation: 8 },
+  soft: Platform.select({
+    web: { boxShadow: '0px 4px 12px rgba(170, 96, 200, 0.10)' },
+    default: { shadowColor: '#AA60C8', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.10, shadowRadius: 12, elevation: 3 },
+  }),
+  card: Platform.select({
+    web: { boxShadow: '0px 8px 18px rgba(135, 60, 166, 0.12)' },
+    default: { shadowColor: '#873CA6', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 18, elevation: 5 },
+  }),
+  strong: Platform.select({
+    web: { boxShadow: '0px 10px 24px rgba(44, 26, 53, 0.16)' },
+    default: { shadowColor: '#2C1A35', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.16, shadowRadius: 24, elevation: 8 },
+  }),
 };
 
 export default { colors, typography, spacing, radius, shadows };

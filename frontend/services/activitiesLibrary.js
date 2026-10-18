@@ -40,7 +40,7 @@ export const ALL_ACTIVITIES = [
       { name: 'හුස්ම පහලට දමන්න', seconds: 8, instruction: 'මුඛය දිගේ සෙමෙන් හුස්ම පහලට දමන්න', scale: 1.0 },
     ],
     cycles: 4,
-    intro: 'ස්නායු පද්ධතිය සක්‍රිය කර කාංසාව මිනිත්තු කිහිපයකින් අඩු කරයි. රාත්‍රියේ නිදා ගැනීමට ද ශ්‍රේෂ්ඨ.',
+    intro: 'ස්නායු පද්ධතිය සක්‍රිය කර කාංසාව මිනිත්තු කිහිපයකින් අඩු කරයි. රාත්‍රියේ නිදා ගැනීමට ද ඉතා යෝග්‍ය වේ.',
   },
   {
     id: 'box_breathing', icon: '📦',
@@ -55,7 +55,7 @@ export const ALL_ACTIVITIES = [
       { name: 'රඳවා ගන්න', seconds: 4, instruction: 'ඊළඟ හුස්ම ගැනීමට පෙර රඳවා ගන්න', scale: 1.0 },
     ],
     cycles: 5,
-    intro: 'ශ්‍රේෂ්ඨ. ආතතිය ඉහළ දිනවලට.',
+    intro: 'ආතතිය ඉහළ දිනවලට මනස සමතුලිත කිරීමට උපකාරී වේ.',
   },
   {
     id: 'short_breathing', icon: '💨',
@@ -68,7 +68,7 @@ export const ALL_ACTIVITIES = [
       { name: 'හුස්ම පහලට දමන්න', seconds: 6, instruction: 'මුඛය දිගේ හුස්ම පහලට දමන්න', scale: 1.0 },
     ],
     cycles: 3,
-    intro: 'ශ්‍රාන්තතාවෙදී ලේසියෙන් කළ හැකි ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
+    intro: 'වෙහෙසකාරී අවස්ථාවලදී ක්ෂණික සහනයක් ලබා ගැනීමට උපකාරී වේ.',
   },
   {
     id: 'night_breathing', icon: '🌙',
@@ -82,22 +82,22 @@ export const ALL_ACTIVITIES = [
       { name: 'හුස්ම පහලට දමන්න', seconds: 8, instruction: 'ඉතා සෙමෙන් හුස්ම පහලට දමන්න', scale: 1.0 },
     ],
     cycles: 3,
-    intro: 'නිදා ගැනීමට පෙර කරන ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශරීරය ශ්‍රාන්ත කරයි.',
+    intro: 'නිදා ගැනීමට පෙර කරන සන්සුන් ශ්වසනයකි. ශරීරය සැහැල්ලු කරයි.',
   },
   {
     id: 'guided_meditation', icon: '🧘',
-    label: 'ශ්‍රේෂ්ඨ සිහිකල්පනාව', labelEn: 'Guided Meditation',
+    label: 'මාර්ගෝපදේශිත භාවනාව', labelEn: 'Guided Meditation',
     desc: 'සිත සන්සිඳවීම', duration: 'විනාඩි 10',
     category: 'සිහිකල්පනාව', color: ['#F3E5F5', '#E1BEE7'], accent: '#8E24AA',
     type: 'guided',
     steps: [
       { label: 'ස්ථාවරව සිටීම', duration: 30, text: 'සුවපහසු ලෙස සිටින්න. ඇස් වසන්න. ගැඹුරු ශ්වාස 3ක් ගන්න.' },
-      { label: 'සිත ශ්‍රේෂ්ඨ', duration: 60, text: 'ඔබේ සිතිවිලි ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.' },
-      { label: 'ශරීරය ශ්‍රේෂ්ඨ', duration: 90, text: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.' },
-      { label: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', duration: 120, text: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.' },
+      { label: 'සිත සන්සුන් කිරීම', duration: 60, text: 'ඔබේ සිතිවිලි සෙමෙන් නිරීක්ෂණය කර සිත සැහැල්ලු කරන්න.' },
+      { label: 'ශරීරය ලිහිල් කිරීම', duration: 90, text: 'උරහිස් සහ මුහුණේ මාංශ පේශී ලිහිල් කර සන්සුන් වන්න.' },
+      { label: 'සන්සුන්ව සිටීම', duration: 120, text: 'ගැඹුරින් හුස්ම ගනිමින් වර්තමාන මොහොතට අවධානය යොමු කරන්න.' },
       { label: 'සෙමෙන් නැවත', duration: 30, text: 'ඇඟිලි සොළවන්න. ගැඹුරු ශ්වාස. ඇස් ඇරෙන්න. 🌸' },
     ],
-    intro: 'කාංසාව සිදිරි ගිය කල සිත සන්සිඳවීමේ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
+    intro: 'කාංසාව පාලනය කර සිත සන්සිඳවීමට උපකාරී වේ.',
   },
   {
     id: 'grounding_54321', icon: '🌿',
@@ -107,53 +107,53 @@ export const ALL_ACTIVITIES = [
     type: 'guided',
     steps: [
       { label: 'දිය හැකි 5ක්', duration: 60, text: 'දැන් ඔබ දකින ඕනෑම දේ 5ක් නම් කරන්න.' },
-      { label: 'ස්පර්ශ 4ක්', duration: 60, text: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 4ක් ශ්‍රේෂ්ඨ.' },
-      { label: 'ශ්‍රවණය 3ක්', duration: 60, text: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 3ක් ශ්‍රේෂ්ඨ.' },
-      { label: 'සුවඳ 2ක්', duration: 60, text: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 2ක් ශ්‍රේෂ්ඨ.' },
-      { label: 'රස 1ක්', duration: 60, text: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ඔබ ආරක්ෂිතයි. 💜' },
+      { label: 'ස්පර්ශ 4ක්', duration: 60, text: 'ඔබට ස්පර්ශ කළ හැකි විවිධ දේවල් 4ක් අතගා බලන්න.' },
+      { label: 'ශ්‍රවණය 3ක්', duration: 60, text: 'ඔබ අවටින් ඇසෙන විවිධ ශබ්ද 3කට සවන් දෙන්න.' },
+      { label: 'සුවඳ 2ක්', duration: 60, text: 'ඔබ අවට ඇති විවිධ සුවඳ 2ක් හඳුනාගන්න.' },
+      { label: 'රස 1ක්', duration: 60, text: 'ඔබේ මුවෙහි ඇති රසය කෙරෙහි අවධානය යොමු කරන්න. ඔබ ආරක්ෂිතයි. 💜' },
     ],
-    intro: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
+    intro: 'ඉන්ද්‍රියන් පහ උපයෝගී කරගනිමින් වර්තමානයට නැවත අවධානය යොමු කරවයි.',
   },
   {
     id: 'deep_breathing', icon: '💪',
     label: 'ගැඹුරු ශ්වාස', labelEn: 'Deep Breathing',
-    desc: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', duration: 'විනාඩි 5',
+    desc: 'ගැඹුරු හුස්ම ගැනීමෙන් සන්සුන් වීම', duration: 'විනාඩි 5',
     category: 'ශ්වාස', color: ['#FFF3E0', '#FFE0B2'], accent: '#E65100',
     type: 'breathing',
     phases: [
-      { name: 'ශ්වාස ගන්න', seconds: 5, instruction: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', scale: 1.6 },
-      { name: 'ශ්වාස හළ ගන්න', seconds: 7, instruction: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', scale: 1.0 },
+      { name: 'ශ්වාස ගන්න', seconds: 5, instruction: 'නාසයෙන් සෙමෙන් ගැඹුරට හුස්ම ගන්න', scale: 1.6 },
+      { name: 'ශ්වාස හළ ගන්න', seconds: 7, instruction: 'මුඛයෙන් සෙමෙන් හුස්ම පිට කරන්න', scale: 1.0 },
     ],
     cycles: 6,
-    intro: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
+    intro: 'ගැඹුරු ශ්වසනය මගින් හෘද ස්පන්දනය සන්සුන් කර ආතතිය අඩු කරයි.',
   },
   {
     id: 'journaling', icon: '📓',
-    label: 'දිනපොත් ශ්‍රේෂ්ඨ', labelEn: 'Journaling Activity',
+    label: 'දිනපොතෙහි ලිවීම', labelEn: 'Journaling Activity',
     desc: 'හැඟීම් ප්‍රකාශ කිරීම', duration: 'විනාඩි 10',
     category: 'ලිවීම', color: ['#FFF9C4', '#FFF3A0'], accent: '#F57F17',
     type: 'prompts',
     prompts: [
       'දැන් මා දකින හැඟීම කුමක්ද?',
       'අද දරුවාට හෝ මට ආදරය දැක්වූ මොහොතක්?',
-      'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ?',
-      'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ?',
-      'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ?',
+      'අද දවසේ මට සතුටක් ගෙනදුන් කුඩා දෙයක් කුමක්ද?',
+      'මා අද මුහුණදුන් අභියෝගය කුමක්ද, එයට මා මුහුණ දුන්නේ කෙසේද?',
+      'හෙට දවස වෙනුවෙන් මා තුළ ඇති බලාපොරොත්තුව කුමක්ද?',
     ],
-    intro: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
+    intro: 'ඔබේ සිතුවිලි සහ හැඟීම් විවෘතව ලිවීමෙන් මානසික සැහැල්ලුවක් අත්විඳින්න.',
   },
   {
     id: 'write_positive', icon: '✍️',
-    label: 'ශ්‍රේෂ්ඨ 3ක් ලියන්න', labelEn: 'Write 3 Positive Thoughts',
-    desc: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', duration: 'විනාඩි 5',
+    label: 'ධනාත්මක සිතුවිලි 3ක්', labelEn: 'Write 3 Positive Thoughts',
+    desc: 'ධනාත්මක බව වර්ධනය කරගැනීම', duration: 'විනාඩි 5',
     category: 'ලිවීම', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32',
     type: 'prompts',
     prompts: [
-      'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 1 ශ්‍රේෂ්ඨ?',
-      'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 2 ශ්‍රේෂ්ඨ?',
-      'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 3 ශ්‍රේෂ්ඨ?',
+      'අද මා ගැන මා ආඩම්බර වන කරුණක්:',
+      'අද මට ශක්තියක් වූ දෙයක්:',
+      'අද මා අගය කරන මාගේ ගුණාංගයක්:',
     ],
-    intro: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
+    intro: 'ඔබ තුළ ඇති ශක්තීන් සහ යහපත් කරුණු සිහිපත් කරගන්න.',
   },
   {
     id: 'gratitude_writing', icon: '🙏',
@@ -176,16 +176,16 @@ export const ALL_ACTIVITIES = [
   },
   {
     id: 'gentle_stretch', icon: '🌸',
-    label: 'මෘදු ශ්‍රේෂ්ඨ', labelEn: 'Gentle Stretching',
-    desc: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', duration: 'විනාඩි 8',
+    label: 'මෘදු ව්‍යායාම', labelEn: 'Gentle Stretching',
+    desc: 'ශරීරය ලිහිල් කිරීම', duration: 'විනාඩි 8',
     category: 'ව්‍යායාම', color: ['#FCE4EC', '#F8BBD9'], accent: '#C2185B',
     type: 'guided',
     steps: [
-      { label: 'බෙල්ල ශ්‍රේෂ්ඨ', duration: 60, text: 'හිස සෙමෙන් ශ්‍රේෂ්ඨ. 5ක්.' },
-      { label: 'උරහිස් ශ්‍රේෂ්ඨ', duration: 60, text: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.' },
-      { label: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', duration: 90, text: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.' },
+      { label: 'බෙල්ල ලිහිල් කිරීම', duration: 60, text: 'හිස සෙමෙන් දෙපසට හරවමින් බෙල්ලේ මාංශ පේශී ලිහිල් කරන්න.' },
+      { label: 'උරහිස් ලිහිල් කිරීම', duration: 60, text: 'උරහිස් සෙමෙන් ඉදිරියට හා පසුපසට රවුමට කරකවන්න.' },
+      { label: 'පිට කොන්ද ලිහිල් කිරීම', duration: 90, text: 'සෙමෙන් දෙපසට හැරෙමින් කොන්දට සැහැල්ලුවක් ලබා දෙන්න.' },
     ],
-    intro: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
+    intro: 'ශරීරයේ මාංශ පේශි ලිහිල් කර තෙහෙට්ටුව මඟහරවා ගැනීමට උපකාරී වේ.',
   },
   {
     id: 'rest_meditation', icon: '😴',
@@ -222,32 +222,32 @@ export const ALL_ACTIVITIES = [
   },
   {
     id: 'affirmation_activity', icon: '✨',
-    label: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', labelEn: 'Positive Affirmation Activity',
-    desc: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', duration: 'විනාඩි 7',
+    label: 'ධනාත්මක ස්වයං ප්‍රකාශ', labelEn: 'Positive Affirmation Activity',
+    desc: 'ආත්ම විශ්වාසය සහ සන්සුන් බව', duration: 'විනාඩි 7',
     category: 'සිහිකල්පනාව', color: ['#FFF3E0', '#FFE0B2'], accent: '#E65100',
     type: 'breathing',
     phases: [
-      { name: 'හුස්ම ගන්න', seconds: 4, instruction: '"මම ශ්‍රේෂ්ඨ" සිතමින්', scale: 1.5 },
-      { name: 'රඳවා ගන්න', seconds: 4, instruction: '"මට හැකිය" සිතමින්', scale: 1.5 },
-      { name: 'හුස්ම පහලට දමන්න', seconds: 6, instruction: '"මම ප්‍රමාණවත්" සිතමින්', scale: 1.0 },
+      { name: 'හුස්ම ගන්න', seconds: 4, instruction: '"මම සන්සුන් ය" සිතමින්', scale: 1.5 },
+      { name: 'රඳවා ගන්න', seconds: 4, instruction: '"මට හැකියාව ඇත" සිතමින්', scale: 1.5 },
+      { name: 'හුස්ම පහලට දමන්න', seconds: 6, instruction: '"මම ප්‍රමාණවත් ය" සිතමින්', scale: 1.0 },
     ],
     cycles: 6,
-    affirmations: ['මම ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ✨', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌿'],
-    intro: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
+    affirmations: ['මම මගේ උපරිමය කරමි 💜', 'මම ආදරණීය මවක් වෙමි 🌸', 'සෑම දිනකම මම ශක්තිමත් වෙමි ✨', 'මම සහ මගේ දරුවා ආරක්ෂිතයි 🌿'],
+    intro: 'ධනාත්මක ස්වයං ප්‍රකාශ මඟින් සිතට ධෛර්යය සහ සන්සුන් බව ලබා ගන්න.',
   },
 
   {
     id: 'positive_thinking_act', icon: '🌈',
-    label: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', labelEn: 'Positive Thinking Activity',
-    desc: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ', duration: 'විනාඩි 8',
+    label: 'ධනාත්මක චින්තන අභ්‍යාසය', labelEn: 'Positive Thinking Activity',
+    desc: 'ඍණාත්මක සිතුවිලි ධනාත්මක සිතුවිලි බවට පත්කිරීම', duration: 'විනාඩි 8',
     category: 'ලිවීම', color: ['#E8F5E9', '#C8E6C9'], accent: '#2E7D32',
     type: 'prompts',
     prompts: [
-      'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ?',
-      'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ?',
-      'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ?',
+      'අද දවසේ මට සාර්ථක කරගත හැකි වූ දෙයක් කුමක්ද?',
+      'මා අද කෘතඥ වන ආදරණීය පුද්ගලයෙකු කවුද?',
+      'අද මට දැනෙන හැඟීම පිළිගෙන ඉදිරියට යන්නේ කෙසේද?',
     ],
-    intro: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ.',
+    intro: 'ධනාත්මක චින්තනය පුරුදු කරගැනීමෙන් මනස ප්‍රබෝධමත් කරගන්න.',
   },
 ];
 
@@ -551,15 +551,15 @@ export const GAME_RECOMMENDATION_MAP = {
 
 
 const EMOTION_GAME_MAP = {
-  crying: ['affirmation_game', 'mandala', 'colouring', 'bubble_pop'],
-  happy: ['memory_match', 'pattern_repeat', 'word_builder', 'sliding_puzzle'],
-  sleepy: ['colouring', 'mandala', 'sliding_puzzle', 'mindful_tap'],
-  tired: ['bubble_pop', 'coin_maze', 'sequence_order', 'word_match'],
-  calm: ['mindful_tap', 'colouring', 'mandala', 'pattern_repeat'],
-  sad: ['affirmation_game', 'memory_match', 'colouring', 'word_match'],
-  anxious: ['affirmation_game', 'mandala', 'colouring', 'bubble_pop'],
-  angry: ['bubble_pop', 'coin_maze', 'sequence_order', 'word_match'],
-  frustrated: ['bubble_pop', 'coin_maze', 'sequence_order', 'word_match']
+  crying: ['affirmation_game', 'mandala', 'colouring', 'bubble_pop', 'mindful_tap', 'word_builder'],
+  happy: ['word_match', 'sequence_order', 'pattern_repeat', 'memory_match', 'sliding_puzzle', 'affirmation_game'],
+  sleepy: ['colouring', 'mandala', 'mindful_tap', 'puzzle', 'coin_maze', 'sliding_puzzle'],
+  tired: ['bubble_pop', 'mindful_tap', 'sequence_order', 'word_match', 'memory_match', 'colouring'],
+  calm: ['mindful_tap', 'mandala', 'colouring', 'puzzle', 'word_match', 'coin_maze'],
+  sad: ['affirmation_game', 'colouring', 'word_match', 'sequence_order', 'mindful_tap', 'pattern_repeat'],
+  anxious: ['mindful_tap', 'bubble_pop', 'mandala', 'colouring', 'sequence_order', 'spot_diff'],
+  angry: ['bubble_pop', 'mindful_tap', 'sequence_order', 'word_match', 'colouring', 'coin_maze'],
+  frustrated: ['bubble_pop', 'mindful_tap', 'sequence_order', 'word_match', 'colouring', 'puzzle']
 };
 
 export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', maxGames = 4, riskLevel = 'low', emotion = '', selectedEmoji = null) => {
@@ -568,10 +568,14 @@ export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', m
   const normEmotion = normalizeEmotionKey(activeEmotion);
   const normRisk = normalizeRiskLevel(riskLevel);
 
-  const isBaby = (intents && (intents.baby_related || intents.baby_crying || intents.baby_needs || intents.baby_feeding || intents.baby_sleep || intents.baby_health))
-    || isBabyRelatedReason(normReason);
+  const isBaby = isBabyRelatedReason(normReason)
+    || Boolean(intents && (intents.baby_crying || intents.baby_needs || intents.baby_health || (intents.baby_related && !['sleep_problems', 'fatigue', 'loneliness', 'physical_discomfort'].includes(normReason))));
 
-  const safeCalmingGames = ['baby_mood', 'bubble_pop', 'mindful_tap', 'colouring', 'mandala', 'pattern_repeat', 'memory_match', 'affirmation_game', 'sliding_puzzle', 'word_match'];
+  const highRiskSafeGames = ['bubble_pop', 'affirmation_game', 'colouring', 'mandala'];
+  const highRiskUnsafeGames = ['word_builder', 'spot_diff', 'coin_maze', 'number_seq', 'word_match', 'sequence_order', 'memory_match', 'sliding_puzzle', 'pattern_repeat', 'puzzle'];
+
+  const medRiskSafeGames = ['mindful_tap', 'sequence_order', 'mandala', 'puzzle'];
+  const lowRiskBrainGames = ['word_match', 'memory_match', 'coin_maze', 'pattern_repeat', 'word_builder', 'sliding_puzzle', 'spot_diff'];
 
   const candidateGames = ALL_GAMES.filter(g => {
     if (g.id === 'baby_mood' && !isBaby) return false;
@@ -581,27 +585,41 @@ export const getRecommendedGames = (intents = {}, diaryText = '', reason = '', m
   const scoredGames = candidateGames.map(game => {
     let score = 0;
 
-    // 1. Reason relevance
-    const reasonList = GAME_RECOMMENDATION_MAP[normReason] || GAME_RECOMMENDATION_MAP[reason] || GAME_RECOMMENDATION_MAP.general;
-    if (reasonList.includes(game.id)) {
-      score += 15;
-    }
-
-    // 2. Risk compatibility (Safety enforcement for high & medium risks)
-    if (normRisk === 'high' || normRisk === 'medium') {
-      if (safeCalmingGames.includes(game.id)) {
-        score += normRisk === 'high' ? 8 : 6;
-      } else {
-        score -= 50; // Filter out complex cognitive strain games for high/medium risk
-      }
-    } else {
-      score += 4;
-    }
-
-    // 3. Emoji relevance
+    // 1. Emoji relevance (+12)
     const emotionList = EMOTION_GAME_MAP[normEmotion] || EMOTION_GAME_MAP.calm;
     if (emotionList.includes(game.id)) {
-      score += 18;
+      score += 12;
+    }
+
+    // 2. Reason relevance (+10)
+    const reasonList = GAME_RECOMMENDATION_MAP[normReason] || GAME_RECOMMENDATION_MAP[reason] || GAME_RECOMMENDATION_MAP.general;
+    if (reasonList.includes(game.id)) {
+      score += 10;
+    }
+
+    // 3. Risk compatibility & clinical safety personalization (+26)
+    if (normRisk === 'high') {
+      if (highRiskUnsafeGames.includes(game.id)) {
+        score -= 50; // Filter out complex cognitive strain games for high risk
+      } else if (highRiskSafeGames.includes(game.id)) {
+        score += 26;
+      } else {
+        score -= 30;
+      }
+    } else if (normRisk === 'medium') {
+      // Medium Risk: emotional stabilization, tension relief, soothing focus
+      if (medRiskSafeGames.includes(game.id)) {
+        score += 26;
+      } else {
+        score += 2;
+      }
+    } else {
+      // Low Risk: engaging brain challenges, cognitive puzzles, memory games
+      if (lowRiskBrainGames.includes(game.id)) {
+        score += 26;
+      } else {
+        score += 2;
+      }
     }
 
     return { game, score };
@@ -645,14 +663,21 @@ const RULES = {
       gameId: 'puzzle',
       musicKey: 'loneliness',
       videoKey: 'loneliness',
-      supportMsg: 'ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜',
+      supportMsg: 'බොහෝ අම්මලාට මෙය දැනේ — ඔබ ලෝකව්‍යාප්ත සහෝදරත්වයක කොටසකි 💜',
     },
     medium: {
       activityIds: ['breathing_478', 'write_positive', 'affirmation_activity'],
       gameId: 'affirmation_game',
       musicKey: 'loneliness',
       videoKey: 'loneliness',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. 💜',
+      supportMsg: 'තනිකම රාත්‍රියේ ශබ්ද කරයි. හෙට නව ආලෝකය ගෙනෙයි 🌸',
+    },
+    high: {
+      activityIds: ['new_five_senses_grounding', 'new_positive_affirmations', 'new_478_breathing', 'deep_breathing'],
+      gameId: 'mindful_tap',
+      musicKey: 'loneliness',
+      videoKey: 'loneliness',
+      supportMsg: 'ඔබ තනිවම නොවේ. සහාය සහ ආදරය ඔබ වටා ඇත — වහාම උපකාර ලබාගන්න 🆘',
     },
   },
 
@@ -664,14 +689,21 @@ const RULES = {
       gameId: 'bubble_pop',
       musicKey: 'fatigue',
       videoKey: 'fatigue',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌙',
+      supportMsg: 'නිවා ගැනීම ඔබ සහ ඔබේ දරුවාට ආදරය කිරීමකි 🌙',
     },
     medium: {
       activityIds: ['short_breathing', 'rest_meditation'],
       gameId: 'bubble_pop',
       musicKey: 'fatigue',
       videoKey: 'fatigue',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. 🌸',
+      supportMsg: 'ඔබේ ශරීරය මිනිසෙකු සාදා ගත්තා. අද ඒ ගැන මෘදු වෙන්න 🌸',
+    },
+    high: {
+      activityIds: ['rest_meditation', 'new_deep_breathing', 'new_five_senses_grounding', 'night_breathing'],
+      gameId: 'bubble_pop',
+      musicKey: 'fatigue',
+      videoKey: 'fatigue',
+      supportMsg: 'ඔබේ ශරීරයට සහ මනසට පූර්ණ විවේකය අවශ්‍යයි. වහාම සෞඛ්‍ය උපදෙස් ලබාගන්න 🆘',
     },
   },
 
@@ -683,14 +715,21 @@ const RULES = {
       gameId: 'bubble_pop',
       musicKey: 'anxiety',
       videoKey: 'anxiety',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜',
+      supportMsg: 'ඔබේ කාංසාව ආදරය — ගොඩ බිමකට ළඟා වීමට 💜',
     },
     medium: {
       activityIds: ['breathing_478', 'guided_meditation', 'grounding_54321'],
       gameId: 'bubble_pop',
       musicKey: 'anxiety',
       videoKey: 'anxiety',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. 🌿',
+      supportMsg: 'ඔබ ආරක්ෂිතයි. ඔබ සිටිනවා. ඔබ ප්‍රමාණවත් 🌿',
+    },
+    high: {
+      activityIds: ['new_deep_breathing', 'new_five_senses_grounding', 'grounding_54321', 'guided_meditation'],
+      gameId: 'mindful_tap',
+      musicKey: 'anxiety',
+      videoKey: 'anxiety',
+      supportMsg: 'ඔබ ආරක්ෂිතයි. කරුණාකර වහාම නොමිලේ හදිසි උපදේශන සේවාව (1926) අමතන්න 🆘',
     },
   },
 
@@ -702,14 +741,21 @@ const RULES = {
       gameId: 'baby_mood',
       musicKey: 'bonding_issues',
       videoKey: 'bonding_issues',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ — ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸',
+      supportMsg: 'බැඳීම සෑම විටම ක්ෂණික නොවේ — ආදරය නිශ්ශබ්දව, ස්ථිරව වර්ධනය වෙයි 🌸',
     },
     medium: {
       activityIds: ['breathing_478', 'journaling'],
       gameId: 'baby_mood',
       musicKey: 'bonding_issues',
       videoKey: 'bonding_issues',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜',
+      supportMsg: 'සෑම ස්පර්ශයක්, සෑම කිරි දීමක් — ඒ බැඳීමකි. ඔබ දැනටමත් ඒ කරනවා 💜',
+    },
+    high: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_five_senses_grounding', 'new_positive_affirmations'],
+      gameId: 'baby_mood',
+      musicKey: 'bonding_issues',
+      videoKey: 'bonding_issues',
+      supportMsg: 'බැඳීම ගොඩනැඟීමට කාලය අවශ්‍යයි. කරුණාකර පවුල් සෞඛ්‍ය සේවිකාවගේ උපදෙස් ලබාගන්න 💜',
     },
   },
 
@@ -721,14 +767,21 @@ const RULES = {
       gameId: 'affirmation_game',
       musicKey: 'lack_of_support',
       videoKey: 'lack_of_support',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜',
+      supportMsg: 'ආධාර ඉල්ලා සිටීම ශ්‍රේෂ්ඨ ධෛර්යයකි 💜',
     },
     medium: {
       activityIds: ['breathing_478', 'gratitude_writing', 'affirmation_activity'],
       gameId: 'affirmation_game',
       musicKey: 'lack_of_support',
       videoKey: 'lack_of_support',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸',
+      supportMsg: 'ඔබට ගමක් ලැබෙන්නට සුදුසුයි. අද ඒ ගමේ කොටස් අය අපි 🌸',
+    },
+    high: {
+      activityIds: ['new_five_senses_grounding', 'new_deep_breathing', 'new_positive_affirmations', 'new_worry_box'],
+      gameId: 'affirmation_game',
+      musicKey: 'lack_of_support',
+      videoKey: 'lack_of_support',
+      supportMsg: 'ඔබ තනිව සියල්ල දරාගත යුතු නැත. කරුණාකර 1926 හෝ ආසන්නතම සෞඛ්‍ය නිලධාරී අමතන්න 🆘',
     },
   },
 
@@ -740,14 +793,21 @@ const RULES = {
       gameId: 'colouring',
       musicKey: 'sleep_problems',
       videoKey: 'sleep_problems',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌙',
+      supportMsg: 'විනාඩි 20 ක් පවා විවේක ගැනීම ගණන් ගැනේ 🌙',
     },
     medium: {
       activityIds: ['night_breathing', 'breathing_478', 'rest_meditation'],
       gameId: 'colouring',
       musicKey: 'sleep_problems',
       videoKey: 'sleep_problems',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜',
+      supportMsg: 'නිදා ගැනීමේ අහිමිය තාවකාලිකයි. ඔබේ ශක්තිය ස්ථිරයි 💜',
+    },
+    high: {
+      activityIds: ['night_breathing', 'rest_meditation', 'new_deep_breathing', 'new_five_senses_grounding'],
+      gameId: 'colouring',
+      musicKey: 'sleep_problems',
+      videoKey: 'sleep_problems',
+      supportMsg: 'දැඩි නින්ද නොයාම සඳහා වෛද්‍ය උපදෙස් ලබාගැනීම වැදගත්ය 💜',
     },
   },
 
@@ -759,14 +819,21 @@ const RULES = {
       gameId: 'affirmation_game',
       musicKey: 'loss_of_confidence',
       videoKey: 'loss_of_confidence',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸',
+      supportMsg: 'පරිපූර්ණ මවක් නැත — සැබෑ මවක් පමණයි. ඒ ඔබයි 🌸',
     },
     medium: {
       activityIds: ['breathing_478', 'affirmation_activity', 'write_positive'],
       gameId: 'affirmation_game',
       musicKey: 'loss_of_confidence',
       videoKey: 'loss_of_confidence',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜',
+      supportMsg: 'සැකය සත්‍ය නොවේ. ඔබ ආදරණීය, හැකි, ප්‍රමාණවත් 💜',
+    },
+    high: {
+      activityIds: ['new_positive_affirmations', 'new_five_senses_grounding', 'new_deep_breathing', 'guided_meditation'],
+      gameId: 'affirmation_game',
+      musicKey: 'loss_of_confidence',
+      videoKey: 'loss_of_confidence',
+      supportMsg: 'ඔබ ඉතා වටිනා ආදරණීය මවකි. අසීරු අවස්ථාවලදී උපකාර ලබාගැනීම ශක්තියකි 🌸',
     },
   },
 
@@ -778,14 +845,21 @@ const RULES = {
       gameId: 'bubble_pop',
       musicKey: 'overwhelmed',
       videoKey: 'overwhelmed',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜',
+      supportMsg: 'අද සෑම දෙයක්ම කළ යුතු නැත. එක් හුස්මක්, එක් මොහොතක් 💜',
     },
     medium: {
       activityIds: ['breathing_478', 'deep_breathing', 'box_breathing'],
       gameId: 'bubble_pop',
       musicKey: 'overwhelmed',
       videoKey: 'overwhelmed',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸',
+      supportMsg: 'ශ්‍රාන්තතාවය ගැඹුරින් ගත කළ බැවිනි. ඒ රැගෙන යාමට ඉඩ දෙන්න 🌸',
+    },
+    high: {
+      activityIds: ['new_deep_breathing', 'new_five_senses_grounding', 'grounding_54321', 'new_worry_box'],
+      gameId: 'mindful_tap',
+      musicKey: 'overwhelmed',
+      videoKey: 'overwhelmed',
+      supportMsg: 'දරාගත නොහැකි පීඩනයක් දැනේ නම්, වහාම නොමිලේ උපදේශන සේවාව (1926) අමතන්න 🆘',
     },
   },
 
@@ -797,14 +871,21 @@ const RULES = {
       gameId: 'colouring',
       musicKey: 'physical_discomfort',
       videoKey: 'physical_discomfort',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸',
+      supportMsg: 'ඔබේ ශරීරය අද්භූත දෙයක් කළා. ඒ ගැන ගෞරවය දෙන්න 🌸',
     },
     medium: {
       activityIds: ['gentle_stretch', 'breathing_478', 'rest_meditation'],
       gameId: 'colouring',
       musicKey: 'physical_discomfort',
       videoKey: 'physical_discomfort',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜',
+      supportMsg: 'සුවය ලැබීමට කාලය ගත වෙයි. ඔබ ලස්සනට කරනවා 💜',
+    },
+    high: {
+      activityIds: ['rest_meditation', 'new_deep_breathing', 'night_breathing', 'short_breathing'],
+      gameId: 'colouring',
+      musicKey: 'physical_discomfort',
+      videoKey: 'physical_discomfort',
+      supportMsg: 'ශාරීරික අපහසුතා සඳහා වහාම වෛද්‍යවරයෙකු හෝ වින්නඹු මාතාවක් හමුවන්න 🆘',
     },
   },
 
@@ -816,14 +897,21 @@ const RULES = {
       gameId: 'affirmation_game',
       musicKey: 'negative_thoughts',
       videoKey: 'negative_thoughts',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜',
+      supportMsg: 'අඳුරු සිතිවිලි සත්‍ය නොවේ — ඒ කාලගුණය. ඒ ද ගෙවී යයි 💜',
     },
     medium: {
       activityIds: ['breathing_478', 'journaling', 'positive_thinking_act'],
       gameId: 'affirmation_game',
       musicKey: 'negative_thoughts',
       videoKey: 'negative_thoughts',
-      supportMsg: 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸',
+      supportMsg: 'ඔබ දකිනවා, ඔබ වටිනවා, ඔබ තනිවම නොමැත 🌸',
+    },
+    high: {
+      activityIds: ['new_deep_breathing', 'new_five_senses_grounding', 'grounding_54321', 'guided_meditation'],
+      gameId: 'affirmation_game',
+      musicKey: 'negative_thoughts',
+      videoKey: 'negative_thoughts',
+      supportMsg: 'ඔබ තනිවම නොවේ. ජීවිතය වටී. කරුණාකර වහාම 1926 අමතා උපකාර ලබාගන්න 🆘',
     },
   },
 
@@ -843,6 +931,13 @@ const RULES = {
       videoKey: 'bonding_issues',
       supportMsg: 'බබාගේ අඬන සංඥා තේරුම් ගැනීමට සෙමෙන් හුස්ම ගන්න 🌸',
     },
+    high: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_five_senses_grounding'],
+      gameId: 'baby_mood',
+      musicKey: 'bonding_issues',
+      videoKey: 'bonding_issues',
+      supportMsg: 'බබා නොනවත්වා අඬන්නේ නම් වහාම වෛද්‍ය උපදෙස් ලබාගන්න 🆘',
+    },
   },
   baby_needs: {
     low: {
@@ -858,6 +953,13 @@ const RULES = {
       musicKey: 'bonding_issues',
       videoKey: 'bonding_issues',
       supportMsg: 'බබාගේ අවශ්‍යතා තේරුම් ගැනීමට සන්සුන් වන්න 🌸',
+    },
+    high: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_five_senses_grounding'],
+      gameId: 'baby_mood',
+      musicKey: 'bonding_issues',
+      videoKey: 'bonding_issues',
+      supportMsg: 'ළදරු අවශ්‍යතා ගැටලුකාරී නම් සෞඛ්‍ය නිලධාරී සහාය ලබාගන්න 💜',
     },
   },
   baby_feeding: {
@@ -875,6 +977,13 @@ const RULES = {
       videoKey: 'bonding_issues',
       supportMsg: 'පෝෂණය කිරීමේදී සෙමෙන් හුස්ම ගන්න 🌸',
     },
+    high: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_drink_water'],
+      gameId: 'baby_mood',
+      musicKey: 'bonding_issues',
+      videoKey: 'bonding_issues',
+      supportMsg: 'මව්කිරි දීමේ දැඩි අපහසුතා සඳහා පවුල් සෞඛ්‍ය සේවිකාව මුණගැසෙන්න 🌸',
+    },
   },
   baby_sleep: {
     low: {
@@ -890,6 +999,13 @@ const RULES = {
       musicKey: 'sleep_problems',
       videoKey: 'sleep_problems',
       supportMsg: 'කෙටි විවේක පවා ඔබට උපකාරී වෙයි 💜',
+    },
+    high: {
+      activityIds: ['baby_mood', 'night_breathing', 'rest_meditation'],
+      gameId: 'baby_mood',
+      musicKey: 'sleep_problems',
+      videoKey: 'sleep_problems',
+      supportMsg: 'ළදරුවාගේ නින්දේ ගැටලු සඳහා වෛද්‍ය උපදෙස් ලබාගන්න 🌙',
     },
   },
   baby_health: {
@@ -907,6 +1023,13 @@ const RULES = {
       videoKey: 'anxiety',
       supportMsg: 'අවශ්‍ය නම් වහාම සෞඛ්‍ය උපදෙස් ලබාගන්න 🆘',
     },
+    high: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'grounding_54321'],
+      gameId: 'baby_mood',
+      musicKey: 'anxiety',
+      videoKey: 'anxiety',
+      supportMsg: 'ළදරු සෞඛ්‍ය හදිසි අවස්ථාවකදී වහාම රෝහලකට යොමු වන්න 🆘',
+    },
   },
   caring_for_baby: {
     low: {
@@ -922,6 +1045,13 @@ const RULES = {
       musicKey: 'bonding_issues',
       videoKey: 'bonding_issues',
       supportMsg: 'ළදරු සාත්තු කිරීමේදී සන්සුන් වන්න 🌸',
+    },
+    high: {
+      activityIds: ['baby_mood', 'new_deep_breathing', 'new_five_senses_grounding'],
+      gameId: 'baby_mood',
+      musicKey: 'bonding_issues',
+      videoKey: 'bonding_issues',
+      supportMsg: 'සාත්තු කිරීමේ දැඩි අපහසුතාවකදී පවුලේ හෝ සෞඛ්‍ය සේවිකාවගේ සහාය පතන්න 💜',
     },
   },
 };
@@ -963,12 +1093,12 @@ export const getRecommendationRule = (reason, riskLevel, preferredActivities = [
   };
 };
 
-export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, preferredActivities = [], preferredGames = [], diaryText = '', completedActivities = [], selectedEmoji = null) => {
+export const getEnhancedRecommendationRule = (emotion, reason, riskLevel, preferredActivities = [], preferredGames = [], diaryText = '', completedActivities = [], selectedEmoji = null, babyIntents = {}) => {
   const existingRecommendations = getRecommendationRule(reason, riskLevel, preferredActivities, preferredGames);
   const effectiveEmotion = selectedEmoji || emotion;
   const newActivities = getRankedActivities(effectiveEmotion, reason, riskLevel, diaryText, preferredActivities, completedActivities, selectedEmoji);
 
-  const games = getRecommendedGames({}, diaryText, reason, 4, riskLevel, effectiveEmotion, selectedEmoji);
+  const games = getRecommendedGames(babyIntents, diaryText, reason, 4, riskLevel, effectiveEmotion, selectedEmoji);
   const game = games[0] || existingRecommendations.game;
 
   return {
@@ -1028,8 +1158,8 @@ const REASON_ACTIVITY_MAP = {
   loneliness: ['new_positive_affirmations', 'new_gratitude_journal', 'new_emotion_check_in', 'new_relaxing_music', 'write_positive', 'journaling'],
   fatigue: ['new_drink_water', 'new_sleep_reflection', 'new_gentle_stretch', 'new_relaxing_music', 'short_breathing', 'rest_meditation'],
   anxiety: ['new_478_breathing', 'new_box_breathing', 'new_guided_meditation', 'new_five_senses_grounding', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321'],
-  bonding_issues: ['baby_mood', 'new_guided_meditation', 'guided_meditation', 'new_baby_interaction_ideas', 'new_positive_affirmations', 'new_relaxing_music', 'affirmation_activity'],
-  lack_of_support: ['new_positive_affirmations', 'new_emotion_check_in', 'new_gratitude_journal', 'new_worry_box', 'gratitude_writing', 'journaling'],
+  bonding_issues: ['baby_mood', 'new_baby_interaction_ideas', 'baby_cue_observation', 'new_relaxing_music', 'new_positive_affirmations', 'new_guided_meditation'],
+  lack_of_support: ['new_positive_affirmations', 'new_emotion_check_in', 'new_gratitude_journal', 'new_worry_box', 'write_positive', 'journaling'],
   sleep_problems: ['new_sleep_reflection', 'new_relaxing_music', 'new_guided_meditation', 'new_deep_breathing', 'rest_meditation', 'night_breathing'],
   loss_of_confidence: ['new_positive_affirmations', 'new_gratitude_journal', 'new_self_care_checklist', 'new_smile_challenge', 'affirmation_activity', 'write_positive'],
   overwhelmed: ['new_box_breathing', 'new_self_care_checklist', 'new_worry_box', 'new_guided_meditation', 'box_breathing', 'guided_meditation', 'short_breathing'],
@@ -1047,16 +1177,16 @@ const REASON_ACTIVITY_MAP = {
 };
 
 const EMOTION_ACTIVITY_MAP = {
-  crying: ['new_worry_box', 'new_five_senses_grounding', 'breathing_478', 'new_calm_coloring'],
-  happy: ['new_smile_challenge', 'new_gratitude_journal', 'write_positive', 'new_positive_affirmations'],
-  sleepy: ['new_sleep_reflection', 'night_breathing', 'rest_meditation', 'new_relaxing_music'],
-  tired: ['new_478_breathing', 'new_box_breathing', 'box_breathing', 'new_five_senses_grounding'],
-  calm: ['new_guided_meditation', 'guided_meditation', 'deep_breathing', 'grounding_54321'],
-  sad: ['journaling', 'new_positive_affirmations', 'write_positive', 'new_gratitude_journal'],
-  anxious: ['new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'breathing_478'],
-  angry: ['new_guided_meditation', 'guided_meditation', 'new_box_breathing', 'new_worry_box', 'new_deep_breathing'],
-  frustrated: ['new_worry_box', 'new_box_breathing', 'new_deep_breathing', 'short_breathing'],
-  stressed: ['new_guided_meditation', 'guided_meditation', 'deep_breathing', 'new_worry_box']
+  crying: ['new_worry_box', 'new_five_senses_grounding', 'breathing_478', 'new_calm_coloring', 'new_emotion_check_in', 'grounding_54321'],
+  happy: ['new_positive_affirmations', 'write_positive', 'new_gratitude_journal', 'new_relaxing_music', 'new_smile_challenge', 'new_guided_meditation', 'new_deep_breathing'],
+  sleepy: ['new_sleep_reflection', 'night_breathing', 'rest_meditation', 'new_relaxing_music', 'new_self_care_checklist', 'new_drink_water', 'short_breathing'],
+  tired: ['new_478_breathing', 'new_box_breathing', 'short_breathing', 'new_five_senses_grounding', 'new_gentle_stretch', 'gentle_stretch', 'new_deep_breathing'],
+  calm: ['new_guided_meditation', 'guided_meditation', 'deep_breathing', 'grounding_54321', 'new_gratitude_journal', 'journaling'],
+  sad: ['journaling', 'new_positive_affirmations', 'write_positive', 'new_worry_box', 'grounding_54321', 'new_five_senses_grounding'],
+  anxious: ['new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'breathing_478', 'grounding_54321', 'new_self_care_checklist'],
+  angry: ['new_guided_meditation', 'guided_meditation', 'new_box_breathing', 'new_worry_box', 'new_deep_breathing', 'short_breathing', 'new_gentle_stretch'],
+  frustrated: ['new_worry_box', 'new_box_breathing', 'new_deep_breathing', 'short_breathing', 'new_positive_affirmations', 'grounding_54321'],
+  stressed: ['new_guided_meditation', 'guided_meditation', 'deep_breathing', 'new_worry_box', 'new_self_care_checklist', 'new_five_senses_grounding']
 };
 
 export const normalizeReasonKey = (reason) => {
@@ -1127,77 +1257,97 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
   const isBabyActive = isBabyRelatedReason(normReason);
   const pool = getCandidatesPool();
 
-  const highRiskSafeList = [
-    'new_deep_breathing', 'new_guided_meditation', 'new_worry_box', 'new_relaxing_music',
-    'deep_breathing', 'guided_meditation', 'breathing_478', 'new_478_breathing',
-    'grounding_54321', 'new_five_senses_grounding', 'night_breathing', 'rest_meditation',
-    'journaling', 'write_positive', 'new_gratitude_journal', 'new_positive_affirmations'
+  const lowRiskProactiveList = [
+    'new_positive_affirmations', 'write_positive', 'new_gratitude_journal', 'journaling',
+    'new_self_care_checklist', 'new_emotion_check_in', 'new_smile_challenge', 'new_drink_water',
+    'new_gentle_stretch', 'gentle_stretch'
+  ];
+
+  const medRiskStabilizationList = [
+    'new_box_breathing', 'box_breathing', 'new_478_breathing', 'breathing_478',
+    'new_guided_meditation', 'guided_meditation', 'new_sleep_reflection', 'short_breathing',
+    'new_worry_box'
+  ];
+
+  const highRiskSomaticSafeList = [
+    'new_five_senses_grounding', 'grounding_54321', 'new_deep_breathing', 'deep_breathing',
+    'new_relaxing_music', 'rest_meditation', 'night_breathing'
+  ];
+
+  const highRiskStrictUnsafeList = [
+    'new_smile_challenge', 'new_drink_water', 'new_gentle_stretch', 'gentle_stretch',
+    'new_self_care_checklist', 'new_baby_interaction_ideas', 'new_memory_card',
+    'journaling', 'new_gratitude_journal', 'write_positive', 'new_positive_affirmations'
   ];
 
   /**
    * ACTIVITY RANKING FORMULA:
-   * Scores and ranks self-care activities dynamically using a multi-factor weighting formula.
-   * Formula: Total Score = (Reason Match +15) + (Baby Context Boost +20) + (Emotion Match +18) 
-   *                        + (Risk Level Safety +8 / -50) + (User Preferences +10) 
-   *                        - (History Repetition Penalty -15) - (Unrelated Penalty -12)
+   * Multi-factor scoring formula:
+   * Total Score = (Reason Match +10) + (Baby Context Boost +6) + (Emotion Match +12) 
+   *             + (Risk Level Safety +26 / -50) + (User Preferences +6) 
+   *             - (History Repetition Penalty -15) - (Unrelated Penalty -12)
    */
   const ranked = pool.map(act => {
     let score = 0;
 
-    // STEP 1: PRIMARY INTENT / REASON MATCH (+15 Weight)
-    // Boosts activities mapped directly to the primary maternal reason/issue
+    // STEP 1: PRIMARY INTENT / REASON MATCH (+10 Weight)
     const reasonList = REASON_ACTIVITY_MAP[normReason] || REASON_ACTIVITY_MAP.overwhelmed;
     if (reasonList.includes(act.id)) {
-      score += 15;
+      score += 10;
     }
 
-    // STEP 2: BABY CONTEXT BOOST (+20 Weight)
-    // Prioritizes infant observation & maternal bonding activities when baby care concerns are active
+    // STEP 2: BABY CONTEXT BOOST (+6 Weight)
     const babyActivities = [
       'baby_mood', 'new_baby_interaction_ideas', 'baby_bonding', 'new_drink_water',
       'baby_cue_observation', 'hunger_cue_observation', 'sleep_cue_observation',
       'crying_pattern_observation', 'baby_routine_tracking', 'mother_baby_observation_time'
     ];
     if (isBabyActive && babyActivities.includes(act.id)) {
-      score += 20;
+      score += 6;
     }
 
-    // STEP 3: EMOTION MATCH (+18 Weight)
-    // Personalizes activity scoring based on current emotional state (happy, sad, anxious, stressed, crying, etc.)
+    // STEP 3: EMOTION MATCH (+12 Weight)
     const emotionList = EMOTION_ACTIVITY_MAP[normEmotion] || EMOTION_ACTIVITY_MAP.stressed;
     if (emotionList.includes(act.id)) {
-      score += 18;
+      score += 12;
     }
 
-    // STEP 4: RISK LEVEL MATCH & CLINICAL SAFETY ENFORCEMENT
-    // Enforces safety constraints for high-risk clinical states (+8 for safe breathing/mindfulness, -50 penalty for others)
+    // STEP 4: RISK LEVEL MATCH & CLINICAL SAFETY ENFORCEMENT (+26 Weight)
     if (normRisk === 'high') {
-      if (highRiskSafeList.includes(act.id)) {
-        score += 8;
+      if (highRiskStrictUnsafeList.includes(act.id)) {
+        score -= 50; // Exclude demanding/active tasks for High Risk
+      } else if (highRiskSomaticSafeList.includes(act.id)) {
+        score += 26; // Crisis soothing & somatic regulation
       } else {
-        score -= 50; // Safety constraint: exclude non-calming activities for High Risk
+        score -= 30;
       }
     } else if (normRisk === 'medium') {
-      const medRiskList = ['new_guided_meditation', 'new_478_breathing', 'new_box_breathing', 'new_five_senses_grounding', 'new_sleep_reflection', 'new_worry_box', 'new_bubble_pop', 'new_memory_card', 'new_self_care_checklist', 'breathing_478', 'box_breathing', 'guided_meditation', 'grounding_54321', 'night_breathing', 'rest_meditation', 'short_breathing', 'new_drink_water', 'new_gentle_stretch', 'journaling', 'write_positive', 'new_gratitude_journal', 'new_positive_affirmations'];
-      if (medRiskList.includes(act.id)) score += 6;
+      // Medium Risk: emotional stabilization, calming activities, breathing, guided meditation
+      if (medRiskStabilizationList.includes(act.id)) {
+        score += 26;
+      } else {
+        score += 2;
+      }
     } else {
-      score += 4;
+      // Low Risk: proactive self-care, reflection, gratitude, gentle connection, habit tracking
+      if (lowRiskProactiveList.includes(act.id)) {
+        score += 26;
+      } else {
+        score += 2;
+      }
     }
 
-    // STEP 5: USER PREFERENCES BOOST (+10 Weight)
-    // Rewards activities pre-selected by the mother in her onboarding preferences
+    // STEP 5: USER PREFERENCES BOOST (+6 Weight)
     if (preferredActivities && preferredActivities.includes(act.id)) {
-      score += 10;
+      score += 6;
     }
 
     // STEP 6: HISTORY REPETITION PENALTY (-15 Penalty)
-    // Applies penalty to activities completed earlier today to encourage variety
     if (completedActivities && completedActivities.includes(act.id)) {
       score -= 15;
     }
 
     // STEP 7: UNRELATED FILTERING (-12 Penalty)
-    // Penalizes activities irrelevant to baby context or active emotion/reason mapping
     const isMapped = reasonList.includes(act.id) || emotionList.includes(act.id);
     if (isBabyActive && !babyActivities.includes(act.id) && !act.id.includes('breathing') && !act.id.includes('meditation') && !act.id.includes('relaxing_music') && !isMapped) {
       score -= 12;
@@ -1212,28 +1362,7 @@ export const getRankedActivities = (emotion, reason, riskLevel, diaryText = '', 
   // FINAL SORTING & SELECTION: Sort by score descending, then by activity ID ascending (deterministic)
   ranked.sort((a, b) => (b.score - a.score) || a.id.localeCompare(b.id));
 
-  let top4 = ranked.slice(0, 4);
-
-  // If user selected crying, sad, anxious, stressed, or frustrated, ensure Mandala Art (new_calm_coloring) is included if suitable
-  const targetEmotions = ['crying', 'sad', 'anxious', 'stressed', 'frustrated'];
-  if (targetEmotions.includes(normEmotion)) {
-    const hasColoring = top4.some(act => act.id === 'new_calm_coloring');
-    if (!hasColoring && normRisk !== 'high') {
-      const coloringAct = pool.find(act => act.id === 'new_calm_coloring');
-      if (coloringAct) {
-        top4[3] = {
-          ...coloringAct,
-          score: 0
-        };
-      }
-    }
-  }
-
-  // DEBUG LOGGING REQUIREMENT
-  console.log('[ACTIVITY RANKING]');
-  console.log('Selected activities:', JSON.stringify(top4.map(a => ({ id: a.id, score: a.score }))));
-
-  return top4;
+  return ranked.slice(0, 4);
 };
 
 // ================================================================

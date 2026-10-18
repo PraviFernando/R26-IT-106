@@ -14,7 +14,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { useTranslation } from 'react-i18next';
-import { Video, ResizeMode } from 'expo-av';
 import { WebView } from 'react-native-webview';
 import * as Font from 'expo-font';
 import { Asset } from 'expo-asset';
@@ -322,9 +321,16 @@ function PillButton({ P, label, onPress, solid, icon }) {
 export default function DashboardScreen({ navigation }) {
     const { t, i18n } = useTranslation();
     const { width } = useWindowDimensions();
-    const { user, logout } = useAuth();
+    const { user, token, logout, restoring } = useAuth();
     const [displayName, setDisplayName] = useState(user?.username || 'Guest User');
     const initials = displayName.slice(0, 2).toUpperCase();
+
+    // Route guard: if unauthenticated, redirect immediately to Login
+    useEffect(() => {
+        if (!restoring && !token) {
+            navigation.replace('Login');
+        }
+    }, [token, restoring, navigation]);
 
     const [activeTab, setActiveTab] = useState('home');
     const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -400,10 +406,76 @@ export default function DashboardScreen({ navigation }) {
             }
         };
 
-        fetchExercises();
-        fetchTodayPlan();
-        fetchUserProfile();
-    }, [user]);
+        const fetchBabyVideos = async () => {
+            try {
+                setLoadingBabyVideos(true);
+                const ageFilter = getInitialAgeFilter(user?.deliveryDate);
+                
+                const tummyRes = await babyActivityService.getActivities({ category: 'tummy_time', ageFilter });
+                const legRes = await babyActivityService.getActivities({ category: 'leg_movement', ageFilter });
+                const reachRes = await babyActivityService.getActivities({ category: 'reaching_grasping', ageFilter });
+                const rollRes = await babyActivityService.getActivities({ category: 'rolling_positioning', ageFilter });
+                const armRes = await babyActivityService.getActivities({ category: 'gentle_arm', ageFilter });
+                const sensoryRes = await babyActivityService.getActivities({ category: 'sensory_movement', ageFilter });
+
+                const videos = [];
+                // 1. Tummy Time
+                if (tummyRes.success && tummyRes.activities && tummyRes.activities.length > 0) {
+                    videos.push(tummyRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_PtD1gC8d4V0', activity_name: 'Tummy Time', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=PtD1gC8d4V0' });
+                }
+
+                // 2. Leg & Movement
+                if (legRes.success && legRes.activities && legRes.activities.length > 0) {
+                    videos.push(legRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_uK7S6yvK1hM', activity_name: 'Leg & Movement', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=uK7S6yvK1hM' });
+                }
+
+                // 3. Reaching & Grasping
+                if (reachRes.success && reachRes.activities && reachRes.activities.length > 0) {
+                    videos.push(reachRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_kYJ5oQ3j63k', activity_name: 'Reaching & Grasping', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=kYJ5oQ3j63k' });
+                }
+
+                // 4. Rolling & Positioning
+                if (rollRes.success && rollRes.activities && rollRes.activities.length > 0) {
+                    videos.push(rollRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_8HPrnN9sWlo', activity_name: 'Rolling & Positioning', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=8HPrnN9sWlo' });
+                }
+
+                // 5. Gentle Arm Movement
+                if (armRes.success && armRes.activities && armRes.activities.length > 0) {
+                    videos.push(armRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_gT2qR-VpCkw', activity_name: 'Gentle Arm Movement', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=gT2qR-VpCkw' });
+                }
+
+                // 6. Sensory & Play
+                if (sensoryRes.success && sensoryRes.activities && sensoryRes.activities.length > 0) {
+                    videos.push(sensoryRes.activities[0]);
+                } else {
+                    videos.push({ _id: 'yt_F3_G8N7e4zY', activity_name: 'Sensory & Play', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=F3_G8N7e4zY' });
+                }
+
+                setBabyVideos(videos);
+            } catch (err) {
+                console.log('Failed to fetch baby videos for dashboard', err);
+            } finally {
+                setLoadingBabyVideos(false);
+            }
+        };
+
+        if (token) {
+            fetchExercises();
+            fetchProgress();
+            fetchUserProfile();
+            fetchBabyVideos();
+        }
+    }, [user, token]);
 
     const handleLogout = () => {
         setSidebarVisible(false);
