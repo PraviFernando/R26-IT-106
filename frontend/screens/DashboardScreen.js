@@ -459,14 +459,9 @@ export default function DashboardScreen({ navigation }) {
         }
     };
 
+    // "Start session" opens the exercise recommendation page
     const openExercise = () => {
-        const ex = suggestedExercises[0];
-        if (ex?.videoUrl) {
-            setSelectedVideoUrl(ex.videoUrl);
-            setVideoModalVisible(true);
-        } else {
-            navigation.navigate('Exercise');
-        }
+        navigation.navigate('Exercise');
     };
 
     const picks = [
