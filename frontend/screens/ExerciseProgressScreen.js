@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, ScrollView, Platform, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import exerciseService from '../services/exerciseService';
-import ScreenContainer from '../components/ScreenContainer';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ContentWell } from '../components/ScreenContainer';
+import ExerciseShell from '../components/exercise/ExerciseShell';
+import ExerciseWatchHistory from './ExerciseWatchHistory';
+import { toLocalDateStr, todayStr } from '../utils/exerciseUtils';
+import { getTranslatedTrend, formatDays } from '../utils/exerciseMessages';
+import { BarChart, C, T, cardShadow, Card, SoftCard, SectionTitle, StatTile, Icon, useExerciseFonts } from '../components/exercise/ui';
 
-const todayStr = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
 
-export default function ExerciseProgressScreen({ navigation }) {
+// =====================================================================================
+// PROGRESS SCREEN = the "Progress" tab and the "Watch history" tab.
+// Progress numbers come from GET /exercise/progress (backend getProgress): streak, this week, average time,
+// missed sessions, recovery trend, daily score chart and the movement tracking statistics.
+// The Watch history tab is the component in screens/ExerciseWatchHistory.js.
+// =====================================================================================
+
+export default function ExerciseProgressScreen({ navigation, route }) {
     const { t, i18n } = useTranslation();
+    const fontsReady = useExerciseFonts();
     const isSinhala = i18n.language === 'si';
+    const isWide = useWindowDimensions().width > 900;
 
     const filters = [
         { key: 'weekly', label: isSinhala ? 'සතිපතා' : 'Weekly' },
@@ -28,19 +37,21 @@ export default function ExerciseProgressScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
     const [selectedFilter, setSelectedFilter] = useState('weekly');
     const [showDropdown, setShowDropdown] = useState(false);
+    const [activeTab, setActiveTab] = useState(route?.params?.tab === 'history' ? 'history' : 'progress');
+    useEffect(() => {
+        if (route?.params?.tab) setActiveTab(route.params.tab === 'history' ? 'history' : 'progress');
+    }, [route?.params?.tab, route?.params?.ts]);
 
-    // Chart width measured from the card it lives in (progressContainer padding 22
-    // + trendlineCard padding 16), so charts fit the centered column at any width.
-    const [chartW, setChartW] = useState(0);
-    const onProgressLayout = (e) => {
-        const w = e.nativeEvent.layout.width - 44 /* progressContainer padding */ - 32 /* trendlineCard padding */;
-        setChartW((prev) => (Math.abs(prev - w) > 1 ? Math.max(0, w) : prev));
-    };
 
+    // keeps the points of the last 7 / 30 / 365 calendar days for the chart filter
     const getChartData = (dataArray, filter) => {
         if (!dataArray || dataArray.length === 0) return [];
         const limit = filter === 'weekly' ? 7 : filter === 'monthly' ? 30 : filter === 'last3months' ? 90 : filter === 'last6months' ? 180 : 365;
-        const sliced = dataArray.slice(-limit);
+        // Keep entries from the last `limit` calendar days (not the last `limit` entries)
+        const start = new Date();
+        start.setDate(start.getDate() - (limit - 1));
+        const startStr = toLocalDateStr(start);
+        const sliced = dataArray.filter(item => item.date >= startStr);
 
         if (sliced.length <= 8) return sliced;
 
@@ -55,22 +66,9 @@ export default function ExerciseProgressScreen({ navigation }) {
         return sampled;
     };
 
-    // Shared trend chart — renders nothing until the container has been measured
-    // (chart-kit needs a real numeric width or it renders a broken SVG).
-    const TrendChart = ({ data, chartConfig }) =>
-        chartW > 0 ? (
-            <LineChart
-                data={data}
-                width={chartW}
-                height={180}
-                fromZero
-                bezier
-                chartConfig={chartConfig}
-                style={{ marginVertical: 8, borderRadius: 16 }}
-            />
-        ) : null;
 
     useEffect(() => {
+        // loads one year of progress and today mood in one go
         const loadData = async () => {
             try {
                 const progData = await exerciseService.getProgress(365);
@@ -90,416 +88,213 @@ export default function ExerciseProgressScreen({ navigation }) {
         loadData();
     }, []);
 
-    const getTranslatedTrend = (trendText) => {
-        if (!trendText) return '';
-        if (!isSinhala) return trendText;
 
-        const translations = {
-            "No data yet to detect recovery trend. Keep logging daily health inputs.": "සුවවීමේ ප්‍රවණතාව හඳුනා ගැනීමට තවමත් දත්ත ප්‍රමාණවත් නැත. දිනපතා සෞඛ්‍ය දත්ත ඇතුළත් කරන්න.",
-            "Fantastic recovery trend detected! Over the past few weeks, your fatigue has decreased and your mobility has improved.": "විශිෂ්ට සුවවීමේ ප්‍රවණතාවක් හඳුනාගෙන ඇත! පසුගිය සති කිහිපය තුළ ඔබේ තෙහෙට්ටුව අඩු වී ඇති අතර චලන හැකියාව වර්ධනය වී ඇත.",
-            "Positive trend: Your fatigue level has been decreasing over the last 3 weeks.": "යහපත් ප්‍රවණතාවක්: පසුගිය සති 3 තුළ ඔබේ තෙහෙට්ටුව මට්ටම ක්‍රමයෙන් අඩු වෙමින් පවතී.",
-            "Positive trend: Your mobility is improving over the last 3 weeks.": "යහපත් ප්‍රවණතාවක්: පසුගිය සති 3 තුළ ඔබේ චලන හැකියාව වර්ධනය වෙමින් පවතී.",
-            "Stable recovery pattern. Rest and follow recommendations daily.": "ස්ථාවර සුවවීමේ රටාවක් පවතී. දිනපතා විවේකය ලබාගෙන උපදෙස් අනුගමනය කරන්න."
-        };
-
-        return translations[trendText.trim()] || trendText;
+    const tr = (en, si) => (isSinhala ? si : en);
+    const shortDate = (date) => {
+        const p = String(date).split('-');
+        return p.length >= 3 ? `${p[1]}/${p[2]}` : date;
+    };
+    // Weekly view: weekday names; longer ranges: month/day
+    const barLabel = (date) => {
+        if (selectedFilter !== 'weekly') return shortDate(date);
+        if (date === toLocalDateStr(new Date())) return tr('Today', 'අද');
+        const d = new Date(date + 'T00:00:00');
+        return isNaN(d) ? shortDate(date) : d.toLocaleDateString(isSinhala ? 'si-LK' : 'en-US', { weekday: 'short' });
     };
 
-    const renderWeeklyGrid = () => {
-        if (!progress) return null;
-        const days = [];
-        const today = new Date();
-        const completedDates = new Set((progress.progressData || []).map(r => r.date));
+    // Line chart inside a card; shows a friendly message when there is no data yet
+    const ChartCard = ({ title, data, valueKey, emptyText }) => (
+        <Card style={pg.chartCard}>
+            <SectionTitle>{title}</SectionTitle>
+            {data.length > 0 ? (
+                <BarChart
+                    accessibilityLabel={`${title}: ${data.map(d => `${barLabel(d.date)} ${Math.round(d[valueKey])}`).join(', ')}`}
+                    data={data.map(d => ({ key: d.date, label: barLabel(d.date), value: d[valueKey] }))}
+                />
+            ) : (
+                <Text style={pg.empty}>{emptyText}</Text>
+            )}
+        </Card>
+    );
 
+    const renderWeekStrip = () => {
+        const completedDates = new Set((progress.progressData || []).map(r => r.date));
+        const days = [];
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
-            d.setDate(today.getDate() - i);
-            const dStr = d.toISOString().split('T')[0];
-            const isCompleted = completedDates.has(dStr);
-            const dayName = d.toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', { weekday: 'short' });
-            const dayNum = d.getDate();
-
+            d.setDate(d.getDate() - i);
+            const dStr = toLocalDateStr(d);
+            const done = completedDates.has(dStr);
             days.push(
-                <View key={dStr} style={styles.gridDayContainer}>
-                    <Text style={styles.gridDayName}>{dayName}</Text>
-                    <View style={[
-                        styles.gridDayCircle,
-                        isCompleted ? styles.gridDayCircleCompleted : styles.gridDayCirclePending
-                    ]}>
-                        {isCompleted ? (
-                            <Text style={styles.gridDayCheck}>✓</Text>
-                        ) : (
-                            <Text style={styles.gridDayNumber}>{dayNum}</Text>
-                        )}
+                <View key={dStr} style={pg.day}>
+                    <Text style={[pg.dayName, i === 0 && pg.dayToday]}>
+                        {i === 0 ? tr('Today', 'අද') : d.toLocaleDateString(isSinhala ? 'si-LK' : 'en-US', { weekday: 'short' })}
+                    </Text>
+                    <View style={[pg.dayCircle, done && pg.dayDone, !done && i === 0 && pg.dayPending]}
+                        accessibilityLabel={done ? tr('Exercised', 'ව්‍යායාම කළා') : tr('No exercise', 'ව්‍යායාම නැත')}>
+                        {done ? <Icon name="check" size={16} color={C.primaryDark} /> : <Text style={pg.dayNum}>{d.getDate()}</Text>}
                     </View>
                 </View>
             );
         }
-
-        return (
-            <View style={styles.weeklyGridCard}>
-                <Text style={styles.weeklyGridTitle}>
-                    {isSinhala ? 'පසුගිය දින 7ක ක්‍රියාකාරකම්' : 'Last 7 Days Activity'}
-                </Text>
-                <View style={styles.weeklyGridRow}>
-                    {days}
-                </View>
-            </View>
-        );
+        return <View style={pg.week}>{days}</View>;
     };
 
-    const renderTrendline = () => {
-        const trendData = (progress && progress.progressData && progress.progressData.length > 0)
-            ? getChartData(progress.progressData, selectedFilter)
-            : [];
 
-        if (trendData.length === 0) {
-            return (
-                <View style={styles.trendlineCard}>
-                    <Text style={styles.trendlineTitle}>{isSinhala ? 'ප්‍රගති ප්‍රවණතාවය' : "Progress Trendline"}</Text>
-                    <View style={styles.trendlinePlaceholder}>
-                        <Text style={styles.trendlinePlaceholderText}>
-                            {isSinhala ? 'ප්‍රගති ප්‍රවණතාවය පෙන්වීමට ප්‍රමාණවත් දත්ත නැත. ව්‍යායාම සම්පූර්ණ කරන්න!' : "Complete exercises to view the progress trendline!"}
-                        </Text>
-                    </View>
-                </View>
-            );
-        }
+    const trendData = progress ? getChartData(progress.progressData, selectedFilter) : [];
+    const movementTrend = progress ? getChartData(progress.movementTrendData, selectedFilter) : [];
+    const accuracyTrend = progress && progress.weeklyAccuracyTrendData ? progress.weeklyAccuracyTrendData.slice(-7) : [];
 
-        const chartLabels = trendData.map(d => {
-            const dateParts = d.date.split('-');
-            return dateParts.length >= 3 ? `${dateParts[1]}/${dateParts[2]}` : d.date;
-        });
-        const chartValues = trendData.map(d => d.avgAccuracy);
-
-        return (
-            <View style={styles.trendlineCard}>
-                <Text style={styles.trendlineTitle}>{isSinhala ? 'ප්‍රගති ප්‍රවණතාවය (පසුගිය සැසි)' : "Progress Trendline (Recent Sessions)"}</Text>
-                <TrendChart
-                    data={{
-                        labels: chartLabels,
-                        datasets: [
-                            {
-                                data: chartValues,
-                                color: (opacity = 1) => `rgba(79, 70, 229, ${opacity})`,
-                                strokeWidth: 3
-                            }
-                        ]
-                    }}
-                    chartConfig={{
-                        backgroundColor: '#F8FAFC',
-                        backgroundGradientFrom: '#F8FAFC',
-                        backgroundGradientTo: '#F8FAFC',
-                        decimalPlaces: 0,
-                        color: (opacity = 1) => `rgba(79, 70, 229, ${opacity})`,
-                        labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
-                        style: { borderRadius: 16 },
-                        propsForDots: { r: "5", strokeWidth: "2", stroke: "#6366F1" }
-                    }}
-                />
-            </View>
-        );
-    };
-
-    const renderMovementPerformance = () => {
-        if (!progress) return null;
-
-        const avgScore = progress.averageMovementScore ?? 0;
-        const bestScore = progress.bestMovementScore ?? 0;
-        const totalReps = progress.totalMovementRepetitions ?? 0;
-        const completedSessions = progress.completedMovementSessionsCount ?? 0;
-
-        const avgAccuracy = progress.averageMovementAccuracy ?? 0;
-        const bestAccuracy = progress.bestMovementAccuracy ?? 0;
-        const correctReps = progress.totalCorrectRepetitions ?? 0;
-
-        const trendData = (progress.movementTrendData && progress.movementTrendData.length > 0)
-            ? getChartData(progress.movementTrendData, selectedFilter)
-            : [];
-
-        const accuracyTrendData = (progress.weeklyAccuracyTrendData && progress.weeklyAccuracyTrendData.length > 0)
-            ? progress.weeklyAccuracyTrendData.slice(-7)
-            : [];
-
-        return (
-            <View style={styles.movementSection}>
-                <Text style={styles.movementTitle}>🤖 {isSinhala ? 'AI චලන කාර්ය සාධනය' : 'AI Movement Performance'}</Text>
-
-                {/* Accuracy Stats */}
-                <View style={styles.statsGrid}>
-                    <LinearGradient colors={['#F0FDF4', '#DCFCE7']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                        <Text style={styles.statValue}>{avgAccuracy}%</Text>
-                        <Text style={styles.statLabel}>📊 {isSinhala ? 'සාමාන්‍ය නිරවද්‍යතාවය' : 'Avg Accuracy'}</Text>
-                    </LinearGradient>
-                    <LinearGradient colors={['#ECFDF5', '#D1FAE5']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                        <Text style={styles.statValue}>{bestAccuracy}%</Text>
-                        <Text style={styles.statLabel}>🏆 {isSinhala ? 'හොඳම නිරවද්‍යතාවය' : 'Best Accuracy'}</Text>
-                    </LinearGradient>
-                </View>
-
-                {/* Repetitions Stats */}
-                <View style={[styles.statsGrid, { marginTop: 12 }]}>
-                    <LinearGradient colors={['#EFF6FF', '#DBEAFE']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                        <Text style={styles.statValue}>{correctReps}</Text>
-                        <Text style={styles.statLabel}>🎯 {isSinhala ? 'නිවැරදි වාර' : 'Correct Reps'}</Text>
-                    </LinearGradient>
-                    <LinearGradient colors={['#FFF0F5', '#FFE4E1']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                        <Text style={styles.statValue}>{totalReps}</Text>
-                        <Text style={styles.statLabel}>🔄 {isSinhala ? 'මුළු වාර ගණන' : 'Total Reps'}</Text>
-                    </LinearGradient>
-                </View>
-
-                {/* Overall Score Stats */}
-                <View style={[styles.statsGrid, { marginTop: 12 }]}>
-                    <LinearGradient colors={['#F5F3FF', '#EDE9FE']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                        <Text style={styles.statValue}>{avgScore}%</Text>
-                        <Text style={styles.statLabel}>📈 {isSinhala ? 'සාමාන්‍ය ලකුණ' : 'Avg Score'}</Text>
-                    </LinearGradient>
-                    <LinearGradient colors={['#FAF5FF', '#F3E8FF']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                        <Text style={styles.statValue}>{bestScore}%</Text>
-                        <Text style={styles.statLabel}>🥇 {isSinhala ? 'හොඳම ලකුණ' : 'Best Score'}</Text>
-                    </LinearGradient>
-                </View>
-
-                {/* Weekly Accuracy Trend Graph */}
-                <View style={[styles.trendlineCard, { marginTop: 16 }]}>
-                    <Text style={styles.trendlineTitle}>{isSinhala ? 'සතිපතා නිරවද්‍යතා ප්‍රවණතාවය' : 'Weekly Accuracy Trend'}</Text>
-                    {accuracyTrendData.length > 0 ? (
-                        <TrendChart
-                            data={{
-                                labels: accuracyTrendData.map(d => {
-                                    const dateParts = d.date.split('-');
-                                    return dateParts.length >= 3 ? `${dateParts[1]}/${dateParts[2]}` : d.date;
-                                }),
-                                datasets: [
-                                    {
-                                        data: accuracyTrendData.map(d => d.avgAccuracy),
-                                        color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
-                                        strokeWidth: 3
-                                    }
-                                ]
-                            }}
-                            chartConfig={{
-                                backgroundColor: '#FFF',
-                                backgroundGradientFrom: '#FFF',
-                                backgroundGradientTo: '#FFF',
-                                decimalPlaces: 0,
-                                color: (opacity = 1) => `rgba(16, 185, 129, ${opacity})`,
-                                labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
-                                style: { borderRadius: 16 },
-                                propsForDots: { r: "5", strokeWidth: "2", stroke: "#10B981" }
-                            }}
-                        />
-                    ) : (
-                        <View style={styles.trendlinePlaceholder}>
-                            <Text style={styles.trendlinePlaceholderText}>
-                                {isSinhala ? 'නිරවද්‍යතා ප්‍රවණතාවය පෙන්වීමට ප්‍රමාණවත් දත්ත නොමැත.' : 'Complete tracking exercises to view your accuracy trend!'}
-                            </Text>
-                        </View>
-                    )}
-                </View>
-
-                {/* Weekly Movement Score Trend Graph */}
-                <View style={[styles.trendlineCard, { marginTop: 16 }]}>
-                    <Text style={styles.trendlineTitle}>{isSinhala ? 'සතිපතා චලන ප්‍රවණතාවය' : 'Weekly Movement Trend'}</Text>
-                    {trendData.length > 0 ? (
-                        <TrendChart
-                            data={{
-                                labels: trendData.map(d => {
-                                    const dateParts = d.date.split('-');
-                                    return dateParts.length >= 3 ? `${dateParts[1]}/${dateParts[2]}` : d.date;
-                                }),
-                                datasets: [
-                                    {
-                                        data: trendData.map(d => d.avgScore),
-                                        color: (opacity = 1) => `rgba(124, 58, 237, ${opacity})`,
-                                        strokeWidth: 3
-                                    }
-                                ]
-                            }}
-                            chartConfig={{
-                                backgroundColor: '#FFF',
-                                backgroundGradientFrom: '#FFF',
-                                backgroundGradientTo: '#FFF',
-                                decimalPlaces: 0,
-                                color: (opacity = 1) => `rgba(124, 58, 237, ${opacity})`,
-                                labelColor: (opacity = 1) => `rgba(71, 85, 105, ${opacity})`,
-                                style: { borderRadius: 16 },
-                                propsForDots: { r: "5", strokeWidth: "2", stroke: "#7C3AED" }
-                            }}
-                        />
-                    ) : (
-                        <View style={styles.trendlinePlaceholder}>
-                            <Text style={styles.trendlinePlaceholderText}>
-                                {isSinhala ? 'චලන ප්‍රවණතාවය පෙන්වීමට ප්‍රමාණවත් දත්ත නොමැත.' : 'Complete tracking exercises to view your movement trend!'}
-                            </Text>
-                        </View>
-                    )}
-                </View>
-            </View>
-        );
-    };
-
-    const header = (
-        <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-                <View style={styles.backCircle}>
-                    <Text style={styles.backIcon}>←</Text>
-                </View>
-            </TouchableOpacity>
-            <View style={styles.headerCenter}>
-                <Text style={styles.headerEmoji}>📊</Text>
-                <Text style={styles.headerTitle}>
-                    {isSinhala ? 'ඔබේ ප්‍රගතිය' : 'Your Progress'}
-                </Text>
-            </View>
-            <TouchableOpacity
-                onPress={() =>
-                    i18n.changeLanguage(
-                        i18n.language === 'en' ? 'si' : 'en'
-                    )
-                }
-                style={{ width: 44, alignItems: 'center', justifyContent: 'center' }}
-            >
-                <Text
-                    style={{
-                        fontWeight: '700',
-                        fontSize: 13,
-                        color: '#7C3AED',
-                        backgroundColor: '#EDE9FE',
-                        paddingHorizontal: 10,
-                        paddingVertical: 4,
-                        borderRadius: 12,
-                    }}
-                >
-                    {i18n.language === 'en' ? 'සිං' : 'EN'}
-                </Text>
-            </TouchableOpacity>
-        </View>
-    );
+    // Phones need the exercise fonts loaded before text uses them (web falls back to sans-serif)
+    if (!fontsReady && Platform.OS !== 'web') return <View style={{ flex: 1, backgroundColor: C.bg }} />;
 
     return (
-        <ScreenContainer
-            gradient={['#EEF2FF', '#FFFFFF', '#F1F5F9']}
-            edges={['top', 'bottom']}
-            header={header}
-            maxWidth="wide"
-            contentContainerStyle={{ paddingTop: 8 }}
-        >
-            {loading ? (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#4F46E5" />
-                    <Text style={styles.loadingText}>Loading progress data...</Text>
+        <SafeAreaView style={{ flex: 1, backgroundColor: C.bg }} edges={['top', 'bottom']}>
+          <ExerciseShell
+            active={activeTab === 'history' ? 'history' : 'progress'}
+            navigation={navigation}
+            isSinhala={isSinhala}
+            onLocal={(key) => {
+                if (key === 'progress' || key === 'history') { setActiveTab(key); return true; }
+                return false;
+            }}
+          >
+            <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+              <ContentWell maxWidth={1180}>
+
+            {/* tab switch. history -> watch history list, otherwise the progress page below */}
+            {activeTab === 'history' ? (
+                <ExerciseWatchHistory isSinhala={isSinhala} />
+            ) : loading ? (
+                <View style={pg.center}>
+                    <ActivityIndicator size="large" color={C.primaryDark} />
+                    <Text style={pg.empty}>{tr('Loading your progress...', 'ඔබේ ප්‍රගතිය පූරණය වෙමින්...')}</Text>
                 </View>
             ) : progress ? (
-                <View style={styles.progressContainer} onLayout={onProgressLayout}>
-                    {/* Dropdown Time Filter Selector at Top of Container */}
-                    <View style={{ position: 'relative', zIndex: 100, marginBottom: 8 }}>
-                        <TouchableOpacity
-                            style={styles.dropdownHeader}
-                            onPress={() => setShowDropdown(!showDropdown)}
-                        >
-                            <Text style={styles.dropdownHeaderText}>
-                                📅 {filters.find(f => f.key === selectedFilter)?.label}
-                            </Text>
-                            <Text style={styles.dropdownHeaderArrow}>{showDropdown ? '▲' : '▼'}</Text>
-                        </TouchableOpacity>
-
-                        {showDropdown && (
-                            <View style={styles.dropdownList}>
-                                {filters.map(item => (
-                                    <TouchableOpacity
-                                        key={item.key}
-                                        style={[
-                                            styles.dropdownItem,
-                                            selectedFilter === item.key && styles.dropdownItemActive
-                                        ]}
-                                        onPress={() => {
-                                            setSelectedFilter(item.key);
-                                            setShowDropdown(false);
-                                        }}
-                                    >
-                                        <Text style={[
-                                            styles.dropdownItemText,
-                                            selectedFilter === item.key && styles.dropdownItemTextActive
-                                        ]}>
-                                            {item.label}
-                                        </Text>
-                                    </TouchableOpacity>
-                                ))}
+                <View style={pg.page}>
+                    <Text style={[pg.pageTitle, { fontSize: isWide ? 34 : 24, lineHeight: isWide ? 40 : 30 }]}>{tr('Your progress', 'ඔබේ ප්‍රගතිය')}</Text>
+                    <SoftCard style={{ gap: 14 }}>
+                        <View style={pg.streakRow}>
+                            <View>
+                                <Text style={pg.streakLabel}>{tr('Current streak', 'වත්මන් අඛණ්ඩතාවය')}</Text>
+                                <Text style={pg.streakValue}>{formatDays(progress.currentStreak, isSinhala)}</Text>
                             </View>
-                        )}
+                            <Text style={pg.streakBest}>{tr('Best', 'හොඳම')}: {formatDays(progress.bestStreak ?? 0, isSinhala)}</Text>
+                        </View>
+                        {renderWeekStrip()}
+                    </SoftCard>
+
+                    <View style={pg.stats}>
+                        <StatTile value={`${progress.weeklyCompletionRate ?? 0}%`} label={tr('This week', 'මෙම සතිය')} style={pg.stat} />
+                        <StatTile value={`${progress.averageDuration ?? 0} ${tr('min', 'මි.')}`} label={tr('Average time', 'සාමාන්‍ය කාලය')} style={pg.stat} />
+                        <StatTile value={String(progress.totalExercises ?? 0)} label={tr('Completed', 'සම්පූර්ණ කළ')} style={pg.stat} />
+                        <StatTile value={String(progress.missedSessions ?? 0)} label={tr('Missed (7 days)', 'මඟ හැරුණු (දින 7)')} style={pg.stat} />
                     </View>
 
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-                        <Text style={styles.progressTitle}>
-                            {isSinhala ? 'ප්‍රගති උපකරණ පුවරුව' : 'Progress Dashboard'}
-                        </Text>
-                        {detectedMood && detectedMood !== 'happy' && detectedMood !== 'neutral' && (
-                            <View style={styles.moodBadge}>
-                                <Text style={{ fontSize: 13, marginRight: 4 }}>
-                                    {detectedMood === 'sad' ? '😔' : detectedMood === 'tired' ? '😪' : detectedMood === 'stressed' ? '😰' : detectedMood === 'angry' ? '😠' : '😌'}
-                                </Text>
-                                <Text style={styles.moodBadgeText}>
-                                    {t(detectedMood)}
-                                </Text>
-                            </View>
-                        )}
-                    </View>
-
-                    {/* Stats Grid Layout */}
-                    <View style={styles.statsGrid}>
-                        <LinearGradient colors={['#EFF6FF', '#DBEAFE']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                            <Text style={styles.statValue}>{progress.currentStreak}</Text>
-                            <Text style={styles.statLabel}>🔥 {isSinhala ? 'වත්මන් දින දාමය' : 'Current Streak'}</Text>
-                        </LinearGradient>
-                        <LinearGradient colors={['#ECFDF5', '#D1FAE5']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                            <Text style={styles.statValue}>{progress.weeklyCompletionRate ?? 0}%</Text>
-                            <Text style={styles.statLabel}>📊 {isSinhala ? 'සතිපතා ප්‍රතිශතය' : 'Weekly Rate'}</Text>
-                        </LinearGradient>
-                    </View>
-
-                    <View style={[styles.statsGrid, { marginTop: 12 }]}>
-                        <LinearGradient colors={['#F5F3FF', '#EDE9FE']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                            <Text style={styles.statValue}>{progress.averageDuration ?? 0}m</Text>
-                            <Text style={styles.statLabel}>⏱️ {isSinhala ? 'සාමාන්‍ය කාලය' : 'Avg Duration'}</Text>
-                        </LinearGradient>
-                        <LinearGradient colors={['#FFFBEB', '#FEF3C7']} style={styles.statBox} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                            <Text style={styles.statValue}>{progress.totalExercises}</Text>
-                            <Text style={styles.statLabel}>🏋️ {isSinhala ? 'සම්පූර්ණ කළ ගණන' : 'Total Completed'}</Text>
-                        </LinearGradient>
-                    </View>
-
-                    <View style={[styles.statsGrid, { marginTop: 12 }]}>
-                        <LinearGradient colors={['#FFF1F2', '#FFE4E6']} style={[styles.statBox, { minWidth: '100%' }]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
-                            <Text style={styles.statValue}>{progress.missedSessions ?? 0}</Text>
-                            <Text style={styles.statLabel}>⚠️ {isSinhala ? 'මඟ හැරුණු ව්‍යායාම (දින 7)' : 'Missed Sessions (Last 7 Days)'}</Text>
-                        </LinearGradient>
-                    </View>
-
-                    {/* Last 7 Days Activity Tracker */}
-                    {renderWeeklyGrid()}
-
-                    {/* Accuracy Trendline Chart */}
-                    {renderTrendline()}
-
-                    {/* Movement Performance Section */}
-                    {renderMovementPerformance()}
-
-                    {/* Recovery Trend Section */}
                     {progress.recoveryTrend && (
-                        <View style={styles.trendContainer}>
-                            <Text style={styles.trendTitle}>🩺 {isSinhala ? 'සුවවීමේ ප්‍රවණතා විශ්ලේෂණය' : 'Recovery Trend Analysis'}</Text>
-                            <Text style={styles.trendText}>{getTranslatedTrend(progress.recoveryTrend)}</Text>
+                        <View style={pg.trend}>
+                            <Text style={pg.trendKicker}>{tr('Recovery trend', 'සුවවීමේ ප්‍රවණතාවය')}</Text>
+                            <Text style={pg.trendText}>{getTranslatedTrend(progress.recoveryTrend, isSinhala, progress.recoveryTrendCode)}</Text>
                         </View>
                     )}
+
+                    <View style={pg.filterRow}>
+                        <SectionTitle>{tr('Charts', 'ප්‍රස්ථාර')}</SectionTitle>
+                        <View style={{ position: 'relative', zIndex: 100 }}>
+                            <Pressable style={pg.filterBtn} onPress={() => setShowDropdown(!showDropdown)} accessibilityRole="button">
+                                <Text style={pg.filterText}>{filters.find(f => f.key === selectedFilter)?.label}</Text>
+                                <Text style={pg.filterText}>{showDropdown ? '▲' : '▼'}</Text>
+                            </Pressable>
+                            {showDropdown && (
+                                <View style={pg.dropdown}>
+                                    {filters.map(item => (
+                                        <Pressable
+                                            key={item.key}
+                                            style={[pg.dropItem, selectedFilter === item.key && pg.dropItemOn]}
+                                            onPress={() => { setSelectedFilter(item.key); setShowDropdown(false); }}
+                                        >
+                                            <Text style={[pg.filterText, selectedFilter === item.key && { color: C.primaryDark, ...T.bold }]}>{item.label}</Text>
+                                        </Pressable>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
+                    </View>
+
+                    <ChartCard
+                        title={tr('Daily score', 'දෛනික ලකුණු')}
+                        data={trendData}
+                        valueKey="avgAccuracy"
+                        emptyText={tr('Complete exercises to see your daily score.', 'දෛනික ලකුණු දැකීමට ව්‍යායාම සම්පූර්ණ කරන්න.')}
+                    />
+
+                    {/* statistics from the camera movement sessions (average form, best score, correct reps, sessions) */}
+                    <SectionTitle style={{ marginTop: 4 }}>{tr('Movement tracking', 'චලන ලුහුබැඳීම')}</SectionTitle>
+                    <View style={pg.stats}>
+                        <StatTile value={`${progress.averageMovementAccuracy ?? 0}%`} label={tr('Average form', 'සාමාන්‍ය නිරවද්‍යතාව')} style={pg.stat} />
+                        <StatTile value={`${progress.bestMovementScore ?? 0}%`} label={tr('Best score', 'හොඳම ලකුණ')} style={pg.stat} />
+                        <StatTile value={String(progress.totalCorrectRepetitions ?? 0)} label={tr('Correct reps', 'නිවැරදි වාර')} style={pg.stat} />
+                        <StatTile value={String(progress.completedMovementSessionsCount ?? 0)} label={tr('Sessions', 'සැසි')} style={pg.stat} />
+                    </View>
+                    <ChartCard
+                        title={tr('Form accuracy', 'නිරවද්‍යතා ප්‍රවණතාවය')}
+                        data={accuracyTrend}
+                        valueKey="avgAccuracy"
+                        emptyText={tr('Use camera tracking to see your form accuracy.', 'නිරවද්‍යතාව දැකීමට කැමරා ලුහුබැඳීම භාවිතා කරන්න.')}
+                    />
+                    <ChartCard
+                        title={tr('Movement score', 'චලන ලකුණු')}
+                        data={movementTrend}
+                        valueKey="avgScore"
+                        emptyText={tr('Use camera tracking to see your movement score.', 'චලන ලකුණු දැකීමට කැමරා ලුහුබැඳීම භාවිතා කරන්න.')}
+                    />
                 </View>
             ) : (
-                <Text style={styles.errorText}>No progress data available yet.</Text>
+                <Card style={pg.center}><Text style={pg.empty}>{tr('No progress data yet. Complete an exercise to start.', 'තවම ප්‍රගති දත්ත නැත. ආරම්භ කිරීමට ව්‍යායාමයක් සම්පූර්ණ කරන්න.')}</Text></Card>
             )}
-        </ScreenContainer>
+              </ContentWell>
+            </ScrollView>
+          </ExerciseShell>
+        </SafeAreaView>
     );
 }
+
+// Layout for the redesigned progress screen (PeriCare exercise mockups)
+const pg = StyleSheet.create({
+    pageTitle: { ...T.heading, color: C.text, marginBottom: 2 },
+    tabs: { flexDirection: 'row', backgroundColor: C.lilac, borderRadius: 22, padding: 4, gap: 4, marginBottom: 14 },
+    tab: { flex: 1, minHeight: 42, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+    tabOn: { backgroundColor: '#FFFFFF' },
+    tabText: { ...T.semi, fontSize: 14, color: C.textSub },
+    tabTextOn: { ...T.bold, color: C.primaryDark },
+    page: { gap: 14 },
+    center: { alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 40 },
+    empty: { ...T.medium, fontSize: 14, color: C.textSub, textAlign: 'center', paddingVertical: 24 },
+    streakRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+    streakLabel: { ...T.semi, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 1 },
+    streakValue: { ...T.heading, fontSize: 34, lineHeight: 40, color: C.text },
+    streakBest: { ...T.medium, fontSize: 14, color: C.textSub },
+    week: { flexDirection: 'row', justifyContent: 'space-between' },
+    day: { alignItems: 'center', gap: 6 },
+    dayName: { ...T.medium, fontSize: 12, color: C.textSub },
+    dayToday: { ...T.semi, color: C.primaryDark },
+    dayCircle: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.secondary, alignItems: 'center', justifyContent: 'center' },
+    dayDone: { backgroundColor: C.primary, borderColor: C.primary },
+    dayPending: { borderStyle: 'dashed', backgroundColor: 'transparent' },
+    dayNum: { ...T.semi, fontSize: 13, color: C.textSub },
+    stats: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+    stat: { flexBasis: 150, flexGrow: 1 },
+    trend: { backgroundColor: C.tint, borderRadius: 20, paddingVertical: 20, paddingHorizontal: 24, gap: 6 },
+    trendKicker: { ...T.semi, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 1 },
+    trendText: { ...T.heading, fontSize: 20, lineHeight: 28, color: C.text },
+    filterRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', zIndex: 100 },
+    filterBtn: { minHeight: 40, paddingHorizontal: 16, borderRadius: 999, borderWidth: 1, borderColor: C.control, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', gap: 8 },
+    filterText: { ...T.semi, fontSize: 13, color: C.text },
+    dropdown: { position: 'absolute', right: 0, top: 46, minWidth: 180, backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: C.border, paddingVertical: 6, ...cardShadow },
+    dropItem: { minHeight: 40, paddingHorizontal: 14, justifyContent: 'center' },
+    dropItemOn: { backgroundColor: C.lilac },
+    chartCard: { gap: 10, alignItems: 'stretch' },
+});
 
 const styles = StyleSheet.create({
     header: {
@@ -519,6 +314,16 @@ const styles = StyleSheet.create({
     headerCenter: { flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, justifyContent: 'center' },
     headerEmoji: { fontSize: 24 },
     headerTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A', textAlign: 'center' },
+    tabBar: {
+        flexDirection: 'row', backgroundColor: '#EEF2FF', borderRadius: 16, padding: 4, gap: 4,
+    },
+    tabBtn: { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
+    tabBtnActive: {
+        backgroundColor: '#FFF', elevation: 2, shadowColor: '#4F46E5', shadowOpacity: 0.12,
+        shadowRadius: 6, shadowOffset: { width: 0, height: 2 },
+    },
+    tabText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
+    tabTextActive: { color: '#4F46E5' },
     loadingContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 100 },
     loadingText: { fontSize: 14, color: '#64748B', marginTop: 12 },
     errorText: { fontSize: 14, color: '#EF4444', textAlign: 'center', marginTop: 60 },

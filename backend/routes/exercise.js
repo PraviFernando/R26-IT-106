@@ -1,3 +1,5 @@
+// URL list of the exercise component. Each line maps a URL to a function in controllers/exercise.js.
+// Base path is /exercise (registered in server.js). Every route needs a logged-in user (verifyToken).
 const express = require('express');
 const router = express.Router();
 const { verifyToken, verifyRole } = require('../middleware/authMiddleware');
@@ -12,7 +14,11 @@ const {
     submitFeedback,
     updateRecommendationProgress,
     saveMovementSession,
-    getMovementSessions
+    getMovementSessions,
+    upsertWatchHistory,
+    getWatchHistory,
+    deleteWatchHistoryItem,
+    clearWatchHistory
 } = require('../controllers/exercise');
 
 // All exercise routes require authentication
@@ -32,6 +38,12 @@ router.post('/record', saveExerciseRecord);
 // Movement sessions
 router.post('/movement-session', saveMovementSession);
 router.get('/movement-sessions', getMovementSessions);
+
+// Watch history (YouTube-style)
+router.post('/watch-history', upsertWatchHistory);
+router.get('/watch-history', getWatchHistory);
+router.delete('/watch-history/:id', deleteWatchHistoryItem);
+router.delete('/watch-history', clearWatchHistory);
 
 // Feedback submissions
 router.post('/feedback', submitFeedback);
