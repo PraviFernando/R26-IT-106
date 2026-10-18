@@ -10,6 +10,12 @@
 //  - Steadiness: how still the pelvis stays (hip tilt + side-to-side sway), for every exercise
 //  - Pace: seconds per rep compared with a slow, controlled tempo (the video's poses can't be measured)
 
+// THE SCORING FORMULAS.
+//  - msRomScore: range of motion = how much of the target movement the person reached (0-100)
+//  - msAlignment: posture = form checks (knees over ankles, hips level...) x correct body position
+//  - msSteadiness: how still the pelvis stays (hip tilt + side sway), 100 = very steady
+//  - msPaceScore: tempo of a rep; it is calculated but NOT shown in the app any more
+// MS_PROFILES holds the target angles per exercise. Unit tests: backend/tests/exercise/movementScoring.test.js
 export const MOVEMENT_SCORING_JS = `
 var MS_PROFILES = {
     'Modified Squats': { metric: 'knee', rest: 170, target: 105, paceSec: [3, 7] },
@@ -52,6 +58,7 @@ function msStd(arr) {
 }
 
 // Share (0..100) of the exercise's target range covered by the values seen
+// RANGE OF MOTION score
 function msRomScore(profile, minV, maxV) {
     if (!profile || !isFinite(minV) || !isFinite(maxV)) return 0;
     if (profile.rangeOnly) return msClamp((maxV - minV) / profile.range * 100);
@@ -71,6 +78,7 @@ function msPaceScore(repMs, paceSec) {
 
 // Steadiness from recent samples of hip tilt and side sway, both divided by torso length.
 // A still pelvis gives ~100; visible rocking or tilting brings it down.
+// STEADINESS score (penalty from hip tilt variation and side sway)
 function msSteadiness(tilts, sways) {
     if (tilts.length < 5) return null;
     var tiltLevel = msMean(tilts.map(function (t) { return Math.abs(t); }));
@@ -93,6 +101,7 @@ function msTorsoTilt(lm) {
     return Math.atan2(Math.abs(sx - hx), Math.abs(sy - hy)) * 180 / Math.PI;
 }
 
+// POSTURE score, see the two parts below
 // Posture (0..100) on raw MediaPipe landmarks. Two parts:
 //  1. Body position for the exercise (upright for squats, lying for bridges, on all fours for
 //     Cat-Cow / Bird Dog). If that is wrong, posture stays low whatever else looks fine.

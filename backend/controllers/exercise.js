@@ -1,3 +1,26 @@
+// =====================================================================================
+// EXERCISE CONTROLLER (main backend file of the exercise component)
+// -------------------------------------------------------------------------------------
+// Route -> handler map (routes are in routes/exercise.js, all need a login token):
+//   POST /exercise/health-data           submitHealthData      health form -> AI level -> safety -> videos
+//   GET  /exercise/health-data/:date     getHealthData         read the saved form of a day
+//   GET  /exercise/recommendations/:date getRecommendations    today list of videos
+//   POST /exercise/recommendations/progress updateRecommendationProgress  watch % of a video
+//   POST /exercise/record                saveExerciseRecord    stopwatch / completion + feedback message
+//   POST /exercise/movement-session      saveMovementSession   camera movement tracking result
+//   GET  /exercise/movement-sessions     getMovementSessions
+//   GET  /exercise/progress              getProgress           streaks, scores, recovery trend
+//   POST/GET/DELETE /exercise/watch-history  watch history (YouTube style)
+// Sections in this file, top to bottom:
+//   1. allowed values + input validation
+//   2. YouTube search, cache and saved fallback videos
+//   3. clinical safety rules + diary mood rules
+//   4. submitHealthData (the big flow, see numbered steps inside)
+//   5. record / progress / feedback
+//   6. movement sessions and watch history
+// Thresholds used here live in config/exerciseConfig.js; rules are explained in docs/exercise-clinical-rules.md
+// =====================================================================================
+
 const PostpartumHealthData = require('../models/PostpartumHealthData');
 const ExerciseRecord = require('../models/ExerciseRecord');
 const User = require('../models/User');
@@ -14,6 +37,8 @@ const CFG = require('../config/exerciseConfig');
 const { parseDurationStr, toMinutes, toLocalDateStr, isValidDateStr, toBool, decodeHtml } = require('../utils/exerciseUtils');
 const { buildVideoQueries } = require('../utils/exerciseVideoQueries');
 
+// ---------- SECTION 1: allowed values and input validation ----------
+// Every value the app can send is checked against these lists so bad data never reaches the database.
 const FATIGUE_LEVELS = ['low', 'medium', 'high'];
 const MOBILITY_LEVELS = ['very_limited', 'limited', 'normal'];
 const WILLINGNESS_LEVELS = ['low', 'medium', 'high'];
@@ -36,6 +61,10 @@ const validateHealthData = (body) => {
     return null;
 };
 
+// ---------- SECTION 2: videos (YouTube search + cache + saved fallback list) ----------
+// FALLBACK_VIDEOS is the safety net. Keys 1-4 are the exercise categories
+// (1 breathing/bedrest, 2 gentle mobility, 3 strength and core, 4 full functional).
+// It is used when the YouTube key is missing, the daily quota (429) is used up, or YouTube is down.
 // Fallback dynamic videos in case YouTube API is unavailable
 const FALLBACK_VIDEOS = {
     1: [
@@ -88,6 +117,7 @@ const FALLBACK_VIDEOS = {
     ]
 };
 
+// YouTube returns durations like PT15M33S; this turns them into "15:33" for the app.
 // Parse YouTube ISO 8601 duration format (e.g. PT15M33S -> "15:33")
 const parseISO8601Duration = (durationStr) => {
     const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/;
@@ -148,6 +178,8 @@ const fetchQueryVideos = async (q, maxResults, apiKey) => {
     }
 };
 
+// how the fallback works: top up the list with saved videos, never repeating one,
+// and use gentler categories when the category has too few different videos (never a harder one).
 // Saved videos for a category without duplicates, skipping URLs already in the list. When the
 // category has too few different videos, gentler categories are used (never a harder one).
 const getFallbackVideos = (category, usedUrls, limit) => {
@@ -171,6 +203,9 @@ const getFallbackVideos = (category, usedUrls, limit) => {
     return out;
 };
 
+// ---------- SECTION 3: clinical safety rules and diary mood rules ----------
+// safety status is "blocked" (doctor restriction: no videos), "limited" (bleeding, or C-section
+// before 6 weeks: only gentle exercises) or "safe". Messages come in English and Sinhala.
 // Clinical Safety evaluation function
 const evaluateSafetyStatus = (weeks, deliveryType, bleeding, doctorRestrictions) => {
     let safetyStatus = 'safe';
@@ -198,6 +233,8 @@ const evaluateSafetyStatus = (weeks, deliveryType, bleeding, doctorRestrictions)
     return { safetyStatus, safetyCode, safetyMessage, safetyMessageSi };
 };
 
+// reads the mother diary (emoji, sentiment and English/Sinhala words) and returns happy / sad / neutral.
+// The mood is used later to lower the exercise level and to add a "mood" video search.
 // Bilingual Mood Detection Function (English/Sinhala)
 const analyzeDiaryMood = (text, emoji, diarySentiment) => {
     const content = (text || '').toLowerCase();
@@ -224,6 +261,7 @@ const analyzeDiaryMood = (text, emoji, diarySentiment) => {
     return mood;
 };
 
+// sad mood -> exercise category goes down by one (never below 1).
 // Apply Diary Rules (adjusting categories dynamically based on mood)
 const applyDiaryRules = (exerciseCategory, mood) => {
     let finalCategory = exerciseCategory;
@@ -239,6 +277,15 @@ const applyDiaryRules = (exerciseCategory, mood) => {
 
 /**
  * POST /exercise/health-data - Save daily health data and get recommendations
+  * THE MAIN FLOW. Steps inside, in order:
+  *   0. validate the form, save delivery date/type on the user, work out weeks after delivery
+  *   1. get the AI prediction (risk 0-2 and exercise category 1-4) from the ML service, rule fallback if it is down
+  *   2. lower the category for a sad diary mood and for a bad last session (pain / hard / low adherence)
+  *   3. clinical safety overrides (bleeding, C-section, many symptoms, fatigue, low mobility)
+  *   4. safety status + English/Sinhala messages
+  *   5. pick videos: YouTube searches from the form (cached), top up with saved videos
+  *   6. personalise the order from the last movement tracking sessions (longer or easier videos)
+  *   7. replace today record in MongoDB and return the result to the app
  */
 const submitHealthData = async (req, res, next) => {
     try {
@@ -253,6 +300,7 @@ const submitHealthData = async (req, res, next) => {
             muscleWeakness, willingnessToExercise, mood, sentiment, stressKeywords
         } = req.body;
 
+        // STEP 0: remember delivery date/type on the user and work out the weeks after delivery
         let finalWeeks = weeksAfterDelivery;
         let finalDeliveryDate = deliveryDate;
         let finalDeliveryType = deliveryType;
@@ -283,6 +331,7 @@ const submitHealthData = async (req, res, next) => {
             finalWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
         }
 
+        // Clean, typed copy of the form; this object is what gets saved and sent to the ML model
         const healthData = {
             userId,
             date,
@@ -303,6 +352,8 @@ const submitHealthData = async (req, res, next) => {
             stressKeywords: stressKeywords || []
         };
 
+        // STEP 1: the latest EPDS screening risk is added as a feature, then MLPredictionService asks the
+        // Random Forest model (Flask API, port 5001). If it fails, fallbackPrediction() uses the same rules as the labels.
         // 1. Get EPDS risk screening, inject it to healthData, and get ML prediction
         let riskScore = 1;
         let exerciseCategory = 3;
@@ -330,6 +381,7 @@ const submitHealthData = async (req, res, next) => {
         // 2. No safety overrides to match Excel predictions directly
         let isOverridden = false;
 
+        // STEP 2: adapt the level from the diary mood and from the last exercise session
         // Apply diary rules based on mood
         const diaryEntry = await Diary.findOne({ userId, date });
         const detectedMood = analyzeDiaryMood(
@@ -346,6 +398,8 @@ const submitHealthData = async (req, res, next) => {
             console.log(`[AI Adaptation] Adjusted next session intensity down to Category ${exerciseCategory} due to previous pain/difficulty/incomplete session.`);
         }
 
+        // STEP 3: safety caps are applied AFTER the AI, so the AI can never recommend something unsafe.
+        // bleeding -> 1, C-section under 6 weeks -> max 2, 3+ symptoms -> 1, very limited mobility / high fatigue / 2 symptoms -> max 2
         // Clinical Safety Override for severe symptoms / limited mobility
         const symptomsCount = 
             (healthData.pelvicPain ? 1 : 0) +
@@ -367,6 +421,7 @@ const submitHealthData = async (req, res, next) => {
             isOverridden = true;
         }
 
+        // STEP 4: safety status and messages shown to the mother
         // Evaluate dynamic safety status using clinical safety evaluation function
         const safetyEval = evaluateSafetyStatus(
             healthData.weeksAfterDelivery,
@@ -387,6 +442,8 @@ const submitHealthData = async (req, res, next) => {
             healthData.safetyMessageSi = 'තෙහෙට්ටුව, වේදනාව හෝ චලන සීමාවන් හේතුවෙන් ව්‍යායාම මට්ටම මෘදු ව්‍යායාම දක්වා සකස් කර ඇත.';
         }
 
+        // STEP 5: videos. One search for the category plus up to 2 "focus" searches built from the form
+        // (see utils/exerciseVideoQueries.js). Shorts under 60 seconds are skipped. Results are cached for 24 hours.
         // 3. YouTube API integration to fetch matching videos
         // A doctor's restriction blocks exercise entirely, so no videos are recommended or saved
         const isBlocked = healthData.safetyStatus === 'blocked';
@@ -441,6 +498,7 @@ const submitHealthData = async (req, res, next) => {
             }
         }
 
+        // PARTIAL FAILURE HANDLING - if YouTube gave fewer than 10 videos, saved videos fill the rest
         // Top up with saved videos when YouTube gave none or too few: key missing, quota used up,
         // or only some of the searches worked
         if (!isBlocked && recommendedExercises.length < CFG.RECOMMENDATION_POOL_SIZE) {
@@ -451,6 +509,8 @@ const submitHealthData = async (req, res, next) => {
             ));
         }
 
+        // STEP 6: personalisation. Last 3 completed tracking sessions all high and Easy -> longer videos first;
+        // last session weak, painful or Hard -> shorter, gentler videos first. Focus videos always stay first.
         // Sort and apply personalization adjustment based on movement score
         const recentMovementSessions = await ExerciseMovementSession.find({ userId: String(userId), completed: true })
             .sort({ timestamp: -1 })
@@ -493,6 +553,8 @@ const submitHealthData = async (req, res, next) => {
         healthData.recommendedExercises = recommendedExercises;
         healthData.predictionSource = mlPredictionData && mlPredictionData.source ? mlPredictionData.source : 'rule_fallback';
 
+        // STEP 7: save (one record per user per day) and answer the app. predictionSource tells if the real
+        // ML model ("ml_model") or the rule fallback ("rule_fallback") produced the level.
         // Delete any existing health data record for today to ensure new recommendations are clean and not cached/merged
         await PostpartumHealthData.deleteOne({ userId, date });
 
@@ -559,6 +621,7 @@ const getHealthData = async (req, res, next) => {
 
 /**
  * GET /exercise/recommendations/:date
+  * returns today saved video list (Today screen). Old short lists are topped up to 10 with saved videos.
  */
 const getRecommendations = async (req, res, next) => {
     try {
@@ -603,6 +666,10 @@ const getRecommendations = async (req, res, next) => {
 
 /**
  * POST /exercise/record - Save exercise completion record
+  * called by the stopwatch, by finishing a video and by camera tracking.
+  * Calculates the adherence score (time done / recommended time), keeps ONE record per exercise per day,
+  * builds the feedback message (pain, fatigue, excellent) with a feedbackCode for translation,
+  * and marks the card completed in today list so it shows in the Completed tab.
  */
 const saveExerciseRecord = async (req, res, next) => {
     try {
@@ -703,6 +770,7 @@ const saveExerciseRecord = async (req, res, next) => {
 
 /**
  * POST /exercise/video/upload - Mock video analysis
+  * demo only, the score is simulated. Real form checking is the live camera tracking.
  */
 const uploadVideo = async (req, res, next) => {
     try {
@@ -734,6 +802,9 @@ const uploadVideo = async (req, res, next) => {
 
 /**
  * GET /exercise/progress
+  * everything on the Progress tab: streak (consecutive local days), best streak, missed sessions,
+  * weekly rate, average time, recovery trend (fatigue and mobility, first third vs last third of 3 weeks),
+  * score per day (accuracy with pain / hard penalties and a feeling bonus) and movement tracking statistics.
  */
 const getProgress = async (req, res, next) => {
     try {
@@ -961,6 +1032,7 @@ const getProgress = async (req, res, next) => {
 
 /**
  * POST /exercise/feedback - Submit emoji/rating feedback on videos
+  * stores the emoji rating a mother gives to a video category.
  */
 const submitFeedback = async (req, res, next) => {
     try {
@@ -988,6 +1060,7 @@ const submitFeedback = async (req, res, next) => {
     }
 };
 
+// POST /exercise/recommendations/progress - saves how much of a video was watched; at 80% it counts as completed.
 const updateRecommendationProgress = async (req, res, next) => {
     try {
         const userId = req.user.id;
@@ -1020,6 +1093,8 @@ const debugGetExercises = async (req, res) => res.json({ success: true, all: [] 
 
 /**
  * POST /exercise/movement-session - Save movement tracking session
+  * saves the result of one camera session (score, accuracy, reps, steadiness numbers).
+  * Validates ranges and refuses to overwrite another user session (403).
  */
 const saveMovementSession = async (req, res, next) => {
     try {
@@ -1098,6 +1173,8 @@ const getMovementSessions = async (req, res, next) => {
 
 /**
  * POST /exercise/watch-history - Add or update a watched video in the user's history
+  * one row per user per video. $max keeps the highest watch %, watchCount counts sessions,
+  * 80% watched = completed. A retry handles two simultaneous first saves (duplicate key 11000).
  */
 const upsertWatchHistory = async (req, res, next) => {
     try {
@@ -1153,6 +1230,7 @@ const upsertWatchHistory = async (req, res, next) => {
 
 /**
  * GET /exercise/watch-history?page=1&limit=20&search= - Watch history, newest first
+  * paged list (20 per page) with a title search; the search text is escaped so it cannot break the query.
  */
 const getWatchHistory = async (req, res, next) => {
     try {

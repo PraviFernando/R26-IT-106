@@ -19,6 +19,15 @@ import {
     WATCH_COMPLETE_PERCENT, TODO_VISIBLE_COUNT, DAILY_GOAL, WATCH_SAVE_INTERVAL_MS, WATCH_NEW_SESSION_MS
 } from '../utils/exerciseConfig';
 
+// =====================================================================================
+// EXERCISE SCREEN = the "Exercise today" page and the "Health form" page
+// Flow: open screen -> checkTodayData() -> if today has data show the video cards, else show the health form.
+//   health form submit -> handleSubmitHealthData -> POST /exercise/health-data (backend does AI + safety + videos)
+//   card progress / completion -> handleProgressUpdate / handleCompleteExercise -> backend + watch history
+// Related files: components/exercise/HealthDataForm.js (form), ExerciseCard.js (one video card),
+// services/exerciseService.js (API calls), backend/controllers/exercise.js
+// =====================================================================================
+
 let promptShownDate = null;
 
 // Main Exercise Screen
@@ -84,6 +93,7 @@ export default function ExerciseScreen({ navigation, route }) {
     // Exercises already auto-completed in this session, so completion is saved only once
     const autoCompletedRef = useRef(new Set());
 
+    // reloads the user profile (delivery date and type) so the form can be pre-filled
     const fetchLatestUser = async () => {
         try {
             const response = await api.get('/user/me');
@@ -95,6 +105,7 @@ export default function ExerciseScreen({ navigation, route }) {
         }
     };
 
+    // loads streak and totals for the banner at the top (GET /exercise/progress)
     const loadProgress = async () => {
         try {
             const data = await exerciseService.getProgress(30);
@@ -104,6 +115,8 @@ export default function ExerciseScreen({ navigation, route }) {
         }
     };
 
+    // first thing on open. Asks the backend if the mother already filled today form.
+    // Yes -> load videos. No -> show the form. Also decides when to show the "Any change in how you feel?" prompt (once a day).
     const checkTodayData = async () => {
         try {
             const data = await exerciseService.getHealthData(todayStr());
@@ -141,6 +154,7 @@ export default function ExerciseScreen({ navigation, route }) {
         }
     };
 
+    // GET /exercise/recommendations/:date - today list of videos, safety status and messages
     const loadRecommendations = async () => {
         try {
             const data = await exerciseService.getRecommendations(todayStr());
@@ -158,6 +172,8 @@ export default function ExerciseScreen({ navigation, route }) {
         }
     };
 
+    // called when the mother presses submit on the form. The backend returns the new videos and the safety result;
+    // the screen resets the lists, goes back to the To Do tab and shows a safe / warning toast.
     const handleSubmitHealthData = async (healthData) => {
         setLoading(true);
         try {
@@ -209,6 +225,7 @@ export default function ExerciseScreen({ navigation, route }) {
         }
     };
 
+    // stopwatch finished -> POST /exercise/record (saves duration, pain, difficulty, feeling) and moves the card to Completed.
     const handleCompleteExercise = async (exercise, feedbackData = {}) => {
         try {
             await exerciseService.saveExerciseRecord({
@@ -248,6 +265,7 @@ export default function ExerciseScreen({ navigation, route }) {
     // Watch history: remember when each video was last saved so we only hit the API every ~10s
     const watchHistoryRef = useRef({});
 
+    // WATCH HISTORY saving. Throttled to once every 10 seconds, and a gap of 5 minutes starts a new viewing session.
     const logWatchHistory = (exercise, percentage) => {
         const details = exercise.exerciseDetails || {};
         const videoUrl = exercise.videoUrl || details.videoUrl;
@@ -308,6 +326,8 @@ export default function ExerciseScreen({ navigation, route }) {
         });
     }, []);
 
+    // called while a video plays. Updates the % on the card, saves history, and at 80% watched marks the card completed
+    // (instantly on screen, then saved on the backend).
     const handleProgressUpdate = async (exercise, percentage) => {
         logWatchHistory(exercise, percentage);
         setRecommendations(prev =>
@@ -528,6 +548,7 @@ export default function ExerciseScreen({ navigation, route }) {
             </ScrollView>
           </ExerciseShell>
 
+            {/* popup asking if the health condition changed today (Yes -> open the form, No -> show the exercises) */}
             {/* Health Condition Change Prompt Modal */}
             <Modal visible={showHealthPromptModal} transparent animationType="fade" onRequestClose={() => setShowHealthPromptModal(false)}>
                 <View style={ui.overlay}>

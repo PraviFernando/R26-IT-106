@@ -11,6 +11,13 @@ import { getTranslatedTrend, formatDays } from '../utils/exerciseMessages';
 import { BarChart, C, T, cardShadow, Card, GradientCard, SectionTitle, StatTile, CircleButton, Icon, useExerciseFonts } from '../components/exercise/ui';
 
 
+// =====================================================================================
+// PROGRESS SCREEN = the "Progress" tab and the "Watch history" tab.
+// Progress numbers come from GET /exercise/progress (backend getProgress): streak, this week, average time,
+// missed sessions, recovery trend, daily score chart and the movement tracking statistics.
+// The Watch history tab is the component in screens/ExerciseWatchHistory.js.
+// =====================================================================================
+
 export default function ExerciseProgressScreen({ navigation, route }) {
     const { t, i18n } = useTranslation();
     const fontsReady = useExerciseFonts();
@@ -35,6 +42,7 @@ export default function ExerciseProgressScreen({ navigation, route }) {
     }, [route?.params?.tab, route?.params?.ts]);
 
 
+    // keeps the points of the last 7 / 30 / 365 calendar days for the chart filter
     const getChartData = (dataArray, filter) => {
         if (!dataArray || dataArray.length === 0) return [];
         const limit = filter === 'weekly' ? 7 : filter === 'monthly' ? 30 : filter === 'last3months' ? 90 : filter === 'last6months' ? 180 : 365;
@@ -59,6 +67,7 @@ export default function ExerciseProgressScreen({ navigation, route }) {
 
 
     useEffect(() => {
+        // loads one year of progress and today mood in one go
         const loadData = async () => {
             try {
                 const progData = await exerciseService.getProgress(365);
@@ -167,6 +176,7 @@ export default function ExerciseProgressScreen({ navigation, route }) {
             <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
               <ContentWell maxWidth="wide">
 
+            {/* tab switch. history -> watch history list, otherwise the progress page below */}
             {activeTab === 'history' ? (
                 <ExerciseWatchHistory isSinhala={isSinhala} />
             ) : loading ? (
@@ -231,6 +241,7 @@ export default function ExerciseProgressScreen({ navigation, route }) {
                         emptyText={tr('Complete exercises to see your daily score.', 'දෛනික ලකුණු දැකීමට ව්‍යායාම සම්පූර්ණ කරන්න.')}
                     />
 
+                    {/* statistics from the camera movement sessions (average form, best score, correct reps, sessions) */}
                     <SectionTitle style={{ marginTop: 4 }}>{tr('Movement tracking', 'චලන ලුහුබැඳීම')}</SectionTitle>
                     <View style={pg.stats}>
                         <StatTile value={`${progress.averageMovementAccuracy ?? 0}%`} label={tr('Average form', 'සාමාන්‍ය නිරවද්‍යතාව')} style={pg.stat} />

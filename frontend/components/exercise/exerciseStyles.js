@@ -4,6 +4,7 @@ import { colors } from '../../theme';
 const { width } = Dimensions.get('window');
 
 // Styles shared by the exercise screen and its components
+// style sheet of the exercise part (older shared styles).
 const styles = StyleSheet.create({
     // Shown when recommendations came from the rule-based fallback instead of the ML model
     fallbackNotice: {

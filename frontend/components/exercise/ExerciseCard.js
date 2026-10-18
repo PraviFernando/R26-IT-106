@@ -12,6 +12,14 @@ import { LOW_ADHERENCE_PERCENT } from '../../utils/exerciseConfig';
 
 // Exercise Recommendation Card Component
 // variant: 'full' (thumbnail card) or 'compact' (small row used for the "Up next" list on phones)
+// =====================================================================================
+// EXERCISE CARD = one recommended video.
+// Tap -> popup with the video player, the stopwatch and the camera button.
+//   Stopwatch Start / I am done -> 3 questions (pain, difficulty, feeling) -> result -> onComplete (saved by ExerciseScreen).
+//   Camera button -> handleStartTracking -> MovementTrackingScreen.
+// Video progress (watch %) goes up through onProgressUpdate; at 80% the card is completed.
+// =====================================================================================
+
 const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, navigation, variant = 'full' }) => {
     const { width: currentWidth } = useWindowDimensions();
     const isLargeScreen = currentWidth > 768;
@@ -31,6 +39,7 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
         return true;
     };
 
+    // maps a video title to a tracking exercise (Cat-Cow, Bird Dog, Glute Bridge, Modified Squats)
     const getTrackingExerciseName = (nameStr) => {
         if (!nameStr) return 'Postpartum Exercise';
         const lower = nameStr.toLowerCase();
@@ -44,6 +53,8 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
     // Why the camera could not be used: 'denied' (blocked/refused) or 'unavailable' (no camera or insecure page)
     const [cameraProblem, setCameraProblem] = useState(null);
 
+    // "Check my movements with the camera". On web it only reads the camera permission state (it does not open the camera);
+    // on phones it asks for permission. Then it opens MovementTrackingScreen with the exercise details.
     const handleStartTracking = async () => {
         setCameraProblem(null);
         // A browser only offers the camera on a secure page (localhost or https) and when one exists
@@ -89,6 +100,7 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
         });
     };
 
+    // STOPWATCH - counts the real exercise time; this time is used for the adherence score
     // Stopwatch states
     const [stopwatchTime, setStopwatchTime] = useState(0);
     const [isStopwatchRunning, setIsStopwatchRunning] = useState(false);
@@ -159,6 +171,8 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
         setShowQuestionsModal(true);
     };
 
+    // adherence = stopwatch minutes / recommended minutes x 100 (max 100). Feedback code: pain -> pain_rest,
+    // below 50% -> stopped_early, otherwise excellent. The backend builds the final message the same way.
     const submitFeedbackQuestions = async () => {
         const actualMins = Math.round(stopwatchTime / 60 * 10) / 10;
         const recDurationSecs = durationToSeconds(duration);
@@ -192,6 +206,7 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
         setShowResultsModal(true);
     };
 
+    // closing the result popup saves the record (completes the card)
     // Save when the result is closed: saving marks the card completed and moves it to the
     // Completed tab, which would unmount this card (and its result popup) too early.
     const finishResults = async () => {

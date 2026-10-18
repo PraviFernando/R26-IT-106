@@ -1,5 +1,7 @@
 import api from './api';
 
+// ALL API CALLS of the exercise part. Each function = one backend URL in backend/routes/exercise.js.
+// The login token is added automatically by services/api.js.
 const exerciseService = {
     // Submit daily health data
     submitHealthData: async (data) => {

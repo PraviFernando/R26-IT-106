@@ -1,6 +1,8 @@
 // Shared helpers for the exercise screens (exercise, movement tracking, progress, watch history).
 
 // YYYY-MM-DD in local time (toISOString would use UTC and shift the day in Sri Lanka)
+// helpers - local date text (YYYY-MM-DD), duration text to seconds / minutes, mm:ss, YouTube id and embed link,
+// and matchesExercise (finds the same card by video link or name).
 export const toLocalDateStr = (d) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 

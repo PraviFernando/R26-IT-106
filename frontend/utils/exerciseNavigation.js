@@ -9,6 +9,7 @@
 // already open, so the menu used to pile up screens. `pop: true` goes back to the open copy
 // instead. `ts` changes on every call so the screen reacts even when the same section is asked
 // for twice in a row.
+// used by the side menu. pop:true prevents opening the same screen twice on the navigation stack.
 export const goToSection = (navigation, key, onLocal) => {
     if (onLocal && onLocal(key)) return;
     const ts = Date.now();

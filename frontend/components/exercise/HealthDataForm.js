@@ -6,6 +6,12 @@ import { todayStr } from '../../utils/exerciseUtils';
 import { C, T, Card, SectionTitle, Label, OptionRow, Chip, PrimaryButton, Icon } from './ui';
 
 // Daily health form: four short sections, big touch targets, one main action.
+// =====================================================================================
+// HEALTH FORM (daily check-in). Sections: 1 About your birth (weeks, delivery type), 2 How your body feels
+// (pain areas, bleeding, doctor restriction, fatigue, mobility), 3 Mood for exercise (willingness). handleSubmit sends these answers to
+// ExerciseScreen -> POST /exercise/health-data. The answers are the inputs of the AI model and the safety rules.
+// =====================================================================================
+
 const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
     const { i18n } = useTranslation();
     const isSinhala = i18n.language === 'si';
@@ -77,6 +83,7 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
         }
     }, [initialData]);
 
+    // builds the payload the backend validates (weeks 0-104 required, others have safe defaults)
     const handleSubmit = () => {
         if (!weeks) {
             Toast.show({ type: 'error', text1: isSinhala ? 'කරුණාකර ප්‍රසූතියෙන් පසු ගතවූ සති ගණන ඇතුළත් කරන්න' : 'Please enter weeks after delivery' });

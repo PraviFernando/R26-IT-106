@@ -1,3 +1,11 @@
+// =====================================================================================
+// AI PREDICTION SERVICE (backend side)
+// Sends the health form to the Flask ML API (ml_training/predict_api.py) and gets back:
+//   risk level 0 low / 1 medium / 2 high   and   exercise category 1-4
+// If the ML API is offline it uses fallbackPrediction(), which follows exactly the same clinical
+// rules the model was trained on (ml_training/relabel_dataset.py, docs/exercise-clinical-rules.md).
+// =====================================================================================
+
 const axios = require('axios');
 
 const ML_API_URL = process.env.ML_API_URL || 'http://127.0.0.1:5001';
@@ -8,6 +16,8 @@ class MLPredictionService {
      * Map the health form to the exact numeric features the model was trained on
      * (same encoding as ml_training/relabel_dataset.py and predict_api.py).
      */
+    // FEATURE ENCODING - turns the form into the 12 numbers the model expects (0/1 flags, 0-2 levels).
+    // It must stay identical to the training script, otherwise the model would see different data.
     static preprocessFeatures(healthData) {
         const flag = (v) => (v === true || v === 'true' || v === 1) ? 1 : 0;
         const weeks = Math.round(Number(healthData.weeksAfterDelivery));
@@ -37,6 +47,7 @@ class MLPredictionService {
      * @param {Object} healthData - Postpartum health data
      * @returns {Promise<Object>} Prediction result
      */
+    // main call. POST to the ML API with a 5 second timeout; any failure switches to the rule fallback.
     static async predictRisk(healthData) {
         try {
             const pyData = this.preprocessFeatures(healthData);
@@ -71,6 +82,9 @@ class MLPredictionService {
      * (ml_training/relabel_dataset.py, documented in docs/exercise-clinical-rules.md),
      * so the fallback and the model give the same answer for the same inputs.
      */
+    // RULE FALLBACK. Risk: high for doctor restriction, bleeding or 3+ symptoms; medium for weeks <= 2, 2 symptoms,
+    // high fatigue, very limited mobility, high EPDS risk or C-section under 6 weeks. Category: 1 for hard stops,
+    // otherwise by weeks (<=5 -> 2, <=7 -> 3, else 4), then lowered for milder factors (max 2 levels, minimum 2).
     static fallbackPrediction(healthData) {
         const f = this.preprocessFeatures(healthData);
         const weeks = f.weeks_after_delivery;
@@ -117,6 +131,7 @@ class MLPredictionService {
     /**
      * Check if ML API is healthy
      */
+    // asks the ML API /health to see if it is running.
     static async healthCheck() {
         try {
             const response = await axios.get(`${ML_API_URL}/health`, { timeout: 3000 });

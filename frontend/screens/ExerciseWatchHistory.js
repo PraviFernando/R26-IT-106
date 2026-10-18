@@ -10,8 +10,15 @@ import { C, T, cardShadow, Icon } from '../components/exercise/ui';
 // YouTube-style watch history for exercise videos.
 // Rendered as the "History" tab inside ExerciseProgressScreen.
 
+// =====================================================================================
+// WATCH HISTORY (like YouTube history). Loads 20 per page from GET /exercise/watch-history,
+// search with a delay, grouped into Today / Yesterday / This week / Earlier, delete one or clear all,
+// tap a video to resume from where it stopped.
+// =====================================================================================
+
 const PAGE_SIZE = 20;
 
+// "5 min ago" style text in English or Sinhala
 const timeAgo = (date, isSinhala) => {
     const secs = Math.max(0, Math.floor((Date.now() - new Date(date).getTime()) / 1000));
     const units = [
@@ -29,6 +36,7 @@ const timeAgo = (date, isSinhala) => {
     return isSinhala ? 'දැන්' : 'Just now';
 };
 
+// which group a date belongs to (Today, Yesterday, This week, Earlier)
 const groupLabel = (date, isSinhala) => {
     const d = new Date(date);
     const today = new Date();
@@ -64,6 +72,7 @@ export default function ExerciseWatchHistory({ isSinhala }) {
     // Each request gets an id; responses from an older request (e.g. a previous search) are ignored
     const requestIdRef = useRef(0);
 
+    // loads one page; older responses are ignored so a quick search never shows stale results
     const load = useCallback(async (pageNum = 1) => {
         const requestId = ++requestIdRef.current;
         try {
@@ -140,6 +149,7 @@ export default function ExerciseWatchHistory({ isSinhala }) {
         );
     };
 
+    // opens the player and bumps the video to the top of history
     const openVideo = (item) => {
         setPlaying(item);
         // Bump it to the top of history like YouTube does

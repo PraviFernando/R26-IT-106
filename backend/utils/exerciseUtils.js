@@ -3,6 +3,8 @@
  */
 
 // "12:34" / "1:02:03" / 15 (minutes) -> seconds. Missing or invalid -> 600 (10 minutes).
+// small helper functions used by the controller (duration text -> seconds, minutes, local date text,
+// boolean parsing, HTML decoding of YouTube titles).
 const parseDurationStr = (dStr) => {
     if (dStr === undefined || dStr === null || dStr === '') return 600;
     const str = String(dStr);
@@ -22,6 +24,7 @@ const toMinutes = (value) => {
 };
 
 // YYYY-MM-DD in the server's local time zone (matches the app's local date; toISOString would use UTC)
+// dates are handled as local calendar days (YYYY-MM-DD), not UTC, so streaks do not break near midnight.
 const toLocalDateStr = (d) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 

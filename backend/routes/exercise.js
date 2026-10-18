@@ -1,3 +1,5 @@
+// URL list of the exercise component. Each line maps a URL to a function in controllers/exercise.js.
+// Base path is /exercise (registered in server.js). Every route needs a logged-in user (verifyToken).
 const express = require('express');
 const router = express.Router();
 const { verifyToken, verifyRole } = require('../middleware/authMiddleware');

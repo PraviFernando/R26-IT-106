@@ -6,6 +6,8 @@ import { View, Text, Pressable, StyleSheet, useWindowDimensions } from 'react-na
 import { C, T, Icon } from './ui';
 import { goToSection } from '../../utils/exerciseNavigation';
 
+// page frame of the exercise part - a side menu on wide screens (Exercise today, Health form, Progress,
+// Watch history) and a top menu on phones. Menu clicks go through utils/exerciseNavigation.js.
 export const SIDEBAR_BREAKPOINT = 1024;
 
 export const EXERCISE_SECTIONS = [

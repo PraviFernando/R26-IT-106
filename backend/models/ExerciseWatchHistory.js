@@ -1,3 +1,5 @@
+// DATABASE MODEL - the watch history (like YouTube history).
+// One row per user per video; watchPercentage is the highest point reached, completed is true at 80%.
 const mongoose = require('mongoose');
 
 const exerciseWatchHistorySchema = new mongoose.Schema({

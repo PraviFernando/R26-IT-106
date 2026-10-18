@@ -7,6 +7,7 @@
  * category's intensity, so they never suggest harder exercise than the category allows.
  */
 
+// BASE_QUERY = the search text for each exercise category 1-4.
 const BASE_QUERY = {
     1: 'postpartum bedrest breathing exercises',
     2: 'postpartum gentle mobility exercises',
@@ -27,6 +28,8 @@ const MAX_FOCUS_QUERIES = 2;
 /**
  * @returns {{ q: string, focus: string|null }[]} base search first, then focus searches by priority
  */
+// makes the form change the videos. Adds "focus" searches by priority: C-section, pelvic pain, back pain,
+// core weakness, low energy, mood, limited mobility. Only the first 2 are used, wording stays inside the category level.
 const buildVideoQueries = (category, health) => {
     const level = LEVEL_WORDS[category] || LEVEL_WORDS[2];
     const focus = [];

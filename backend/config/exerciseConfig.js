@@ -1,3 +1,6 @@
+// ALL THRESHOLDS OF THE EXERCISE COMPONENT IN ONE FILE (safety weeks, symptom counts, score limits,
+// video counts, cache hours, progress penalties). Change a value here, not inside the controller.
+// The frontend copy is frontend/utils/exerciseConfig.js.
 /**
  * Exercise module thresholds, all in one place.
  * The reasoning (and the guidelines each value is based on) is documented in

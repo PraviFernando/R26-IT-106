@@ -1,5 +1,7 @@
 // Exercise module thresholds used by the app. Backend equivalents live in
 // backend/config/exerciseConfig.js; the reasoning is in docs/exercise-clinical-rules.md.
+// frontend thresholds (80% watched = completed, 50% = stopped early, movement session completion rules).
+// The backend copy is backend/config/exerciseConfig.js - keep both in sync.
 export const WATCH_COMPLETE_PERCENT = 80;       // watching this much of a video completes it
 export const LOW_ADHERENCE_PERCENT = 50;        // stopwatch time below this % of recommended = "stopped early"
 export const TODO_VISIBLE_COUNT = 5;            // cards shown in the To Do tab at once

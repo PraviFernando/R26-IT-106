@@ -1,3 +1,5 @@
+// DATABASE MODEL - cache of YouTube searches to save the daily API quota (see fetchQueryVideos in
+// controllers/exercise.js). This is part of the answer to "what happens when the YouTube key fails".
 const mongoose = require('mongoose');
 
 // Cached YouTube search results for the exercise recommendations. A search costs 100 quota units

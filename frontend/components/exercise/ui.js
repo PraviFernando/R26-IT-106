@@ -11,6 +11,8 @@ import { colors } from '../../theme';
 
 // Fonts: Poppins (headings) + Inter (body), loaded by the exercise screens themselves under
 // names only these screens use (ExPoppins700, ...). Other screens are not affected.
+// shared look of the exercise part (fonts, colours C, text styles T, cards, buttons, chips, bar chart).
+// It follows the PeriCare theme. These are used only inside the exercise screens.
 export const useExerciseFonts = () => {
     const [loaded] = useFonts({
         ExPoppins700: Poppins_700Bold,

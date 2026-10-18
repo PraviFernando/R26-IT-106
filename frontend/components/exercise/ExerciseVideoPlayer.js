@@ -6,6 +6,9 @@ import { colors } from '../../theme';
 import styles from './exerciseStyles';
 import { getYoutubeEmbedUrl } from '../../utils/exerciseUtils';
 
+// VIDEO PLAYER. Shows the YouTube video and reports REAL watch progress (not a timer):
+// on web it listens to the YouTube iframe messages (current time / duration), on phones it uses a WebView.
+// onProgress(percentage) drives the 80% completion rule.
 const ExerciseVideoPlayer = ({ url, onProgress }) => {
     const { width: currentWidth } = useWindowDimensions();
     const isLargeScreen = currentWidth > 768;

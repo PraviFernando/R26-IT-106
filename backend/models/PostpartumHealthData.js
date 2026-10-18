@@ -1,3 +1,7 @@
+// DATABASE MODEL - the daily health form + the result of the recommendation.
+// One document per mother per day (date YYYY-MM-DD). It stores the form answers, the safety result
+// (safe / limited / blocked + English and Sinhala messages), where the prediction came from
+// (ml_model or rule_fallback) and the list of recommended videos with their watch progress.
 const mongoose = require('mongoose');
 
 const postpartumHealthDataSchema = new mongoose.Schema({
@@ -5,6 +9,7 @@ const postpartumHealthDataSchema = new mongoose.Schema({
     date: { type: String, required: true }, // YYYY-MM-DD
     deliveryDate: { type: String }, // YYYY-MM-DD
     
+    // Form answers (sent to the ML model after encoding, see services/mlPredictionService.js)
     // Recovery Stage
     weeksAfterDelivery: { type: Number, required: true },
     deliveryType: { type: String, enum: ['normal', 'c-section'], required: true },
@@ -34,12 +39,14 @@ const postpartumHealthDataSchema = new mongoose.Schema({
     sentiment: { type: String },
     stressKeywords: [{ type: String }],
     
+    // Result of the clinical safety rules (controllers/exercise.js, SECTION 3)
     // Safety Evaluation Result
     safetyStatus: { type: String, enum: ['safe', 'limited', 'blocked'], default: 'safe' },
     safetyMessage: { type: String },
     safetyMessageSi: { type: String },
     predictionSource: { type: String }, // ml_model | rule_fallback
     
+    // The 10 videos of the day; "focus" says why a video was chosen, completed/watchPercentage track progress
     // Recommendation Result
     recommendedExercises: [{
         exerciseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },

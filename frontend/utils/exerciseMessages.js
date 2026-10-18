@@ -3,6 +3,8 @@
 // English wording on the server does not break the Sinhala version. Older records without a
 // code fall back to matching the English sentence.
 
+// English and Sinhala texts for the messages the backend sends by CODE (feedbackCode, recoveryTrendCode),
+// so the Sinhala version still works even if the English wording changes on the server.
 const FEEDBACK = {
     pain_rest: {
         en: "You felt pain during exercise. Please rest. Tomorrow's exercises will be adjusted to lower intensity.",

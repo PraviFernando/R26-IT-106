@@ -17,6 +17,19 @@ import { MOVEMENT_SCORING_JS } from '../utils/movementScoring';
 import { MOVEMENT_COMPLETE_REPS, MOVEMENT_MIN_REPS, MOVEMENT_MIN_SECONDS } from '../utils/exerciseConfig';
 
 // Generate unique session ID
+// =====================================================================================
+// MOVEMENT TRACKING SCREEN (camera form checking). How it works:
+//  1. The camera page is an HTML string (localHtmlString below) shown in an iframe on web / WebView on phones.
+//  2. Inside it, MediaPipe Pose finds 33 body points (landmarks) on every camera frame.
+//  3. processExercise() counts reps with a small state machine for each exercise
+//     (Cat-Cow, Bird Dog, Glute Bridge, Modified Squats, or a universal up-down detector).
+//  4. Scores come from utils/movementScoring.js: range of motion, posture (body position x form checks), steadiness.
+//  5. The page sends messages to this screen (REP_COUNT, scores, status); this screen shows the live tiles.
+//  6. On Finish, the mother answers pain / difficulty / feeling and submitWorkoutSession() saves everything:
+//     POST /exercise/movement-session and POST /exercise/record (so the card moves to Completed).
+// The camera is opened ONLY here (the button on the card just checks the permission state).
+// =====================================================================================
+
 const generateSessionId = () => {
     return 'sess_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
 };
@@ -127,6 +140,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     }, []);
 
+    // the session clock (counts seconds) and plays the demo video; stopTimer stops both
     const startTimer = () => {
         if (!timerRef.current) {
             timerRef.current = setInterval(() => {
@@ -144,6 +158,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     };
 
+    // pause / resume. Stops or restarts the clock, counts pauses, and tells the camera page to PAUSE or RESUME
     const togglePause = () => {
         if (isPaused) {
             // Resume
@@ -161,6 +176,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     };
 
+    // Finish pressed -> stop the clock, pause the camera page and open the summary questions
     const handleFinish = () => {
         isPausedRef.current = true;
         stopTimer();
@@ -179,6 +195,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
         }
     };
 
+    // receives every message from the camera page: READY, REP_COUNT, live scores, visibility warning, ERROR.
     const handleWebViewMessage = (event) => {
         try {
             const data = JSON.parse(event.nativeEvent.data);
@@ -298,6 +315,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
         return st;
     };
 
+    // saves the session. A session counts as completed with 5 reps, or at least 1 rep over 60 seconds
+    // (thresholds in utils/exerciseConfig.js). Then the exercise card is completed too, and we go back.
     const submitWorkoutSession = async () => {
         setSaving(true);
         try {
@@ -444,6 +463,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
             let useUnpkg = false;
             let pose;
 
+            // loads the MediaPipe Pose model (jsdelivr first, unpkg as a backup)
             function initPose() {
                 try {
                     pose = new Pose({
@@ -489,6 +509,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 return angle;
             }
 
+            // picks the detector from the exercise name (Cat-Cow, Bird Dog, Glute Bridge, Modified Squats, else Universal)
             // Exercise State Machine Variables
             const exerciseName = "${exerciseName}";
             const lowerName = exerciseName.toLowerCase();
@@ -531,6 +552,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
             let smoothSteadiness = null;
             let lastAlignment = null;
 
+            // rep score = 50% range of motion + 50% alignment. A rep with score >= 70 counts as a correct rep.
             // Called when a rep is completed: scores that rep from its own range and alignment
             function finishRep() {
                 const rom = msRomScore(profile, repMin, repMax);
@@ -563,6 +585,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
             let repetitionTimes = [];
             let lastRepTimestamp = Date.now();
 
+            // makes the body points independent of camera distance (centred on the hips, scaled by the torso length)
             // 1. Pose Normalizer
             const PoseNormalizer = {
                 normalize: function(landmarks) {
@@ -598,6 +621,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 }
             };
 
+            // runs on every frame. Rep counting per exercise: Cat-Cow = back angle goes below 145 then above 165;
+            // others use knee / hip angles or the reach of arm and leg; the universal one counts up-down peaks.
             function processExercise(landmarks) {
                 const nose = landmarks[0];
                 const lShoulder = landmarks[11];
@@ -899,6 +924,8 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 requestAnimationFrame(drawFrame);
             }
 
+            // called by MediaPipe for each frame. Checks that the body points needed for this exercise are visible (visibility 0.25);
+            // if not, it asks the mother to move into view and scores 0. Otherwise it runs processExercise (rep counting and live scores).
             function onResults(results) {
                 if (window.paused) return;
 
@@ -956,6 +983,7 @@ export default function MovementTrackingScreen({ route, navigation }) {
                 }
             }
 
+            // this is the only place that opens the camera (see openCamera below)
             // Setup camera feed
             // The camera can still be held for a moment by the previous screen, so retry, then try simpler settings
             const cameraTries = [

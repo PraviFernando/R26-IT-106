@@ -1,3 +1,6 @@
+// DATABASE MODEL - one camera movement tracking session (sessionId is unique).
+// movementScore, averageAccuracy, repetitions, correct/incorrect reps, range of motion, pain and difficulty.
+// Written by saveMovementSession; used by getProgress and by the next-day personalisation.
 const mongoose = require('mongoose');
 
 const exerciseMovementSessionSchema = new mongoose.Schema({
