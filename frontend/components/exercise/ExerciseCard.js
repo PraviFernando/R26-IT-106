@@ -371,7 +371,7 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
                                         </Card>
 
                                         {isSupportedForTracking(title) && (
-                                            <SecondaryButton icon="camera" title={tr('Check my form with the camera', 'කැමරාවෙන් මගේ ඉරියව්ව පරීක්ෂා කරන්න')} onPress={handleStartTracking} />
+                                            <SecondaryButton icon="camera" title={tr('Check my movements with the camera', 'කැමරාවෙන් මගේ චලන පරීක්ෂා කරන්න')} onPress={handleStartTracking} />
                                         )}
                                         {cameraProblem === 'denied' && (
                                             <Notice tone="warn" icon="camera" text={Platform.OS === 'web'
