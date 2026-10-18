@@ -11,7 +11,6 @@ import { ContentWell } from '../components/ScreenContainer';
 import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import * as DocumentPicker from 'expo-document-picker';
-import { Video, ResizeMode } from 'expo-av';
 import { WebView } from 'react-native-webview';
 import exerciseService from '../services/exerciseService';
 import { useAuth } from '../context/AuthContext';

@@ -19,6 +19,7 @@ import Toast from 'react-native-toast-message';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
+import { useApp } from '../services/AppContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -342,7 +343,7 @@ function AnswersBreakdown({ answers, questions, t }) {
 }
 
 // ─── Result Modal ─────────────────────────────────────────────────────────────
-function ResultModal({ visible, score, riskLevel, onClose, onViewHistory }) {
+function ResultModal({ visible, score, riskLevel, onClose, onViewHistory, onViewRecommendations }) {
     const { t } = useTranslation();
     const riskConfig = getRiskConfig(t);
     const cfg = riskConfig[riskLevel] || riskConfig.low;
@@ -384,6 +385,14 @@ function ResultModal({ visible, score, riskLevel, onClose, onViewHistory }) {
                     )}
 
                     <View style={styles.resultActions}>
+                        {onViewRecommendations && (
+                            <TouchableOpacity
+                                style={[styles.resultBtn, { backgroundColor: cfg.color, marginBottom: 8 }]}
+                                onPress={onViewRecommendations}
+                            >
+                                <Text style={styles.resultBtnText}>{t('✨ View Recommendations')}</Text>
+                            </TouchableOpacity>
+                        )}
                         <TouchableOpacity
                             style={[styles.resultBtn, { backgroundColor: cfg.color }]}
                             onPress={onViewHistory}
@@ -573,6 +582,7 @@ function HistoryModal({ visible, history, questions, onClose }) {
 export default function EPDSScreeningScreen({ navigation }) {
     const { t, i18n } = useTranslation();
     const { user } = useAuth();
+    const { setEpdsRiskLevel, fetchProgressData } = useApp();
     const questions = getQuestions(t);
     const riskConfig = getRiskConfig(t);
 
@@ -632,6 +642,9 @@ export default function EPDSScreeningScreen({ navigation }) {
                     setNextAvailableDate(statusRes.data.nextAvailableDate);
                     if (statusRes.data.currentScreening) {
                         setAlreadyDone(statusRes.data.currentScreening);
+                        if (setEpdsRiskLevel && statusRes.data.currentScreening.riskLevel) {
+                            setEpdsRiskLevel(statusRes.data.currentScreening.riskLevel);
+                        }
                     }
                 }
 
@@ -755,6 +768,12 @@ export default function EPDSScreeningScreen({ navigation }) {
             setAlreadyDone(res.data.screening);
             setHasDoneCurrentCycle(true);
             setNextAvailableDate(getNextCycleDate());
+            if (setEpdsRiskLevel && res.data.screening?.riskLevel) {
+                setEpdsRiskLevel(res.data.screening.riskLevel);
+            }
+            if (fetchProgressData) {
+                fetchProgressData();
+            }
             await fetchHistory();
             setShowResult(true);
         } catch (err) {
@@ -1186,6 +1205,10 @@ export default function EPDSScreeningScreen({ navigation }) {
                     onViewHistory={() => {
                         setShowResult(false);
                         setShowHistory(true);
+                    }}
+                    onViewRecommendations={() => {
+                        setShowResult(false);
+                        navigation.navigate('Recommendations', { riskLevel: result.riskLevel });
                     }}
                 />
             )}

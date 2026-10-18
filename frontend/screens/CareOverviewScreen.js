@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     View, Text, ScrollView, TouchableOpacity, StyleSheet,
-    Dimensions, ActivityIndicator, Modal, Image, TextInput
+    Dimensions, ActivityIndicator, Modal, Image, TextInput, Platform
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -616,9 +616,14 @@ const styles = StyleSheet.create({
         fontWeight: '800',
         color: COLORS.textWhite,
         marginBottom: 3,
-        textShadowColor: 'rgba(0, 0, 0, 0.4)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 3,
+        ...Platform.select({
+            web: { textShadow: '0px 1px 3px rgba(0, 0, 0, 0.4)' },
+            default: {
+                textShadowColor: 'rgba(0, 0, 0, 0.4)',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 3,
+            },
+        }),
     },
     bannerSub: {
         fontSize: 12,

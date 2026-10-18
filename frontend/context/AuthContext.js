@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { setAuthToken, clearAuthToken, setUnauthorizedHandler } from '../services/api';
+import api, { setAuthToken, clearAuthToken, setUnauthorizedHandler } from '../services/api';
 import { resetToLogin } from '../navigation/navigationRef';
 
 const AuthContext = createContext(null);
@@ -15,22 +15,62 @@ export function AuthProvider({ children }) {
     const [restoring, setRestoring] = useState(true);
 
     // Rehydrate a saved session once, on startup.
+    // Validates the saved token against the backend to prevent invalid or expired sessions from bypassing login.
     useEffect(() => {
+        let isMounted = true;
         (async () => {
             try {
                 const raw = await AsyncStorage.getItem(STORAGE_KEY);
                 const saved = raw ? JSON.parse(raw) : null;
                 if (saved?.token) {
-                    setAuthToken(saved.token);        // sync the axios interceptor
-                    setToken(saved.token);
-                    setUser(saved.user ?? null);
+                    try {
+                        const res = await api.get('/user/me', {
+                            headers: { Authorization: `Bearer ${saved.token}` },
+                            timeout: 4000,
+                        });
+                        if (res.status === 200 && res.data && isMounted) {
+                            setAuthToken(saved.token);
+                            setToken(saved.token);
+                            setUser(res.data);
+                        } else {
+                            throw new Error('User profile verification failed');
+                        }
+                    } catch (valErr) {
+                        // Persisted token expired, invalid, or rejected by backend (401)
+                        if (__DEV__) {
+                            console.warn('Persisted auth session expired or invalid. Clearing session to display login.');
+                        }
+                        await AsyncStorage.removeItem(STORAGE_KEY);
+                        clearAuthToken();
+                        if (isMounted) {
+                            setToken(null);
+                            setUser(null);
+                        }
+                    }
+                } else {
+                    clearAuthToken();
+                    if (isMounted) {
+                        setToken(null);
+                        setUser(null);
+                    }
                 }
             } catch (e) {
-                console.warn('Failed to restore auth session:', e?.message);
+                if (__DEV__) {
+                    console.warn('Failed to restore auth session:', e?.message);
+                }
+                await AsyncStorage.removeItem(STORAGE_KEY);
+                clearAuthToken();
+                if (isMounted) {
+                    setToken(null);
+                    setUser(null);
+                }
             } finally {
-                setRestoring(false);
+                if (isMounted) {
+                    setRestoring(false);
+                }
             }
         })();
+        return () => { isMounted = false; };
     }, []);
 
     const login = useCallback((userData, authToken) => {

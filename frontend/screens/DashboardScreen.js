@@ -16,7 +16,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import { useTranslation } from 'react-i18next';
-import { Video, ResizeMode } from 'expo-av';
 import { WebView } from 'react-native-webview';
 import exerciseService from '../services/exerciseService';
 import babyActivityService from '../services/babyActivityService';
@@ -439,9 +438,16 @@ function Footer({ activeTab, onTabPress, isDarkMode }) {
 export default function DashboardScreen({ navigation }) {
     const { t, i18n } = useTranslation();
     const { width } = useWindowDimensions();
-    const { user, logout } = useAuth();
+    const { user, token, logout, restoring } = useAuth();
     const [displayName, setDisplayName] = useState(user?.username || 'Guest User');
     const initials = displayName.slice(0, 2).toUpperCase();
+
+    // Route guard: if unauthenticated, redirect immediately to Login
+    useEffect(() => {
+        if (!restoring && !token) {
+            navigation.replace('Login');
+        }
+    }, [token, restoring, navigation]);
 
     const [activeTab, setActiveTab] = useState('home');
     const [sidebarVisible, setSidebarVisible] = useState(false);
@@ -626,11 +632,13 @@ export default function DashboardScreen({ navigation }) {
             }
         };
 
-        fetchExercises();
-        fetchProgress();
-        fetchUserProfile();
-        fetchBabyVideos();
-    }, [user]);
+        if (token) {
+            fetchExercises();
+            fetchProgress();
+            fetchUserProfile();
+            fetchBabyVideos();
+        }
+    }, [user, token]);
 
     const handleLogout = () => {
         setSidebarVisible(false);
@@ -1726,9 +1734,14 @@ const styles = StyleSheet.create({
     playIcon: {
         color: WHITE,
         fontSize: 28,
-        textShadowColor: 'rgba(0, 0, 0, 0.5)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 4,
+        ...Platform.select({
+            web: { textShadow: '0px 1px 4px rgba(0, 0, 0, 0.5)' },
+            default: {
+                textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                textShadowOffset: { width: 0, height: 1 },
+                textShadowRadius: 4,
+            },
+        }),
     },
     exerciseDashIcon: {
         fontSize: 32,

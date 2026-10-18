@@ -382,17 +382,17 @@ const MEDIUM_CRISIS_KW = [
   'මහන්සියි', 'බයයි', 'ආතතිය', 'උණ', 'අසනීප'
 ];
 
-const SUPPORT_MESSAGES = {
-  loneliness: ['ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
-  fatigue: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌙', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
-  anxiety: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ. 🌿'],
-  bonding_issues: ['ශ්‍රේෂ්ඨ — ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
-  lack_of_support: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ 🌸'],
-  sleep_problems: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌙', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
-  loss_of_confidence: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
-  overwhelmed: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
-  physical_discomfort: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'],
-  negative_thoughts: ['ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜', 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 🌸'],
+const SUPPORT_MESSAGES_SI = {
+  loneliness: ['බොහෝ අම්මලාට මෙය දැනේ — ඔබ ලෝකව්‍යාප්ත සහෝදරත්වයක කොටසකි 💜', 'තනිකම රාත්‍රියේ ශබ්ද කරයි. හෙට නව ආලෝකය ගෙනෙයි 🌸'],
+  fatigue: ['නිවා ගැනීම ඔබ සහ ඔබේ දරුවාට ආදරය කිරීමකි 🌙', 'ඔබේ ශරීරය මිනිසෙකු සාදා ගත්තා. අද ඒ ගැන මෘදු වෙන්න 🌸'],
+  anxiety: ['ඔබේ කාංසාව ආදරය — ගොඩ බිමකට ළඟා වීමට 💜', 'ඔබ ආරක්ෂිතයි. ඔබ සිටිනවා. ඔබ ප්‍රමාණවත් 🌿'],
+  bonding_issues: ['බැඳීම සෑම විටම ක්ෂණික නොවේ — ආදරය නිශ්ශබ්දව, ස්ථිරව වර්ධනය වෙයි 🌸', 'සෑම ස්පර්ශයක්, සෑම කිරි දීමක් — ඒ බැඳීමකි. ඔබ දැනටමත් ඒ කරනවා 💜'],
+  lack_of_support: ['ආධාර ඉල්ලා සිටීම ශ්‍රේෂ්ඨ ධෛර්යයකි 💜', 'ඔබට ගමක් ලැබෙන්නට සුදුසුයි. අද ඒ ගමේ කොටස් අය අපි 🌸'],
+  sleep_problems: ['විනාඩි 20 ක් පවා විවේක ගැනීම ගණන් ගැනේ 🌙', 'නිදා ගැනීමේ අහිමිය තාවකාලිකයි. ඔබේ ශක්තිය ස්ථිරයි 💜'],
+  loss_of_confidence: ['පරිපූර්ණ මවක් නැත — සැබෑ මවක් පමණයි. ඒ ඔබයි 🌸', 'සැකය සත්‍ය නොවේ. ඔබ ආදරණීය, හැකි, ප්‍රමාණවත් 💜'],
+  overwhelmed: ['අද සෑම දෙයක්ම කළ යුතු නැත. එක් හුස්මක්, එක් මොහොතක් 💜', 'ශ්‍රාන්තතාවය ගැඹුරින් ගත කළ බැවිනි. ඒ රැගෙන යාමට ඉඩ දෙන්න 🌸'],
+  physical_discomfort: ['ඔබේ ශරීරය අද්භූත දෙයක් කළා. ඒ ගැන ගෞරවය දෙන්න 🌸', 'සුවය ලැබීමට කාලය ගත වෙයි. ඔබ ලස්සනට කරනවා 💜'],
+  negative_thoughts: ['අඳුරු සිතිවිලි සත්‍ය නොවේ — ඒ කාලගුණය. ඒ ද ගෙවී යයි 💜', 'ඔබ දකිනවා, ඔබ වටිනවා, ඔබ තනිවම නොමැත 🌸'],
   baby_crying: ['ඔබේ බබාගේ ඇඬීම ස්වාභාවිකය. ඔබ හොඳින් සැලකිලිමත් වෙනවා 💜', 'බබා සමඟ සන්සුන්ව සිටින්න 🌸'],
   baby_needs: ['බබාගේ සංඥා තේරුම් ගැනීමට කාලය දෙන්න 💜', 'ඔබ ඔබේ බබා වෙනුවෙන් ඉගෙන ගනිමින් සිටිනවා 🌸'],
   baby_feeding: ['කිරි දීම කාලය සමඟ පහසු වෙයි 💜', 'ඔබේ මෘදු බව බබාට සහනයකි 🌸'],
@@ -401,6 +401,28 @@ const SUPPORT_MESSAGES = {
   caring_for_baby: ['දරුවා රැකබලා ගැනීම උතුම් කාර්යයකි 💜', 'ඔබ අද්භූත මවකි 🌸'],
   difficulty_caring_for_baby: ['දරුවා රැකබලා ගැනීම ඉගෙනීම කාලය සමඟ සිදුවන සුන්දර ගමනකි 💜', 'ඔබ ඔබේ බබා වෙනුවෙන් කැපවූ අද්භූත මවකි 🌸'],
 };
+
+const SUPPORT_MESSAGES_EN = {
+  loneliness: ['Many mothers feel this — you are part of a worldwide sisterhood 💜', 'Loneliness echoes at night. Tomorrow brings new light 🌸'],
+  fatigue: ['Resting is loving yourself and your baby 🌙', 'Your body made a human. Be gentle with it today 🌸'],
+  anxiety: ['Your anxiety is love wanting a safe place to land 💜', 'You are safe. You are here. You are enough 🌿'],
+  bonding_issues: ['Bonding is not always instant — love grows quietly and steadily 🌸', 'Every touch and every feed is connection. You are already doing it 💜'],
+  lack_of_support: ['Asking for help takes great courage 💜', 'You deserve a village. Today, we are here for you 🌸'],
+  sleep_problems: ['Even 20 minutes of rest counts 🌙', 'Sleep deprivation is temporary. Your resilience is lasting 💜'],
+  loss_of_confidence: ['There is no perfect mother — only a real mother. That is you 🌸', 'Self-doubt is not truth. You are capable and enough 💜'],
+  overwhelmed: ['Not everything has to be done today. One breath, one moment 💜', 'Let yourself take things one step at a time 🌸'],
+  physical_discomfort: ['Your body did something incredible. Honor its need to heal 🌸', 'Recovery takes patience. You are doing beautifully 💜'],
+  negative_thoughts: ['Dark thoughts are not facts — they are like passing clouds 💜', 'You are seen, you matter, and you are not alone 🌸'],
+  baby_crying: ['Your baby crying is natural communication. You are doing your best 💜', 'Stay calm and breathe gently with your baby 🌸'],
+  baby_needs: ['Give yourself time to understand baby cues 💜', 'You are learning together every single day 🌸'],
+  baby_feeding: ['Feeding gets smoother with time and practice 💜', 'Your warmth brings comfort to your baby 🌸'],
+  baby_sleep: ['Baby sleep cycles develop gradually 🌙', 'Even short rests support your recovery 💜'],
+  baby_health: ['Caring for your baby health is admirable 💜', 'Seeking healthcare advice is always wise 🌸'],
+  caring_for_baby: ['Caring for your baby is noble work 💜', 'You are an amazing mother 🌸'],
+  difficulty_caring_for_baby: ['Learning to care for your baby is a gradual journey 💜', 'You are dedicated and doing wonderfully 🌸'],
+};
+
+const SUPPORT_MESSAGES = SUPPORT_MESSAGES_SI;
 
 export const detectBabyIntents = (text = '') => {
   if (!text || typeof text !== 'string') {
@@ -530,15 +552,18 @@ export const analyzeDiary = (text) => {
   const isSinhala = /[\u0D80-\u0DFF]/.test(text);
   const isSinglish = !isSinhala && /(baba|andanawa|ninda|kiri|daruwa|putha|duwa|mahansi|baya|duk)/i.test(text);
 
-  // DEBUG LOGGING REQUIREMENT
-  console.log('\n[DIARY ANALYSIS]');
-  console.log(`Original text: "${text}"`);
-  console.log(`Normalized text: "${norm}"`);
-  console.log(`Emotion: "${detectedEmotion}"`);
-  console.log(`Primary reason: "${primaryReason}"`);
-  console.log(`Secondary reason: "${secondaryReason}"`);
-  console.log(`Baby context: "${babyIntents.baby_related}"`);
-  console.log(`Baby intents:`, JSON.stringify(babyIntents));
+  // Optional development-only diagnostic logging (disabled by default to protect user privacy and avoid console spam)
+  const DEBUG_DIARY_ANALYSIS = false;
+  if (DEBUG_DIARY_ANALYSIS && typeof __DEV__ !== 'undefined' && __DEV__) {
+    // Note: Raw diary text is never logged to protect sensitive postpartum health and personal data
+    console.log('[DIARY ANALYSIS METADATA]', {
+      detectedEmotion,
+      primaryReason,
+      secondaryReason,
+      riskLevel,
+      babyRelated: babyIntents.baby_related,
+    });
+  }
 
   return {
     detectedEmotion,
@@ -570,15 +595,42 @@ export const getRecommendations = (analysisResult = {}, preferredActivities = []
   const normRisk = normalizeRiskLevel(analysisResult?.riskLevel);
   const normEmoji = normalizeEmotionKey(analysisResult?.selectedEmoji || normEmotion);
 
-  const rule = getEnhancedRecommendationRule(normEmotion, normReason, normRisk, preferredActivities, preferredGames, '', completedActivities, normEmoji);
+  const inputSample = String(diaryText || analysisResult?.diaryText || analysisResult?._debug?.originalText || '').trim();
+  const babyIntents = analysisResult?.babyIntents || {};
+
+  const rule = getEnhancedRecommendationRule(
+    normEmotion,
+    normReason,
+    normRisk,
+    preferredActivities,
+    preferredGames,
+    inputSample,
+    completedActivities,
+    normEmoji,
+    babyIntents
+  );
 
   const { category: musicCategory, music: cappedMusic } = getMusicForReason(normReason, normEmotion, normEmoji, normRisk);
   const { category: videoCategory, videos: cappedVideos } = getVideosForReason(normReason, normEmotion, normEmoji, normRisk);
-  const messages = SUPPORT_MESSAGES[normReason] || SUPPORT_MESSAGES.overwhelmed;
+  
+  const hasSinhalaChars = /[\u0D80-\u0DFF]/.test(inputSample);
+  const hasSinglish = !hasSinhalaChars && /(baba|andanawa|ninda|kiri|daruwa|putha|duwa|mahansi|baya|duk)/i.test(inputSample);
+  const isPureEnglish = Boolean(inputSample) && !hasSinhalaChars && !hasSinglish && /^[a-zA-Z0-9\s.,!?'"()-]+$/.test(inputSample);
+  const isEnglish = isPureEnglish || (analysisResult?._debug?.detectedLanguageSignals?.includes('english') === true && !hasSinhalaChars && !hasSinglish);
 
-  const urgencyMessage = normRisk === 'medium'
-    ? 'ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ. ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ ශ්‍රේෂ්ඨ 💜'
-    : null;
+  const messageDict = isEnglish ? SUPPORT_MESSAGES_EN : SUPPORT_MESSAGES_SI;
+  const messages = messageDict[normReason] || messageDict.overwhelmed;
+
+  let urgencyMessage = null;
+  if (normRisk === 'medium') {
+    urgencyMessage = isEnglish
+      ? 'You are carrying some weight. Consider talking to a healthcare provider or a specialist. You deserve that support 💜'
+      : 'ඔබ යම් බරක් රැගෙන සිටිනවා. සෞඛ්‍ය සේවකයෙකු සහ විශේෂඥ කෙනෙකු සමඟ කතා කිරීම ගැන සලකා බලන්න. ඔබ ඒ ආධාරයට සුදුසුයි 💜';
+  } else if (normRisk === 'high') {
+    urgencyMessage = isEnglish
+      ? 'You may be going through a very difficult time. Please contact a healthcare professional or the free emergency helpline (1926) immediately. You matter! 💖'
+      : 'ඔබ ඉතා අපහසු අඳුරු මොහොතක් පසු කරමින් සිටිය හැක. කරුණාකර වහාම නොමිලේ උපදේශන සේවාව (1926) හෝ සෞඛ්‍ය නිලධාරියෙකු අමතන්න. ඔබ ඉතා අගනා පුද්ගලයෙකි! 💖';
+  }
 
   const cappedGames = (rule.games || []).slice(0, 4);
 
