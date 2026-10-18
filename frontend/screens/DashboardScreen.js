@@ -848,8 +848,10 @@ export default function DashboardScreen({ navigation }) {
                 <View style={[styles.tabBar, { backgroundColor: P.card, borderColor: P.line }]}>
                     {[
                         { key: 'home', icon: 'home', label: t('Home') },
-                        { key: 'relief', icon: 'heart', label: t('Relief') },
+                        { key: 'screening', icon: 'clipboard', label: t('MaternalCare') },
                         { key: 'diary', icon: 'book-open', label: t('My Diary'), center: true },
+                        { key: 'relief', icon: 'heart', label: t('Relief') },
+
                         { key: 'baby', icon: 'smile', label: t('Baby') },
                         { key: 'chat', icon: 'message-circle', label: t('Chat') },
                     ].map((item) =>
