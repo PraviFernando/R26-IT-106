@@ -19,6 +19,7 @@
     "@react-navigation/stack": "^7.10.21",
     "axios": "^1.13.5",
     "expo": "^57.0.17",
+    "expo-asset": "~57.0.20",
     "expo-audio": "~1.1.1",
     "expo-av": "^16.0.8",
     "expo-camera": "~17.0.10",
@@ -43,6 +44,9 @@
     "react-native-vector-icons": "^10.3.0",
     "react-native-web": "^0.21.0",
     "react-native-webview": "^13.16.1",
+    "react-native-worklets": "0.5.1"
+  },
+  "overrides": {
     "react-native-worklets": "0.5.1"
   },
   "private": true

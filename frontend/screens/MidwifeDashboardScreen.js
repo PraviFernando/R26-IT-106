@@ -251,7 +251,7 @@ function InfoRow({ icon, text, highlight }) {
 
 // ─── MAIN SCREEN ──────────────────────────────
 export default function MidwifeDashboardScreen({ navigation }) {
-    const { user: authUser, token, logout } = useAuth();
+    const { user: authUser, token, logout, restoring } = useAuth();
 
     const [stats, setStats] = useState(null);
     const [patients, setPatients] = useState([]);
@@ -277,7 +277,15 @@ export default function MidwifeDashboardScreen({ navigation }) {
         if (token) setAuthToken(token);
     }, [token]);
 
+    // Route guard: if unauthenticated, redirect immediately to Login
+    useEffect(() => {
+        if (!restoring && !token) {
+            navigation.replace('Login');
+        }
+    }, [token, restoring, navigation]);
+
     const fetchData = useCallback(async () => {
+        if (!token) return;
         try {
             const [statsRes, patientsRes] = await Promise.all([
                 api.get('/midwife/stats'),
@@ -296,7 +304,7 @@ export default function MidwifeDashboardScreen({ navigation }) {
             setLoading(false);
             setRefreshing(false);
         }
-    }, []);
+    }, [token]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 

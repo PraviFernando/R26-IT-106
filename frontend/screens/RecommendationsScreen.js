@@ -285,6 +285,8 @@ const RecommendationsScreen = ({ navigation, route }) => {
     completedActivities, 
     fetchCompletedActivities, 
     epdsRiskLevel,
+    setEpdsRiskLevel,
+    fetchProgressData,
     localRuleRecs,
     setLocalRuleRecs,
     isSkipped,
@@ -338,24 +340,27 @@ const RecommendationsScreen = ({ navigation, route }) => {
       if (fetchCompletedActivities) {
         fetchCompletedActivities();
       }
+      if (fetchProgressData) {
+        fetchProgressData();
+      }
     });
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, fetchCompletedActivities, fetchProgressData]);
 
   const activeAnalysis = isSkipped
     ? null
     : (localRuleRecs 
         ? { 
-            detectedEmotion: localRuleRecs.emotion, 
-            primaryReason: localRuleRecs.reason, 
-            riskLevel: localRuleRecs.riskLevel || null,
+            detectedEmotion: localRuleRecs.detectedEmotion || localRuleRecs.emotion, 
+            primaryReason: localRuleRecs._internal?.primaryReason || localRuleRecs.primaryReason || localRuleRecs.reason, 
+            riskLevel: localRuleRecs.riskLevel || localRuleRecs._internal?.riskLevel || null,
             babyIntents: { 
-              baby_related: isBabyRelatedReason(localRuleRecs.reason), 
-              baby_crying: localRuleRecs.reason === 'baby_crying', 
-              baby_needs: localRuleRecs.reason === 'understanding_baby' || localRuleRecs.reason === 'baby_needs', 
-              baby_feeding: localRuleRecs.reason === 'baby_feeding', 
-              baby_sleep: localRuleRecs.reason === 'baby_sleep',
-              baby_health: localRuleRecs.reason === 'baby_health'
+              baby_related: isBabyRelatedReason(localRuleRecs._internal?.primaryReason || localRuleRecs.primaryReason || localRuleRecs.reason), 
+              baby_crying: (localRuleRecs._internal?.primaryReason || localRuleRecs.primaryReason || localRuleRecs.reason) === 'baby_crying', 
+              baby_needs: (localRuleRecs._internal?.primaryReason || localRuleRecs.primaryReason || localRuleRecs.reason) === 'understanding_baby' || (localRuleRecs._internal?.primaryReason || localRuleRecs.primaryReason || localRuleRecs.reason) === 'baby_needs', 
+              baby_feeding: (localRuleRecs._internal?.primaryReason || localRuleRecs.primaryReason || localRuleRecs.reason) === 'baby_feeding', 
+              baby_sleep: (localRuleRecs._internal?.primaryReason || localRuleRecs.primaryReason || localRuleRecs.reason) === 'baby_sleep',
+              baby_health: (localRuleRecs._internal?.primaryReason || localRuleRecs.primaryReason || localRuleRecs.reason) === 'baby_health'
             }
           } 
         : (hasAnalysis 
@@ -363,7 +368,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
             : { 
                 detectedEmotion: selEmotion, 
                 primaryReason: selReason, 
-                riskLevel: latestAnalysis?.riskLevel || null,
+                riskLevel: route?.params?.riskLevel || latestAnalysis?.riskLevel || epdsRiskLevel || 'low',
                 babyIntents: {
                   baby_related: isBabyRelatedReason(selReason),
                   baby_crying: selReason === 'baby_crying',
@@ -380,15 +385,17 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const rawEmotion = selectedEmojiKey || activeAnalysis?.detectedEmotion || selEmotion || 'stressed';
   const resolvedEmotionKey = EMOTION_OPTIONS.find(o => o.key === rawEmotion || o.emoji === rawEmotion)?.key || rawEmotion;
   const emotion = resolvedEmotionKey;
-  const risk = epdsRiskLevel || activeAnalysis?.riskLevel || 'low';
+  const activeRiskFromAnalysis = activeAnalysis?.riskLevel || latestAnalysis?.riskLevel || null;
+  const risk = route?.params?.riskLevel || activeRiskFromAnalysis || epdsRiskLevel || 'low';
+  const currentRisk = normalizeRiskLevel(risk || 'low');
   const ec = EMOTION_CFG[emotion] || EMOTION_CFG.stressed;
-  const rc = risk ? (RISK_CFG[risk] || RISK_CFG.low) : null;
+  const rc = risk ? (RISK_CFG[currentRisk] || RISK_CFG.low) : null;
 
   // Handle Assessment Completion
   const handleAssessmentContinue = () => {
     const normReason = normalizeReasonKey(selReason);
     const normEmotion = normalizeEmotionKey(selEmotion);
-    const normRisk = normalizeRiskLevel(epdsRiskLevel || 'low');
+    const normRisk = normalizeRiskLevel(route?.params?.riskLevel || activeRiskFromAnalysis || epdsRiskLevel || 'low');
 
     const canonicalAnalysis = {
       detectedEmotion: normEmotion,
@@ -539,12 +546,15 @@ const RecommendationsScreen = ({ navigation, route }) => {
 
   // Enforce Max Limits: Activities (4), Games (4), Music (4), Videos (4), Knowledge (5)
   const activeDiaryText = activeAnalysis?.diaryText || latestAnalysis?.diaryText || '';
+  const isCachedRiskMatching = latestRecommendations && normalizeRiskLevel(latestRecommendations.riskLevel) === currentRisk;
+  const validCachedRecs = isCachedRiskMatching ? latestRecommendations : null;
+
   const rawFinalActivities = isSkipped
     ? ALL_ACTIVITIES
-    : (latestRecommendations?.newActivities || latestRecommendations?.activities || getRankedActivities(
+    : (validCachedRecs?.newActivities || validCachedRecs?.activities || getRankedActivities(
         emotion,
         activeAnalysis?.primaryReason || selReason || 'overwhelmed',
-        risk || 'low',
+        currentRisk,
         activeDiaryText,
         userPreferredActivities,
         completedActivities,
@@ -555,9 +565,9 @@ const RecommendationsScreen = ({ navigation, route }) => {
   const activeIntents = activeAnalysis?.babyIntents || {};
   const activeReason = activeAnalysis?.primaryReason || selReason || '';
 
-  const dynamicRecommendedGames = (latestRecommendations?.games && latestRecommendations.games.length > 0)
-    ? latestRecommendations.games
-    : getRecommendedGames(activeIntents, activeDiaryText, activeReason, 4, risk, emotion, selectedEmojiKey);
+  const dynamicRecommendedGames = (validCachedRecs?.games && validCachedRecs.games.length > 0)
+    ? validCachedRecs.games
+    : getRecommendedGames(activeIntents, activeDiaryText, activeReason, 4, currentRisk, emotion, selectedEmojiKey);
 
   const finalGames = isSkipped
     ? ALL_GAMES.filter(g => g.id !== 'baby_mood').slice(0, 4)
@@ -608,16 +618,16 @@ const RecommendationsScreen = ({ navigation, route }) => {
   );
 
   // Music & Videos selection driven by Reason + Risk + Emoji
-  const recMusicRes = getMusicForReason(primaryReason, emotion, selectedEmojiKey, risk);
-  const libraryMusic = (latestRecommendations?.music && latestRecommendations.music.length > 0)
-    ? latestRecommendations.music
+  const recMusicRes = getMusicForReason(primaryReason, emotion, selectedEmojiKey, currentRisk);
+  const libraryMusic = (validCachedRecs?.music && validCachedRecs.music.length > 0)
+    ? validCachedRecs.music
     : recMusicRes.music;
 
   const finalMusic = (isSkipped ? Object.values(MUSIC_LIBRARY).flat() : libraryMusic).slice(0, 4);
 
-  const recVideoRes = getVideosForReason(primaryReason, emotion, selectedEmojiKey, risk);
-  const libraryVideos = (latestRecommendations?.videos && latestRecommendations.videos.length > 0)
-    ? latestRecommendations.videos
+  const recVideoRes = getVideosForReason(primaryReason, emotion, selectedEmojiKey, currentRisk);
+  const libraryVideos = (validCachedRecs?.videos && validCachedRecs.videos.length > 0)
+    ? validCachedRecs.videos
     : recVideoRes.videos;
 
   const finalVideos = (isSkipped ? Object.values(VIDEO_LIBRARY).flat() : libraryVideos).slice(0, 4);
@@ -749,7 +759,9 @@ const RecommendationsScreen = ({ navigation, route }) => {
         setDynamicVideos(fallback);
       }
     } catch (err) {
-      console.warn('Backend dynamic videos endpoint unavailable, using curated videos fallback:', err.message);
+      if (err.response?.status !== 404 && typeof __DEV__ !== 'undefined' && __DEV__) {
+        console.warn('Backend dynamic videos endpoint unavailable, using curated videos fallback:', err.message);
+      }
       const fallback = (latestRecommendations?.videos && latestRecommendations.videos.length > 0)
         ? latestRecommendations.videos
         : getVideosForReason(primaryReason, emotion, selectedEmojiKey, risk).videos;
@@ -764,12 +776,34 @@ const RecommendationsScreen = ({ navigation, route }) => {
     fetchDynamicVideos();
   }, [emotion, primaryReason, risk, isBabyActive]);
 
-  // Knowledge Hub Filtered Resources (Limit 5)
+  // Knowledge Hub Filtered Resources (Limit 5, Personalized by Clinical Risk Level)
   const getKnowledgeResources = () => {
-    let list = KNOWLEDGE_RESOURCES;
+    let list = [...KNOWLEDGE_RESOURCES];
     if (kbCategory !== 'all') {
       list = list.filter(r => r.category === kbCategory);
     }
+
+    list.sort((a, b) => {
+      let scoreA = 0;
+      let scoreB = 0;
+
+      if (currentRisk === 'high') {
+        if (a.id === 'kb_trusted_nimh' || a.category === 'maternal_mental_health') scoreA += 30;
+        if (b.id === 'kb_trusted_nimh' || b.category === 'maternal_mental_health') scoreB += 30;
+        if (a.id === 'kb_trusted_psi' || a.id === 'kb_trusted_who_maternal') scoreA += 20;
+        if (b.id === 'kb_trusted_psi' || b.id === 'kb_trusted_who_maternal') scoreB += 20;
+        if (a.category === 'social_support') scoreA += 15;
+        if (b.category === 'social_support') scoreB += 15;
+      } else {
+        // Low and Medium risk: same wellness, mother care, baby care, lifestyle
+        if (a.category === 'mother_care' || a.category === 'baby_care') scoreA += 25;
+        if (b.category === 'mother_care' || b.category === 'baby_care') scoreB += 25;
+        if (a.category === 'lifestyle' || a.category === 'learning') scoreA += 15;
+        if (b.category === 'lifestyle' || b.category === 'learning') scoreB += 15;
+      }
+      return scoreB - scoreA;
+    });
+
     return list.slice(0, 5);
   };
 
@@ -861,6 +895,23 @@ const RecommendationsScreen = ({ navigation, route }) => {
             </View>
           )}
 
+          {/* Medium Risk Urgency Callout Card */}
+          {risk === 'medium' && !isEmergencyTopic && (
+            <View style={s.urgencyCard}>
+              <Text style={s.urgencyIcon}>💛</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={s.urgencyTitle}>
+                  {isSinhala ? 'අමතර සහාය සහ උපදේශන මඟපෙන්වීම (Support Guidance):' : 'Support Guidance:'}
+                </Text>
+                <Text style={s.urgencyText}>
+                  {isSinhala
+                    ? 'ඔබ යම් බරක් රැගෙන සිටිනවා. සෞඛ්‍ය සේවකයෙකු සහ විශේෂඥ කෙනෙකු සමඟ කතා කිරීම ගැන සලකා බලන්න. ඔබ ඒ ආධාරයට සුදුසුයි 💜'
+                    : 'You are carrying some weight. Consider talking to a healthcare provider or a specialist. You deserve that support 💜'}
+                </Text>
+              </View>
+            </View>
+          )}
+
           {/* SEARCH RESULTS DISPLAY */}
           {searchResults ? (
             <View style={s.searchResultsCont}>
@@ -906,22 +957,23 @@ const RecommendationsScreen = ({ navigation, route }) => {
                 <View style={[s.badge, { backgroundColor: DP.lav, borderColor: DP.line }]}>
                   <Text style={[s.badgeText, { color: DP.primaryDark }]}>{ec.emoji} {isSinhala ? ec.label : (ec.labelEn || ec.label)}</Text>
                 </View>
-                {!isSkipped && activeReason && (() => {
+                {!isSkipped && Boolean(activeReason) ? (() => {
                   const reasonObj = REASON_OPTIONS.find(r => r.key === activeReason);
                   const reasonLabel = isSinhala
-                    ? (reasonObj?.label ? reasonObj.label.split('(')[0].trim() : activeReason.replace(/_/g, ' '))
+                    ? (reasonObj?.label ? (reasonObj.label.includes('(') ? reasonObj.label.split('(')[1].replace(')', '').trim() : reasonObj.label) : activeReason.replace(/_/g, ' '))
                     : (reasonObj?.label ? reasonObj.label.split('(')[0].trim() : activeReason.replace(/_/g, ' '));
                   return reasonLabel ? (
                     <View style={[s.badge, { backgroundColor: DP.note, borderColor: DP.noteLine }]}>
                       <Text style={[s.badgeText, { color: DP.text }]}>📌 {reasonLabel}</Text>
                     </View>
                   ) : null;
-                })()}
-                {isSkipped && (
+                })() : null}
+
+                {Boolean(isSkipped) ? (
                   <View style={[s.badge, { backgroundColor: DP.sage, borderColor: DP.sageLine }]}>
                     <Text style={[s.badgeText, { color: DP.sageText }]}>{isSinhala ? '🌐 සියලු අන්තර්ගතයන්' : '🌐 All Content'}</Text>
                   </View>
-                )}
+                ) : null}
               </View>
 
               {!isSkipped && hasAnalysis && activeDiaryText ? (
@@ -1279,6 +1331,7 @@ const RecommendationsScreen = ({ navigation, route }) => {
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
+
                 <View style={s.modalActionRow}>
                   <TouchableOpacity style={s.modalBackBtn} onPress={() => setStep(1)}>
                     <Text style={s.modalBackBtnText}>{isSinhala ? '← ආපසු' : '← Back'}</Text>
@@ -1344,6 +1397,10 @@ const s = StyleSheet.create({
   emergencyIcon: { fontSize: 22 },
   emergencyTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.blushText, marginBottom: 2 },
   emergencyText: { fontSize: 12, fontFamily: typography.bodyFont, color: DP.blushText, lineHeight: 18 },
+  urgencyCard: { flexDirection: 'row', backgroundColor: DP.warmYellow, borderWidth: 1, borderColor: DP.warmYellowLine, borderRadius: 18, padding: 14, marginBottom: 16, gap: 10 },
+  urgencyIcon: { fontSize: 22 },
+  urgencyTitle: { fontSize: 13, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.warmYellowText, marginBottom: 2 },
+  urgencyText: { fontSize: 12, fontFamily: typography.bodyFont, color: DP.warmYellowText, lineHeight: 18 },
   crisisKnowledgeCard: { backgroundColor: DP.note, borderWidth: 1, borderColor: DP.noteLine, borderRadius: 18, padding: 14, marginBottom: 16 },
   crisisKnowledgeTitle: { fontSize: 14, fontFamily: typography.subTopicFont, fontWeight: '700', color: DP.blushText, marginBottom: 10 },
   crisisKnowledgeBox: { backgroundColor: DP.card, borderRadius: 12, padding: 12, marginBottom: 8, borderWidth: 1, borderColor: DP.line },

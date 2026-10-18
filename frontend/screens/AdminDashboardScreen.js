@@ -268,7 +268,7 @@ function CreateModal({ visible, onClose, onCreated }) {
 
 // ─── MAIN SCREEN ──────────────────────────────
 export default function AdminDashboardScreen({ navigation }) {
-    const { user: authUser, token, logout } = useAuth();
+    const { user: authUser, token, logout, restoring } = useAuth();
     const r = useResponsive();
     const statCols = r.gridColumns(150, 10, 4);
     const statCardW = r.tileWidth(statCols, 10);
@@ -284,7 +284,15 @@ export default function AdminDashboardScreen({ navigation }) {
     // Ensure token is set globally before any API call
     useEffect(() => { if (token) setAuthToken(token); }, [token]);
 
+    // Route guard: if unauthenticated, redirect immediately to Login
+    useEffect(() => {
+        if (!restoring && !token) {
+            navigation.replace('Login');
+        }
+    }, [token, restoring, navigation]);
+
     const fetchData = useCallback(async () => {
+        if (!token) return;
         try {
             const [statsRes, usersRes] = await Promise.all([
                 api.get('/admin/stats'),
@@ -298,7 +306,7 @@ export default function AdminDashboardScreen({ navigation }) {
             setLoading(false);
             setRefreshing(false);
         }
-    }, []);
+    }, [token]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
