@@ -5,26 +5,29 @@ import {
     ScrollView,
     TouchableOpacity,
     StyleSheet,
-    Dimensions,
     Modal,
     Image,
+    ImageBackground,
     Platform,
     useWindowDimensions,
-    ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { BarChart, PieChart } from 'react-native-chart-kit';
 import { useTranslation } from 'react-i18next';
 import { Video, ResizeMode } from 'expo-av';
 import { WebView } from 'react-native-webview';
+import * as Font from 'expo-font';
+import { Asset } from 'expo-asset';
+import Feather from 'react-native-vector-icons/Feather';
 import exerciseService from '../services/exerciseService';
-import babyActivityService from '../services/babyActivityService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
-import { colors, typography, spacing, radius, shadows } from '../theme';
+import { typography } from '../theme';
+
+const HERO_IMAGE = require('../assets/hero-mother-baby.jpg');
+const HERO_IMAGE_URI = Asset.fromModule(HERO_IMAGE).uri;
+
 const getYouTubeId = (url) => {
     if (!url) return null;
     if (url.includes('youtube.com/embed/'))
@@ -38,398 +41,278 @@ const getYouTubeId = (url) => {
     return null;
 };
 
+const getVideoThumbnail = (ex) => {
+    if (ex?.thumbnailUrl) return ex.thumbnailUrl;
+    const id = getYouTubeId(ex?.videoUrl);
+    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+};
+
+const Icon = ({ name, size = 18, color, style }) => (
+    <Feather name={name} size={size} color={color} style={style} />
+);
+
 const getEmbedUrl = (url) => {
     const id = getYouTubeId(url);
     return id
         ? `https://www.youtube.com/embed/${id}?rel=0&autoplay=1&modestbranding=1&playsinline=1`
         : url;
 };
-const { width } = Dimensions.get('window');
 
 // ─────────────────────────────────────────────
-// MOCK DATA
+// PALETTE  (primary #AA60C8 is unchanged)
 // ─────────────────────────────────────────────
-const mockUser = {
-    name: 'සාරා ජොන්සන්',
-    role: 'රෝගියා',
-    avatar: null,
-    lastVisit: '2026 පෙබරවාරි 28',
+const LIGHT = {
+    primary: '#AA60C8',
+    primaryDark: '#873CA6',
+    secondary: '#D69ADE',
+    accent: '#EABDE6',
+    bg: '#FBF8F6',
+    side: '#FDFBFA',
+    card: '#FFFFFF',
+    line: '#EFE4EE',
+    line2: '#F2EAF1',
+    lav: '#F5E6FB',
+    blush: '#FFE9F1',
+    blushLine: '#F4C6D7',
+    blushText: '#9A3F62',
+    sage: '#E7F1EA',
+    sageText: '#3F6B4E',
+    note: '#FFF7FA',
+    noteLine: '#F6DCE8',
+    text: '#2C1A35',
+    muted: '#8A7392',
+    nav: '#5B4763',
+    sec: '#A894AE',
 };
 
-const mockStats = (t) => [
-    { label: t('Screenings Done'), value: 12, icon: '📋', color: '#7C3AED' },
-    { label: t('Risk Score'), value: '34%', icon: '📊', color: '#0EA5E9' },
-    { label: t('Sessions Left'), value: 5, icon: '🕐', color: '#10B981' },
-    { label: t('Mood Streak'), value: '7 ' + t('days'), icon: '🌟', color: '#F59E0B' },
-];
+const DARK = {
+    ...LIGHT,
+    bg: '#16111A',
+    side: '#1D1622',
+    card: '#221A28',
+    line: '#33283A',
+    line2: '#2C2232',
+    lav: '#3A2546',
+    blush: '#3D2230',
+    blushLine: '#5A3045',
+    blushText: '#F4B6CE',
+    sage: '#22322A',
+    sageText: '#A9D3B5',
+    note: '#2A1F2E',
+    noteLine: '#3D2C42',
+    text: '#F5EEF7',
+    muted: '#B9A5C0',
+    nav: '#D9C9DF',
+    sec: '#8E7A96',
+};
 
-const barChartData = (t) => ({
-    labels: [t('Jan'), t('Feb'), t('Mar'), t('Apr'), t('May'), t('Jun')],
-    datasets: [
-        {
-            data: [30, 45, 28, 60, 40, 55],
-        },
-    ],
+const SERIF = Platform.select({
+    web: "Georgia, 'Times New Roman', serif",
+    ios: 'Georgia',
+    default: 'serif',
 });
 
-const pieChartData = (t) => [
-    { name: t('Low'), population: 35, color: '#10B981', legendFontColor: '#374151', legendFontSize: 13 },
-    { name: t('Medium'), population: 40, color: '#F59E0B', legendFontColor: '#374151', legendFontSize: 13 },
-    { name: t('High'), population: 15, color: '#EF4444', legendFontColor: '#374151', legendFontSize: 13 },
-    { name: t('None'), population: 10, color: '#7C3AED', legendFontColor: '#374151', legendFontSize: 13 },
+const DAILY_NOTES = [
+    'You are exactly the mother your baby needs. Be as gentle with yourself as you are with them.',
+    'Rest is part of recovery, not a reward for it.',
+    'Small steps still count. You are doing better than you think.',
+    'It is okay to ask for help. Strong mothers lean on others too.',
+    'Every feeling is allowed here. Be kind to yourself today.',
+    'Your baby does not need a perfect mother, just a present one.',
+    'One day at a time is enough.',
 ];
 
-const progressData = (t) => [
-    { label: t('Anxiety Level'), progress: 0.62, color: '#EF4444' },
-    { label: t('Sleep Quality'), progress: 0.75, color: '#10B981' },
-    { label: t('Social Support'), progress: 0.48, color: '#0EA5E9' },
-    { label: t('Emotional Balance'), progress: 0.83, color: '#7C3AED' },
+// Sidebar groups — same destinations as before, grouped like the new design
+const navSections = (t) => [
+    {
+        title: t('Today'),
+        items: [
+            { key: 'home', label: t('Overview'), icon: 'home' },
+            { key: 'screening', label: t('Maternal Wellness Check'), icon: 'clipboard' },
+            { key: 'care_overview', label: t('Care Overview'), icon: 'star' },
+        ],
+    },
+    {
+        title: t('Care for you'),
+        items: [
+            { key: 'diary', label: t('My Diary'), icon: 'book-open' },
+            { key: 'relief', label: t('Relief for you'), icon: 'heart' },
+            { key: 'exercise', label: t('Exercise'), icon: 'activity' },
+            { key: 'chat', label: t('Support chat'), icon: 'message-circle' },
+        ],
+    },
+    {
+        title: t('Baby and life'),
+        items: [
+            { key: 'baby', label: t('Baby Dev'), icon: 'smile' },
+            { key: 'plan', label: t('My Plans'), icon: 'calendar' },
+            { key: 'profile', label: t('Profile'), icon: 'user' },
+        ],
+    },
 ];
 
-const recentActivities = (t) => [
-    { id: 1, title: t('EPDS Screening Completed'), time: t('2 hours ago'), icon: '✅', color: '#10B981' },
-    { id: 2, title: t('Therapy Session Scheduled'), time: t('Yesterday'), icon: '📅', color: '#0EA5E9' },
-    { id: 3, title: t('Mood Log Updated'), time: t('2 days ago'), icon: '😊', color: '#F59E0B' },
-    { id: 4, title: t('Doctor Note Added'), time: t('3 days ago'), icon: '📝', color: '#7C3AED' },
-];
-
-const navItems = (t) => [
-    { key: 'home', label: t('Dashboard'), icon: '🏠' },
-    { key: 'screening', label: t('Maternal Wellness Check'), icon: '📋' },
-    { key: 'diary', label: t('My Diary'), icon: '📔' },
-    { key: 'plan', label: t('My Plans'), icon: '📅' },
-    { key: 'profile', label: t('Profile'), icon: '👤' },
-    { key: 'settings', label: t('Settings'), icon: '⚙️' },
-    { key: 'exercise', label: t('Exercise'), icon: '🏃‍♀️' },
-    { key: 'care_overview', label: t('Care Overview'), icon: '⭐' },
-    { key: 'baby', label: t('Baby Dev'), icon: '👶' },
-];
-
 // ─────────────────────────────────────────────
-// PROGRESS BAR COMPONENT
+// SIDEBAR (hamburger drawer)
 // ─────────────────────────────────────────────
-function ProgressBar({ label, progress, color, isDarkMode }) {
-    const percent = Math.round(progress * 100);
-    return (
-        <View style={styles.progressRow}>
-            <View style={styles.progressLabelRow}>
-                <Text style={[styles.progressLabel, isDarkMode && { color: '#E5E7EB' }]}>{label}</Text>
-                <Text style={[styles.progressPercent, { color }]}>
-                    {percent}%
-                </Text>
-            </View>
-
-            <View style={[styles.progressTrack, isDarkMode && { backgroundColor: '#374151' }]}>
-                <View
-                    style={[
-                        styles.progressFill,
-                        {
-                            width: `${percent}%`,
-                            backgroundColor: color,
-                        },
-                    ]}
-                />
-            </View>
-        </View>
-    );
-}
-
-// ─────────────────────────────────────────────
-// STAT CARD COMPONENT
-// ─────────────────────────────────────────────
-function StatCard({ icon, label, value, color, isDarkMode }) {
-    const { width } = useWindowDimensions();
-    const cardWidth = (width - 42) / 2;
-    return (
-        <View style={[styles.statCard, { width: cardWidth, borderLeftColor: color }, isDarkMode && { backgroundColor: '#2D2D2D', borderColor: '#3D3D3D' }]}>
-            <Text style={styles.statIcon}>{icon}</Text>
-            <Text style={[styles.statValue, { color }]}>{value}</Text>
-            <Text style={[styles.statLabel, isDarkMode && { color: '#9CA3AF' }]}>{label}</Text>
-        </View>
-    );
-}
-
-// ─────────────────────────────────────────────
-// SIDEBAR COMPONENT
-// ─────────────────────────────────────────────
-function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
+function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout, onHelp, P }) {
     const { t } = useTranslation();
-    const { user } = useAuth();
-    const displayName = user?.username || 'Guest User';
-    const initials = displayName.slice(0, 2).toUpperCase();
 
     return (
-        <Modal
-            transparent
-            visible={visible}
-            animationType="slide"
-            onRequestClose={onClose}
-        >
+        <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
             <View style={styles.sidebarOverlay}>
-                <TouchableOpacity
-                    style={styles.sidebarBackdrop}
-                    onPress={onClose}
-                />
-
-                <View style={styles.sidebarContainer}>
-                    {/* Sidebar Header */}
+                <View style={[styles.sidebarContainer, { backgroundColor: P.side, borderRightColor: P.line }]}>
                     <View style={styles.sidebarHeader}>
-                        <View style={styles.sidebarAvatar}>
-                            <Text style={styles.sidebarAvatarText}>{initials}</Text>
+                        <View style={[styles.logoCircle, { backgroundColor: P.lav }]}>
+                            <Text style={styles.logoEmoji}>🌸</Text>
                         </View>
-
-                        <View style={styles.sidebarUserInfo}>
-                            <Text style={styles.sidebarUserName}>
-                                {displayName}
-                            </Text>
-
-                            <Text style={styles.sidebarUserRole}>
-                                {user?.role && user.role !== 'Patient' ? t(user.role) : ''}
-                            </Text>
+                        <View style={{ flex: 1 }}>
+                            <Text style={[styles.brandText, { color: P.text }]}>{t('PeriCare')}</Text>
+                            <Text style={[styles.brandSub, { color: P.muted }]}>{t('Postpartum care')}</Text>
                         </View>
-
-                        <TouchableOpacity
-                            onPress={onClose}
-                            style={styles.sidebarCloseBtn}
-                        >
-                            <Text style={styles.sidebarCloseText}>✕</Text>
+                        <TouchableOpacity onPress={onClose} style={styles.sidebarCloseBtn} accessibilityLabel={t('Close menu')}>
+                            <Icon name="x" size={20} color={P.muted} />
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.sidebarDivider} />
-
-                    {/* Nav Items */}
-                    <ScrollView style={styles.sidebarNav}>
-                        {navItems(t).map((item) => (
-                            <TouchableOpacity
-                                key={item.key}
-                                style={[
-                                    styles.sidebarNavItem,
-                                    activeTab === item.key &&
-                                    styles.sidebarNavItemActive,
-                                ]}
-                                onPress={() => {
-                                    onTabPress(item.key);
-                                    onClose();
-                                }}
-                            >
-                                <Text style={styles.sidebarNavIcon}>
-                                    {item.icon}
-                                </Text>
-
-                                <Text
-                                    style={[
-                                        styles.sidebarNavLabel,
-                                        activeTab === item.key &&
-                                        styles.sidebarNavLabelActive,
-                                    ]}
-                                >
-                                    {item.label}
-                                </Text>
-
-                                {activeTab === item.key && (
-                                    <View
-                                        style={
-                                            styles.sidebarActiveIndicator
-                                        }
-                                    />
-                                )}
-                            </TouchableOpacity>
+                    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                        {navSections(t).map((section) => (
+                            <View key={section.title}>
+                                <Text style={[styles.navSection, { color: P.sec }]}>{section.title.toUpperCase()}</Text>
+                                {section.items.map((item) => {
+                                    const active = activeTab === item.key;
+                                    return (
+                                        <TouchableOpacity
+                                            key={item.key}
+                                            style={[styles.navItem, active && { backgroundColor: P.lav }]}
+                                            onPress={() => {
+                                                onTabPress(item.key);
+                                                onClose();
+                                            }}
+                                        >
+                                            <Icon name={item.icon} size={18} color={active ? P.primaryDark : P.nav} style={styles.navIcon} />
+                                            <Text style={[styles.navLabel, { color: active ? P.primaryDark : P.nav }, active && styles.navLabelActive]}>
+                                                {item.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
                         ))}
+
+                        <TouchableOpacity
+                            style={[styles.helpBtn, { backgroundColor: P.blush, borderColor: P.blushLine }]}
+                            onPress={() => {
+                                onClose();
+                                onHelp();
+                            }}
+                        >
+                            <Icon name="life-buoy" size={18} color={P.blushText} style={styles.navIcon} />
+                            <Text style={[styles.helpText, { color: P.blushText }]}>{t('Need help now?')}</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.navItem} onPress={onLogout}>
+                            <Icon name="log-out" size={18} color={P.nav} style={styles.navIcon} />
+                            <Text style={[styles.navLabel, { color: P.nav }]}>{t('Sign Out')}</Text>
+                        </TouchableOpacity>
                     </ScrollView>
-
-                    <View style={styles.sidebarDivider} />
-
-                    {/* Logout */}
-                    <TouchableOpacity
-                        style={styles.sidebarLogout}
-                        onPress={onLogout}
-                    >
-                        <Text style={styles.sidebarLogoutIcon}>🚪</Text>
-
-                        <Text style={styles.sidebarLogoutText}>
-                            {t('Sign Out')}
-                        </Text>
-                    </TouchableOpacity>
                 </View>
+                <TouchableOpacity style={styles.sidebarBackdrop} onPress={onClose} activeOpacity={1} />
             </View>
         </Modal>
     );
 }
 
 // ─────────────────────────────────────────────
-// BRIGHTNESS SLIDER COMPONENT
+// HEADER
 // ─────────────────────────────────────────────
-function BrightnessSlider({ value, onValueChange, isDarkMode }) {
-    const [sliderWidth, setSliderWidth] = useState(80);
-
-    const handleTouch = (evt) => {
-        const touchX = evt.nativeEvent.locationX;
-        let newValue = touchX / sliderWidth;
-        if (newValue < 0) newValue = 0;
-        if (newValue > 1) newValue = 1;
-        onValueChange(newValue);
-    };
-
-    return (
-        <View
-            style={{
-                width: 80,
-                height: 30,
-                justifyContent: 'center',
-                marginRight: 10,
-            }}
-            onLayout={(e) => {
-                const { width } = e.nativeEvent.layout;
-                if (width) setSliderWidth(width);
-            }}
-            onStartShouldSetResponder={() => true}
-            onMoveShouldSetResponder={() => true}
-            onResponderGrant={handleTouch}
-            onResponderMove={handleTouch}
-        >
-            <View
-                style={{
-                    height: 4,
-                    borderRadius: 2,
-                    backgroundColor: isDarkMode ? '#4B5563' : '#E5E7EB',
-                    width: '100%',
-                    position: 'relative',
-                }}
-            >
-                <View
-                    style={{
-                        height: '100%',
-                        borderRadius: 2,
-                        backgroundColor: '#7C3AED',
-                        width: `${value * 100}%`,
-                    }}
-                />
-                <View
-                    style={{
-                        position: 'absolute',
-                        left: `${value * 100}%`,
-                        top: -6,
-                        marginLeft: -8,
-                        width: 16,
-                        height: 16,
-                        borderRadius: 8,
-                        backgroundColor: '#7C3AED',
-                        borderWidth: 2,
-                        borderColor: '#FFFFFF',
-                        elevation: 3,
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 1 },
-                        shadowOpacity: 0.22,
-                        shadowRadius: 2.22,
-                    }}
-                />
-            </View>
-        </View>
-    );
-}
-
-// ─────────────────────────────────────────────
-// HEADER COMPONENT
-// ─────────────────────────────────────────────
-function Header({ onMenuPress, onNotifPress, isDarkMode, toggleTheme, brightnessLevel, setBrightnessLevel }) {
+function Header({ onMenuPress, initials, P }) {
     const { t, i18n } = useTranslation();
 
     return (
-        <View style={[styles.header, isDarkMode && { backgroundColor: '#1E1E1E', borderBottomColor: '#2D2D2D' }]}>
-            <TouchableOpacity
-                onPress={onMenuPress}
-                style={styles.menuBtn}
-            >
-                <View style={[styles.menuLine, isDarkMode && { backgroundColor: '#F3F4F6' }]} />
-                <View style={[styles.menuLine, { width: 20 }, isDarkMode && { backgroundColor: '#F3F4F6' }]} />
-                <View style={[styles.menuLine, isDarkMode && { backgroundColor: '#F3F4F6' }]} />
-            </TouchableOpacity>
-
-            <View style={styles.headerCenter}>
-                <Text style={styles.headerLogo}>🌸</Text>
-
-                <Text style={[styles.headerTitle, isDarkMode && { color: '#FFF' }]}>
-                    {t('PeriCare')}
-                </Text>
+        <View style={[styles.header, { backgroundColor: P.bg }]}>
+            <View style={styles.headerLeft}>
+                <TouchableOpacity
+                    onPress={onMenuPress}
+                    style={[styles.burger, { backgroundColor: P.card, borderColor: P.line }]}
+                    accessibilityLabel={t('Open menu')}
+                >
+                    <View style={[styles.menuLine, { backgroundColor: P.nav }]} />
+                    <View style={[styles.menuLine, { backgroundColor: P.nav }]} />
+                    <View style={[styles.menuLine, { backgroundColor: P.nav }]} />
+                </TouchableOpacity>
+                <View style={[styles.logoCircle, styles.logoSmall, { backgroundColor: P.lav }]}>
+                    <Text style={styles.logoEmojiSmall}>🌸</Text>
+                </View>
+                <Text style={[styles.brandText, { color: P.text }]}>{t('PeriCare')}</Text>
             </View>
 
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View style={styles.headerRight}>
                 <TouchableOpacity
-                    onPress={() =>
-                        i18n.changeLanguage(
-                            i18n.language === 'en' ? 'si' : 'en'
-                        )
-                    }
-                    style={{ marginRight: 15 }}
+                    onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')}
+                    style={[styles.langPill, { backgroundColor: P.card, borderColor: P.line }]}
                 >
-                    <Text
-                        style={{
-                            fontWeight: '700',
-                            fontSize: 13,
-                            color: isDarkMode ? '#C084FC' : '#7C3AED',
-                            backgroundColor: isDarkMode ? '#3B0764' : '#EDE9FE',
-                            paddingHorizontal: 10,
-                            paddingVertical: 4,
-                            borderRadius: 12,
-                        }}
-                    >
+                    <Text style={[styles.langText, { color: P.nav }]}>
                         {i18n.language === 'en' ? 'සිං' : 'EN'}
                     </Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity
-                    onPress={onNotifPress}
-                    style={styles.notifBtn}
-                >
-                    <Text style={styles.notifIcon}>🔔</Text>
-                </TouchableOpacity>
+                <View style={[styles.avatar, { backgroundColor: P.lav }]}>
+                    <Text style={[styles.avatarText, { color: P.primaryDark }]}>{initials}</Text>
+                </View>
             </View>
         </View>
     );
 }
 
 // ─────────────────────────────────────────────
-// FOOTER COMPONENT
+// SMALL BUILDING BLOCKS
 // ─────────────────────────────────────────────
-function Footer({ activeTab, onTabPress, isDarkMode }) {
-    const { t } = useTranslation();
+function Card({ P, style, children }) {
+    return <View style={[styles.card, { backgroundColor: P.card, borderColor: P.line }, style]}>{children}</View>;
+}
 
-    const footerItems = [
-        ...navItems(t).slice(0, 3), // home, screening, diary
-        navItems(t).find((i) => i.key === 'exercise'),
-        ...navItems(t).slice(3, 5), // plan, profile
-    ];
-
+function PickCard({ P, icon, tag, title, desc, bg, color, onPress, compact }) {
     return (
-        <View style={[styles.footer, isDarkMode && { backgroundColor: '#1E1E1E', borderTopColor: '#2D2D2D' }]}>
-            {footerItems.map((item) => (
-                <TouchableOpacity
-                    key={item.key}
-                    style={styles.footerTab}
-                    onPress={() => onTabPress(item.key)}
-                >
-                    <Text style={styles.footerTabIcon}>
-                        {item.icon}
-                    </Text>
+        <TouchableOpacity
+            onPress={onPress}
+            activeOpacity={0.85}
+            style={[styles.pick, { borderColor: P.line, backgroundColor: P.card }, compact ? styles.pickCompact : { flex: 1 }]}
+        >
+            <View style={[styles.pickImg, { backgroundColor: bg, height: compact ? 70 : 100 }]}>
+                <Icon name={icon} size={compact ? 24 : 30} color={color} />
+            </View>
+            <View style={styles.pickBody}>
+                <Text style={[styles.pickTag, { color }]}>{tag}</Text>
+                <Text style={[styles.pickTitle, { color: P.text }]} numberOfLines={1}>{title}</Text>
+                {!compact && <Text style={[styles.mutedText, { color: P.muted }]} numberOfLines={2}>{desc}</Text>}
+            </View>
+        </TouchableOpacity>
+    );
+}
 
-                    <Text
-                        style={[
-                            styles.footerTabLabel,
-                            activeTab === item.key &&
-                            styles.footerTabLabelActive,
-                            isDarkMode && { color: activeTab === item.key ? '#A855F7' : '#9CA3AF' }
-                        ]}
-                    >
-                        {item.label}
-                    </Text>
-
-                    {activeTab === item.key && (
-                        <View style={[styles.footerActiveBar, isDarkMode && { backgroundColor: '#A855F7' }]} />
-                    )}
-                </TouchableOpacity>
-            ))}
+function CardTitle({ P, icon, children }) {
+    return (
+        <View style={styles.cardTitleRow}>
+            <Icon name={icon} size={18} color={P.primary} style={{ marginRight: 8 }} />
+            <Text style={[styles.cardTitle, { color: P.text }]}>{children}</Text>
         </View>
+    );
+}
+
+function PillButton({ P, label, onPress, solid, icon }) {
+    return (
+        <TouchableOpacity
+            onPress={onPress}
+            style={[
+                styles.pillBtn,
+                icon && styles.pillBtnRow,
+                solid
+                    ? { backgroundColor: P.primary }
+                    : { backgroundColor: P.card, borderWidth: 1, borderColor: P.accent },
+            ]}
+        >
+            {icon ? <Icon name={icon} size={15} color={solid ? '#FFFFFF' : P.primaryDark} style={{ marginRight: 8 }} /> : null}
+            <Text style={[styles.pillBtnText, { color: solid ? '#FFFFFF' : P.primaryDark }]}>{label}</Text>
+        </TouchableOpacity>
     );
 }
 
@@ -446,59 +329,26 @@ export default function DashboardScreen({ navigation }) {
     const [activeTab, setActiveTab] = useState('home');
     const [sidebarVisible, setSidebarVisible] = useState(false);
     const [suggestedExercises, setSuggestedExercises] = useState([]);
-    const [loadingExercises, setLoadingExercises] = useState(true);
+    const [todayPlan, setTodayPlan] = useState([]);
     const [videoModalVisible, setVideoModalVisible] = useState(false);
     const [selectedVideoUrl, setSelectedVideoUrl] = useState(null);
-    const [progressStats, setProgressStats] = useState(null);
-    const [lastVisit, setLastVisit] = useState('');
     const [isDarkMode, setIsDarkMode] = useState(false);
-    const [brightnessLevel, setBrightnessLevel] = useState(1.0);
-    const [hoveredIndex, setHoveredIndex] = useState(null);
-    const [babyVideos, setBabyVideos] = useState([]);
-    const [loadingBabyVideos, setLoadingBabyVideos] = useState(true);
+
+    const P = isDarkMode ? DARK : LIGHT;
+    const isWide = width >= 900;
     const isSinhala = i18n.language === 'si';
 
-    const getInitialAgeFilter = (deliveryDate) => {
-        if (!deliveryDate) return '0–3 months';
-        try {
-            const birthDate = new Date(deliveryDate);
-            const today = new Date();
-            if (isNaN(birthDate.getTime())) return '0–3 months';
-            const diffTime = today - birthDate;
-            if (diffTime < 0) return '0–3 months';
-            const diffDays = diffTime / (1000 * 60 * 60 * 24);
-            const diffMonths = diffDays / 30;
-            
-            if (diffMonths >= 0 && diffMonths < 3) {
-                return '0–3 months';
-            } else if (diffMonths >= 3 && diffMonths < 6) {
-                return '3–6 months';
-            } else if (diffMonths >= 6 && diffMonths < 9) {
-                return '6–9 months';
-            } else if (diffMonths >= 9) {
-                return '9–12 months';
-            }
-        } catch (e) {
-            console.log("Error calculating age filter", e);
-        }
-        return '0–3 months';
-    };
+    const now = new Date();
+    const hour = now.getHours();
+    const greeting = hour < 12 ? t('Good morning') : hour < 17 ? t('Good afternoon') : t('Good evening');
+    const dayString = now.toLocaleDateString(isSinhala ? 'si-LK' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    const dailyNote = t(DAILY_NOTES[now.getDate() % DAILY_NOTES.length]);
 
-    const toggleTheme = async () => {
-        const nextTheme = !isDarkMode;
-        setIsDarkMode(nextTheme);
-        await AsyncStorage.setItem('app_theme', nextTheme ? 'dark' : 'light');
-    };
-
-    const getBrightnessOpacity = () => {
-        return (1.0 - brightnessLevel) * 0.68;
-    };
-
-    const getCurrentDayString = () => {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const d = new Date();
-        return d.toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', options);
-    };
+    useEffect(() => {
+        Font.loadAsync({ Feather: require('react-native-vector-icons/Fonts/Feather.ttf') }).catch((err) =>
+            console.log('Failed to load icon font', err)
+        );
+    }, []);
 
     useEffect(() => {
         const loadTheme = async () => {
@@ -507,28 +357,15 @@ export default function DashboardScreen({ navigation }) {
                 setIsDarkMode(true);
             }
         };
-        const loadBrightness = async () => {
-            const stored = await AsyncStorage.getItem('app_brightness');
-            if (stored) {
-                setBrightnessLevel(parseFloat(stored));
-            }
-        };
         loadTheme();
-        loadBrightness();
+
         const checkLastVisit = async () => {
-            const stored = await AsyncStorage.getItem('last_visit_date');
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
-            if (stored) {
-                setLastVisit(stored);
-            } else {
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                setLastVisit(yesterday.toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', options));
-            }
-            const todayStr = new Date().toLocaleDateString(i18n.language === 'si' ? 'si-LK' : 'en-US', options);
+            const todayStr = new Date().toLocaleDateString(isSinhala ? 'si-LK' : 'en-US', options);
             await AsyncStorage.setItem('last_visit_date', todayStr);
         };
         checkLastVisit();
+
         const fetchExercises = async () => {
             try {
                 const today = new Date().toISOString().split('T')[0];
@@ -538,17 +375,17 @@ export default function DashboardScreen({ navigation }) {
                 }
             } catch (err) {
                 console.log('Failed to fetch suggested exercises', err);
-            } finally {
-                setLoadingExercises(false);
             }
         };
 
-        const fetchProgress = async () => {
+        const fetchTodayPlan = async () => {
             try {
-                const data = await exerciseService.getProgress(30);
-                setProgressStats(data);
+                const d = new Date();
+                const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                const res = await api.get(`/plan/activity/date/${date}`);
+                setTodayPlan(Array.isArray(res.data) ? res.data : []);
             } catch (err) {
-                console.log('Failed to fetch progress stats', err);
+                console.log('Failed to fetch today plan', err);
             }
         };
 
@@ -563,73 +400,9 @@ export default function DashboardScreen({ navigation }) {
             }
         };
 
-        const fetchBabyVideos = async () => {
-            try {
-                setLoadingBabyVideos(true);
-                const ageFilter = getInitialAgeFilter(user?.deliveryDate);
-                
-                const tummyRes = await babyActivityService.getActivities({ category: 'tummy_time', ageFilter });
-                const legRes = await babyActivityService.getActivities({ category: 'leg_movement', ageFilter });
-                const reachRes = await babyActivityService.getActivities({ category: 'reaching_grasping', ageFilter });
-                const rollRes = await babyActivityService.getActivities({ category: 'rolling_positioning', ageFilter });
-                const armRes = await babyActivityService.getActivities({ category: 'gentle_arm', ageFilter });
-                const sensoryRes = await babyActivityService.getActivities({ category: 'sensory_movement', ageFilter });
-
-                const videos = [];
-                // 1. Tummy Time
-                if (tummyRes.success && tummyRes.activities && tummyRes.activities.length > 0) {
-                    videos.push(tummyRes.activities[0]);
-                } else {
-                    videos.push({ _id: 'yt_PtD1gC8d4V0', activity_name: 'Tummy Time', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=PtD1gC8d4V0' });
-                }
-
-                // 2. Leg & Movement
-                if (legRes.success && legRes.activities && legRes.activities.length > 0) {
-                    videos.push(legRes.activities[0]);
-                } else {
-                    videos.push({ _id: 'yt_uK7S6yvK1hM', activity_name: 'Leg & Movement', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=uK7S6yvK1hM' });
-                }
-
-                // 3. Reaching & Grasping
-                if (reachRes.success && reachRes.activities && reachRes.activities.length > 0) {
-                    videos.push(reachRes.activities[0]);
-                } else {
-                    videos.push({ _id: 'yt_kYJ5oQ3j63k', activity_name: 'Reaching & Grasping', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=kYJ5oQ3j63k' });
-                }
-
-                // 4. Rolling & Positioning
-                if (rollRes.success && rollRes.activities && rollRes.activities.length > 0) {
-                    videos.push(rollRes.activities[0]);
-                } else {
-                    videos.push({ _id: 'yt_8HPrnN9sWlo', activity_name: 'Rolling & Positioning', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=8HPrnN9sWlo' });
-                }
-
-                // 5. Gentle Arm Movement
-                if (armRes.success && armRes.activities && armRes.activities.length > 0) {
-                    videos.push(armRes.activities[0]);
-                } else {
-                    videos.push({ _id: 'yt_gT2qR-VpCkw', activity_name: 'Gentle Arm Movement', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=gT2qR-VpCkw' });
-                }
-
-                // 6. Sensory & Play
-                if (sensoryRes.success && sensoryRes.activities && sensoryRes.activities.length > 0) {
-                    videos.push(sensoryRes.activities[0]);
-                } else {
-                    videos.push({ _id: 'yt_F3_G8N7e4zY', activity_name: 'Sensory & Play', duration: '5 min', video_url: 'https://www.youtube.com/watch?v=F3_G8N7e4zY' });
-                }
-
-                setBabyVideos(videos);
-            } catch (err) {
-                console.log('Failed to fetch baby videos for dashboard', err);
-            } finally {
-                setLoadingBabyVideos(false);
-            }
-        };
-
         fetchExercises();
-        fetchProgress();
+        fetchTodayPlan();
         fetchUserProfile();
-        fetchBabyVideos();
     }, [user]);
 
     const handleLogout = () => {
@@ -650,12 +423,16 @@ export default function DashboardScreen({ navigation }) {
         }, 1000);
     };
 
-    const handleNotifPress = () => {
+    const openRelief = () =>
+        navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Recommendations' } });
+
+    const handleHelp = () => {
         Toast.show({
             type: 'info',
-            text1: `🔔 ${t('Notifications')}`,
-            text2: t('You have 3 new notifications.'),
+            text1: t('Need help now?'),
+            text2: t('📞 Sri Lanka Mental Health Helpline: 1926'),
             position: 'top',
+            visibilityTime: 6000,
         });
     };
 
@@ -675,61 +452,227 @@ export default function DashboardScreen({ navigation }) {
             navigation.navigate('CareOverview');
         } else if (tab === 'profile') {
             navigation.navigate('Profile');
-        } else if (tab !== 'home') {
-            Toast.show({
-                type: 'info',
-                text1:
-                    navItems(t).find((n) => n.key === tab)?.label ||
-                    tab,
-                text2: t('This section is coming soon!'),
-                position: 'bottom',
-            });
+        } else if (tab === 'relief') {
+            openRelief();
+        } else if (tab === 'chat') {
+            navigation.navigate('Chat');
         }
     };
 
-    const chartConfig = {
-        backgroundGradientFrom: '#fff',
-        backgroundGradientTo: '#fff',
-        decimalPlaces: 0,
-        color: (opacity = 1) =>
-            `rgba(124, 58, 237, ${opacity})`,
-        labelColor: (opacity = 1) =>
-            `rgba(55, 65, 81, ${opacity})`,
-        style: { borderRadius: 16 },
-        propsForDots: {
-            r: '5',
-            strokeWidth: '2',
-            stroke: '#7C3AED',
-        },
-        barPercentage: 0.6,
+    const openExercise = () => {
+        const ex = suggestedExercises[0];
+        if (ex?.videoUrl) {
+            setSelectedVideoUrl(ex.videoUrl);
+            setVideoModalVisible(true);
+        } else {
+            navigation.navigate('Exercise');
+        }
     };
 
-    const chartConfigDark = {
-        backgroundGradientFrom: '#1E1E1E',
-        backgroundGradientTo: '#1E1E1E',
-        decimalPlaces: 0,
-        color: (opacity = 1) =>
-            `rgba(168, 85, 247, ${opacity})`,
-        labelColor: (opacity = 1) =>
-            `rgba(243, 244, 246, ${opacity})`,
-        style: { borderRadius: 16 },
-        propsForDots: {
-            r: '5',
-            strokeWidth: '2',
-            stroke: '#A855F7',
+    const picks = [
+        {
+            key: 'music',
+            icon: 'music',
+            tag: `${t('Music')} · 10 ${t('min')}`,
+            title: t('Calm music'),
+            desc: t('Soft sounds for quiet moments.'),
+            bg: P.lav,
+            color: P.primaryDark,
+            onPress: () => navigation.navigate('MusicLibrary'),
         },
-        barPercentage: 0.6,
-    };
+        {
+            key: 'activities',
+            icon: 'feather',
+            tag: `${t('Activities')} · 15 ${t('min')}`,
+            title: t('Relaxing activities'),
+            desc: t('A slow, creative pause.'),
+            bg: P.blush,
+            color: P.blushText,
+            onPress: () => navigation.navigate('Main', { screen: 'ActivitiesLibrary' }),
+        },
+        {
+            key: 'games',
+            icon: 'target',
+            tag: `${t('Games')} · 5 ${t('min')}`,
+            title: t('Calming games'),
+            desc: t('Light play to reset your mind.'),
+            bg: P.sage,
+            color: P.sageText,
+            onPress: () => navigation.navigate('Main', { screen: 'GamesLibrary' }),
+        },
+    ];
+
+    const planItems = todayPlan.slice(0, 3);
+    const planDone = todayPlan.filter((r) => r.completed).length;
+    const exercise = suggestedExercises[0];
+
+    // ── Sections ──
+    const hero = (
+        <View style={[styles.hero, { backgroundColor: P.lav, flexDirection: isWide ? 'row' : 'column-reverse' }]}>
+            <View style={[styles.heroText, isWide ? { flex: 1.2, minWidth: 0, padding: 36 } : { padding: 20 }]}>
+                <Text style={[styles.mutedText, { color: P.muted }]}>{dayString}</Text>
+                <Text style={[styles.heroTitle, { color: P.text, fontSize: isWide ? 34 : 24 }]}>
+                    {greeting}, {displayName.split(' ')[0]}
+                </Text>
+                <Text style={[styles.heroSub, { color: P.muted }]}>
+                    {t('Your wellbeing matters, one day at a time.')}
+                </Text>
+                <View style={{ flexDirection: 'row' }}>
+                    <PillButton P={P} solid icon="edit-2" label={t('Write in my diary')} onPress={() => navigation.navigate('Diary')} />
+                </View>
+            </View>
+            <View style={isWide ? styles.heroImageWide : styles.heroImageMobile}>
+                {Platform.OS === 'web' ? (
+                    <img
+                        src={HERO_IMAGE_URI}
+                        alt=""
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '38% 35%', display: 'block' }}
+                    />
+                ) : (
+                    <Image source={HERO_IMAGE} resizeMode="cover" style={StyleSheet.absoluteFill} />
+                )}
+            </View>
+        </View>
+    );
+
+    const picked = (
+        <Card P={P} style={isWide ? { flex: 2 } : null}>
+            <View style={styles.rowBetween}>
+                <View>
+                    <Text style={[styles.cardTitle, { color: P.text }]}>{t('Picked for you')}</Text>
+                    <Text style={[styles.mutedText, { color: P.muted }]}>{t('Based on your recent diary')}</Text>
+                </View>
+                <TouchableOpacity onPress={openRelief}>
+                    <Text style={[styles.linkText, { color: P.primaryDark }]}>{t('See all')} →</Text>
+                </TouchableOpacity>
+            </View>
+            {isWide ? (
+                <View style={styles.picksRow}>
+                    {picks.map(({ key, ...p }) => <PickCard key={key} P={P} {...p} />)}
+                </View>
+            ) : (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.picksScroll}>
+                    {picks.map(({ key, ...p }) => <PickCard key={key} P={P} compact {...p} />)}
+                </ScrollView>
+            )}
+        </Card>
+    );
+
+    const note = (
+        <Card P={P} style={{ backgroundColor: P.note, borderColor: P.noteLine }}>
+            <Text style={[styles.quoteMark, { color: P.secondary }]}>❝</Text>
+            <Text style={[styles.noteText, { color: P.text, fontSize: isWide ? 19 : 17 }]}>{dailyNote}</Text>
+            <Text style={[styles.mutedText, { color: P.muted, marginTop: 10 }]}>{t('A note for you today')}</Text>
+        </Card>
+    );
+
+    const checkIn = (
+        <Card P={P}>
+            <CardTitle P={P} icon="clipboard">{t('Monthly check-in')}</CardTitle>
+            <Text style={[styles.mutedText, { color: P.muted, marginVertical: 8 }]}>
+                {t("10 short questions, whenever you're ready.")}
+            </Text>
+            <View style={{ flexDirection: 'row' }}>
+                <PillButton P={P} label={t('Start check-in')} onPress={() => navigation.navigate('EPDSScreening')} />
+            </View>
+        </Card>
+    );
+
+    const plan = (
+        <Card P={P} style={isWide ? { flex: 1 } : null}>
+            <View style={[styles.rowBetween, { marginBottom: 4 }]}>
+                <CardTitle P={P} icon="calendar">{t("Today's plan")}</CardTitle>
+                <TouchableOpacity onPress={() => navigation.navigate('Plan')}>
+                    <Text style={[styles.linkText, { color: P.primaryDark }]}>
+                        {todayPlan.length ? `${planDone} / ${todayPlan.length}` : t('Manage')}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+            {planItems.length === 0 ? (
+                <TouchableOpacity onPress={() => navigation.navigate('Plan')} style={styles.planRow}>
+                    <Text style={[styles.mutedText, { color: P.muted }]}>
+                        {t('Nothing planned yet. Add one gentle thing for today.')}
+                    </Text>
+                </TouchableOpacity>
+            ) : (
+                planItems.map((r, i) => (
+                    <View
+                        key={r._id || `${r.activityId}-${i}`}
+                        style={[styles.planRow, i < planItems.length - 1 && { borderBottomWidth: 1, borderBottomColor: P.line2 }]}
+                    >
+                        <Icon name={r.completed ? 'check-circle' : 'circle'} size={16} color={r.completed ? P.primary : P.secondary} style={{ marginRight: 10 }} />
+                        <Text
+                            style={[
+                                styles.planText,
+                                { color: r.completed ? P.muted : P.text },
+                                r.completed && { textDecorationLine: 'line-through' },
+                            ]}
+                            numberOfLines={1}
+                        >
+                            {r.activityName || t('Activity')}
+                        </Text>
+                        <Text style={[styles.mutedText, { color: P.muted }]}>
+                            {r.scheduledTime || (r.timeOfDay ? t(r.timeOfDay) : '')}
+                        </Text>
+                    </View>
+                ))
+            )}
+        </Card>
+    );
+
+    const recovery = (
+        <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={openExercise}
+            style={[
+                styles.card,
+                styles.recovery,
+                { backgroundColor: P.card, borderColor: P.line, flexDirection: isWide ? 'row' : 'column' },
+                isWide && { flex: 1 },
+            ]}
+        >
+            <View style={[styles.recoveryMedia, { backgroundColor: P.sage }, isWide ? { width: 260, minHeight: 146 } : { width: '100%', aspectRatio: 16 / 9 }]}>
+                {getVideoThumbnail(exercise) ? (
+                    <Image source={{ uri: getVideoThumbnail(exercise) }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                ) : null}
+                <View style={styles.playBadge}>
+                    <Icon name="play" size={20} color={P.primaryDark} style={{ marginLeft: 3 }} />
+                </View>
+            </View>
+            <View style={{ padding: 18, flex: 1 }}>
+                <Text style={[styles.cardTitle, { color: P.text }]}>{t('Recovery exercise')}</Text>
+                <Text style={[styles.mutedText, { color: P.muted, marginVertical: 6 }]} numberOfLines={2}>
+                    {exercise
+                        ? `${exercise.customName || t('Postpartum Exercise')}${exercise.duration ? ` · ${exercise.duration}` : ''}`
+                        : t('Gentle postnatal movement picked for you')}
+                </Text>
+                <Text style={[styles.linkText, { color: P.primaryDark }]}>{t('Start session')} →</Text>
+            </View>
+        </TouchableOpacity>
+    );
+
+    const diary = (
+        <Card P={P} style={[styles.rowBetween, { backgroundColor: P.side }]}>
+            <View style={{ flex: 1, paddingRight: 12 }}>
+                <CardTitle P={P} icon="book-open">{t('My Diary')}</CardTitle>
+                <Text style={[styles.mutedText, { color: P.muted, marginTop: 4 }]}>
+                    {t('Your entries stay private. Write in Sinhala or English.')}
+                </Text>
+            </View>
+            <PillButton P={P} label={t('Write an entry')} onPress={() => navigation.navigate('Diary')} />
+        </Card>
+    );
 
     return (
-        <SafeAreaView style={[styles.safeArea, isDarkMode && { backgroundColor: '#121212' }]}>
-            {/* ── Sidebar ── */}
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: P.bg }]}>
             <Sidebar
                 visible={sidebarVisible}
                 activeTab={activeTab}
                 onTabPress={handleTabPress}
                 onClose={() => setSidebarVisible(false)}
                 onLogout={handleLogout}
+                onHelp={handleHelp}
+                P={P}
             />
 
             {/* ── Video Player Modal ── */}
@@ -741,10 +684,7 @@ export default function DashboardScreen({ navigation }) {
             >
                 <View style={styles.videoModalOverlay}>
                     <View style={styles.videoModalContainer}>
-                        <TouchableOpacity
-                            style={styles.videoModalClose}
-                            onPress={() => setVideoModalVisible(false)}
-                        >
+                        <TouchableOpacity style={styles.videoModalClose} onPress={() => setVideoModalVisible(false)}>
                             <Text style={styles.videoModalCloseText}>✕</Text>
                         </TouchableOpacity>
 
@@ -754,20 +694,13 @@ export default function DashboardScreen({ navigation }) {
                                     Platform.OS === 'web' ? (
                                         <iframe
                                             src={getEmbedUrl(selectedVideoUrl)}
-                                            style={{
-                                                flex: 1,
-                                                border: 'none',
-                                                width: '100%',
-                                                height: '100%',
-                                            }}
+                                            style={{ flex: 1, border: 'none', width: '100%', height: '100%' }}
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                             allowFullScreen
                                         />
                                     ) : (
                                         <WebView
-                                            source={{
-                                                uri: getEmbedUrl(selectedVideoUrl),
-                                            }}
+                                            source={{ uri: getEmbedUrl(selectedVideoUrl) }}
                                             style={styles.dashboardWebView}
                                             allowsFullscreenVideo={true}
                                             allowsInlineMediaPlayback={true}
@@ -779,9 +712,7 @@ export default function DashboardScreen({ navigation }) {
                                     )
                                 ) : (
                                     <Video
-                                        source={{
-                                            uri: selectedVideoUrl,
-                                        }}
+                                        source={{ uri: selectedVideoUrl }}
                                         style={styles.dashboardVideo}
                                         useNativeControls
                                         resizeMode={ResizeMode.CONTAIN}
@@ -793,1095 +724,527 @@ export default function DashboardScreen({ navigation }) {
                 </View>
             </Modal>
 
-            {/* ── Header ── */}
-            <Header
-                onMenuPress={() => setSidebarVisible(true)}
-                onNotifPress={handleNotifPress}
-                isDarkMode={isDarkMode}
-                toggleTheme={toggleTheme}
-                brightnessLevel={brightnessLevel}
-                setBrightnessLevel={setBrightnessLevel}
-            />
+            <Header onMenuPress={() => setSidebarVisible(true)} initials={initials} P={P} />
 
-            {/* ── Main Scrollable Content ── */}
             <ScrollView
-                style={[styles.scrollView, isDarkMode && { backgroundColor: '#121212' }]}
-                contentContainerStyle={styles.scrollContent}
+                style={{ flex: 1 }}
+                contentContainerStyle={[styles.scrollContent, isWide && styles.scrollContentWide]}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Greeting Banner */}
-                <LinearGradient
-                    colors={['#AA60C8', '#BD83CE', '#D69ADE', '#EABDE6']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.greetingBanner}
-                >
-                    <View style={styles.greetingTextContainer}>
-                        <Text style={styles.greetingHello}>
-                            {t('Hello')},{' '}
-                            {displayName.split(' ')[0]} 👋
-                        </Text>
+                {hero}
 
-                        <Text style={styles.greetingSubtitle}>
-                            {t("Here's your health overview")}
-                        </Text>
-
-                        <Text style={[styles.greetingSubtitle, { fontWeight: '700', color: '#FFF', opacity: 0.9, marginTop: 2 }]}>
-                            📅 {getCurrentDayString()}
-                        </Text>
-
-                        <Text style={styles.greetingDate}>
-                            {t('Last visit')}: {lastVisit}
-                        </Text>
-                    </View>
-
-                    <View style={styles.greetingAvatarLarge}>
-                        <Text style={styles.greetingAvatarText}>
-                            {initials}
-                        </Text>
-                    </View>
-                </LinearGradient>
-
-                <View style={styles.sectionHeader}>
-                    <Text style={[styles.sectionTitle, isDarkMode && { color: '#FFF' }]}>
-                        {t('Overview')}
-                    </Text>
-
-                    <Text style={[styles.lastVisit, isDarkMode && { color: '#9CA3AF' }]}>
-                        {t('Last visit')}: {lastVisit}
-                    </Text>
-                </View>
-
-                <View style={styles.statsGrid}>
-                    {mockStats(t).map((stat, i) => (
-                        <StatCard key={i} {...stat} isDarkMode={isDarkMode} />
-                    ))}
-                </View>
-
-                {/* ── Progress Chart ── */}
-                <View style={[styles.card, isDarkMode && { backgroundColor: '#2D2D2D', borderColor: '#3D3D3D' }]}>
-                    <Text style={[styles.cardTitle, isDarkMode && { color: '#FFF' }]}>
-                        {t('Monthly Progress')}
-                    </Text>
-
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                        <BarChart
-                            data={barChartData(t)}
-                            width={Math.max(width - 64, 400)}
-                            height={180}
-                            yAxisLabel=""
-                            chartConfig={isDarkMode ? chartConfigDark : chartConfig}
-                            verticalLabelRotation={0}
-                            style={styles.chart}
-                            showValuesOnTopOfBars
-                            fromZero
-                        />
-                    </ScrollView>
-                </View>
-
-
-
-                {/* ── Health Indicators ── */}
-                <View style={[styles.indicatorRow, { flexDirection: width < 768 ? 'column' : 'row' }]}>
-                    <View
-                        style={[
-                            styles.card,
-                            { flex: width < 768 ? undefined : 1, marginBottom: width < 768 ? 16 : 0 },
-                            isDarkMode && { backgroundColor: '#2D2D2D', borderColor: '#3D3D3D' }
-                        ]}
-                    >
-                        <Text style={[styles.cardTitle, isDarkMode && { color: '#FFF' }]}>
-                            {t('Health Scores')}
-                        </Text>
-
-                        {progressData(t).map((p, i) => (
-                            <ProgressBar key={i} {...p} isDarkMode={isDarkMode} />
-                        ))}
-                    </View>
-
-                    <View
-                        style={[
-                            styles.card,
-                            {
-                                flex: width < 768 ? undefined : 0.9,
-                                marginBottom: 0,
-                                marginLeft: width < 768 ? 0 : 12,
-                            },
-                            isDarkMode && { backgroundColor: '#2D2D2D', borderColor: '#3D3D3D' }
-                        ]}
-                    >
-                        <Text style={[styles.cardTitle, isDarkMode && { color: '#FFF' }]}>
-                            {t('Risk Level')}
-                        </Text>
-
-                        <PieChart
-                            data={[
-                                { name: t('Low'), population: 35, color: '#10B981', legendFontColor: isDarkMode ? '#E5E7EB' : '#374151', legendFontSize: 13 },
-                                { name: t('Medium'), population: 40, color: '#F59E0B', legendFontColor: isDarkMode ? '#E5E7EB' : '#374151', legendFontSize: 13 },
-                                { name: t('High'), population: 15, color: '#EF4444', legendFontColor: isDarkMode ? '#E5E7EB' : '#374151', legendFontSize: 13 },
-                                { name: t('None'), population: 10, color: '#7C3AED', legendFontColor: isDarkMode ? '#E5E7EB' : '#374151', legendFontSize: 13 },
-                            ]}
-                            width={width < 768 ? width - 64 : width * 0.4}
-                            height={160}
-                            chartConfig={isDarkMode ? chartConfigDark : chartConfig}
-                            accessor="population"
-                            backgroundColor="transparent"
-                            paddingLeft="10"
-                            absolute
-                        />
-                    </View>
-                </View>
-
-
-                {/* ── Recent Activity ── */}
-                <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>
-                        {t('Recent Activities')}
-                    </Text>
-
-                    <TouchableOpacity>
-                        <Text style={[styles.viewAllText, isDarkMode && { color: '#C084FC' }]}>
-                            {t('View All')}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={[styles.activityList, isDarkMode && { backgroundColor: '#2D2D2D' }]}>
-                    {recentActivities(t).map((item) => (
-                        <View
-                            key={item.id}
-                            style={[styles.activityItem, isDarkMode && { backgroundColor: '#2D2D2D', borderBottomColor: '#3D3D3D' }]}
-                        >
-                            <View
-                                style={[
-                                    styles.activityIconBox,
-                                    {
-                                        backgroundColor:
-                                            item.color + '22',
-                                    },
-                                ]}
-                            >
-                                <Text style={{ fontSize: 16 }}>
-                                    {item.icon}
-                                </Text>
+                {isWide ? (
+                    <>
+                        <View style={styles.row}>
+                            {picked}
+                            <View style={[styles.col, { flex: 1 }]}>
+                                {note}
+                                {checkIn}
                             </View>
-
-                            <View style={styles.activityInfo}>
-                                <Text style={[styles.activityTitle, isDarkMode && { color: '#FFF' }]}>
-                                    {item.title}
-                                </Text>
-
-                                <Text style={[styles.activityTime, isDarkMode && { color: '#9CA3AF' }]}>
-                                    {item.time}
-                                </Text>
-                            </View>
-
-                            <View
-                                style={[
-                                    styles.activityDot,
-                                    {
-                                        backgroundColor: item.color,
-                                    },
-                                ]}
-                            />
                         </View>
-                    ))}
-                </View>
+                        <View style={styles.row}>
+                            {plan}
+                            {recovery}
+                        </View>
+                    </>
+                ) : (
+                    <>
+                        {note}
+                        {picked}
+                        {plan}
+                        <View style={styles.row}>
+                            <TouchableOpacity style={[styles.tile, { backgroundColor: P.sage }]} onPress={openExercise}>
+                                <Icon name="activity" size={22} color={P.sageText} style={styles.tileIcon} />
+                                <Text style={[styles.tileTitle, { color: P.text }]}>{t('Exercise')}</Text>
+                                <Text style={[styles.mutedText, { color: P.muted }]} numberOfLines={1}>
+                                    {exercise?.duration || t('Gentle movement')}
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.tile, { backgroundColor: P.lav }]} onPress={() => navigation.navigate('EPDSScreening')}>
+                                <Icon name="clipboard" size={22} color={P.primaryDark} style={styles.tileIcon} />
+                                <Text style={[styles.tileTitle, { color: P.text }]}>{t('Check-in')}</Text>
+                                <Text style={[styles.mutedText, { color: P.muted }]}>{t('When ready')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                )}
 
+                {diary}
 
-
-                {/* Quick Action Buttons */}
-                <Text style={[styles.sectionTitle, isDarkMode && { color: '#FFF' }]}>
-                    {t('Quick Actions')}
+                <Text style={[styles.footNote, { color: P.muted }]}>
+                    {t('PeriCare offers support, not diagnosis. Your doctor is always the right person for medical questions.')}
                 </Text>
-
-                <View style={styles.quickActions}>
-                    <TouchableOpacity
-                        onMouseEnter={() => setHoveredIndex(0)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                        style={[
-                            styles.quickActionBtn,
-                            { width: (width - 42) / 2, backgroundColor: '#AA60C8' },
-                            hoveredIndex === 0 && Platform.OS === 'web' && {
-                                transform: [{ translateY: -3 }],
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 8 },
-                                shadowOpacity: 0.15,
-                                shadowRadius: 16,
-                            }
-                        ]}
-                        onPress={() =>
-                            navigation.navigate('Diary')
-                        }
-                    >
-                        <Text style={styles.quickActionIcon}>
-                            📔
-                        </Text>
-
-                        <Text style={styles.quickActionText}>
-                            {t('My Diary')}
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onMouseEnter={() => setHoveredIndex(1)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                        style={[
-                            styles.quickActionBtn,
-                            { width: (width - 42) / 2, backgroundColor: '#BD83CE' },
-                            hoveredIndex === 1 && Platform.OS === 'web' && {
-                                transform: [{ translateY: -3 }],
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 8 },
-                                shadowOpacity: 0.15,
-                                shadowRadius: 16,
-                            }
-                        ]}
-                        onPress={() =>
-                            navigation.navigate('DashboardCopy')
-                        }
-                    >
-                        <Text style={styles.quickActionIcon}>
-                            ✨
-                        </Text>
-
-                        <Text style={styles.quickActionText}>
-                            {t('Recommend')}
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onMouseEnter={() => setHoveredIndex(2)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                        style={[
-                            styles.quickActionBtn, 
-                            { width: (width - 42) / 2, backgroundColor: '#D69ADE' },
-                            hoveredIndex === 2 && Platform.OS === 'web' && {
-                                transform: [{ translateY: -3 }],
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 8 },
-                                shadowOpacity: 0.15,
-                                shadowRadius: 16,
-                            }
-                        ]}
-                        onPress={() => navigation.navigate('EPDSScreening')}
-                    >
-                        <Text style={styles.quickActionIcon}>📋</Text>
-                        <Text style={styles.quickActionText}>{t('Maternal Wellness Check')}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onMouseEnter={() => setHoveredIndex(3)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                        style={[
-                            styles.quickActionBtn,
-                            { width: (width - 42) / 2, backgroundColor: '#EABDE6' },
-                            hoveredIndex === 3 && Platform.OS === 'web' && {
-                                transform: [{ translateY: -3 }],
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 8 },
-                                shadowOpacity: 0.15,
-                                shadowRadius: 16,
-                            }
-                        ]}
-                        onPress={() =>
-                            Toast.show({
-                                type: 'success',
-                                text1: `😊 ${t('Mood')}`,
-                                text2: t(
-                                    'Mood log updated!'
-                                ),
-                                position: 'top',
-                            })
-                        }
-                    >
-                        <Text style={styles.quickActionIcon}>
-                            😊
-                        </Text>
-
-                        <Text style={styles.quickActionText}>
-                            {t('Log Mood')}
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onMouseEnter={() => setHoveredIndex(4)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                        style={[
-                            styles.quickActionBtn,
-                            { width: (width - 42) / 2, backgroundColor: '#F7C6E6' },
-                            hoveredIndex === 4 && Platform.OS === 'web' && {
-                                transform: [{ translateY: -3 }],
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 8 },
-                                shadowOpacity: 0.15,
-                                shadowRadius: 16,
-                            }
-                        ]}
-                        onPress={() =>
-                            navigation.navigate('Exercise')
-                        }
-                    >
-                        <Text style={styles.quickActionIcon}>
-                            🏃‍♀️
-                        </Text>
-
-                        <Text style={styles.quickActionText}>
-                            {t('Postpartum Exercise')}
-                        </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        onMouseEnter={() => setHoveredIndex(5)}
-                        onMouseLeave={() => setHoveredIndex(null)}
-                        style={[
-                            styles.quickActionBtn,
-                            { width: (width - 42) / 2, backgroundColor: '#FAD5EC' },
-                            hoveredIndex === 5 && Platform.OS === 'web' && {
-                                transform: [{ translateY: -3 }],
-                                shadowColor: '#000',
-                                shadowOffset: { width: 0, height: 8 },
-                                shadowOpacity: 0.15,
-                                shadowRadius: 16,
-                            }
-                        ]}
-                        onPress={() =>
-                            navigation.navigate('Plan')
-                        }
-                    >
-                        <Text style={styles.quickActionIcon}>
-                            📅
-                        </Text>
-
-                        <Text style={styles.quickActionText}>
-                            {t('My Plans')}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={{ height: 20 }} />
             </ScrollView>
 
-            {/* ── Footer ── */}
-            <Footer
-                activeTab={activeTab}
-                onTabPress={handleTabPress}
-                isDarkMode={isDarkMode}
-            />
+            {/* ── Mobile bottom bar ── */}
+            {!isWide && (
+                <View style={[styles.tabBar, { backgroundColor: P.card, borderColor: P.line }]}>
+                    {[
+                        { key: 'home', icon: 'home', label: t('Home') },
+                        { key: 'relief', icon: 'heart', label: t('Relief') },
+                        { key: 'diary', icon: 'book-open', label: t('My Diary'), center: true },
+                        { key: 'baby', icon: 'smile', label: t('Baby') },
+                        { key: 'chat', icon: 'message-circle', label: t('Chat') },
+                    ].map((item) =>
+                        item.center ? (
+                            <TouchableOpacity
+                                key={item.key}
+                                onPress={() => handleTabPress(item.key)}
+                                style={[styles.fab, { backgroundColor: P.primary }]}
+                                accessibilityLabel={item.label}
+                            >
+                                <Icon name={item.icon} size={22} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity key={item.key} onPress={() => handleTabPress(item.key)} style={styles.tabItem}>
+                                <Icon name={item.icon} size={20} color={activeTab === item.key ? P.primary : P.sec} />
+                                <Text style={[styles.tabLabel, { color: activeTab === item.key ? P.primaryDark : P.muted }]}>
+                                    {item.label}
+                                </Text>
+                            </TouchableOpacity>
+                        )
+                    )}
+                </View>
+            )}
 
-            {/* Toast */}
             <Toast />
         </SafeAreaView>
     );
 }
 
-const PURPLE = '#AA60C8';
-const PURPLE_LIGHT = '#FFDFEF';
-const PURPLE_BORDER = '#EABDE6';
-const BG = '#FAF2FA';
-const WHITE = '#FFFFFF';
-
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: BG,
     },
 
+    // Header
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: WHITE,
         paddingHorizontal: 16,
         paddingVertical: 12,
-        elevation: 2,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F5D3EE',
     },
-
-    menuBtn: {
-        padding: 8,
-        gap: 4,
-    },
-    menuLine: {
-        width: 24,
-        height: 2.5,
-        backgroundColor: '#AA60C8',
-        borderRadius: 2,
-        marginVertical: 2,
-    },
-    headerCenter: {
+    headerLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: 10,
     },
-
-    headerLogo: {
-        fontSize: 22,
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
     },
-
-    headerTitle: {
-        fontSize: 20,
-        fontFamily: typography.headerFont,
-        fontWeight: '700',
-        color: PURPLE,
-    },
-
-    notifBtn: {
-        padding: 8,
-        position: 'relative',
-    },
-
-    notifIcon: {
-        fontSize: 22,
-    },
-
-    notifBadge: {
-        position: 'absolute',
-        top: 4,
-        right: 4,
-        backgroundColor: '#AA60C8',
-        borderRadius: 8,
-        width: 16,
-        height: 16,
+    burger: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    notifBadgeText: {
-        color: WHITE,
-        fontSize: 10,
+    menuLine: {
+        width: 18,
+        height: 2,
+        borderRadius: 2,
+        marginVertical: 2,
+    },
+    logoCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+    },
+    logoSmall: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        marginRight: 0,
+    },
+    logoEmoji: {
+        fontSize: 22,
+    },
+    logoEmojiSmall: {
+        fontSize: 17,
+    },
+    brandText: {
+        fontFamily: SERIF,
+        fontSize: 20,
+    },
+    brandSub: {
+        fontFamily: typography.bodyFont,
+        fontSize: 12,
+    },
+    langPill: {
+        borderWidth: 1,
+        borderRadius: 999,
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+    },
+    langText: {
+        fontFamily: typography.mediumFont,
+        fontSize: 13,
+    },
+    avatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    avatarText: {
         fontFamily: typography.subTopicFont,
-        fontWeight: 'bold',
+        fontSize: 13,
     },
 
+    // Sidebar
     sidebarOverlay: {
         flex: 1,
         flexDirection: 'row',
     },
     sidebarBackdrop: {
         flex: 1,
-        backgroundColor: 'rgba(44, 26, 53, 0.45)',
+        backgroundColor: 'rgba(44, 26, 53, 0.28)',
     },
     sidebarContainer: {
         width: 280,
-        backgroundColor: WHITE,
-        paddingTop: 40,
-        paddingBottom: 24,
+        borderRightWidth: 1,
+        paddingTop: 28,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
     },
-
     sidebarHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingBottom: 16,
+        marginBottom: 8,
     },
-    sidebarAvatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: PURPLE,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 12,
-    },
-    sidebarAvatarText: {
-        color: WHITE,
-        fontFamily: typography.topicFont,
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-
-    sidebarUserInfo: {
-        flex: 1,
-    },
-
-    sidebarUserName: {
-        fontFamily: typography.subTopicFont,
-        fontWeight: '700',
-        fontSize: 15,
-        color: '#2C1A35',
-    },
-
-    sidebarUserRole: {
-        fontSize: 12,
-        fontFamily: typography.bodyFont,
-        color: '#6A4D77',
-    },
-
     sidebarCloseBtn: {
         padding: 6,
     },
-
     sidebarCloseText: {
         fontSize: 18,
-        color: '#6A4D77',
     },
-    sidebarDivider: {
-        height: 1,
-        backgroundColor: '#F5D3EE',
-        marginVertical: 8,
-    },
-
-    sidebarNav: {
-        flex: 1,
-    },
-
-    sidebarNavItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 13,
-        paddingHorizontal: 20,
-        position: 'relative',
-    },
-
-    sidebarNavItemActive: {
-        backgroundColor: PURPLE_LIGHT,
-    },
-
-    sidebarNavIcon: {
-        fontSize: 20,
-        marginRight: 14,
-    },
-    sidebarNavLabel: {
-        fontSize: 15,
-        color: '#6A4D77',
+    navSection: {
         fontFamily: typography.bodyFont,
-        fontWeight: '500',
-    },
-    sidebarNavLabelActive: {
-        color: PURPLE,
-        fontFamily: typography.subTopicFont,
-        fontWeight: '700',
-    },
-    sidebarActiveIndicator: {
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: 4,
-        backgroundColor: PURPLE,
-    },
-
-    sidebarLogout: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-    },
-    sidebarLogoutIcon: {
-        fontSize: 20,
-        marginRight: 14,
-    },
-    sidebarLogoutText: {
-        fontSize: 15,
-        color: '#EF4444',
-        fontFamily: typography.subTopicFont,
-        fontWeight: '600',
-    },
-
-    scrollView: {
-        flex: 1,
-    },
-
-    scrollContent: {
-        paddingHorizontal: 16,
-        paddingTop: 16,
-    },
-
-    greetingBanner: {
-        backgroundColor: PURPLE,
-        borderRadius: 20,
-        padding: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-
-    greetingTextContainer: {
-        flex: 1,
-    },
-
-    greetingHello: {
-        color: WHITE,
-        fontSize: 20,
-        fontFamily: typography.topicFont,
-        fontWeight: '700',
-        marginBottom: 4,
-    },
-    greetingSubtitle: {
-        color: 'rgba(255,255,255,0.88)',
-        fontSize: 13,
-        fontFamily: typography.bodyFont,
-        marginBottom: 6,
-    },
-    greetingDate: {
-        color: 'rgba(255,255,255,0.7)',
-        fontSize: 11,
-        fontFamily: typography.bodyFont,
-    },
-    greetingAvatarLarge: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: 'rgba(255,255,255,0.25)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 2,
-        borderColor: 'rgba(255,255,255,0.5)',
-    },
-
-    greetingAvatarText: {
-        color: WHITE,
-        fontSize: 24,
-        fontFamily: typography.topicFont,
-        fontWeight: 'bold',
-    },
-
-    sectionTitle: {
-        fontSize: 17,
-        fontFamily: typography.topicFont,
-        fontWeight: '700',
-        color: '#2C1A35',
-    },
-
-    sectionHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-
-    lastVisit: {
-        fontSize: 11,
-        fontFamily: typography.bodyFont,
-        color: '#6A4D77',
-    },
-
-    viewAllText: {
         fontSize: 12,
-        color: PURPLE,
-        fontFamily: typography.subTopicFont,
-        fontWeight: '700',
+        letterSpacing: 0.8,
+        paddingTop: 18,
+        paddingBottom: 6,
+        paddingHorizontal: 12,
     },
-
-    statsGrid: {
+    navItem: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 10,
-        marginBottom: 20,
-        justify: 'space-between',
-    },
-    statCard: {
-        backgroundColor: WHITE,
-        borderRadius: 16,
-        padding: 14,
-        width: '48%',
-        minWidth: 135,
-        borderLeftWidth: 4,
-        borderWidth: 1,
-        borderColor: '#F5D3EE',
-        elevation: 2,
-    },
-
-    statIcon: {
-        fontSize: 24,
-        marginBottom: 6,
-    },
-
-    statValue: {
-        fontSize: 22,
-        fontFamily: typography.topicFont,
-        fontWeight: '700',
-    },
-
-    statLabel: {
-        fontSize: 12,
-        fontFamily: typography.bodyFont,
-        color: '#6A4D77',
-    },
-
-    card: {
-        backgroundColor: WHITE,
-        borderRadius: 18,
-        padding: 16,
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: '#F5D3EE',
-        elevation: 2,
-    },
-
-    cardTitle: {
-        fontSize: 14,
-        fontFamily: typography.subTopicFont,
-        fontWeight: '700',
-        color: '#2C1A35',
-        marginBottom: 12,
-    },
-
-    indicatorRow: {
-        flexDirection: 'row',
-        marginBottom: 20,
-    },
-
-    chart: {
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 12,
         borderRadius: 12,
-        marginVertical: 8,
+    },
+    navIcon: {
+        fontSize: 16,
+        width: 28,
+    },
+    navLabel: {
+        fontFamily: typography.bodyFont,
+        fontSize: 15,
+    },
+    navLabelActive: {
+        fontFamily: typography.subTopicFont,
+    },
+    helpBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderRadius: 14,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        marginTop: 24,
+        marginBottom: 8,
+    },
+    helpText: {
+        fontFamily: typography.mediumFont,
+        fontSize: 15,
     },
 
-    progressRow: {
-        marginBottom: 16,
+    // Layout
+    scrollContent: {
+        padding: 16,
+        paddingBottom: 24,
+        gap: 16,
     },
-
-    progressLabelRow: {
+    scrollContentWide: {
+        paddingHorizontal: 36,
+        maxWidth: 1200,
+        width: '100%',
+        alignSelf: 'center',
+        gap: 20,
+    },
+    row: {
+        flexDirection: 'row',
+        gap: 16,
+    },
+    col: {
+        gap: 16,
+    },
+    rowBetween: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 6,
+        alignItems: 'center',
     },
-    progressLabel: {
-        fontSize: 13,
-        fontFamily: typography.bodyFont,
-        fontWeight: '600',
-        color: '#2C1A35',
-    },
-    progressPercent: {
-        fontSize: 13,
-        fontFamily: typography.subTopicFont,
-        fontWeight: '700',
-    },
-    progressTrack: {
-        height: 8,
-        backgroundColor: '#FFDFEF',
-        borderRadius: 4,
+
+    // Hero
+    hero: {
+        borderRadius: 28,
         overflow: 'hidden',
     },
-    progressFill: {
-        height: '100%',
-        borderRadius: 4,
-    },
-
-    activityList: {
-        backgroundColor: WHITE,
-        borderRadius: 18,
-        padding: 8,
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: '#F5D3EE',
-    },
-
-    activityItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#FAF2FA',
-    },
-
-    activityIconBox: {
-        width: 42,
-        height: 42,
-        borderRadius: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 12,
-    },
-
-    activityInfo: {
+    // Photo is 1280×1024 (5:4); matching its ratio shows the whole picture
+    heroImageWide: {
         flex: 1,
+        minWidth: 0,
+        minHeight: 260,
+        overflow: 'hidden',
     },
-
-    activityTitle: {
-        fontSize: 14,
-        fontFamily: typography.subTopicFont,
-        fontWeight: '600',
-        color: '#2C1A35',
+    heroImageMobile: {
+        width: '100%',
+        height: 180,
+        overflow: 'hidden',
     },
-
-    activityTime: {
-        fontSize: 12,
+    heroText: {
+        justifyContent: 'center',
+        gap: 6,
+    },
+    heroTitle: {
+        fontFamily: SERIF,
+        lineHeight: undefined,
+    },
+    heroSub: {
         fontFamily: typography.bodyFont,
-        color: '#9E7FA9',
-    },
-    activityDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-    },
-
-    quickActions: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 10,
-        marginTop: 14,
+        fontSize: 15,
         marginBottom: 10,
     },
 
-    quickActionBtn: {
-        width: '48%',
-        minWidth: 135,
-        borderRadius: 16,
-        padding: 14,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 6,
-        elevation: 2,
-        ...Platform.select({
-            web: {
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                cursor: 'pointer',
-            }
-        })
+    // Cards
+    card: {
+        borderWidth: 1,
+        borderRadius: 22,
+        padding: 18,
     },
-
-    quickActionIcon: {
-        fontSize: 24,
-        marginBottom: 6,
-    },
-    quickActionText: {
-        color: '#000000',
-        fontSize: 11,
-        fontFamily: typography.subTopicFont,
-        fontWeight: '700',
-        textAlign: 'center',
-    },
-
-    footer: {
+    cardTitleRow: {
         flexDirection: 'row',
-        backgroundColor: WHITE,
-        paddingVertical: 8,
-        paddingHorizontal: 8,
-        borderTopWidth: 1,
-        borderTopColor: '#F5D3EE',
-    },
-
-    footerTab: {
-        flex: 1,
         alignItems: 'center',
-        paddingVertical: 4,
-        position: 'relative',
     },
-    footerTabIcon: {
-        fontSize: 20,
-        marginBottom: 2,
+    pillBtnRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
-    footerTabLabel: {
-        fontSize: 10,
-        color: '#9E7FA9',
+    cardTitle: {
+        fontFamily: typography.subTopicFont,
+        fontSize: 16,
+    },
+    mutedText: {
         fontFamily: typography.bodyFont,
-        fontWeight: '500',
+        fontSize: 13,
+        lineHeight: 19,
     },
-    footerTabLabelActive: {
-        color: PURPLE,
-        fontFamily: typography.subTopicFont,
-        fontWeight: '700',
+    linkText: {
+        fontFamily: typography.mediumFont,
+        fontSize: 14,
     },
-    footerActiveBar: {
-        position: 'absolute',
-        top: -8,
-        width: 32,
-        height: 3,
-        backgroundColor: PURPLE,
-        borderRadius: 2,
+    pillBtn: {
+        borderRadius: 999,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
     },
-    exerciseGrid: {
+    pillBtnText: {
+        fontFamily: typography.mediumFont,
+        fontSize: 14,
+    },
+
+    // Picked for you
+    picksRow: {
         flexDirection: 'row',
-        gap: 12,
-        marginTop: 8,
+        gap: 14,
+        marginTop: 16,
     },
-    exerciseDashCard: {
-        flex: 1,
-        backgroundColor: 'transparent',
-        marginBottom: 16,
+    picksScroll: {
+        gap: 10,
+        paddingTop: 14,
     },
-    exerciseDashThumbnailContainer: {
-        width: '100%',
-        aspectRatio: 16 / 9,
-        borderRadius: 12,
+    pick: {
+        borderWidth: 1,
+        borderRadius: 18,
         overflow: 'hidden',
-        position: 'relative',
-        backgroundColor: '#000',
-        marginBottom: 8,
     },
-    exerciseDashThumbnail: {
-        width: '100%',
-        height: '100%',
+    pickCompact: {
+        width: 140,
     },
-    exerciseDashIconFallback: {
-        flex: 1,
+    pickImg: {
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#FFDFEF',
     },
-    playIconOverlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(44, 26, 53, 0.25)',
+    pickIcon: {
+        fontSize: 28,
+    },
+    pickBody: {
+        padding: 12,
+        gap: 3,
+    },
+    pickTag: {
+        fontFamily: typography.bodyFont,
+        fontSize: 12,
+    },
+    pickTitle: {
+        fontFamily: typography.subTopicFont,
+        fontSize: 15,
+    },
+
+    // Note
+    quoteMark: {
+        fontSize: 26,
+        lineHeight: 28,
+    },
+    noteText: {
+        fontFamily: SERIF,
+        lineHeight: 28,
+        marginTop: 4,
+    },
+
+    // Plan
+    planRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 11,
+    },
+    planText: {
+        fontFamily: typography.bodyFont,
+        fontSize: 14,
+        flex: 1,
+        paddingRight: 8,
+    },
+
+    // Recovery
+    recovery: {
+        padding: 0,
+        overflow: 'hidden',
+    },
+    recoveryMedia: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+    },
+    playBadge: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.85)',
         alignItems: 'center',
         justifyContent: 'center',
     },
     playIcon: {
-        color: WHITE,
-        fontSize: 28,
-        textShadowColor: 'rgba(0, 0, 0, 0.5)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 4,
+        fontSize: 18,
+        marginLeft: 3,
     },
-    exerciseDashIcon: {
-        fontSize: 32,
+
+    // Mobile tiles
+    tile: {
+        flex: 1,
+        borderRadius: 20,
+        padding: 16,
+        gap: 2,
     },
-    cardDetailsRow: {
+    tileIcon: {
+        fontSize: 22,
+        marginBottom: 4,
+    },
+    tileTitle: {
+        fontFamily: typography.subTopicFont,
+        fontSize: 15,
+    },
+
+    footNote: {
+        fontFamily: typography.bodyFont,
+        fontSize: 12,
+        lineHeight: 18,
+    },
+
+    // Mobile bottom bar
+    tabBar: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginHorizontal: 16,
+        marginBottom: 12,
+        paddingHorizontal: 18,
+        paddingVertical: 8,
+        borderRadius: 999,
+        borderWidth: 1,
+    },
+    tabItem: {
+        alignItems: 'center',
+        minWidth: 48,
+    },
+    tabIcon: {
+        fontSize: 20,
+    },
+    tabLabel: {
+        fontFamily: typography.bodyFont,
+        fontSize: 11,
         marginTop: 2,
     },
-    channelAvatar: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: '#F5F3FF',
+    fab: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
         alignItems: 'center',
         justifyContent: 'center',
-        marginRight: 8,
-        borderWidth: 1.5,
-        borderColor: '#EABDE6',
     },
-    channelAvatarText: {
-        fontSize: 14,
+    fabIcon: {
+        fontSize: 22,
     },
-    cardTextContainer: {
-        flex: 1,
-    },
-    videoTitle: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#0F172A',
-        lineHeight: 16,
-        marginBottom: 2,
-    },
-    channelMetadata: {
-        fontSize: 10,
-        color: '#64748B',
-        marginBottom: 1,
-    },
-    durationBadge: {
-        position: 'absolute',
-        bottom: 6,
-        right: 6,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        paddingHorizontal: 4,
-        paddingVertical: 1,
-        borderRadius: 3,
-    },
-    durationBadgeText: {
-        color: '#FFF',
-        fontSize: 9,
-        fontWeight: 'bold',
-    },
-    exerciseDashInfo: {
-        padding: 10,
-    },
-    exerciseDashName: {
-        fontSize: 13,
-        fontFamily: typography.subTopicFont,
-        fontWeight: '700',
-        color: '#2C1A35',
-    },
-    exerciseDashMeta: {
-        fontSize: 11,
-        fontFamily: typography.bodyFont,
-        color: '#6A4D77',
-        marginTop: 2,
-    },
+
+    // Video modal (unchanged behaviour)
     videoModalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(44, 26, 53, 0.85)',
+        backgroundColor: 'rgba(0,0,0,0.85)',
         justifyContent: 'center',
         alignItems: 'center',
-        padding: 20,
+        padding: 16,
     },
     videoModalContainer: {
         width: '100%',
-        maxWidth: 600,
+        maxWidth: 800,
         backgroundColor: '#000',
         borderRadius: 16,
         overflow: 'hidden',
-        position: 'relative',
     },
     videoModalClose: {
         position: 'absolute',
         top: 10,
         right: 10,
         zIndex: 10,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        width: 34,
-        height: 34,
-        borderRadius: 17,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.2)',
         alignItems: 'center',
         justifyContent: 'center',
     },
     videoModalCloseText: {
-        color: WHITE,
+        color: '#FFF',
         fontSize: 18,
-        fontWeight: 'bold',
     },
     dashboardVideoWrapper: {
         width: '100%',
         aspectRatio: 16 / 9,
-        height: Platform.OS === 'web' ? 337 : undefined,
         backgroundColor: '#000',
     },
     dashboardWebView: {
         flex: 1,
-        backgroundColor: '#000',
     },
     dashboardVideo: {
-        flex: 1,
-    },
-    dashboardMetricBox: {
-        flex: 1,
-        minWidth: '45%',
-        backgroundColor: '#F8FAFC',
-        borderLeftWidth: 4,
-        borderRadius: 12,
-        padding: 12,
-        margin: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
-    },
-    dashboardMetricVal: {
-        fontSize: 16,
-        fontWeight: '800',
-        color: '#1E293B',
-    },
-    dashboardMetricLabel: {
-        fontSize: 11,
-        color: '#64748B',
-        marginTop: 2,
-    },
-    trendContainer: {
-        marginTop: 14,
-        backgroundColor: '#F8FAFC',
-        padding: 12,
-        borderRadius: 16,
-        borderLeftWidth: 4,
-        borderLeftColor: '#7C3AED',
-    },
-    trendTitle: {
-        fontSize: 13,
-        fontWeight: '800',
-        color: '#1E293B',
-        marginBottom: 2,
-    },
-    trendText: {
-        fontSize: 12,
-        color: '#475569',
-        lineHeight: 16,
+        width: '100%',
+        height: '100%',
     },
 });
