@@ -18,7 +18,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import api from '../services/api';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -572,7 +571,6 @@ function HistoryModal({ visible, history, questions, onClose }) {
 // ─── MAIN SCREEN ──────────────────────────────────────────────────────────────
 export default function EPDSScreeningScreen({ navigation }) {
     const { t, i18n } = useTranslation();
-    const { user } = useAuth();
     const questions = getQuestions(t);
     const riskConfig = getRiskConfig(t);
 
@@ -709,14 +707,6 @@ export default function EPDSScreeningScreen({ navigation }) {
         }
         setCurrentQIndex(0);
         setViewMode('questions');
-    };
-
-    const handleSkip = () => {
-        if (navigation.canGoBack()) {
-            navigation.goBack();
-        } else {
-            navigation.navigate('Dashboard');
-        }
     };
 
     const handleSubmit = async () => {
@@ -942,8 +932,8 @@ export default function EPDSScreeningScreen({ navigation }) {
 
                     {/* ─── Personal Details Form ───────────────────────────────── */}
                     <View style={styles.introCard}>
-                        <Text style={styles.introTitle}>📋 {t('Personal Details')}</Text>
-                        <Text style={styles.introSub}>{t('Please fill in your information before starting')}</Text>
+                        {/* <Text style={styles.introTitle}>📋 {t('Personal Details')}</Text>
+                        <Text style={styles.introSub}>{t('Please fill in your information before starting')}</Text>*/}
                         {/* ─── Greeting ───────────────────────────────── */}
                         <View style={styles.introCard}>
                             <Text style={styles.introTitle}>
@@ -954,7 +944,7 @@ export default function EPDSScreeningScreen({ navigation }) {
                             </Text>
                         </View>
 
-                        <TextInput
+                        {/*<TextInput
                             style={[styles.inputField, !fullName.trim() && styles.inputFieldRequired]}
                             placeholder={t('Full Name *')}
                             placeholderTextColor={!fullName.trim() ? '#eee1e1ff' : '#9CA3AF'}
@@ -983,7 +973,7 @@ export default function EPDSScreeningScreen({ navigation }) {
                             value={village}
                             onChangeText={setVillage}
                         />
-                        <Text style={styles.requiredHint}>* {t('Required fields')}</Text>
+                        <Text style={styles.requiredHint}>* {t('Required fields')}</Text>*/}
                     </View>
 
                     {/* ─── Screening Overview Guidelines ────────────────────────── */}
@@ -1034,19 +1024,6 @@ export default function EPDSScreeningScreen({ navigation }) {
                             </Text>
                         )}
                     </TouchableOpacity>
-
-                    {/* ─── Skip Option ──────────────────────────────────────────── */}
-                    {!hasDoneCurrentCycle && (
-                        <TouchableOpacity
-                            style={styles.skipBtn}
-                            onPress={handleSkip}
-                            activeOpacity={0.7}
-                        >
-                            <Text style={styles.skipBtnText}>
-                                {t("Skip for now, I don't want to answer")}
-                            </Text>
-                        </TouchableOpacity>
-                    )}
 
                     <View style={{ height: 30 }} />
                 </ScrollView>
@@ -1572,17 +1549,6 @@ const styles = StyleSheet.create({
         color: 'rgba(255,255,255,0.8)',
         fontSize: screenWidth > 768 ? 13 : 11,
         marginTop: 2
-    },
-    skipBtn: {
-        alignItems: 'center',
-        paddingVertical: 12,
-        marginTop: 4,
-    },
-    skipBtnText: {
-        color: '#9CA3AF',
-        fontSize: screenWidth > 768 ? 14 : 13,
-        fontWeight: '600',
-        textDecorationLine: 'underline',
     },
 
     // ════════ QUESTION FLOW STYLES ════════
