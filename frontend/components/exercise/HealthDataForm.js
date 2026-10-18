@@ -3,7 +3,7 @@ import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, useWindowDime
 import Toast from 'react-native-toast-message';
 import { useTranslation } from 'react-i18next';
 import { todayStr } from '../../utils/exerciseUtils';
-import { C, T, Card, SectionTitle, Label, OptionRow, Chip, PrimaryButton, Icon } from './ui';
+import { C, T, Card, SoftCard, SectionTitle, Label, OptionRow, Chip, PrimaryButton, Icon } from './ui';
 
 // Daily health form: four short sections, big touch targets, one main action.
 // =====================================================================================
@@ -233,6 +233,31 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
         </View>
     );
 
+    const levelWord = { low: tr('Low', 'අඩුයි'), medium: tr('Medium', 'මධ්‍යම'), high: tr('High', 'වැඩියි') };
+    const moveWord = { normal: tr('Normal', 'සාමාන්‍යයි'), limited: tr('Limited', 'සීමිතයි'), very_limited: tr('Very limited', 'ඉතා සීමිතයි') };
+    const painNames = [
+        pelvicPain && tr('Pelvic', 'ශ්‍රෝණි'), backPain && tr('Back', 'කොන්ද'),
+        abdominalPain && tr('Tummy', 'උදර'), muscleWeakness && tr('Weak muscles', 'දුර්වල මාංශ පේශි'),
+    ].filter(Boolean);
+    const glanceRows = [
+        [tr('Weeks since delivery', 'ප්‍රසූතියෙන් පසු සති'), weeks ? String(weeks) : '–'],
+        [tr('Delivery', 'ප්‍රසූතිය'), deliveryType === 'c-section' ? tr('C-section', 'සිසේරියන්') : tr('Normal', 'සාමාන්‍ය')],
+        [tr('Pain', 'වේදනාව'), painNames.length ? painNames.join(', ') : tr('None', 'කිසිවක් නැත')],
+        [tr('Tiredness', 'තෙහෙට්ටුව'), levelWord[fatigue] || '–'],
+        [tr('Moving around', 'චලනය වීම'), moveWord[mobility] || '–'],
+    ];
+    const glance = (
+        <SoftCard style={st.glance}>
+            <Text style={st.glanceKicker}>{tr('Your day at a glance', 'ඔබේ අද දවස')}</Text>
+            {glanceRows.map(([k, v]) => (
+                <View key={k} style={st.glanceRow}>
+                    <Text style={st.glanceKey}>{k}</Text>
+                    <Text style={st.glanceVal} numberOfLines={2}>{v}</Text>
+                </View>
+            ))}
+        </SoftCard>
+    );
+
     const submit = (
         <PrimaryButton
             title={tr('Show my exercises', 'මගේ ව්‍යායාම පෙන්වන්න')}
@@ -244,17 +269,17 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
     return (
         <ScrollView style={st.container} contentContainerStyle={st.content} showsVerticalScrollIndicator={false}>
             <View style={st.header}>
-                <Text style={st.title}>{tr('Daily health form', 'දෛනික සෞඛ්‍ය පෝරමය')}</Text>
+                <Text style={[st.title, { fontSize: isWide ? 34 : 24, lineHeight: isWide ? 40 : 30 }]}>{tr('How are you today?', 'ඔබ අද කොහොමද?')}</Text>
                 <Text style={st.subtitle}>
-                    {tr('About 1 minute. Your answers decide which exercises are safe for you today.',
-                        'මිනිත්තු 1ක් පමණ. ඔබේ පිළිතුරු අනුව අද ඔබට ආරක්ෂිත ව්‍යායාම තෝරා ගනී.')}
+                    {tr('A few quick steps. Your answers choose exercises that are safe for your recovery. You can change them any day.',
+                        'ඉක්මන් පියවර කිහිපයක්. ඔබේ පිළිතුරු අනුව ඔබේ සුවයට ආරක්ෂිත ව්‍යායාම තෝරා ගනී. ඕනෑම දිනක ඒවා වෙනස් කළ හැක.')}
                 </Text>
             </View>
 
             {isWide ? (
                 <View style={st.wideRow}>
                     <View style={st.wideMain}>{birthSection}{bodySection}{moodSection}</View>
-                    <View style={st.wideSide}>{safetySection}{submit}</View>
+                    <View style={st.wideSide}>{glance}{safetySection}{submit}</View>
                 </View>
             ) : (
                 <View style={st.stack}>
@@ -268,29 +293,34 @@ const HealthDataForm = ({ onSubmit, loading, initialData, user }) => {
 const st = StyleSheet.create({
     container: { width: '100%' },
     content: { paddingBottom: 24 },
-    header: { gap: 4, marginBottom: 14 },
-    title: { ...T.heading, fontSize: 22, color: C.text },
-    subtitle: { ...T.medium, fontSize: 13, color: C.textSub, lineHeight: 19 },
+    header: { gap: 6, marginBottom: 18 },
+    title: { ...T.heading, color: C.text },
+    subtitle: { ...T.body, fontSize: 15, color: C.textSub, lineHeight: 22, maxWidth: 620 },
+    glance: { gap: 12, padding: 22 },
+    glanceKicker: { ...T.semi, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 1 },
+    glanceRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+    glanceKey: { ...T.body, fontSize: 14, color: C.textSub },
+    glanceVal: { ...T.semi, fontSize: 14, color: C.text, flexShrink: 1, textAlign: 'right' },
     stack: { gap: 14 },
     wideRow: { flexDirection: 'row', gap: 20, alignItems: 'flex-start' },
     wideMain: { flex: 2, gap: 16 },
     wideSide: { flex: 1, gap: 16, minWidth: 280 },
-    section: { gap: 14 },
+    section: { gap: 18, padding: 24 },
     field: { gap: 8 },
-    input: { minHeight: 48, borderRadius: 14, borderWidth: 1.5, borderColor: C.control, paddingHorizontal: 14, ...T.semi, fontSize: 15, color: C.text, backgroundColor: '#FFFFFF' },
+    input: { minHeight: 48, borderRadius: 14, borderWidth: 1, borderColor: C.control, paddingHorizontal: 14, ...T.semi, fontSize: 15, color: C.text, backgroundColor: '#FFFFFF' },
     stepper: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-    stepBtn: { width: 52, height: 52, borderRadius: 26, backgroundColor: C.tint, alignItems: 'center', justifyContent: 'center' },
-    stepText: { ...T.heading, fontSize: 24, color: C.primaryDark, lineHeight: 28 },
+    stepBtn: { width: 46, height: 46, borderRadius: 23, borderWidth: 1, borderColor: C.secondary, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+    stepText: { ...T.semi, fontSize: 20, color: C.primaryDark, lineHeight: 26 },
     disabled: { opacity: 0.45 },
-    weeksInput: { flex: 1, textAlign: 'center', ...T.heading, fontSize: 28, color: C.text, minHeight: 52 },
+    weeksInput: { flex: 1, textAlign: 'center', ...T.heading, fontSize: 20, color: C.text, minHeight: 52, borderRadius: 14, borderWidth: 1, borderColor: C.control, backgroundColor: '#FFFFFF' },
     hint: { ...T.medium, fontSize: 12, color: C.textSub, textAlign: 'center' },
     chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    safety: { backgroundColor: C.dangerBg, borderRadius: 22, paddingVertical: 14, paddingHorizontal: 16, gap: 4 },
-    safetyTitle: { ...T.bold, fontSize: 14, color: C.danger, marginBottom: 2 },
+    safety: { backgroundColor: C.peach, borderRadius: 20, borderWidth: 1, borderColor: '#FFD9C2', paddingVertical: 16, paddingHorizontal: 18, gap: 4 },
+    safetyTitle: { ...T.semi, fontSize: 14, color: '#B45309', marginBottom: 2 },
     safetyRow: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 48 },
     safetyLabel: { flex: 1, ...T.semi, fontSize: 14, color: C.text },
-    box: { width: 26, height: 26, borderRadius: 8, borderWidth: 2, borderColor: C.danger, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-    boxOn: { backgroundColor: C.danger },
+    box: { width: 26, height: 26, borderRadius: 8, borderWidth: 2, borderColor: '#B45309', backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
+    boxOn: { backgroundColor: '#B45309' },
 });
 
 export default HealthDataForm;

@@ -1,5 +1,6 @@
-// Shared building blocks for the exercise screens, matching the PeriCare exercise mockups:
-// purple/pink theme, Poppins headings + Inter body, soft cards, big touch targets (>= 44px).
+// Shared building blocks for the exercise screens, matching the PeriCare dashboard look:
+// warm off-white page, serif headings + Inter body, thin-bordered white cards, pill buttons,
+// big touch targets (>= 44px).
 import React from 'react';
 import { View, Text, Pressable, ActivityIndicator, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -7,7 +8,7 @@ import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import { useFonts } from 'expo-font';
 import { Poppins_600SemiBold, Poppins_700Bold } from '@expo-google-fonts/poppins';
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
-import { colors } from '../../theme';
+import { colors, typography } from '../../theme';
 
 // Fonts: Poppins (headings) + Inter (body), loaded by the exercise screens themselves under
 // names only these screens use (ExPoppins700, ...). Other screens are not affected.
@@ -31,20 +32,30 @@ const font = (family, weight) => Platform.select({
     web: { fontFamily: family + ', ' + SANS, fontWeight: weight },
     default: { fontFamily: family },
 });
+// Serif headings, the same as the dashboard (SERIF in DashboardScreen)
+const SERIF = Platform.select({
+    web: { fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: '400' },
+    ios: { fontFamily: 'Georgia' },
+    default: { fontFamily: 'serif' },
+});
+// Same font families as the dashboard (theme typography): Inter for text, serif for headings.
+// On the web the dashboard shows Inter at regular weight, so no extra bold weight is added here.
 export const T = {
-    heading: font('ExPoppins700', '700'),
-    headingSemi: font('ExPoppins600', '600'),
-    body: font('ExInter400', '400'),
-    medium: font('ExInter500', '500'),
-    semi: font('ExInter600', '600'),
-    bold: font('ExInter700', '700'),
+    heading: SERIF,
+    headingSemi: { fontFamily: typography.subTopicFont },
+    body: { fontFamily: typography.bodyFont },
+    medium: { fontFamily: typography.mediumFont },
+    semi: { fontFamily: typography.subTopicFont },
+    bold: { fontFamily: typography.boldFont },
 };
 
 export const C = {
-    bg: colors.screenBg,            // #FAF2FA
+    bg: '#FCF8F5',                  // warm off-white page, as on the dashboard
     card: colors.cardBg,
-    border: colors.cardBorder,      // #F5D3EE
-    control: colors.accent,         // #EABDE6
+    border: '#F3D9F0',              // thin card border
+    control: '#E7CDE9',             // option / input border
+    lilac: '#F5E6FB',               // soft lilac panels and selected options
+    peach: '#FFF2EB',               // gentle notices
     tint: colors.bgTint,            // #FFDFEF
     soft: colors.softGray,          // #F8EFF7
     primary: colors.primary,        // #AA60C8
@@ -56,15 +67,14 @@ export const C = {
     dangerBg: colors.riskHigh,      // #FFEBEE
     success: colors.riskLowDark,    // #2E7D32
     successBg: colors.riskLow,      // #E8F5E9
-    warnBg: colors.riskMedium,      // #FFF8E1
+    warnBg: '#FFF2EB',
     video: '#2C1A35',
 };
 
 export const GRADIENT = [C.primaryDark, C.primary, '#BD83CE'];
 
-export const cardShadow = {
-    shadowColor: C.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.10, shadowRadius: 12, elevation: 3,
-};
+// The dashboard cards have no shadow, only a thin border
+export const cardShadow = {};
 
 // ---------- Icons (stroke SVG, no emoji) ----------
 const ICONS = {
@@ -101,6 +111,30 @@ export const GradientCard = ({ children, style }) => (
         {children}
     </LinearGradient>
 );
+
+// Soft lilac panel (replaces the old purple gradient panel)
+export const SoftCard = ({ children, style }) => <View style={[s.softCard, style]}>{children}</View>;
+
+// Progress ring, e.g. "1/3 done today"
+export const Ring = ({ value, total, size = 120, label, sub }) => {
+    const stroke = Math.round(size * 0.12);
+    const r = (size - stroke) / 2;
+    const circ = 2 * Math.PI * r;
+    const pct = total > 0 ? Math.max(0, Math.min(1, value / total)) : 0;
+    return (
+        <View accessible accessibilityRole="image" accessibilityLabel={`${value}/${total}`} style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
+            <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
+                <Circle cx={size / 2} cy={size / 2} r={r} stroke="#FFFFFF" strokeWidth={stroke} fill="none" />
+                {pct > 0 && (
+                    <Circle cx={size / 2} cy={size / 2} r={r} stroke={C.primary} strokeWidth={stroke} fill="none" strokeLinecap="round"
+                        strokeDasharray={`${circ * pct} ${circ}`} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+                )}
+            </Svg>
+            <Text style={{ ...T.heading, fontSize: size >= 120 ? 32 : 22, color: C.text }}>{label}</Text>
+            {sub ? <Text style={{ ...T.medium, fontSize: 12, color: C.textSub }}>{sub}</Text> : null}
+        </View>
+    );
+};
 
 export const CircleButton = ({ icon, onPress, label, size = 44 }) => (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label}
@@ -139,7 +173,7 @@ export const Chip = ({ label, selected, onPress }) => (
 export const PrimaryButton = ({ title, onPress, loading, disabled, icon, style }) => (
     <Pressable onPress={onPress} disabled={disabled || loading} accessibilityRole="button"
         style={({ hovered }) => [s.primaryWrap, (disabled || loading) && { opacity: 0.6 }, hovered && { transform: [{ translateY: -1 }] }, style]}>
-        <LinearGradient colors={[C.primaryDark, C.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.primary}>
+        <LinearGradient colors={[C.primary, C.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={s.primary}>
             {loading ? <ActivityIndicator color="#FFFFFF" /> : (
                 <>
                     {icon && <Icon name={icon} size={18} color="#FFFFFF" />}
@@ -212,31 +246,32 @@ const s = StyleSheet.create({
     barCol: { flex: 1, height: '100%', alignItems: 'center', gap: 4 },
     barValue: { ...T.semi, fontSize: 11, color: C.textSub, minHeight: 14 },
     barTrack: { flex: 1, width: '100%', maxWidth: 44, justifyContent: 'flex-end' },
-    bar: { width: '100%', backgroundColor: C.control, borderTopLeftRadius: 10, borderTopRightRadius: 10, borderBottomLeftRadius: 4, borderBottomRightRadius: 4 },
-    barLast: { backgroundColor: C.primaryDark },
+    bar: { width: '100%', backgroundColor: C.secondary, borderTopLeftRadius: 12, borderTopRightRadius: 12, borderBottomLeftRadius: 2, borderBottomRightRadius: 2 },
+    barLast: { backgroundColor: C.primary },
     barLabel: { ...T.semi, fontSize: 11, color: C.textSub },
     barLabelLast: { ...T.bold, color: C.primaryDark },
-    card: { backgroundColor: C.card, borderRadius: 22, padding: 16, borderWidth: 1, borderColor: C.border, ...cardShadow },
+    card: { backgroundColor: C.card, borderRadius: 20, padding: 18, borderWidth: 1, borderColor: C.border },
+    softCard: { backgroundColor: C.lilac, borderRadius: 28, padding: 24 },
     gradientCard: { borderRadius: 24, padding: 18, shadowColor: C.primaryDark, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.18, shadowRadius: 18, elevation: 5 },
-    sectionTitle: { ...T.headingSemi, fontSize: 15, color: C.text },
+    sectionTitle: { ...T.headingSemi, fontSize: 16, color: C.text },
     label: { ...T.semi, fontSize: 13, color: C.textSub },
-    circleBtn: { backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: C.control, alignItems: 'center', justifyContent: 'center' },
+    circleBtn: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center' },
     hover: { backgroundColor: C.soft },
     optionRow: { flexDirection: 'row', gap: 8 },
-    option: { flex: 1, minHeight: 48, borderRadius: 16, borderWidth: 1.5, borderColor: C.control, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 6 },
-    optionOn: { borderWidth: 2, borderColor: C.primary, backgroundColor: C.tint },
+    option: { flex: 1, minHeight: 46, borderRadius: 999, borderWidth: 1, borderColor: C.control, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12 },
+    optionOn: { borderColor: C.primary, backgroundColor: C.lilac },
     optionText: { ...T.semi, fontSize: 14, color: C.text, textAlign: 'center' },
     optionTextOn: { ...T.bold, color: C.primaryDark },
-    chip: { minHeight: 44, paddingHorizontal: 16, borderRadius: 22, borderWidth: 1.5, borderColor: C.control, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', gap: 6 },
-    primaryWrap: { borderRadius: 28, shadowColor: C.primaryDark, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.22, shadowRadius: 18, elevation: 5 },
-    primary: { minHeight: 54, borderRadius: 28, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 20 },
-    primaryText: { ...T.headingSemi, fontSize: 15, color: '#FFFFFF' },
-    secondary: { minHeight: 52, borderRadius: 26, borderWidth: 2, borderColor: C.primary, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 18 },
-    secondaryText: { ...T.bold, fontSize: 15, color: C.primaryDark },
+    chip: { minHeight: 46, paddingHorizontal: 18, borderRadius: 999, borderWidth: 1, borderColor: C.control, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', gap: 6 },
+    primaryWrap: { borderRadius: 999 },
+    primary: { minHeight: 48, borderRadius: 999, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 24 },
+    primaryText: { ...T.semi, fontSize: 14, color: '#FFFFFF' },
+    secondary: { minHeight: 48, borderRadius: 999, borderWidth: 1, borderColor: C.secondary, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 22 },
+    secondaryText: { ...T.semi, fontSize: 14, color: C.primaryDark },
     badge: { alignSelf: 'flex-start', ...T.bold, fontSize: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12, overflow: 'hidden' },
-    stat: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 20, padding: 14, borderWidth: 1, borderColor: C.border, gap: 2, ...cardShadow },
-    statValue: { ...T.heading, fontSize: 20, color: C.text },
+    stat: { flex: 1, backgroundColor: '#FFFFFF', borderRadius: 18, paddingVertical: 16, paddingHorizontal: 18, borderWidth: 1, borderColor: C.border, gap: 2 },
+    statValue: { ...T.heading, fontSize: 24, color: C.text },
     statLabel: { ...T.semi, fontSize: 12, color: C.textSub },
-    notice: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', borderRadius: 18, padding: 14 },
+    notice: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', borderRadius: 16, paddingVertical: 14, paddingHorizontal: 16, borderWidth: 1, borderColor: '#FFD9C2' },
     noticeText: { flex: 1, ...T.medium, fontSize: 14, lineHeight: 20 },
 });

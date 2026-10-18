@@ -5,7 +5,7 @@ import { Video, ResizeMode } from 'expo-av';
 import { useTranslation } from 'react-i18next';
 import styles from './exerciseStyles';
 import ExerciseVideoPlayer from './ExerciseVideoPlayer';
-import { C, T, cardShadow, Card, GradientCard, SectionTitle, OptionRow, PrimaryButton, SecondaryButton, CircleButton, Badge, Notice, Icon } from './ui';
+import { C, T, cardShadow, Card, SoftCard, SectionTitle, OptionRow, PrimaryButton, SecondaryButton, CircleButton, Badge, Notice, Icon } from './ui';
 import { durationToSeconds, formatTime, getYoutubeId } from '../../utils/exerciseUtils';
 import { getTranslatedFeedback, feedbackText, videoFocusLabel } from '../../utils/exerciseMessages';
 import { LOW_ADHERENCE_PERCENT } from '../../utils/exerciseConfig';
@@ -283,9 +283,6 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
                     )}
                     {!!exercise.focus && <Badge text={videoFocusLabel(exercise.focus, isSinhala)} tone="white" style={cs.focus} />}
                     <Text style={cs.duration}>{durationLabel}</Text>
-                    {watchPercentage > 0 && !isCompleted && (
-                        <View style={cs.track}><View style={[cs.fill, { width: `${Math.min(100, watchPercentage)}%` }]} /></View>
-                    )}
                 </View>
                 <View style={cs.body}>
                     <Text style={cs.title} numberOfLines={2}>{title}</Text>
@@ -293,10 +290,13 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
                     {isCompleted ? (
                         <Badge text={tr('Completed', 'අවසන්')} tone="success" />
                     ) : (
-                        <View style={cs.cta}>
-                            <Icon name="play" size={16} color="#FFFFFF" />
-                            <Text style={cs.ctaText}>{tr('Start exercise', 'ව්‍යායාමය අරඹන්න')}</Text>
-                        </View>
+                        <>
+                            <View style={cs.bar}><View style={[cs.barFill, { width: `${Math.min(100, Math.round(watchPercentage))}%` }]} /></View>
+                            <View style={cs.cta}>
+                                <Text style={cs.ctaMuted}>{Math.round(watchPercentage)}% {tr('watched', 'නැරඹුවා')}</Text>
+                                <Text style={cs.ctaText}>{tr('Start exercise', 'ව්‍යායාමය අරඹන්න')} →</Text>
+                            </View>
+                        </>
                     )}
                 </View>
             </Pressable>
@@ -414,7 +414,7 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
                     <View style={[cs.sheet, cs.sheetNarrow]}>
                         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={cs.sheetContent}>
                             <View style={cs.doneHead}>
-                                <View style={cs.doneIcon}><Icon name="check" size={34} color={C.primaryDark} /></View>
+                                <View style={cs.doneIcon}><Icon name="check" size={34} color={C.success} /></View>
                                 <Text style={cs.doneTitle}>{tr('Well done', 'ඉතා හොඳයි')}</Text>
                                 <Text style={cs.doneText}>
                                     {tr(`You moved for ${actualMinutesNow} minute${actualMinutesNow === 1 ? '' : 's'}. Three quick answers help us choose tomorrow's exercises.`,
@@ -456,14 +456,14 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
                     <View style={[cs.sheet, cs.sheetNarrow]}>
                         <View style={cs.sheetContent}>
                             {results && (
-                                <GradientCard style={{ gap: 6 }}>
+                                <SoftCard style={{ gap: 6 }}>
                                     <Text style={cs.resultKicker}>{tr("Today's result", 'අද ප්‍රතිඵලය')}</Text>
                                     <Text style={cs.resultBig}>{results.adherenceScore}%</Text>
                                     <Text style={cs.resultSub}>
                                         {tr(`${results.actualDuration} of the planned ${results.recommendedDuration} minutes`, `සැලසූ විනාඩි ${results.recommendedDuration} න් ${results.actualDuration}`)}
                                     </Text>
                                     <Text style={cs.resultMsg}>{getTranslatedFeedback(results.intelligentFeedback, isSinhala, results.feedbackCode)}</Text>
-                                </GradientCard>
+                                </SoftCard>
                             )}
                             <PrimaryButton title={tr('Done', 'අවසන්')} onPress={finishResults} />
                         </View>
@@ -476,35 +476,38 @@ const ExerciseCard = ({ exercise, onComplete, isCompleted, onProgressUpdate, nav
 
 // Card and session styles (PeriCare exercise mockups)
 const cs = StyleSheet.create({
-    card: { backgroundColor: '#FFFFFF', borderRadius: 24, overflow: 'hidden', borderWidth: 1, borderColor: C.border, ...cardShadow },
-    cardHover: { transform: [{ translateY: -2 }] },
+    card: { backgroundColor: '#FFFFFF', borderRadius: 20, overflow: 'hidden', borderWidth: 1, borderColor: C.border },
+    cardHover: { borderColor: C.secondary },
     cardDone: { opacity: 0.85 },
-    row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, backgroundColor: '#FFFFFF', borderRadius: 20, borderWidth: 1, borderColor: C.border, ...cardShadow },
+    row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 10, backgroundColor: '#FFFFFF', borderRadius: 18, borderWidth: 1, borderColor: C.border },
     rowThumb: { width: 96, height: 60, borderRadius: 14, overflow: 'hidden', backgroundColor: C.control },
     rowBody: { flex: 1, gap: 3 },
     rowTitle: { ...T.semi, fontSize: 14, lineHeight: 19, color: C.text },
-    rowPlay: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.primaryDark, alignItems: 'center', justifyContent: 'center' },
+    rowPlay: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.primary, alignItems: 'center', justifyContent: 'center' },
     thumb: { height: 170, backgroundColor: C.control, justifyContent: 'center', alignItems: 'center' },
     thumbImg: { width: '100%', height: '100%' },
     thumbEmpty: { flex: 1, alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center', backgroundColor: C.tint },
     focus: { position: 'absolute', left: 12, top: 12 },
     duration: { position: 'absolute', right: 12, bottom: 12, backgroundColor: 'rgba(44,26,53,0.8)', color: '#FFFFFF', ...T.bold, fontSize: 12, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, overflow: 'hidden' },
     track: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 5, backgroundColor: 'rgba(255,255,255,0.6)' },
-    fill: { height: 5, backgroundColor: C.primaryDark },
-    body: { padding: 16, gap: 8 },
+    fill: { height: 5, backgroundColor: C.primary },
+    body: { paddingHorizontal: 18, paddingTop: 16, paddingBottom: 18, gap: 8 },
+    bar: { height: 6, borderRadius: 99, backgroundColor: C.lilac, marginTop: 4 },
+    barFill: { height: 6, borderRadius: 99, backgroundColor: C.primary },
     title: { ...T.semi, fontSize: 15, lineHeight: 21, color: C.text },
     channel: { ...T.medium, fontSize: 12, color: C.textSub },
-    cta: { marginTop: 4, minHeight: 46, borderRadius: 23, backgroundColor: C.primaryDark, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-    ctaText: { ...T.bold, fontSize: 14, color: '#FFFFFF' },
+    cta: { marginTop: 2, minHeight: 32, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+    ctaMuted: { ...T.medium, fontSize: 12, color: C.textSub },
+    ctaText: { ...T.semi, fontSize: 14, color: C.primaryDark },
     overlay: { flex: 1, backgroundColor: 'rgba(44,26,53,0.45)', justifyContent: 'flex-end', alignItems: 'center' },
     sheet: { width: '100%', maxHeight: '96%', backgroundColor: C.bg, borderTopLeftRadius: 28, borderTopRightRadius: 28 },
     sheetWide: { maxWidth: 1100, borderRadius: 28, marginBottom: 'auto', marginTop: 'auto' },
     sheetNarrow: { maxWidth: 560 },
     sheetContent: { padding: 20, gap: 14 },
     sheetHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-    sheetTitle: { ...T.heading, fontSize: 18, color: C.text },
+    sheetTitle: { ...T.heading, fontSize: 20, lineHeight: 26, color: C.text },
     sheetSub: { ...T.medium, fontSize: 13, color: C.textSub },
-    lang: { minHeight: 44, minWidth: 44, paddingHorizontal: 12, borderRadius: 22, backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: C.control, alignItems: 'center', justifyContent: 'center' },
+    lang: { minHeight: 40, minWidth: 44, paddingHorizontal: 14, borderRadius: 999, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border, alignItems: 'center', justifyContent: 'center' },
     langText: { ...T.bold, fontSize: 13, color: C.primaryDark },
     split: { gap: 14 },
     splitWide: { flexDirection: 'row', alignItems: 'flex-start', gap: 20 },
@@ -513,21 +516,21 @@ const cs = StyleSheet.create({
     watchRow: { flexDirection: 'row', justifyContent: 'space-between' },
     watchText: { ...T.semi, fontSize: 12, color: C.textSub },
     stopwatch: { alignItems: 'center', gap: 12, paddingVertical: 20 },
-    kicker: { ...T.bold, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 0.8, textAlign: 'center' },
+    kicker: { ...T.semi, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 1, textAlign: 'center' },
     time: { ...T.heading, fontSize: 52, color: C.text, fontVariant: ['tabular-nums'] },
     controls: { flexDirection: 'row', gap: 32 },
     control: { alignItems: 'center', gap: 6 },
     roundBtn: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
     controlText: { ...T.semi, fontSize: 13, color: C.text },
     doneHead: { alignItems: 'center', gap: 8, paddingTop: 6 },
-    doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: C.tint, alignItems: 'center', justifyContent: 'center' },
-    doneTitle: { ...T.heading, fontSize: 22, color: C.text },
+    doneIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: C.successBg, alignItems: 'center', justifyContent: 'center' },
+    doneTitle: { ...T.heading, fontSize: 24, color: C.text },
     doneText: { ...T.medium, fontSize: 14, color: C.textSub, textAlign: 'center', lineHeight: 20 },
     q: { gap: 12 },
-    resultKicker: { ...T.bold, fontSize: 12, color: C.tint, textTransform: 'uppercase', letterSpacing: 0.8 },
-    resultBig: { ...T.heading, fontSize: 40, color: '#FFFFFF' },
-    resultSub: { ...T.semi, fontSize: 14, color: C.tint },
-    resultMsg: { ...T.medium, fontSize: 15, lineHeight: 22, color: '#FFFFFF', marginTop: 4 },
+    resultKicker: { ...T.semi, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 1 },
+    resultBig: { ...T.heading, fontSize: 40, color: C.text },
+    resultSub: { ...T.semi, fontSize: 14, color: C.textSub },
+    resultMsg: { ...T.body, fontSize: 15, lineHeight: 22, color: C.text, marginTop: 4 },
 });
 
 export default ExerciseCard;

@@ -12,7 +12,7 @@ import styles from '../components/exercise/exerciseStyles';
 import HealthDataForm from '../components/exercise/HealthDataForm';
 import ExerciseCard from '../components/exercise/ExerciseCard';
 import ExerciseShell from '../components/exercise/ExerciseShell';
-import { C, T, Card, GradientCard, CircleButton, PrimaryButton, SecondaryButton, Notice, Icon, useExerciseFonts } from '../components/exercise/ui';
+import { C, T, Card, SoftCard, Ring, PrimaryButton, SecondaryButton, Notice, Icon, useExerciseFonts } from '../components/exercise/ui';
 import { videoFocusLabel, formatDays } from '../utils/exerciseMessages';
 import { todayStr, durationToMinutes, getYoutubeId, matchesExercise } from '../utils/exerciseUtils';
 import {
@@ -413,26 +413,9 @@ export default function ExerciseScreen({ navigation, route }) {
                 if (key === 'today') { if (hasData) closeForm(); return true; }
                 return false;
             }}
-            header={
-            <View style={ui.header}>
-                <CircleButton icon="back" onPress={() => navigation.goBack()} label={tr('Back', 'ආපසු')} />
-                <View style={{ flex: 1 }}>
-                    <Text style={ui.headerTitle} numberOfLines={1}>{tr('Postpartum exercise', 'ප්‍රසූතියෙන් පසු ව්‍යායාම')}</Text>
-                    <Text style={ui.headerSub} numberOfLines={1}>{todayLabel}</Text>
-                </View>
-                <Pressable
-                    onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')}
-                    accessibilityRole="button"
-                    accessibilityLabel={tr('Switch language', 'භාෂාව මාරු කරන්න')}
-                    style={({ hovered }) => [ui.langPill, hovered && { backgroundColor: C.soft }]}
-                >
-                    <Text style={ui.langText}>{i18n.language === 'en' ? 'සිංහල' : 'English'}</Text>
-                </Pressable>
-            </View>
-            }
           >
             <ScrollView ref={scrollViewRef} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-              <ContentWell maxWidth="wide">
+              <ContentWell maxWidth={1180}>
                 <View style={ui.page}>
                     {(showForm || !hasData) && (
                         <>
@@ -450,27 +433,31 @@ export default function ExerciseScreen({ navigation, route }) {
 
                     {!showForm && hasData && safetyStatus !== 'blocked' && (
                         <>
-                            <GradientCard style={ui.banner}>
+                            <SoftCard style={ui.banner}>
                                 <View style={ui.bannerText}>
                                     <Text style={ui.bannerKicker}>{tr('Your level today', 'අද ඔබේ මට්ටම')}</Text>
-                                    <Text style={ui.bannerTitle}>{CATEGORY_NAMES[levelCategory] || tr('Your exercises', 'ඔබේ ව්‍යායාම')}</Text>
+                                    <Text style={[ui.bannerTitle, { fontSize: isWideScreen ? 34 : 24, lineHeight: isWideScreen ? 40 : 30 }]}>{CATEGORY_NAMES[levelCategory] || tr('Your exercises', 'ඔබේ ව්‍යායාම')}</Text>
                                     <Text style={ui.bannerBody}>{levelReason}</Text>
+                                    <Text style={ui.bannerDate}>{todayLabel}</Text>
+                                    <View style={ui.bannerActions}>
+                                        <PrimaryButton title={tr('Update my health form', 'මගේ සෞඛ්‍ය පෝරමය යාවත්කාලීන කරන්න')} icon="form" onPress={openForm} />
+                                    </View>
                                 </View>
                                 <View style={ui.bannerStats}>
+                                    <Ring value={Math.min(doneRecs.length, dailyGoal)} total={dailyGoal} size={128}
+                                        label={`${Math.min(doneRecs.length, dailyGoal)}/${dailyGoal}`} sub={tr('done today', 'අද අවසන්')} />
                                     <View style={ui.bannerStat}>
-                                        <Text style={ui.bannerStatValue}>{formatDays(progress?.currentStreak ?? 0, isSinhala)}</Text>
-                                        <Text style={ui.bannerStatLabel}>{tr('Streak', 'අඛණ්ඩව')}</Text>
-                                    </View>
-                                    <View style={ui.bannerStat}>
-                                        <Text style={ui.bannerStatValue}>{tr(`${Math.min(doneRecs.length, dailyGoal)} of ${dailyGoal}`, `${dailyGoal} න් ${Math.min(doneRecs.length, dailyGoal)}`)}</Text>
-                                        <Text style={ui.bannerStatLabel}>{tr('Done today', 'අද අවසන්')}</Text>
+                                        <Text style={ui.bannerStatValue}>{progress?.currentStreak ?? 0}</Text>
+                                        <Text style={ui.bannerStatLabel}>{tr(`day streak`, 'දින අඛණ්ඩව')}</Text>
                                     </View>
                                 </View>
-                            </GradientCard>
+                            </SoftCard>
 
 
                             {recommendations.length > 0 ? (
                                 <>
+                                    <View style={ui.tabsRow}>
+                                    <Text style={ui.sectionHeading}>{tr('Your exercises', 'ඔබේ ව්‍යායාම')}</Text>
                                     <View style={ui.tabs} accessibilityRole="tablist">
                                         {[
                                             { key: 'todo', label: `${tr('To do', 'කිරීමට ඇති')} (${Math.min(TODO_VISIBLE_COUNT, todoRecs.length)})` },
@@ -486,6 +473,7 @@ export default function ExerciseScreen({ navigation, route }) {
                                                 <Text style={[ui.tabText, activeTab === tab.key && ui.tabTextOn]}>{tab.label}</Text>
                                             </Pressable>
                                         ))}
+                                    </View>
                                     </View>
 
                                     {visibleRecs.length > 0 ? (
@@ -609,39 +597,38 @@ export default function ExerciseScreen({ navigation, route }) {
 
 // Layout styles for the redesigned Today screen (PeriCare exercise mockups)
 const ui = StyleSheet.create({
-    header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 10, backgroundColor: C.bg },
-    headerTitle: { ...T.heading, fontSize: 20, color: C.text },
-    headerSub: { ...T.medium, fontSize: 13, color: C.textSub },
-    langPill: { minHeight: 44, paddingHorizontal: 14, borderRadius: 22, borderWidth: 1.5, borderColor: C.control, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-    langText: { ...T.bold, fontSize: 13, color: C.primaryDark },
     page: { gap: 16, paddingTop: 4 },
-    banner: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, alignItems: 'center', justifyContent: 'space-between' },
-    bannerText: { flexGrow: 1, flexShrink: 1, flexBasis: 260, gap: 6 },
-    bannerKicker: { ...T.bold, fontSize: 12, color: C.tint, textTransform: 'uppercase', letterSpacing: 0.8 },
-    bannerTitle: { ...T.heading, fontSize: 24, color: '#FFFFFF' },
-    bannerBody: { ...T.medium, fontSize: 14, lineHeight: 20, color: '#FFFFFF' },
-    bannerStats: { flexDirection: 'row', gap: 10 },
-    bannerStat: { backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: 18, paddingVertical: 10, paddingHorizontal: 16, minWidth: 104 },
-    bannerStatValue: { ...T.heading, fontSize: 20, color: '#FFFFFF' },
-    bannerStatLabel: { ...T.semi, fontSize: 12, color: C.tint },
-    tabs: { flexDirection: 'row', gap: 8 },
-    tab: { minHeight: 44, paddingHorizontal: 18, borderRadius: 22, borderWidth: 1.5, borderColor: C.control, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center' },
-    tabOn: { backgroundColor: C.primaryDark, borderColor: C.primaryDark },
+    banner: { flexDirection: 'row', flexWrap: 'wrap', gap: 20, alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 28, paddingVertical: 26 },
+    bannerText: { flexGrow: 1, flexShrink: 1, flexBasis: 260, gap: 8 },
+    bannerKicker: { ...T.semi, fontSize: 12, color: C.primaryDark, textTransform: 'uppercase', letterSpacing: 1 },
+    bannerTitle: { ...T.heading, color: C.text },
+    bannerBody: { ...T.body, fontSize: 15, lineHeight: 22, color: C.textSub },
+    bannerDate: { ...T.medium, fontSize: 13, color: C.textSub },
+    bannerActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 6 },
+    bannerStats: { flexDirection: 'row', gap: 20, alignItems: 'center' },
+    bannerStat: { alignItems: 'flex-start', gap: 2 },
+    bannerStatValue: { ...T.heading, fontSize: 34, color: C.text },
+    bannerStatLabel: { ...T.medium, fontSize: 13, color: C.textSub },
+    tabsRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 4 },
+    sectionHeading: { ...T.headingSemi, fontSize: 16, color: C.text },
+    tabs: { flexDirection: 'row', gap: 4, padding: 4, borderRadius: 999, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: C.border },
+    tab: { minHeight: 38, paddingHorizontal: 18, borderRadius: 999, alignItems: 'center', justifyContent: 'center' },
+    tabOn: { backgroundColor: C.primary },
     tabText: { ...T.semi, fontSize: 14, color: C.textSub },
-    tabTextOn: { ...T.bold, color: '#FFFFFF' },
+    tabTextOn: { color: '#FFFFFF' },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-    listTitle: { ...T.heading, fontSize: 17, color: C.text, marginTop: 2 },
+    listTitle: { ...T.headingSemi, fontSize: 16, color: C.text, marginTop: 2 },
     empty: { alignItems: 'center', gap: 6, paddingVertical: 28 },
-    emptyTitle: { ...T.heading, fontSize: 18, color: C.text, textAlign: 'center' },
+    emptyTitle: { ...T.headingSemi, fontSize: 16, color: C.text, textAlign: 'center' },
     emptyText: { ...T.medium, fontSize: 14, color: C.textSub, textAlign: 'center', lineHeight: 20, maxWidth: 460 },
-    blocked: { flexDirection: 'row', gap: 14, backgroundColor: C.dangerBg, borderRadius: 22, padding: 18, alignItems: 'flex-start' },
-    blockedTitle: { ...T.heading, fontSize: 17, color: C.danger },
+    blocked: { flexDirection: 'row', gap: 14, backgroundColor: C.dangerBg, borderRadius: 20, padding: 18, alignItems: 'flex-start' },
+    blockedTitle: { ...T.headingSemi, fontSize: 16, color: C.danger },
     blockedText: { ...T.medium, fontSize: 14, color: C.text, lineHeight: 20 },
     links: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
     linkBtn: { flexGrow: 1, flexBasis: 200 },
     overlay: { flex: 1, backgroundColor: 'rgba(44,26,53,0.45)', alignItems: 'center', justifyContent: 'center', padding: 20 },
     dialog: { width: '100%', maxWidth: 420, backgroundColor: '#FFFFFF', borderRadius: 28, padding: 24, alignItems: 'center', gap: 12 },
     dialogIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.tint, alignItems: 'center', justifyContent: 'center' },
-    dialogTitle: { ...T.heading, fontSize: 20, color: C.text, textAlign: 'center' },
+    dialogTitle: { ...T.headingSemi, fontSize: 18, color: C.text, textAlign: 'center' },
     dialogText: { ...T.medium, fontSize: 14, color: C.textSub, textAlign: 'center', lineHeight: 20, marginBottom: 6 },
 });
