@@ -1,243 +1,318 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
     ScrollView,
     TouchableOpacity,
     StyleSheet,
-    Dimensions,
-    Image,
     Modal,
-    Animated,
+    Image,
+    ImageBackground,
+    Platform,
+    useWindowDimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
-import { BarChart, PieChart } from 'react-native-chart-kit';
 import { useTranslation } from 'react-i18next';
+import { Video, ResizeMode } from 'expo-av';
+import { WebView } from 'react-native-webview';
+import * as Font from 'expo-font';
+import { Asset } from 'expo-asset';
+import Feather from 'react-native-vector-icons/Feather';
+import exerciseService from '../services/exerciseService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
+import { typography } from '../theme';
 
-const { width } = Dimensions.get('window');
+const HERO_IMAGE = require('../assets/hero-mother-baby.jpg');
+const HERO_IMAGE_URI = Asset.fromModule(HERO_IMAGE).uri;
 
-// ─────────────────────────────────────────────
-// MOCK DATA
-// ─────────────────────────────────────────────
-const mockUser = {
-    name: 'Sarah Johnson',
-    role: 'Patient',
-    avatar: null,
-    lastVisit: '28 Feb 2026',
+const getYouTubeId = (url) => {
+    if (!url) return null;
+    if (url.includes('youtube.com/embed/'))
+        return url.split('embed/')[1]?.split('?')[0];
+    if (url.includes('youtu.be/'))
+        return url.split('youtu.be/')[1]?.split('?')[0];
+    if (url.includes('youtube.com/watch')) {
+        const parts = url.split('v=');
+        return parts.length > 1 ? parts[1].split('&')[0] : null;
+    }
+    return null;
 };
 
-const mockStats = [
-    { label: 'Screenings Done', value: 12, icon: '📋', color: '#7C3AED' },
-    { label: 'Risk Score', value: '34%', icon: '📊', color: '#0EA5E9' },
-    { label: 'Sessions Left', value: 5, icon: '🕐', color: '#10B981' },
-    { label: 'Mood Streak', value: '7 days', icon: '🌟', color: '#F59E0B' },
-];
-
-const barChartData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-        {
-            data: [30, 45, 28, 60, 40, 55],
-        },
-    ],
+const getVideoThumbnail = (ex) => {
+    if (ex?.thumbnailUrl) return ex.thumbnailUrl;
+    const id = getYouTubeId(ex?.videoUrl);
+    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
 };
 
-const pieChartData = [
-    { name: 'Mild', population: 35, color: '#10B981', legendFontColor: '#374151', legendFontSize: 13 },
-    { name: 'Moderate', population: 40, color: '#F59E0B', legendFontColor: '#374151', legendFontSize: 13 },
-    { name: 'Severe', population: 15, color: '#EF4444', legendFontColor: '#374151', legendFontSize: 13 },
-    { name: 'None', population: 10, color: '#7C3AED', legendFontColor: '#374151', legendFontSize: 13 },
+const Icon = ({ name, size = 18, color, style }) => (
+    <Feather name={name} size={size} color={color} style={style} />
+);
+
+const getEmbedUrl = (url) => {
+    const id = getYouTubeId(url);
+    return id
+        ? `https://www.youtube.com/embed/${id}?rel=0&autoplay=1&modestbranding=1&playsinline=1`
+        : url;
+};
+
+// ─────────────────────────────────────────────
+// PALETTE  (primary #AA60C8 is unchanged)
+// ─────────────────────────────────────────────
+const LIGHT = {
+    primary: '#AA60C8',
+    primaryDark: '#873CA6',
+    secondary: '#D69ADE',
+    accent: '#EABDE6',
+    bg: '#FBF8F6',
+    side: '#FDFBFA',
+    card: '#FFFFFF',
+    line: '#EFE4EE',
+    line2: '#F2EAF1',
+    lav: '#F5E6FB',
+    blush: '#FFE9F1',
+    blushLine: '#F4C6D7',
+    blushText: '#9A3F62',
+    sage: '#E7F1EA',
+    sageText: '#3F6B4E',
+    note: '#FFF7FA',
+    noteLine: '#F6DCE8',
+    text: '#2C1A35',
+    muted: '#8A7392',
+    nav: '#5B4763',
+    sec: '#A894AE',
+};
+
+const DARK = {
+    ...LIGHT,
+    bg: '#16111A',
+    side: '#1D1622',
+    card: '#221A28',
+    line: '#33283A',
+    line2: '#2C2232',
+    lav: '#3A2546',
+    blush: '#3D2230',
+    blushLine: '#5A3045',
+    blushText: '#F4B6CE',
+    sage: '#22322A',
+    sageText: '#A9D3B5',
+    note: '#2A1F2E',
+    noteLine: '#3D2C42',
+    text: '#F5EEF7',
+    muted: '#B9A5C0',
+    nav: '#D9C9DF',
+    sec: '#8E7A96',
+};
+
+const SERIF = Platform.select({
+    web: "Georgia, 'Times New Roman', serif",
+    ios: 'Georgia',
+    default: 'serif',
+});
+
+const DAILY_NOTES = [
+    'You are exactly the mother your baby needs. Be as gentle with yourself as you are with them.',
+    'Rest is part of recovery, not a reward for it.',
+    'Small steps still count. You are doing better than you think.',
+    'It is okay to ask for help. Strong mothers lean on others too.',
+    'Every feeling is allowed here. Be kind to yourself today.',
+    'Your baby does not need a perfect mother, just a present one.',
+    'One day at a time is enough.',
 ];
 
-const progressData = [
-    { label: 'Anxiety Level', progress: 0.62, color: '#EF4444' },
-    { label: 'Sleep Quality', progress: 0.75, color: '#10B981' },
-    { label: 'Social Support', progress: 0.48, color: '#0EA5E9' },
-    { label: 'Emotional Balance', progress: 0.83, color: '#7C3AED' },
-];
-
-const recentActivities = [
-    { id: 1, title: 'Maternal Wellness Check Completed', time: '2 hours ago', icon: '✅', color: '#10B981' },
-    { id: 2, title: 'Therapy Session Scheduled', time: 'Yesterday', icon: '📅', color: '#0EA5E9' },
-    { id: 3, title: 'Mood Log Updated', time: '2 days ago', icon: '😊', color: '#F59E0B' },
-    { id: 4, title: 'Doctor Note Added', time: '3 days ago', icon: '📝', color: '#7C3AED' },
-];
-
-const navItems = [
-    { key: 'home', label: 'Dashboard', icon: '🏠' },
-    { key: 'screening', label: 'Screening', icon: '📋' },
-    { key: 'diary', label: 'My Diary', icon: '📔' },
-    { key: 'plan', label: 'My Plans', icon: '📅' },
-    { key: 'profile', label: 'Profile', icon: '👤' },
-    { key: 'care_overview', label: 'Care Overview', icon: '⭐' },
-    { key: 'settings', label: 'Settings', icon: '⚙️' },
+// Sidebar groups — same destinations as before, grouped like the new design
+const navSections = (t) => [
+    {
+        title: t('Today'),
+        items: [
+            { key: 'home', label: t('Overview'), icon: 'home' },
+            { key: 'screening', label: t('Maternal Wellness Check'), icon: 'clipboard' },
+            { key: 'care_overview', label: t('Care Overview'), icon: 'star' },
+        ],
+    },
+    {
+        title: t('Care for you'),
+        items: [
+            { key: 'diary', label: t('My Diary'), icon: 'book-open' },
+            { key: 'relief', label: t('Relief for you'), icon: 'heart' },
+            { key: 'exercise', label: t('Exercise'), icon: 'activity' },
+            { key: 'chat', label: t('Support chat'), icon: 'message-circle' },
+        ],
+    },
+    {
+        title: t('Baby and life'),
+        items: [
+            { key: 'baby', label: t('Baby Dev'), icon: 'smile' },
+            { key: 'plan', label: t('My Plans'), icon: 'calendar' },
+            { key: 'profile', label: t('Profile'), icon: 'user' },
+        ],
+    },
 ];
 
 // ─────────────────────────────────────────────
-// PROGRESS BAR COMPONENT
+// SIDEBAR (hamburger drawer)
 // ─────────────────────────────────────────────
-function ProgressBar({ label, progress, color }) {
-    const percent = Math.round(progress * 100);
+function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout, onHelp, P }) {
+    const { t } = useTranslation();
+
     return (
-        <View style={styles.progressRow}>
-            <View style={styles.progressLabelRow}>
-                <Text style={styles.progressLabel}>{label}</Text>
-                <Text style={[styles.progressPercent, { color }]}>{percent}%</Text>
-            </View>
-            <View style={styles.progressTrack}>
-                <View style={[styles.progressFill, { width: `${percent}%`, backgroundColor: color }]} />
-            </View>
-        </View>
-    );
-}
-
-// ─────────────────────────────────────────────
-// STAT CARD COMPONENT
-// ─────────────────────────────────────────────
-function StatCard({ icon, label, value, color }) {
-    return (
-        <View style={[styles.statCard, { borderLeftColor: color }]}>
-            <Text style={styles.statIcon}>{icon}</Text>
-            <Text style={[styles.statValue, { color }]}>{value}</Text>
-            <Text style={styles.statLabel}>{label}</Text>
-        </View>
-    );
-}
-
-// ─────────────────────────────────────────────
-// SIDEBAR COMPONENT
-// ─────────────────────────────────────────────
-function Sidebar({ visible, activeTab, onTabPress, onClose, onLogout }) {
-    return (
-        <Modal
-            transparent
-            visible={visible}
-            animationType="slide"
-            onRequestClose={onClose}
-        >
+        <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
             <View style={styles.sidebarOverlay}>
-                <TouchableOpacity style={styles.sidebarBackdrop} onPress={onClose} />
-                <View style={styles.sidebarContainer}>
-                    {/* Sidebar Header */}
+                <View style={[styles.sidebarContainer, { backgroundColor: P.side, borderRightColor: P.line }]}>
                     <View style={styles.sidebarHeader}>
-                        <View style={styles.sidebarAvatar}>
-                            <Text style={styles.sidebarAvatarText}>SJ</Text>
+                        <View style={[styles.logoCircle, { backgroundColor: P.lav }]}>
+                            <Text style={styles.logoEmoji}>🌸</Text>
                         </View>
-                        <View style={styles.sidebarUserInfo}>
-                            <Text style={styles.sidebarUserName}>{mockUser.name}</Text>
-                            <Text style={styles.sidebarUserRole}>{mockUser.role}</Text>
+                        <View style={{ flex: 1 }}>
+                            <Text style={[styles.brandText, { color: P.text }]}>{t('PeriCare')}</Text>
+                            <Text style={[styles.brandSub, { color: P.muted }]}>{t('Postpartum care')}</Text>
                         </View>
-                        <TouchableOpacity onPress={onClose} style={styles.sidebarCloseBtn}>
-                            <Text style={styles.sidebarCloseText}>✕</Text>
+                        <TouchableOpacity onPress={onClose} style={styles.sidebarCloseBtn} accessibilityLabel={t('Close menu')}>
+                            <Icon name="x" size={20} color={P.muted} />
                         </TouchableOpacity>
                     </View>
 
-                    <View style={styles.sidebarDivider} />
-
-                    {/* Nav Items */}
-                    <ScrollView style={styles.sidebarNav}>
-                        {navItems.map((item) => (
-                            <TouchableOpacity
-                                key={item.key}
-                                style={[
-                                    styles.sidebarNavItem,
-                                    activeTab === item.key && styles.sidebarNavItemActive,
-                                ]}
-                                onPress={() => {
-                                    onTabPress(item.key);
-                                    onClose();
-                                }}
-                            >
-                                <Text style={styles.sidebarNavIcon}>{item.icon}</Text>
-                                <Text
-                                    style={[
-                                        styles.sidebarNavLabel,
-                                        activeTab === item.key && styles.sidebarNavLabelActive,
-                                    ]}
-                                >
-                                    {item.label}
-                                </Text>
-                                {activeTab === item.key && <View style={styles.sidebarActiveIndicator} />}
-                            </TouchableOpacity>
+                    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+                        {navSections(t).map((section) => (
+                            <View key={section.title}>
+                                <Text style={[styles.navSection, { color: P.sec }]}>{section.title.toUpperCase()}</Text>
+                                {section.items.map((item) => {
+                                    const active = activeTab === item.key;
+                                    return (
+                                        <TouchableOpacity
+                                            key={item.key}
+                                            style={[styles.navItem, active && { backgroundColor: P.lav }]}
+                                            onPress={() => {
+                                                onTabPress(item.key);
+                                                onClose();
+                                            }}
+                                        >
+                                            <Icon name={item.icon} size={18} color={active ? P.primaryDark : P.nav} style={styles.navIcon} />
+                                            <Text style={[styles.navLabel, { color: active ? P.primaryDark : P.nav }, active && styles.navLabelActive]}>
+                                                {item.label}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
                         ))}
+
+                        <TouchableOpacity
+                            style={[styles.helpBtn, { backgroundColor: P.blush, borderColor: P.blushLine }]}
+                            onPress={() => {
+                                onClose();
+                                onHelp();
+                            }}
+                        >
+                            <Icon name="life-buoy" size={18} color={P.blushText} style={styles.navIcon} />
+                            <Text style={[styles.helpText, { color: P.blushText }]}>{t('Need help now?')}</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.navItem} onPress={onLogout}>
+                            <Icon name="log-out" size={18} color={P.nav} style={styles.navIcon} />
+                            <Text style={[styles.navLabel, { color: P.nav }]}>{t('Sign Out')}</Text>
+                        </TouchableOpacity>
                     </ScrollView>
-
-                    <View style={styles.sidebarDivider} />
-
-                    {/* Logout */}
-                    <TouchableOpacity style={styles.sidebarLogout} onPress={onLogout}>
-                        <Text style={styles.sidebarLogoutIcon}>🚪</Text>
-                        <Text style={styles.sidebarLogoutText}>Sign Out</Text>
-                    </TouchableOpacity>
                 </View>
+                <TouchableOpacity style={styles.sidebarBackdrop} onPress={onClose} activeOpacity={1} />
             </View>
         </Modal>
     );
 }
 
 // ─────────────────────────────────────────────
-// HEADER COMPONENT
+// HEADER
 // ─────────────────────────────────────────────
-function Header({ onMenuPress, onNotifPress }) {
-    const { i18n } = useTranslation();
-    return (
-        <View style={styles.header}>
-            <TouchableOpacity onPress={onMenuPress} style={styles.menuBtn}>
-                <View style={styles.menuLine} />
-                <View style={[styles.menuLine, { width: 20 }]} />
-                <View style={styles.menuLine} />
-            </TouchableOpacity>
+function Header({ onMenuPress, initials, P }) {
+    const { t, i18n } = useTranslation();
 
-            <View style={styles.headerCenter}>
-                <Text style={styles.headerLogo}>🌸</Text>
-                <Text style={styles.headerTitle}>PeriCare</Text>
+    return (
+        <View style={[styles.header, { backgroundColor: P.bg }]}>
+            <View style={styles.headerLeft}>
+                <TouchableOpacity
+                    onPress={onMenuPress}
+                    style={[styles.burger, { backgroundColor: P.card, borderColor: P.line }]}
+                    accessibilityLabel={t('Open menu')}
+                >
+                    <View style={[styles.menuLine, { backgroundColor: P.nav }]} />
+                    <View style={[styles.menuLine, { backgroundColor: P.nav }]} />
+                    <View style={[styles.menuLine, { backgroundColor: P.nav }]} />
+                </TouchableOpacity>
+                <View style={[styles.logoCircle, styles.logoSmall, { backgroundColor: P.lav }]}>
+                    <Text style={styles.logoEmojiSmall}>🌸</Text>
+                </View>
+                <Text style={[styles.brandText, { color: P.text }]}>{t('PeriCare')}</Text>
             </View>
 
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <TouchableOpacity onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')} style={{ marginRight: 15 }}>
-                    <Text style={{ fontWeight: '700', fontSize: 13, color: '#7C3AED', backgroundColor: '#EDE9FE', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}>
+            <View style={styles.headerRight}>
+                <TouchableOpacity
+                    onPress={() => i18n.changeLanguage(i18n.language === 'en' ? 'si' : 'en')}
+                    style={[styles.langPill, { backgroundColor: P.card, borderColor: P.line }]}
+                >
+                    <Text style={[styles.langText, { color: P.nav }]}>
                         {i18n.language === 'en' ? 'සිං' : 'EN'}
                     </Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity onPress={onNotifPress} style={styles.notifBtn}>
-                    <Text style={styles.notifIcon}>🔔</Text>
-                    <View style={styles.notifBadge}>
-                        <Text style={styles.notifBadgeText}>3</Text>
-                    </View>
-                </TouchableOpacity>
+                <View style={[styles.avatar, { backgroundColor: P.lav }]}>
+                    <Text style={[styles.avatarText, { color: P.primaryDark }]}>{initials}</Text>
+                </View>
             </View>
         </View>
     );
 }
 
 // ─────────────────────────────────────────────
-// FOOTER COMPONENT
+// SMALL BUILDING BLOCKS
 // ─────────────────────────────────────────────
-function Footer({ activeTab, onTabPress }) {
-    const footerItems = navItems.slice(0, 5);
+function Card({ P, style, children }) {
+    return <View style={[styles.card, { backgroundColor: P.card, borderColor: P.line }, style]}>{children}</View>;
+}
+
+function PickCard({ P, icon, tag, title, desc, bg, color, onPress, compact }) {
     return (
-        <View style={styles.footer}>
-            {footerItems.map((item) => (
-                <TouchableOpacity
-                    key={item.key}
-                    style={styles.footerTab}
-                    onPress={() => onTabPress(item.key)}
-                >
-                    <Text style={styles.footerTabIcon}>{item.icon}</Text>
-                    <Text
-                        style={[
-                            styles.footerTabLabel,
-                            activeTab === item.key && styles.footerTabLabelActive,
-                        ]}
-                    >
-                        {item.label}
-                    </Text>
-                    {activeTab === item.key && <View style={styles.footerActiveBar} />}
-                </TouchableOpacity>
-            ))}
+        <TouchableOpacity
+            onPress={onPress}
+            activeOpacity={0.85}
+            style={[styles.pick, { borderColor: P.line, backgroundColor: P.card }, compact ? styles.pickCompact : { flex: 1 }]}
+        >
+            <View style={[styles.pickImg, { backgroundColor: bg, height: compact ? 70 : 100 }]}>
+                <Icon name={icon} size={compact ? 24 : 30} color={color} />
+            </View>
+            <View style={styles.pickBody}>
+                <Text style={[styles.pickTag, { color }]}>{tag}</Text>
+                <Text style={[styles.pickTitle, { color: P.text }]} numberOfLines={1}>{title}</Text>
+                {!compact && <Text style={[styles.mutedText, { color: P.muted }]} numberOfLines={2}>{desc}</Text>}
+            </View>
+        </TouchableOpacity>
+    );
+}
+
+function CardTitle({ P, icon, children }) {
+    return (
+        <View style={styles.cardTitleRow}>
+            <Icon name={icon} size={18} color={P.primary} style={{ marginRight: 8 }} />
+            <Text style={[styles.cardTitle, { color: P.text }]}>{children}</Text>
         </View>
+    );
+}
+
+function PillButton({ P, label, onPress, solid, icon }) {
+    return (
+        <TouchableOpacity
+            onPress={onPress}
+            style={[
+                styles.pillBtn,
+                icon && styles.pillBtnRow,
+                solid
+                    ? { backgroundColor: P.primary }
+                    : { backgroundColor: P.card, borderWidth: 1, borderColor: P.accent },
+            ]}
+        >
+            {icon ? <Icon name={icon} size={15} color={solid ? '#FFFFFF' : P.primaryDark} style={{ marginRight: 8 }} /> : null}
+            <Text style={[styles.pillBtnText, { color: solid ? '#FFFFFF' : P.primaryDark }]}>{label}</Text>
+        </TouchableOpacity>
     );
 }
 
@@ -245,29 +320,119 @@ function Footer({ activeTab, onTabPress }) {
 // MAIN DASHBOARD SCREEN
 // ─────────────────────────────────────────────
 export default function DashboardScreen({ navigation }) {
-    const { t } = useTranslation();
-    const [sidebarVisible, setSidebarVisible] = useState(false);
+    const { t, i18n } = useTranslation();
+    const { width } = useWindowDimensions();
+    const { user, logout } = useAuth();
+    const [displayName, setDisplayName] = useState(user?.username || 'Guest User');
+    const initials = displayName.slice(0, 2).toUpperCase();
+
     const [activeTab, setActiveTab] = useState('home');
+    const [sidebarVisible, setSidebarVisible] = useState(false);
+    const [suggestedExercises, setSuggestedExercises] = useState([]);
+    const [todayPlan, setTodayPlan] = useState([]);
+    const [videoModalVisible, setVideoModalVisible] = useState(false);
+    const [selectedVideoUrl, setSelectedVideoUrl] = useState(null);
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    const P = isDarkMode ? DARK : LIGHT;
+    const isWide = width >= 900;
+    const isSinhala = i18n.language === 'si';
+
+    const now = new Date();
+    const hour = now.getHours();
+    const greeting = hour < 12 ? t('Good morning') : hour < 17 ? t('Good afternoon') : t('Good evening');
+    const dayString = now.toLocaleDateString(isSinhala ? 'si-LK' : 'en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    const dailyNote = t(DAILY_NOTES[now.getDate() % DAILY_NOTES.length]);
+
+    useEffect(() => {
+        Font.loadAsync({ Feather: require('react-native-vector-icons/Fonts/Feather.ttf') }).catch((err) =>
+            console.log('Failed to load icon font', err)
+        );
+    }, []);
+
+    useEffect(() => {
+        const loadTheme = async () => {
+            const storedTheme = await AsyncStorage.getItem('app_theme');
+            if (storedTheme === 'dark') {
+                setIsDarkMode(true);
+            }
+        };
+        loadTheme();
+
+        const checkLastVisit = async () => {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const todayStr = new Date().toLocaleDateString(isSinhala ? 'si-LK' : 'en-US', options);
+            await AsyncStorage.setItem('last_visit_date', todayStr);
+        };
+        checkLastVisit();
+
+        const fetchExercises = async () => {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const data = await exerciseService.getRecommendations(today);
+                if (data.hasData && data.recommendations) {
+                    setSuggestedExercises(data.recommendations.slice(0, 2));
+                }
+            } catch (err) {
+                console.log('Failed to fetch suggested exercises', err);
+            }
+        };
+
+        const fetchTodayPlan = async () => {
+            try {
+                const d = new Date();
+                const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                const res = await api.get(`/plan/activity/date/${date}`);
+                setTodayPlan(Array.isArray(res.data) ? res.data : []);
+            } catch (err) {
+                console.log('Failed to fetch today plan', err);
+            }
+        };
+
+        const fetchUserProfile = async () => {
+            try {
+                const res = await api.get('/user/me');
+                if (res.data && res.data.username) {
+                    setDisplayName(res.data.username);
+                }
+            } catch (err) {
+                console.log('Failed to fetch user profile in dashboard', err);
+            }
+        };
+
+        fetchExercises();
+        fetchTodayPlan();
+        fetchUserProfile();
+    }, [user]);
 
     const handleLogout = () => {
         setSidebarVisible(false);
+        if (logout) {
+            logout();
+        }
+
         Toast.show({
             type: 'success',
-            text1: 'Signed Out',
-            text2: 'You have been signed out successfully.',
+            text1: t('Signed Out'),
+            text2: t('You have been signed out successfully.'),
             position: 'top',
         });
+
         setTimeout(() => {
             navigation.replace('Login');
-        }, 1500);
+        }, 1000);
     };
 
-    const handleNotifPress = () => {
+    const openRelief = () =>
+        navigation.navigate('Main', { screen: 'Tabs', params: { screen: 'Recommendations' } });
+
+    const handleHelp = () => {
         Toast.show({
             type: 'info',
-            text1: '🔔 Notifications',
-            text2: 'You have 3 new notifications.',
+            text1: t('Need help now?'),
+            text2: t('📞 Sri Lanka Mental Health Helpline: 1926'),
             position: 'top',
+            visibilityTime: 6000,
         });
     };
 
@@ -277,652 +442,806 @@ export default function DashboardScreen({ navigation }) {
             navigation.navigate('Diary');
         } else if (tab === 'plan') {
             navigation.navigate('Plan');
+        } else if (tab === 'exercise') {
+            navigation.navigate('Exercise');
+        } else if (tab === 'baby') {
+            navigation.navigate('BabyDevelopment');
         } else if (tab === 'screening') {
             navigation.navigate('EPDSScreening');
-        } else if (tab === 'profile') {
-            navigation.navigate('Profile');
         } else if (tab === 'care_overview') {
             navigation.navigate('CareOverview');
-        } else if (tab !== 'home') {
-            Toast.show({
-                type: 'info',
-                text1: navItems.find(n => n.key === tab)?.label || tab,
-                text2: 'This section is coming soon!',
-                position: 'bottom',
-            });
+        } else if (tab === 'profile') {
+            navigation.navigate('Profile');
+        } else if (tab === 'relief') {
+            openRelief();
+        } else if (tab === 'chat') {
+            navigation.navigate('Chat');
         }
     };
 
-    const chartConfig = {
-        backgroundGradientFrom: '#fff',
-        backgroundGradientTo: '#fff',
-        decimalPlaces: 0,
-        color: (opacity = 1) => `rgba(124, 58, 237, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(55, 65, 81, ${opacity})`,
-        style: { borderRadius: 16 },
-        propsForDots: { r: '5', strokeWidth: '2', stroke: '#7C3AED' },
-        barPercentage: 0.6,
+    // "Start session" opens the exercise recommendation page
+    const openExercise = () => {
+        navigation.navigate('Exercise');
     };
 
+    const picks = [
+        {
+            key: 'music',
+            icon: 'music',
+            tag: `${t('Music')} · 10 ${t('min')}`,
+            title: t('Calm music'),
+            desc: t('Soft sounds for quiet moments.'),
+            bg: P.lav,
+            color: P.primaryDark,
+            onPress: () => navigation.navigate('MusicLibrary'),
+        },
+        {
+            key: 'activities',
+            icon: 'feather',
+            tag: `${t('Activities')} · 15 ${t('min')}`,
+            title: t('Relaxing activities'),
+            desc: t('A slow, creative pause.'),
+            bg: P.blush,
+            color: P.blushText,
+            onPress: () => navigation.navigate('Main', { screen: 'ActivitiesLibrary' }),
+        },
+        {
+            key: 'games',
+            icon: 'target',
+            tag: `${t('Games')} · 5 ${t('min')}`,
+            title: t('Calming games'),
+            desc: t('Light play to reset your mind.'),
+            bg: P.sage,
+            color: P.sageText,
+            onPress: () => navigation.navigate('Main', { screen: 'GamesLibrary' }),
+        },
+    ];
+
+    const planItems = todayPlan.slice(0, 3);
+    const planDone = todayPlan.filter((r) => r.completed).length;
+    const exercise = suggestedExercises[0];
+
+    // ── Sections ──
+    const hero = (
+        <View style={[styles.hero, { backgroundColor: P.lav, flexDirection: isWide ? 'row' : 'column-reverse' }]}>
+            <View style={[styles.heroText, isWide ? { flex: 1.2, minWidth: 0, padding: 36 } : { padding: 20 }]}>
+                <Text style={[styles.mutedText, { color: P.muted }]}>{dayString}</Text>
+                <Text style={[styles.heroTitle, { color: P.text, fontSize: isWide ? 34 : 24 }]}>
+                    {greeting}, {displayName.split(' ')[0]}
+                </Text>
+                <Text style={[styles.heroSub, { color: P.muted }]}>
+                    {t('Your wellbeing matters, one day at a time.')}
+                </Text>
+                <View style={{ flexDirection: 'row' }}>
+                    <PillButton P={P} solid icon="edit-2" label={t('Write in my diary')} onPress={() => navigation.navigate('Diary')} />
+                </View>
+            </View>
+            <View style={isWide ? styles.heroImageWide : styles.heroImageMobile}>
+                {Platform.OS === 'web' ? (
+                    <img
+                        src={HERO_IMAGE_URI}
+                        alt=""
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: '38% 35%', display: 'block' }}
+                    />
+                ) : (
+                    <Image source={HERO_IMAGE} resizeMode="cover" style={StyleSheet.absoluteFill} />
+                )}
+            </View>
+        </View>
+    );
+
+    const picked = (
+        <Card P={P} style={isWide ? { flex: 2 } : null}>
+            <View style={styles.rowBetween}>
+                <View>
+                    <Text style={[styles.cardTitle, { color: P.text }]}>{t('Picked for you')}</Text>
+                    <Text style={[styles.mutedText, { color: P.muted }]}>{t('Based on your recent diary')}</Text>
+                </View>
+                <TouchableOpacity onPress={openRelief}>
+                    <Text style={[styles.linkText, { color: P.primaryDark }]}>{t('See all')} →</Text>
+                </TouchableOpacity>
+            </View>
+            {isWide ? (
+                <View style={styles.picksRow}>
+                    {picks.map(({ key, ...p }) => <PickCard key={key} P={P} {...p} />)}
+                </View>
+            ) : (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.picksScroll}>
+                    {picks.map(({ key, ...p }) => <PickCard key={key} P={P} compact {...p} />)}
+                </ScrollView>
+            )}
+        </Card>
+    );
+
+    const note = (
+        <Card P={P} style={{ backgroundColor: P.note, borderColor: P.noteLine }}>
+            <Text style={[styles.quoteMark, { color: P.secondary }]}>❝</Text>
+            <Text style={[styles.noteText, { color: P.text, fontSize: isWide ? 19 : 17 }]}>{dailyNote}</Text>
+            <Text style={[styles.mutedText, { color: P.muted, marginTop: 10 }]}>{t('A note for you today')}</Text>
+        </Card>
+    );
+
+    const checkIn = (
+        <Card P={P}>
+            <CardTitle P={P} icon="clipboard">{t('Monthly check-in')}</CardTitle>
+            <Text style={[styles.mutedText, { color: P.muted, marginVertical: 8 }]}>
+                {t("10 short questions, whenever you're ready.")}
+            </Text>
+            <View style={{ flexDirection: 'row' }}>
+                <PillButton P={P} label={t('Start check-in')} onPress={() => navigation.navigate('EPDSScreening')} />
+            </View>
+        </Card>
+    );
+
+    const plan = (
+        <Card P={P} style={isWide ? { flex: 1 } : null}>
+            <View style={[styles.rowBetween, { marginBottom: 4 }]}>
+                <CardTitle P={P} icon="calendar">{t("Today's plan")}</CardTitle>
+                <TouchableOpacity onPress={() => navigation.navigate('Plan')}>
+                    <Text style={[styles.linkText, { color: P.primaryDark }]}>
+                        {todayPlan.length ? `${planDone} / ${todayPlan.length}` : t('Manage')}
+                    </Text>
+                </TouchableOpacity>
+            </View>
+            {planItems.length === 0 ? (
+                <TouchableOpacity onPress={() => navigation.navigate('Plan')} style={styles.planRow}>
+                    <Text style={[styles.mutedText, { color: P.muted }]}>
+                        {t('Nothing planned yet. Add one gentle thing for today.')}
+                    </Text>
+                </TouchableOpacity>
+            ) : (
+                planItems.map((r, i) => (
+                    <View
+                        key={r._id || `${r.activityId}-${i}`}
+                        style={[styles.planRow, i < planItems.length - 1 && { borderBottomWidth: 1, borderBottomColor: P.line2 }]}
+                    >
+                        <Icon name={r.completed ? 'check-circle' : 'circle'} size={16} color={r.completed ? P.primary : P.secondary} style={{ marginRight: 10 }} />
+                        <Text
+                            style={[
+                                styles.planText,
+                                { color: r.completed ? P.muted : P.text },
+                                r.completed && { textDecorationLine: 'line-through' },
+                            ]}
+                            numberOfLines={1}
+                        >
+                            {r.activityName || t('Activity')}
+                        </Text>
+                        <Text style={[styles.mutedText, { color: P.muted }]}>
+                            {r.scheduledTime || (r.timeOfDay ? t(r.timeOfDay) : '')}
+                        </Text>
+                    </View>
+                ))
+            )}
+        </Card>
+    );
+
+    const recovery = (
+        <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={openExercise}
+            style={[
+                styles.card,
+                styles.recovery,
+                { backgroundColor: P.card, borderColor: P.line, flexDirection: isWide ? 'row' : 'column' },
+                isWide && { flex: 1 },
+            ]}
+        >
+            <View style={[styles.recoveryMedia, { backgroundColor: P.sage }, isWide ? { width: 260, minHeight: 146 } : { width: '100%', aspectRatio: 16 / 9 }]}>
+                {getVideoThumbnail(exercise) ? (
+                    <Image source={{ uri: getVideoThumbnail(exercise) }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+                ) : null}
+                <View style={styles.playBadge}>
+                    <Icon name="play" size={20} color={P.primaryDark} style={{ marginLeft: 3 }} />
+                </View>
+            </View>
+            <View style={{ padding: 18, flex: 1 }}>
+                <Text style={[styles.cardTitle, { color: P.text }]}>{t('Recovery exercise')}</Text>
+                <Text style={[styles.mutedText, { color: P.muted, marginVertical: 6 }]} numberOfLines={2}>
+                    {exercise
+                        ? `${exercise.customName || t('Postpartum Exercise')}${exercise.duration ? ` · ${exercise.duration}` : ''}`
+                        : t('Gentle postnatal movement picked for you')}
+                </Text>
+                <Text style={[styles.linkText, { color: P.primaryDark }]}>{t('Start session')} →</Text>
+            </View>
+        </TouchableOpacity>
+    );
+
+    const diary = (
+        <Card P={P} style={[styles.rowBetween, { backgroundColor: P.side }]}>
+            <View style={{ flex: 1, paddingRight: 12 }}>
+                <CardTitle P={P} icon="book-open">{t('My Diary')}</CardTitle>
+                <Text style={[styles.mutedText, { color: P.muted, marginTop: 4 }]}>
+                    {t('Your entries stay private. Write in Sinhala or English.')}
+                </Text>
+            </View>
+            <PillButton P={P} label={t('Write an entry')} onPress={() => navigation.navigate('Diary')} />
+        </Card>
+    );
+
     return (
-        <SafeAreaView style={styles.safeArea}>
-            {/* ── Sidebar ── */}
+        <SafeAreaView style={[styles.safeArea, { backgroundColor: P.bg }]}>
             <Sidebar
                 visible={sidebarVisible}
                 activeTab={activeTab}
                 onTabPress={handleTabPress}
                 onClose={() => setSidebarVisible(false)}
                 onLogout={handleLogout}
+                onHelp={handleHelp}
+                P={P}
             />
 
-            {/* ── Header ── */}
-            <Header
-                onMenuPress={() => setSidebarVisible(true)}
-                onNotifPress={handleNotifPress}
-            />
+            {/* ── Video Player Modal ── */}
+            <Modal
+                visible={videoModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={() => setVideoModalVisible(false)}
+            >
+                <View style={styles.videoModalOverlay}>
+                    <View style={styles.videoModalContainer}>
+                        <TouchableOpacity style={styles.videoModalClose} onPress={() => setVideoModalVisible(false)}>
+                            <Text style={styles.videoModalCloseText}>✕</Text>
+                        </TouchableOpacity>
 
-            {/* ── Main Scrollable Content ── */}
+                        <View style={styles.dashboardVideoWrapper}>
+                            {selectedVideoUrl &&
+                                (getYouTubeId(selectedVideoUrl) ? (
+                                    Platform.OS === 'web' ? (
+                                        <iframe
+                                            src={getEmbedUrl(selectedVideoUrl)}
+                                            style={{ flex: 1, border: 'none', width: '100%', height: '100%' }}
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    ) : (
+                                        <WebView
+                                            source={{ uri: getEmbedUrl(selectedVideoUrl) }}
+                                            style={styles.dashboardWebView}
+                                            allowsFullscreenVideo={true}
+                                            allowsInlineMediaPlayback={true}
+                                            mediaPlaybackRequiresUserAction={false}
+                                            javaScriptEnabled={true}
+                                            domStorageEnabled={true}
+                                            startInLoadingState={true}
+                                        />
+                                    )
+                                ) : (
+                                    <Video
+                                        source={{ uri: selectedVideoUrl }}
+                                        style={styles.dashboardVideo}
+                                        useNativeControls
+                                        resizeMode={ResizeMode.CONTAIN}
+                                        shouldPlay
+                                    />
+                                ))}
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+            <Header onMenuPress={() => setSidebarVisible(true)} initials={initials} P={P} />
+
             <ScrollView
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
+                style={{ flex: 1 }}
+                contentContainerStyle={[styles.scrollContent, isWide && styles.scrollContentWide]}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Greeting Banner */}
-                <View style={styles.greetingBanner}>
-                    <View style={styles.greetingTextContainer}>
-                        <Text style={styles.greetingHello}>{t('Hello')}, {mockUser.name.split(' ')[0]} 👋</Text>
-                        <Text style={styles.greetingSubtitle}>{t("Here's your health overview")}</Text>
-                        <Text style={styles.greetingDate}>{t('Last visit')}: {mockUser.lastVisit}</Text>
-                    </View>
-                    <View style={styles.greetingAvatarLarge}>
-                        <Text style={styles.greetingAvatarText}>SJ</Text>
-                    </View>
-                </View>
+                {hero}
 
-                {/* Stat Cards */}
-                <Text style={styles.sectionTitle}>{t('Overview')}</Text>
-                <View style={styles.statsGrid}>
-                    {mockStats.map((stat, i) => (
-                        <StatCard key={i} {...stat} label={t(stat.label)} />
-                    ))}
-                </View>
-
-                {/* Bar Chart */}
-                <Text style={styles.sectionTitle}>{t('Monthly Screening Activity')}</Text>
-                <View style={styles.chartCard}>
-                    <BarChart
-                        data={barChartData}
-                        width={width - 48}
-                        height={200}
-                        chartConfig={chartConfig}
-                        style={styles.chart}
-                        showValuesOnTopOfBars
-                        fromZero
-                    />
-                </View>
-
-                {/* Pie Chart */}
-                <Text style={styles.sectionTitle}>{t('Depression Risk Breakdown')}</Text>
-                <View style={styles.chartCard}>
-                    <PieChart
-                        data={pieChartData}
-                        width={width - 48}
-                        height={200}
-                        chartConfig={chartConfig}
-                        accessor="population"
-                        backgroundColor="transparent"
-                        paddingLeft="15"
-                        absolute={false}
-                    />
-                </View>
-
-                {/* Progress Bars */}
-                <Text style={styles.sectionTitle}>{t('Wellness Indicators')}</Text>
-                <View style={styles.progressCard}>
-                    {progressData.map((item, i) => (
-                        <ProgressBar key={i} {...item} />
-                    ))}
-                </View>
-
-                {/* Recent Activity */}
-                <Text style={styles.sectionTitle}>{t('Recent Activity')}</Text>
-                <View style={styles.activityCard}>
-                    {recentActivities.map((item) => (
-                        <View key={item.id} style={styles.activityRow}>
-                            <View style={[styles.activityIconBox, { backgroundColor: item.color + '22' }]}>
-                                <Text style={styles.activityIcon}>{item.icon}</Text>
+                {isWide ? (
+                    <>
+                        <View style={styles.row}>
+                            {picked}
+                            <View style={[styles.col, { flex: 1 }]}>
+                                {note}
+                                {checkIn}
                             </View>
-                            <View style={styles.activityInfo}>
-                                <Text style={styles.activityTitle}>{t(item.title)}</Text>
-                                <Text style={styles.activityTime}>{t(item.time)}</Text>
-                            </View>
-                            <View style={[styles.activityDot, { backgroundColor: item.color }]} />
                         </View>
-                    ))}
-                </View>
+                        <View style={styles.row}>
+                            {plan}
+                            {recovery}
+                        </View>
+                    </>
+                ) : (
+                    <>
+                        {note}
+                        {picked}
+                        {plan}
+                        <View style={styles.row}>
+                            <TouchableOpacity style={[styles.tile, { backgroundColor: P.sage }]} onPress={openExercise}>
+                                <Icon name="activity" size={22} color={P.sageText} style={styles.tileIcon} />
+                                <Text style={[styles.tileTitle, { color: P.text }]}>{t('Exercise')}</Text>
+                                <Text style={[styles.mutedText, { color: P.muted }]} numberOfLines={1}>
+                                    {exercise?.duration || t('Gentle movement')}
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.tile, { backgroundColor: P.lav }]} onPress={() => navigation.navigate('EPDSScreening')}>
+                                <Icon name="clipboard" size={22} color={P.primaryDark} style={styles.tileIcon} />
+                                <Text style={[styles.tileTitle, { color: P.text }]}>{t('Check-in')}</Text>
+                                <Text style={[styles.mutedText, { color: P.muted }]}>{t('When ready')}</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </>
+                )}
 
-                {/* Quick Action Buttons */}
-                <Text style={styles.sectionTitle}>{t('Quick Actions')}</Text>
-                <View style={styles.quickActions}>
-                    <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#7C3AED' }]}
-                        onPress={() => navigation.navigate('EPDSScreening')}
-                    >
-                        <Text style={styles.quickActionIcon}>📋</Text>
-                        <Text style={styles.quickActionText}>{t('Screening')}</Text>
-                    </TouchableOpacity>
+                {diary}
 
-                    <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#F59E0B' }]}
-                        onPress={() => navigation.navigate('CareOverview')}
-                    >
-                        <Text style={styles.quickActionIcon}>⭐</Text>
-                        <Text style={styles.quickActionText}>{t('Care Overview')}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#10B981' }]}
-                        onPress={() => navigation.navigate('GrowthChart')}
-                    >
-                        <Text style={styles.quickActionIcon}>📈</Text>
-                        <Text style={styles.quickActionText}>{t('Growth Chart')}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#EC4899' }]}
-                        onPress={() => navigation.navigate('Diary')}
-                    >
-                        <Text style={styles.quickActionIcon}>📔</Text>
-                        <Text style={styles.quickActionText}>{t('My Diary')}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={[styles.quickActionBtn, { backgroundColor: '#0EA5E9' }]}
-                        onPress={() => navigation.navigate('Plan')}
-                    >
-                        <Text style={styles.quickActionIcon}>📅</Text>
-                        <Text style={styles.quickActionText}>{t('My Plans')}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={{ height: 20 }} />
+                <Text style={[styles.footNote, { color: P.muted }]}>
+                    {t('PeriCare offers support, not diagnosis. Your doctor is always the right person for medical questions.')}
+                </Text>
             </ScrollView>
 
-            {/* ── Footer ── */}
-            <Footer activeTab={activeTab} onTabPress={handleTabPress} />
+            {/* ── Mobile bottom bar ── */}
+            {!isWide && (
+                <View style={[styles.tabBar, { backgroundColor: P.card, borderColor: P.line }]}>
+                    {[
+                        { key: 'home', icon: 'home', label: t('Home') },
+                        { key: 'screening', icon: 'clipboard', label: t('MaternalCare') },
+                        { key: 'diary', icon: 'book-open', label: t('My Diary'), center: true },
+                        { key: 'relief', icon: 'heart', label: t('Relief') },
 
-            {/* Toast must be the last child */}
+                        { key: 'baby', icon: 'smile', label: t('Baby') },
+                        { key: 'chat', icon: 'message-circle', label: t('Chat') },
+                    ].map((item) =>
+                        item.center ? (
+                            <TouchableOpacity
+                                key={item.key}
+                                onPress={() => handleTabPress(item.key)}
+                                style={[styles.fab, { backgroundColor: P.primary }]}
+                                accessibilityLabel={item.label}
+                            >
+                                <Icon name={item.icon} size={22} color="#FFFFFF" />
+                            </TouchableOpacity>
+                        ) : (
+                            <TouchableOpacity key={item.key} onPress={() => handleTabPress(item.key)} style={styles.tabItem}>
+                                <Icon name={item.icon} size={20} color={activeTab === item.key ? P.primary : P.sec} />
+                                <Text style={[styles.tabLabel, { color: activeTab === item.key ? P.primaryDark : P.muted }]}>
+                                    {item.label}
+                                </Text>
+                            </TouchableOpacity>
+                        )
+                    )}
+                </View>
+            )}
+
             <Toast />
         </SafeAreaView>
     );
 }
 
-// ─────────────────────────────────────────────
-// STYLES
-// ─────────────────────────────────────────────
-const PURPLE = '#7C3AED';
-const PURPLE_LIGHT = '#EDE9FE';
-const BG = '#F3F4F6';
-const WHITE = '#FFFFFF';
-
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: BG,
     },
 
-    // ── Header ──
+    // Header
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: WHITE,
         paddingHorizontal: 16,
         paddingVertical: 12,
-        elevation: 4,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
     },
-    menuBtn: {
-        padding: 8,
-        gap: 4,
-    },
-    menuLine: {
-        width: 24,
-        height: 2.5,
-        backgroundColor: '#374151',
-        borderRadius: 2,
-        marginVertical: 2,
-    },
-    headerCenter: {
+    headerLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: 10,
     },
-    headerLogo: {
-        fontSize: 22,
+    headerRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
     },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: '800',
-        color: PURPLE,
-        letterSpacing: 0.5,
-    },
-    notifBtn: {
-        padding: 8,
-        position: 'relative',
-    },
-    notifIcon: {
-        fontSize: 22,
-    },
-    notifBadge: {
-        position: 'absolute',
-        top: 4,
-        right: 4,
-        backgroundColor: '#EF4444',
-        borderRadius: 8,
-        width: 16,
-        height: 16,
+    burger: {
+        width: 40,
+        height: 40,
+        borderRadius: 12,
+        borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    notifBadgeText: {
-        color: WHITE,
-        fontSize: 10,
-        fontWeight: 'bold',
+    menuLine: {
+        width: 18,
+        height: 2,
+        borderRadius: 2,
+        marginVertical: 2,
+    },
+    logoCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 10,
+    },
+    logoSmall: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        marginRight: 0,
+    },
+    logoEmoji: {
+        fontSize: 22,
+    },
+    logoEmojiSmall: {
+        fontSize: 17,
+    },
+    brandText: {
+        fontFamily: SERIF,
+        fontSize: 20,
+    },
+    brandSub: {
+        fontFamily: typography.bodyFont,
+        fontSize: 12,
+    },
+    langPill: {
+        borderWidth: 1,
+        borderRadius: 999,
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+    },
+    langText: {
+        fontFamily: typography.mediumFont,
+        fontSize: 13,
+    },
+    avatar: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    avatarText: {
+        fontFamily: typography.subTopicFont,
+        fontSize: 13,
     },
 
-    // ── Sidebar ──
+    // Sidebar
     sidebarOverlay: {
         flex: 1,
         flexDirection: 'row',
     },
     sidebarBackdrop: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.45)',
+        backgroundColor: 'rgba(44, 26, 53, 0.28)',
     },
     sidebarContainer: {
         width: 280,
-        backgroundColor: WHITE,
-        paddingTop: 40,
-        paddingBottom: 24,
-        elevation: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: -4, height: 0 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
+        borderRightWidth: 1,
+        paddingTop: 28,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
     },
     sidebarHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingBottom: 16,
-    },
-    sidebarAvatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: PURPLE,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 12,
-    },
-    sidebarAvatarText: {
-        color: WHITE,
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-    sidebarUserInfo: {
-        flex: 1,
-    },
-    sidebarUserName: {
-        fontWeight: '700',
-        fontSize: 15,
-        color: '#111827',
-    },
-    sidebarUserRole: {
-        fontSize: 12,
-        color: '#6B7280',
-        marginTop: 2,
+        marginBottom: 8,
     },
     sidebarCloseBtn: {
         padding: 6,
     },
     sidebarCloseText: {
         fontSize: 18,
-        color: '#374151',
     },
-    sidebarDivider: {
-        height: 1,
-        backgroundColor: '#E5E7EB',
-        marginVertical: 8,
-    },
-    sidebarNav: {
-        flex: 1,
-    },
-    sidebarNavItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 13,
-        paddingHorizontal: 20,
-        position: 'relative',
-    },
-    sidebarNavItemActive: {
-        backgroundColor: PURPLE_LIGHT,
-        borderRadius: 0,
-    },
-    sidebarNavIcon: {
-        fontSize: 20,
-        marginRight: 14,
-    },
-    sidebarNavLabel: {
-        fontSize: 15,
-        color: '#374151',
-        fontWeight: '500',
-    },
-    sidebarNavLabelActive: {
-        color: PURPLE,
-        fontWeight: '700',
-    },
-    sidebarActiveIndicator: {
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: 4,
-        backgroundColor: PURPLE,
-        borderTopLeftRadius: 4,
-        borderBottomLeftRadius: 4,
-    },
-    sidebarLogout: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-    },
-    sidebarLogoutIcon: {
-        fontSize: 20,
-        marginRight: 14,
-    },
-    sidebarLogoutText: {
-        fontSize: 15,
-        color: '#EF4444',
-        fontWeight: '600',
-    },
-
-    // ── Scroll ──
-    scrollView: {
-        flex: 1,
-    },
-    scrollContent: {
-        paddingHorizontal: 16,
-        paddingTop: 16,
-    },
-
-    // ── Greeting ──
-    greetingBanner: {
-        backgroundColor: PURPLE,
-        borderRadius: 20,
-        padding: 20,
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 20,
-        overflow: 'hidden',
-    },
-    greetingTextContainer: {
-        flex: 1,
-    },
-    greetingHello: {
-        color: WHITE,
-        fontSize: 20,
-        fontWeight: '800',
-        marginBottom: 4,
-    },
-    greetingSubtitle: {
-        color: 'rgba(255,255,255,0.85)',
-        fontSize: 13,
-        marginBottom: 6,
-    },
-    greetingDate: {
-        color: 'rgba(255,255,255,0.65)',
-        fontSize: 11,
-    },
-    greetingAvatarLarge: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        backgroundColor: 'rgba(255,255,255,0.25)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderWidth: 2,
-        borderColor: 'rgba(255,255,255,0.5)',
-    },
-    greetingAvatarText: {
-        color: WHITE,
-        fontWeight: 'bold',
-        fontSize: 22,
-    },
-
-    // ── Section Title ──
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: '700',
-        color: '#111827',
-        marginBottom: 12,
-        marginTop: 4,
-    },
-
-    // ── Stats ──
-    statsGrid: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 10,
-        marginBottom: 20,
-    },
-    statCard: {
-        backgroundColor: WHITE,
-        borderRadius: 14,
-        padding: 14,
-        width: (width - 48) / 2,
-        borderLeftWidth: 4,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07,
-        shadowRadius: 4,
-    },
-    statIcon: {
-        fontSize: 24,
-        marginBottom: 6,
-    },
-    statValue: {
-        fontSize: 22,
-        fontWeight: '800',
-        marginBottom: 2,
-    },
-    statLabel: {
+    navSection: {
+        fontFamily: typography.bodyFont,
         fontSize: 12,
-        color: '#6B7280',
-        fontWeight: '500',
+        letterSpacing: 0.8,
+        paddingTop: 18,
+        paddingBottom: 6,
+        paddingHorizontal: 12,
     },
-
-    // ── Chart Card ──
-    chartCard: {
-        backgroundColor: WHITE,
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 20,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07,
-        shadowRadius: 4,
-        alignItems: 'center',
-    },
-    chart: {
-        borderRadius: 12,
-    },
-
-    // ── Progress ──
-    progressCard: {
-        backgroundColor: WHITE,
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 20,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07,
-        shadowRadius: 4,
-    },
-    progressRow: {
-        marginBottom: 16,
-    },
-    progressLabelRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 6,
-    },
-    progressLabel: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#374151',
-    },
-    progressPercent: {
-        fontSize: 13,
-        fontWeight: '700',
-    },
-    progressTrack: {
-        height: 8,
-        backgroundColor: '#E5E7EB',
-        borderRadius: 4,
-        overflow: 'hidden',
-    },
-    progressFill: {
-        height: '100%',
-        borderRadius: 4,
-    },
-
-    // ── Activity ──
-    activityCard: {
-        backgroundColor: WHITE,
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 20,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.07,
-        shadowRadius: 4,
-    },
-    activityRow: {
+    navItem: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#F3F4F6',
-    },
-    activityIconBox: {
-        width: 42,
-        height: 42,
+        paddingHorizontal: 12,
         borderRadius: 12,
+    },
+    navIcon: {
+        fontSize: 16,
+        width: 28,
+    },
+    navLabel: {
+        fontFamily: typography.bodyFont,
+        fontSize: 15,
+    },
+    navLabelActive: {
+        fontFamily: typography.subTopicFont,
+    },
+    helpBtn: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 12,
+        borderWidth: 1,
+        borderRadius: 14,
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        marginTop: 24,
+        marginBottom: 8,
     },
-    activityIcon: {
-        fontSize: 20,
-    },
-    activityInfo: {
-        flex: 1,
-    },
-    activityTitle: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#111827',
-        marginBottom: 2,
-    },
-    activityTime: {
-        fontSize: 12,
-        color: '#9CA3AF',
-    },
-    activityDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
+    helpText: {
+        fontFamily: typography.mediumFont,
+        fontSize: 15,
     },
 
-    // ── Quick Actions ──
-    quickActions: {
+    // Layout
+    scrollContent: {
+        padding: 16,
+        paddingBottom: 24,
+        gap: 16,
+    },
+    scrollContentWide: {
+        paddingHorizontal: 36,
+        maxWidth: 1200,
+        width: '100%',
+        alignSelf: 'center',
+        gap: 20,
+    },
+    row: {
         flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 10,
+        gap: 16,
+    },
+    col: {
+        gap: 16,
+    },
+    rowBetween: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+
+    // Hero
+    hero: {
+        borderRadius: 28,
+        overflow: 'hidden',
+    },
+    // Photo is 1280×1024 (5:4); matching its ratio shows the whole picture
+    heroImageWide: {
+        flex: 1,
+        minWidth: 0,
+        minHeight: 260,
+        overflow: 'hidden',
+    },
+    heroImageMobile: {
+        width: '100%',
+        height: 180,
+        overflow: 'hidden',
+    },
+    heroText: {
+        justifyContent: 'center',
+        gap: 6,
+    },
+    heroTitle: {
+        fontFamily: SERIF,
+        lineHeight: undefined,
+    },
+    heroSub: {
+        fontFamily: typography.bodyFont,
+        fontSize: 15,
         marginBottom: 10,
     },
-    quickActionBtn: {
-        borderRadius: 14,
-        padding: 14,
+
+    // Cards
+    card: {
+        borderWidth: 1,
+        borderRadius: 22,
+        padding: 18,
+    },
+    cardTitleRow: {
+        flexDirection: 'row',
         alignItems: 'center',
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        minWidth: (width - 58) / 2,
-        flex: 1,
     },
-    quickActionIcon: {
-        fontSize: 24,
-        marginBottom: 6,
+    pillBtnRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
-    quickActionText: {
-        color: WHITE,
-        fontSize: 11,
-        fontWeight: '700',
-        textAlign: 'center',
+    cardTitle: {
+        fontFamily: typography.subTopicFont,
+        fontSize: 16,
+    },
+    mutedText: {
+        fontFamily: typography.bodyFont,
+        fontSize: 13,
+        lineHeight: 19,
+    },
+    linkText: {
+        fontFamily: typography.mediumFont,
+        fontSize: 14,
+    },
+    pillBtn: {
+        borderRadius: 999,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+    },
+    pillBtnText: {
+        fontFamily: typography.mediumFont,
+        fontSize: 14,
     },
 
-    // ── Footer ──
-    footer: {
+    // Picked for you
+    picksRow: {
         flexDirection: 'row',
-        backgroundColor: WHITE,
-        paddingVertical: 8,
-        paddingHorizontal: 8,
-        borderTopWidth: 1,
-        borderTopColor: '#E5E7EB',
-        elevation: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
+        gap: 14,
+        marginTop: 16,
     },
-    footerTab: {
-        flex: 1,
+    picksScroll: {
+        gap: 10,
+        paddingTop: 14,
+    },
+    pick: {
+        borderWidth: 1,
+        borderRadius: 18,
+        overflow: 'hidden',
+    },
+    pickCompact: {
+        width: 140,
+    },
+    pickImg: {
         alignItems: 'center',
-        paddingVertical: 4,
-        position: 'relative',
+        justifyContent: 'center',
     },
-    footerTabIcon: {
+    pickIcon: {
+        fontSize: 28,
+    },
+    pickBody: {
+        padding: 12,
+        gap: 3,
+    },
+    pickTag: {
+        fontFamily: typography.bodyFont,
+        fontSize: 12,
+    },
+    pickTitle: {
+        fontFamily: typography.subTopicFont,
+        fontSize: 15,
+    },
+
+    // Note
+    quoteMark: {
+        fontSize: 26,
+        lineHeight: 28,
+    },
+    noteText: {
+        fontFamily: SERIF,
+        lineHeight: 28,
+        marginTop: 4,
+    },
+
+    // Plan
+    planRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 11,
+    },
+    planText: {
+        fontFamily: typography.bodyFont,
+        fontSize: 14,
+        flex: 1,
+        paddingRight: 8,
+    },
+
+    // Recovery
+    recovery: {
+        padding: 0,
+        overflow: 'hidden',
+    },
+    recoveryMedia: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+    },
+    playBadge: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.85)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    playIcon: {
+        fontSize: 18,
+        marginLeft: 3,
+    },
+
+    // Mobile tiles
+    tile: {
+        flex: 1,
+        borderRadius: 20,
+        padding: 16,
+        gap: 2,
+    },
+    tileIcon: {
+        fontSize: 22,
+        marginBottom: 4,
+    },
+    tileTitle: {
+        fontFamily: typography.subTopicFont,
+        fontSize: 15,
+    },
+
+    footNote: {
+        fontFamily: typography.bodyFont,
+        fontSize: 12,
+        lineHeight: 18,
+    },
+
+    // Mobile bottom bar
+    tabBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginHorizontal: 16,
+        marginBottom: 12,
+        paddingHorizontal: 18,
+        paddingVertical: 8,
+        borderRadius: 999,
+        borderWidth: 1,
+    },
+    tabItem: {
+        alignItems: 'center',
+        minWidth: 48,
+    },
+    tabIcon: {
         fontSize: 20,
-        marginBottom: 2,
     },
-    footerTabLabel: {
-        fontSize: 10,
-        color: '#9CA3AF',
-        fontWeight: '500',
+    tabLabel: {
+        fontFamily: typography.bodyFont,
+        fontSize: 11,
+        marginTop: 2,
     },
-    footerTabLabelActive: {
-        color: PURPLE,
-        fontWeight: '700',
+    fab: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
-    footerActiveBar: {
+    fabIcon: {
+        fontSize: 22,
+    },
+
+    // Video modal (unchanged behaviour)
+    videoModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.85)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 16,
+    },
+    videoModalContainer: {
+        width: '100%',
+        maxWidth: 800,
+        backgroundColor: '#000',
+        borderRadius: 16,
+        overflow: 'hidden',
+    },
+    videoModalClose: {
         position: 'absolute',
-        top: -8,
-        width: 32,
-        height: 3,
-        backgroundColor: PURPLE,
-        borderRadius: 2,
+        top: 10,
+        right: 10,
+        zIndex: 10,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    videoModalCloseText: {
+        color: '#FFF',
+        fontSize: 18,
+    },
+    dashboardVideoWrapper: {
+        width: '100%',
+        aspectRatio: 16 / 9,
+        backgroundColor: '#000',
+    },
+    dashboardWebView: {
+        flex: 1,
+    },
+    dashboardVideo: {
+        width: '100%',
+        height: '100%',
     },
 });
