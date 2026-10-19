@@ -754,17 +754,17 @@ function inferCategoryForTrack(track) {
 export const getAllMusicCatalog = () => {
   const allTracks = [];
   const seen = new Set();
-  
+
   for (const [groupKey, list] of Object.entries(MUSIC_LIBRARY)) {
     if (!Array.isArray(list)) continue;
     for (const track of list) {
       if (!track || !track.id || seen.has(track.id)) continue;
       seen.add(track.id);
-      
+
       const extra = TRACK_METADATA_EXTRAS[track.id] || {};
       const primaryCat = extra.category || inferCategoryForTrack(track);
       const categories = extra.categories || [primaryCat];
-      
+
       allTracks.push({
         ...track,
         category: primaryCat,
@@ -782,4 +782,4 @@ export const getMusicByCategory = (categoryId = 'all') => {
   const all = getAllMusicCatalog();
   if (!categoryId || categoryId === 'all') return all;
   return all.filter(t => t.category === categoryId || (Array.isArray(t.categories) && t.categories.includes(categoryId)));
-};
+};

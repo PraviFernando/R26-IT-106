@@ -126,6 +126,13 @@ CONTRACTIONS = {
 }
 
 def preprocess(text: str) -> str:
+    """
+    [: Text Preprocessing & Multilingual Normalization]
+    - Purpose: Normalizes raw diary text across English, Sinhala Unicode, and Singlish.
+    - Input: Raw diary string from mother (e.g. 'mage baba andanawa').
+    - Output: Normalized text string ready for TF-IDF feature extraction.
+    - Connects to: Feeds into TfidfVectorizer in emotion and reason pipelines.
+    """
     if not text:
         return ""
     text = text.lower().strip()
@@ -171,7 +178,11 @@ def preprocess(text: str) -> str:
 
 def build_pipeline():
     """
-    Constructs the Scikit-learn pipeline based on MODEL_TYPE.
+    [: Machine Learning Model Pipeline Construction]
+    - Architecture: Pipeline of TfidfVectorizer (unigrams + bigrams, 5000 features) + LinearSVC.
+    - Why LinearSVC: Fast, deterministic, memory-efficient for high-dimensional sparse text.
+    - Output: Unfitted Scikit-Learn Pipeline object.
+    - Connects to: Fitted in train_models() on preprocessed training texts.
     """
     if MODEL_TYPE == "decision_tree":
         clf = DecisionTreeClassifier(
@@ -214,7 +225,13 @@ def build_pipeline():
 # ============================================================
 
 def train_models():
-
+    """
+    [ Model Training & Pickle Serialization]
+    - Purpose: Trains both emotion and reason models from scratch on training_data.py.
+    - Input: 2,253 labeled maternal diary sentences from training_data.py.
+    - Output: Serialized emotion_model.pkl and reason_model.pkl binary files.
+    - Connects to: Loaded into memory at startup or re-triggered via POST /retrain.
+    """
     print(f" Training models on {TOTAL_EXAMPLES} examples")
 
     cleaned = [preprocess(t) for t in TRAIN_TEXTS]
@@ -273,7 +290,15 @@ MEDIUM_RISK_REASONS = {
 }
 
 def get_risk_level(text, reason, emotion):
-
+    """
+    [: Clinical Risk Triaging Rule Engine]
+    - Purpose: Assigns clinical risk tier ('low', 'medium', or 'high') to protect patient safety.
+    - Rule 1: Immediate self-harm/crisis keywords ('want to die', 'hurt myself') -> ALWAYS 'high'.
+    - Rule 2: Psychological distress reason 'negative_thoughts' -> ALWAYS 'high'.
+    - Rule 3: Vulnerability reasons ('bonding_issues', 'anxiety', 'overwhelmed') or acute emotions -> 'medium'.
+    - Rule 4: Otherwise defaults safely to 'low'.
+    - Output: Risk string ('low', 'medium', 'high'). Connects to recommendation filtering.
+    """
     text = text.lower()
 
     if any(word in text for word in CRISIS_KEYWORDS):
@@ -329,7 +354,12 @@ ACTIVITIES_RECOMMENDATION_MAP = {
 }
 
 def get_recommendations(risk, reason, emotion):
-
+    """
+    [ Multimodal Content Resolution Algorithm]
+    - Purpose: Resolves 4 content categories (Activities, Games, Music, Videos) based on (risk, reason, emotion).
+    - Lookup: Queries curated in-memory mapping tables and recommendations.xlsx with graceful degradation.
+    - Output: Dictionary containing lists of top activities, games, music tracks, and playable video URLs.
+    """
     risk = risk.lower()
     reason = reason.lower().replace(" ", "_")
     emotion = emotion.lower()

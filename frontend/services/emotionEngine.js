@@ -10,6 +10,10 @@ export { getPersonalizedRecommendations, isBabyRelatedReason, isBabyRelatedConte
 export const RISK = { LOW: 'low', MEDIUM: 'medium', HIGH: 'high' };
 
 // ── MULTILINGUAL TEXT NORMALIZATION ─────────────────────────
+// [Viva Reference: Client-Side Multilingual Normalization]
+// - Normalizes Singlish phonetic variants (e.g. adanawa -> andanawa) to canonical forms.
+// - Strips special punctuation while preserving Sinhala Unicode range (\u0D80-\u0DFF).
+// - Input: Raw diary string. Output: Cleaned normalized string for keyword matching.
 export const normalizeMultilingualText = (text = '') => {
   if (!text || typeof text !== 'string') return '';
   let cleaned = text.toLowerCase().trim();
@@ -464,6 +468,10 @@ export const detectBabyIntents = (text = '') => {
 };
 
 // ── ANALYZE DIARY ─────────────────────────────────────────────
+// [Viva Reference: Client-Side Fallback Emotion & Reason Analysis]
+// - Executes multi-tier dictionary scoring for emotion, maternal reasons, and baby intents.
+// - Triages clinical risk ('low', 'medium', 'high') using keyword rules if offline/standalone.
+// - Input: Diary text string. Output: Analysis object containing detectedEmotion, primaryReason, riskLevel.
 export const analyzeDiary = (text) => {
   const norm = normalizeMultilingualText(text);
 
@@ -588,6 +596,9 @@ export const analyzeDiary = (text) => {
 };
 
 // ── GET RECOMMENDATIONS ───────────────────────────────────────
+// [Viva Reference: Client-Side Multimodal Recommendation Aggregator]
+// - Resolves activities, games, music, and videos using normalized emotion, reason, risk, and preferences.
+// - Connects directly to RecommendationsScreen.js to render cards and crisis hotlines.
 export const getRecommendations = (analysisResult = {}, preferredActivities = [], preferredGames = [], diaryText = '', completedActivities = []) => {
   const normReason = normalizeReasonKey(analysisResult?.primaryReason || analysisResult?.reason);
   const rawEmotion = analysisResult?.selectedEmoji || analysisResult?.detectedEmotion || analysisResult?.emotion;
