@@ -94,7 +94,7 @@ const DashboardScreenCopy = ({ navigation }) => {
     if (navigation?.canGoBack && navigation.canGoBack()) {
       navigation.goBack();
     } else {
-      navigation.navigate('Login');
+      navigation.navigate('Dashboard');
     }
   };
 
