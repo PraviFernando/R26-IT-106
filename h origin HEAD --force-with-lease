@@ -1,0 +1,99 @@
+[33mc99e597[m[33m ([m[1;31morigin/Depression-Screening-and-Classification-Module[m[33m)[m Merge branch 'MAIN' into Depression-Screening-and-Classification-Module
+[33mbc7f3ae[m update App.js
+[33m9587fa5[m updates
+[33m4aa12e8[m remove label
+[33m10db3d9[m new update
+[33m71f9a88[m installpackage
+[33m33e4d36[m Merge pull request #12 from PraviFernando/Nethasha_New
+[33m1f39e11[m[33m ([m[1;31morigin/Nethasha_New[m[33m)[m Merge remote-tracking branch 'origin/MAIN' into Nethasha_New
+[33m57a35ca[m add ml
+[33m796c4ed[m Update onboarding screen with images
+[33mf84f4c1[m Add images to login screen
+[33me0d7b7f[m Add images to frontend assets
+[33mb18556e[m update videos bonding issue
+[33maf383fe[m update reccomendations
+[33m8390f94[m update
+[33m4ebbe81[m update
+[33m5abe622[m feat: add fever video resources and integrate diaryText parameter
+[33m720c922[m[33m ([m[1;31morigin/NEW1[m[33m)[m Update README.md
+[33m14ceb72[m reccomendations update
+[33md50f8da[m Downgrade bleeding and C-section safety block to limited category overrides
+[33md31a7cf[m Remove suggested exercises from dashboard and add onboarding profile fallbacks
+[33m69a71eb[m Sync video with timer and clean up reps statistics layout
+[33mb1add2d[m Integrate epds_risk_level as a feature in postpartum exercise ML model
+[33m25500b7[m Switch exercise recommendations to use EPDS risk level
+[33m62706e0[m test
+[33mf8d5626[m Fixing sinhala to english converting
+[33m1a2ad70[m Merge branch 'NEW1' of https://github.com/PraviFernando/R26-IT-106 into NEW1
+[33m8763eb0[m Merge Pravindi and NEW2
+[33ma1c7499[m add backend .gitignore
+[33mbc0d2eb[m[33m ([m[1;31morigin/dev[m[33m, [m[1;31morigin/NEW2[m[33m)[m Merge pull request #11 from PraviFernando/ft-recommendation
+[33mdb0abe0[m[33m ([m[1;31morigin/ft-recommendation[m[33m)[m update
+[33ma814095[m Merge pull request #8 from PraviFernando/ft-momenttracking
+[33m144784d[m[33m ([m[1;31morigin/ft-momenttracking[m[33m)[m Movement Tracking Implementation
+[33m4ab4e99[m feat: upgrade smart YouTube recommendations and enable deep-linking
+[33m8969e0c[m ok
+[33me983fbf[m Fix UI overlap of video player and stopwatch in ExerciseScreen modal
+[33m2297fc1[m Fix progress dashboard mismatch and restore recommend quick action
+[33m4c7d915[m gitignore fix
+[33m22c0340[m Merge branch 'dev' of https://github.com/PraviFernando/R26-IT-106 into dev
+[33m97033a3[m issues fixed
+[33md0de98b[m Fix minor issues: add multer dependency and correct ML predict api paths
+[33m549d1d5[m Merge Sanumi and Nethasha branches into dev
+[33mbc90771[m Merge branch 'dev' of https://github.com/PraviFernando/R26-IT-106 into dev
+[33mff9a7df[m issues fixed
+[33m8500ced[m Fix minor issues: add multer dependency and correct ML predict api paths
+[33m457c147[m Merge Sanumi and Nethasha branches into dev
+[33m9a45140[m Merge branch 'dev' of https://github.com/PraviFernando/R26-IT-106 into dev
+[33m2201d79[m issues fixed
+[33m3c9462b[m Fix minor issues: add multer dependency and correct ML predict api paths
+[33md2033c9[m Merge Sanumi and Nethasha branches into dev
+[33mbb20e7e[m issues fixed
+[33m955f4d5[m Fix minor issues: add multer dependency and correct ML predict api paths
+[33mc0d9baf[m Merge Sanumi and Nethasha branches into dev
+[33m1071fd2[m[33m ([m[1;31morigin/Sanumi[m[33m)[m Resolve translation bugs, update dashboard charts and gitignore
+[33m3e08c5b[m Update recommendation ranking and progress tracker
+[33m73eae1b[m Update recommendation ranking and progress tracker
+[33m8639462[m Update video displaying ui in exercise recommondation and baby videos
+[33m2c3973a[m Merge local changes and update perinatal support screen UI
+[33m5cf7a7b[m Merge local changes and update perinatal support screen UI
+[33m30dd641[m Merge remote-tracking branch 'origin/Nethasha' into Nethasha
+[33m6d50a18[m Clean up activities and confirm back navigation to Personal Recommendations
+[33m391317d[m Update baby cues personal recommendations
+[33m988b5a5[m Improve Ui/Ux
+[33mefbfd99[m  make card clickable and persist daily popup state per user
+[33m6aeab9e[m Fix back navigation from games and activities to return to Recommendations page
+[33mc7d5336[m Fix Sinhala color label from ජම් to දම් in Pattern Repeat game
+[33mae9e177[m Remove <ctrl42> artifact and replace with bath emoji in SelfCareQuest
+[33m2a5d052[m Fix MindfulTap activity - remove sitha and samaya patterns and fix timer glitch
+[33mf7a53db[m Update baby cues personal recommendations
+[33m4ba8a42[m faketest
+[33mf324225[m test2
+[33mf056bcd[m test
+[33m7b46999[m update exercises and implemet baby videos
+[33mbfd12cc[m Update baby cues personal recommendations
+[33me539b4a[m Update baby cues personal recommendations
+[33m0a9c68b[m Update baby cues personal recommendations
+[33m57fead9[m Update baby cues personal recommendations
+[33m0266368[m Update baby cues personal recommendations
+[33m2c7b0a8[m fix: Swap gas and burp assets to match correct image content
+[33m403679f[m feat: Redesign Baby Cues game with local images and educational content
+[33md30a995[m Update activities and recommendations
+[33mea970ea[m Your commit message
+[33m2bed8f9[m Update personalized recommendations and activities
+[33m635fc9d[m Enhance baby care intent detection and educational video recommendations
+[33mf3d1235[m Update postpartum depression system implementation
+[33m5b0e4a0[m Update postpartum depression system implementation
+[33md1c12b2[m Update postpartum depression system implementation
+[33mdaeef32[m Modify exercise screen and sinhala translator
+[33m0fe6de6[m update project
+[33m3e35f0f[m Modify dataset and ui
+[33m569c61a[m Update the sinhala translator
+[33m0aae2e6[m add diary mood-based exercise recommendation override
+[33m25c41ca[m Integrate ML-based postpartum exercise recommendation system
+[33m0b6b62b[m Add postpartum exercise ML training models and prediction API
+[33m7c92354[m Add Sinhala transliteration and keyboard support
+[33m19dad8b[m Develop postpartum exercise recommendation interface
+[33m77ebc92[m Implement exercise recommendation API integration
+[33m704e231[m Add postpartum health data model for risk assessment
+[33me5471a2[m Create exercise and exercise record models

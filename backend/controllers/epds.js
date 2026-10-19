@@ -5,9 +5,11 @@ const path = require('path');
 
 // ─── Helper: decode JWT from Authorization header ───────────────────────────
 const getUserId = (req) => {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader) throw new Error('No token provided');
-    const token = authHeader.split(' ')[1];
+    if (req.user && req.user.id) return req.user.id;
+    const cookie = req.cookies?.access_token;
+    const header = req.headers?.authorization?.replace('Bearer ', '').trim();
+    const token = cookie || header;
+    if (!token) throw new Error('No authentication token provided');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return decoded.id;
 };
